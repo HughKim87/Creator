@@ -4,4 +4,24 @@ inputs/
 ### 대용량 미디어 원본 — 커밋 금지 (영상/음성 원본은 git 밖에서 관리)
 *.mkv
 *.mp4
-*.m
+*.mov
+*.avi
+*.wav
+*.mp3
+
+### 임시/백업
+temp/
+*.tmp
+
+### Windows
+# Windows thumbnail cache files
+Thumbs.db
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows shortcuts
+*.lnk
