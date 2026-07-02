@@ -59,6 +59,28 @@ description: |
 - 화면 확인이 필요한 구간:
 ```
 
+## 실행 도구
+
+각 단계에서 실제로 사용하는 도구다. (절차는 위 작업 순서를 따른다)
+
+1. **자막 분석**: 원본 옆 `.srt`를 Read로 직접 읽는다. 새 자막이 필요하면
+   Whisper 스크립트(`크레이지아케이드_영상/subtitle_recovery_work/transcribe_to_srt.py` 참고)를 쓰되
+   산출물은 새 파일로 저장한다.
+2. **음성 반응 분석 (RMS)**: 1초 단위 음량으로 웃음/고함/정적 후보를 찾는다.
+
+   ```bash
+   ffmpeg -i "원본.mkv" -af "astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=rms.txt" -f null - 2>/dev/null
+   # rms.txt에서 값이 주변보다 크게 튀는 시각 = 반응 후보, 길게 조용한 구간 = 컷 후보
+   ```
+
+3. **화면 검증**: 후보 구간만 `video-watch` 스킬로 프레임을 뽑아 직접 본다.
+
+   ```bash
+   python3 skills/video-watch/scripts/watch.py "원본.mkv" --no-whisper --start MM:SS --end MM:SS --max-frames 8 --out-dir temp/video-watch/검증구간명
+   ```
+
+   프레임 산출물은 Claude가 Read로 접근 가능한 위치(`temp/video-watch/`)에 둔다.
+
 ## 주의
 
 - 자막만으로 최종 판단하지 않는다.
