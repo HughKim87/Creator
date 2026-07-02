@@ -1,6 +1,9 @@
 ### 대용량 입력 파일 — 커밋 금지
 inputs/
 
+### 로컬 작업 공간 — 원본/생성물/캐시 커밋 금지
+workspace/
+
 ### 대용량 미디어 원본 — 커밋 금지 (영상/음성 원본은 git 밖에서 관리)
 *.mkv
 *.mp4
@@ -12,6 +15,17 @@ inputs/
 ### 임시/백업
 temp/
 *.tmp
+__pycache__/
+*.pyc
+
+### 프로젝트 내부 휴대용 도구 — 대용량 바이너리 커밋 금지
+tools/ffmpeg/bin/
+tools/ffmpeg/doc/
+tools/ffmpeg/presets/
+tools/ffmpeg/LICENSE*
+tools/ffmpeg/README.txt
+tools/ffmpeg/*.zip
+tools/ffmpeg/*.7z
 
 ### Windows
 # Windows thumbnail cache files

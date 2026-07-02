@@ -15,10 +15,16 @@
 """
 import argparse
 import csv
+import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 
 def parse_ts(ts: str) -> float:
@@ -48,6 +54,19 @@ def read_cuts(path: Path):
     return cuts
 
 
+def project_ffmpeg() -> str | None:
+    found = shutil.which("ffmpeg")
+    if found:
+        return found
+    exe = "ffmpeg.exe" if sys.platform.startswith("win") else "ffmpeg"
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidate = parent / "tools" / "ffmpeg" / "bin" / exe
+        if candidate.exists():
+            return str(candidate)
+    return None
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("source")
@@ -64,6 +83,10 @@ def main():
         sys.exit(f"출력 파일이 이미 존재함(덮어쓰기 금지): {out}")
     out.parent.mkdir(parents=True, exist_ok=True)
 
+    ffmpeg = project_ffmpeg()
+    if ffmpeg is None:
+        sys.exit("ffmpeg 없음: tools/ffmpeg/bin/ffmpeg.exe 또는 시스템 PATH를 확인하세요")
+
     cuts = read_cuts(Path(args.cutlist))
     total = sum(e - s for s, e, _ in cuts)
     print(f"[roughcut] 컷 {len(cuts)}개, 합계 {total/60:.1f}분")
@@ -74,9 +97,10 @@ def main():
         for i, (s, e, label) in enumerate(cuts, 1):
             seg = tmpdir / f"seg_{i:03d}.mp4"
             print(f"[roughcut] {i}/{len(cuts)} {s:.1f}s → {e:.1f}s {label}")
+            duration = e - s
             r = subprocess.run(
-                ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
-                 "-ss", str(s), "-to", str(e), "-i", str(src),
+                [ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
+                 "-ss", str(s), "-i", str(src), "-t", str(duration),
                  "-c:v", "libx264", "-preset", args.preset, "-crf", args.crf,
                  "-c:a", "aac", "-b:a", "160k", str(seg)])
             if r.returncode != 0:
@@ -87,7 +111,7 @@ def main():
         concat_file.write_text(
             "".join(f"file '{p.as_posix()}'\n" for p in seg_paths), encoding="utf-8")
         r = subprocess.run(
-            ["ffmpeg", "-hide_banner", "-loglevel", "error",
+            [ffmpeg, "-hide_banner", "-loglevel", "error",
              "-f", "concat", "-safe", "0", "-i", str(concat_file),
              "-c", "copy", str(out)])
         if r.returncode != 0:

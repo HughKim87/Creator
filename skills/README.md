@@ -8,9 +8,9 @@
 |---|---|
 | `game-trend-research` | 게임 트렌드, 랭킹, 유튜브 수요, 커뮤니티 이슈 조사 |
 | `youtube-channel-planning` | 김실버 채널에 맞는 영상 콘셉트와 기획 구성 |
-| `gameplay-video-analysis` | 원본 영상, 자막, 음성 기반 플레이 흐름과 하이라이트 후보 분석 |
+| `gameplay-video-analysis` | 긴 게임 플레이 영상을 저토큰 방식으로 분석해 후보 구간, 화면 검증, 라운드맵, 편집 컷리스트 생성 |
 | `video-watch` | Claude가 영상을 직접 보게 하는 도구 (프레임 추출 + 전사). 로컬 mkv 화면 검증, 타 채널 벤치마킹에 사용. 원본: bradautomates/claude-video (MIT) |
-| `premiere-editing-export` | 컷리스트를 프리미어용 CSV, EDL, XML 등으로 변환 |
+| `premiere-editing-export` | 컷리스트를 Premiere용 XML 편집 패키지(원본/후보클립/시퀀스)와 보조 CSV/EDL/러프컷으로 변환 |
 
 ## 기존 스킬 (temp_backup/에 백업 보관)
 

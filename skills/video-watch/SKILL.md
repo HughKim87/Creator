@@ -35,6 +35,8 @@ Claude는 영상 입력이 없다. 이 스킬은 `scripts/watch.py`로 프레임
 - 필요 바이너리: `ffmpeg`, `ffprobe` (로컬 파일), URL 분석 시 `yt-dlp` 추가.
   - 샌드박스(Linux): ffmpeg 기본 설치됨. yt-dlp 없으면
     `pip install yt-dlp --break-system-packages`.
+  - Windows/이 프로젝트: `tools/ffmpeg/bin/`에 휴대용 FFmpeg를 둔다.
+    `scripts/frames.py`는 시스템 PATH에 없어도 이 경로를 자동으로 찾는다.
 - Whisper API 키(GROQ_API_KEY/OPENAI_API_KEY)는 선택. 이 프로젝트는 대부분
   srt가 이미 있거나 URL 자막으로 충분하므로 기본은 `--no-whisper`.
 
@@ -84,3 +86,5 @@ python3 "${SKILL_DIR}/scripts/watch.py" "https://youtu.be/..." --detail transcri
   (b) Claude Code 등 로컬 터미널 환경에서 실행한다. 로컬 파일 분석은 샌드박스에서 정상 동작.
 - **원본 보호**: 이 스킬은 원본 영상을 읽기만 한다. 산출물(프레임, 전사)은
   항상 새 폴더에 생성한다.
+- 긴 MKV에서 후반부 탐색이 실패하면 파일 메타데이터가 아니라 실제 패킷 끝 시간을
+  확인한다. `tools/README.md`의 FFmpeg 검증 메모를 참고한다.
