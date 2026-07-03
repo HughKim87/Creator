@@ -65,3 +65,12 @@ C:\Users\Hugh\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\py
 - 이 원본 기준으로 후반부 화면 분석과 러프컷 생성이 가능하다.
 - Premiere XML 생성 도구 `skills/premiere-editing-export/scripts/make_premiere_xml.py` 문법 검사를 통과했다.
 - `CRA_PLAY_EDIT_ASSIST_3P_TEST.xml`, `CRA_PLAY_EDIT_ASSIST_V1.xml` 생성과 XML 파싱 검증이 성공했다.
+
+## remux_mkv_to_mp4.bat (2026-07-03 추가)
+
+OBS 녹화본(mkv)을 Premiere CS6에서 쓸 수 있게 mp4로 무손실 변환하는 공용 도구.
+
+- 사용법: `.mkv` 파일(여러 개 가능)을 이 bat 파일 위로 드래그&드롭
+- 결과: 원본 옆에 `<원본이름>_remux.mp4` 생성 (재인코딩 없음, `-c copy`)
+- 같은 이름의 결과 파일이 있으면 건너뜀 (덮어쓰기 안 함)
+- 내부적으로 `tools/ffmpeg/bin/ffmpeg.exe` 사용

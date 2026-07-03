@@ -2,18 +2,29 @@
 """컷리스트를 Premiere에서 가져올 수 있는 Final Cut Pro 7 XML로 만든다.
 
 원본 영상은 복사하거나 수정하지 않고, XML에서 로컬 원본 경로를 참조한다.
+여러 원본 파일을 지원한다: 컷리스트의 `원본파일` 컬럼 + 소스 폴더 인자.
+
+XML 구조는 사용자 Premiere(CS6)가 직접 내보낸 참조 XML(crazyarcade.xml,
+workspace/inputs/crazy_arcade/)의 구조를 그대로 따른다:
+
+- xmeml version 4
+- 마스터 클립: uuid + 자기참조 masterclipid + ismasterclip TRUE
+- 오디오: 모노 2트랙 분해 + premiereTrackType="Stereo" 트랙 속성
+  (CS6는 XML 가져오기에서 스테레오 1트랙 복원이 불가능 — 알려진 제약)
+- 클립아이템에는 rate를 쓰지 않는다 (시퀀스 rate 상속)
+
 컷리스트는 두 형식을 지원한다.
 
-1. 헤더 없음: 시작,끝[,라벨]
-2. 헤더 있음: 시작/끝/구간명 또는 start/end/label 계열 컬럼
+1. 헤더 없음: 시작,끝[,라벨]  (원본은 소스 인자 파일 하나)
+2. 헤더 있음: 시작/끝/구간명/원본파일/역할 컬럼
 """
 import argparse
 import csv
 import json
-import math
 import shutil
 import subprocess
 import sys
+import uuid as uuid_mod
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from fractions import Fraction
@@ -33,6 +44,7 @@ class Cut:
     end: float
     label: str
     role: str = ""
+    source: str = ""
 
     @property
     def duration(self) -> float:
@@ -111,6 +123,7 @@ def read_cuts(path: Path) -> list[Cut]:
         end_i = first.index("끝") if "끝" in first else header.get("end", header.get("end_time"))
         label_i = None
         role_i = None
+        source_i = None
         for key in ("구간명", "label", "name", "segment_name", "title"):
             if key in header:
                 label_i = header[key]
@@ -118,6 +131,10 @@ def read_cuts(path: Path) -> list[Cut]:
         for key in ("역할", "role", "note", "notes"):
             if key in header:
                 role_i = header[key]
+                break
+        for key in ("원본파일", "원본", "source", "file", "filename"):
+            if key in header:
+                source_i = header[key]
                 break
         if start_i is None or end_i is None:
             raise ValueError("헤더 컷리스트에는 시작/끝 컬럼이 필요함")
@@ -127,9 +144,10 @@ def read_cuts(path: Path) -> list[Cut]:
             end = parse_ts(row[end_i])
             label = row[label_i].strip() if label_i is not None and label_i < len(row) else f"cut_{i:03d}"
             role = row[role_i].strip() if role_i is not None and role_i < len(row) else ""
+            src_name = row[source_i].strip() if source_i is not None and source_i < len(row) else ""
             if end <= start:
                 raise ValueError(f"끝이 시작보다 빠름: {row}")
-            cuts.append(Cut(i, start, end, label, role))
+            cuts.append(Cut(i, start, end, label, role, src_name))
     else:
         for i, row in enumerate(rows, 1):
             if len(row) < 2:
@@ -204,6 +222,49 @@ def read_media_info(source: Path, fallback_end: float) -> MediaInfo:
     )
 
 
+@dataclass
+class SourceInfo:
+    index: int
+    path: Path
+    media: MediaInfo
+    frames: int
+
+    @property
+    def file_id(self) -> str:
+        return f"file-{self.index}"
+
+    @property
+    def clip_id(self) -> str:
+        return f"masterclip-{self.index}"
+
+
+def resolve_sources(cuts: list[Cut], source_arg: Path) -> dict[str, SourceInfo]:
+    """소스 인자(파일 또는 폴더)와 컷의 원본파일 컬럼으로 소스 맵을 만든다."""
+    if source_arg.is_dir():
+        names: list[str] = []
+        for cut in cuts:
+            if not cut.source:
+                raise ValueError(f"폴더 모드에서는 컷마다 원본파일이 필요함: 컷 {cut.index}")
+            if cut.source not in names:
+                names.append(cut.source)
+        paths = {name: source_arg / name for name in names}
+    else:
+        name = source_arg.name
+        for cut in cuts:
+            cut.source = name
+        paths = {name: source_arg}
+
+    sources: dict[str, SourceInfo] = {}
+    for i, (name, path) in enumerate(paths.items(), 1):
+        if not path.exists():
+            raise FileNotFoundError(f"원본 없음: {path}")
+        fallback = max((c.end for c in cuts if c.source == name), default=0.0)
+        media = read_media_info(path, fallback)
+        frames = seconds_to_frames(media.duration, media.fps)
+        sources[name] = SourceInfo(i, path, media, frames)
+    return sources
+
+
 def add(parent: ET.Element, tag: str, text: str | int | None = None, **attrs: str) -> ET.Element:
     element = ET.SubElement(parent, tag, attrs)
     if text is not None:
@@ -212,28 +273,24 @@ def add(parent: ET.Element, tag: str, text: str | int | None = None, **attrs: st
 
 
 def add_rate(parent: ET.Element, media: MediaInfo) -> ET.Element:
+    # 참조 XML은 ntsc가 아니면 ntsc 요소를 쓰지 않는다
     rate = add(parent, "rate")
     add(rate, "timebase", media.timebase)
-    add(rate, "ntsc", "TRUE" if media.ntsc else "FALSE")
+    if media.ntsc:
+        add(rate, "ntsc", "TRUE")
     return rate
 
 
-def add_video_characteristics(parent: ET.Element, media: MediaInfo) -> ET.Element:
-    sample = add(parent, "samplecharacteristics")
-    add_rate(sample, media)
-    add(sample, "width", media.width)
-    add(sample, "height", media.height)
-    add(sample, "anamorphic", "FALSE")
-    add(sample, "pixelaspectratio", "square")
-    add(sample, "fielddominance", "none")
-    return sample
-
-
-def add_audio_characteristics(parent: ET.Element, media: MediaInfo) -> ET.Element:
-    sample = add(parent, "samplecharacteristics")
-    add(sample, "depth", 16)
-    add(sample, "samplerate", media.sample_rate)
-    return sample
+def add_timecode(parent: ET.Element, media: MediaInfo, with_reel: bool) -> ET.Element:
+    timecode = add(parent, "timecode")
+    add_rate(timecode, media)
+    add(timecode, "string", "00:00:00:00")
+    add(timecode, "frame", 0)
+    add(timecode, "displayformat", "NDF")
+    if with_reel:
+        reel = add(timecode, "reel")
+        add(reel, "name", "")
+    return timecode
 
 
 def path_url(path: Path) -> str:
@@ -241,268 +298,266 @@ def path_url(path: Path) -> str:
     return "file://localhost/" + quote(posix, safe="/:")
 
 
-def add_file(parent: ET.Element, source: Path, media: MediaInfo, source_frames: int, full: bool) -> ET.Element:
-    file_el = add(parent, "file", id="file-1")
-    if not full:
+_FILES_WRITTEN: set[str] = set()
+
+
+def add_file(parent: ET.Element, src: SourceInfo) -> ET.Element:
+    # 소스별 전체 file 정의는 문서에서 처음 한 번만 쓰고, 이후에는 id 참조만 쓴다.
+    file_el = add(parent, "file", id=src.file_id)
+    if src.file_id in _FILES_WRITTEN:
         return file_el
-    add(file_el, "name", source.name)
-    add(file_el, "pathurl", path_url(source))
+    _FILES_WRITTEN.add(src.file_id)
+    media = src.media
+    add(file_el, "name", src.path.name)
+    add(file_el, "pathurl", path_url(src.path))
     add_rate(file_el, media)
-    add(file_el, "duration", source_frames)
+    add(file_el, "duration", src.frames)
+    add_timecode(file_el, media, with_reel=True)
     file_media = add(file_el, "media")
     file_video = add(file_media, "video")
-    add(file_video, "duration", source_frames)
-    add_video_characteristics(file_video, media)
+    add(file_video, "duration", src.frames)
+    sample = add(file_video, "samplecharacteristics")
+    add_rate(sample, media)
+    add(sample, "width", media.width)
+    add(sample, "height", media.height)
+    add(sample, "anamorphic", "FALSE")
+    add(sample, "pixelaspectratio", "square")
+    add(sample, "fielddominance", "none")
     file_audio = add(file_media, "audio")
-    add_audio_characteristics(file_audio, media)
+    audio_sample = add(file_audio, "samplecharacteristics")
+    add(audio_sample, "depth", 16)
+    add(audio_sample, "samplerate", media.sample_rate)
     add(file_audio, "channelcount", media.channels)
     return file_el
 
 
-def add_links(clipitem: ET.Element, links: list[tuple[str, str, int, int]]) -> None:
-    for link_id, mediatype, track_index, clip_index in links:
+def n_audio(media: MediaInfo) -> int:
+    return min(media.channels, 2)
+
+
+def add_links(clipitem: ET.Element, video_id: str, audio_ids: list[str], clip_index: int) -> None:
+    link = add(clipitem, "link")
+    add(link, "linkclipref", video_id)
+    add(link, "mediatype", "video")
+    add(link, "trackindex", 1)
+    add(link, "clipindex", clip_index)
+    for channel, audio_id in enumerate(audio_ids, 1):
         link = add(clipitem, "link")
-        add(link, "linkclipref", link_id)
-        add(link, "mediatype", mediatype)
-        add(link, "trackindex", track_index)
+        add(link, "linkclipref", audio_id)
+        add(link, "mediatype", "audio")
+        add(link, "trackindex", channel)
         add(link, "clipindex", clip_index)
-        if mediatype == "audio":
-            add(link, "groupindex", 1)
+        add(link, "groupindex", 1)
 
 
-def add_clipitem(
+def add_master_clip(parent: ET.Element, src: SourceInfo) -> None:
+    # 참조 XML 구조: uuid + 자기참조 masterclipid + ismasterclip TRUE.
+    # 이 3요소가 없으면 Premiere가 타임라인 클립을 마스터 클립과 연결하지 못한다.
+    media = src.media
+    clip = add(parent, "clip", id=src.clip_id, frameBlend="FALSE")
+    add(clip, "uuid", str(uuid_mod.uuid4()))
+    add(clip, "masterclipid", src.clip_id)
+    add(clip, "ismasterclip", "TRUE")
+    add(clip, "duration", src.frames)
+    add_rate(clip, media)
+    add(clip, "name", src.path.name)
+    clip_media = add(clip, "media")
+
+    video_id = f"{src.clip_id}-v"
+    audio_ids = [f"{src.clip_id}-a{c}" for c in range(1, n_audio(media) + 1)]
+
+    video = add(clip_media, "video")
+    video_track = add(video, "track")
+    clipitem = add(video_track, "clipitem", id=video_id, frameBlend="FALSE")
+    add(clipitem, "masterclipid", src.clip_id)
+    add(clipitem, "name", src.path.name)
+    add(clipitem, "alphatype", "none")
+    add(clipitem, "pixelaspectratio", "square")
+    add(clipitem, "anamorphic", "FALSE")
+    add_file(clipitem, src)
+    add_links(clipitem, video_id, audio_ids, 1)
+
+    audio = add(clip_media, "audio")
+    for channel in range(1, n_audio(media) + 1):
+        track = add(audio, "track")
+        clipitem = add(track, "clipitem", id=audio_ids[channel - 1], frameBlend="FALSE")
+        add(clipitem, "masterclipid", src.clip_id)
+        add(clipitem, "name", src.path.name)
+        add_file(clipitem, src)
+        sourcetrack = add(clipitem, "sourcetrack")
+        add(sourcetrack, "mediatype", "audio")
+        add(sourcetrack, "trackindex", channel)
+        add_links(clipitem, video_id, audio_ids, 1)
+
+
+def add_sequence(
     parent: ET.Element,
-    *,
-    item_id: str,
     name: str,
-    media: MediaInfo,
-    source: Path,
-    source_frames: int,
-    start: int,
-    end: int,
-    in_frame: int,
-    out_frame: int,
-    mediatype: str,
-    track_index: int,
-    include_file: bool = False,
-) -> ET.Element:
-    clipitem = add(parent, "clipitem", id=item_id)
-    add(clipitem, "masterclipid", "masterclip-1")
-    add(clipitem, "name", name)
-    add(clipitem, "enabled", "TRUE")
-    add(clipitem, "duration", max(0, out_frame - in_frame))
-    add_rate(clipitem, media)
-    add(clipitem, "start", start)
-    add(clipitem, "end", end)
-    add(clipitem, "in", in_frame)
-    add(clipitem, "out", out_frame)
-    add_file(clipitem, source, media, source_frames, include_file)
-    sourcetrack = add(clipitem, "sourcetrack")
-    add(sourcetrack, "mediatype", mediatype)
-    add(sourcetrack, "trackindex", track_index)
-    return clipitem
+    cuts: list[Cut],
+    sources: dict[str, SourceInfo],
+    *,
+    seq_id: str = "sequence-1",
+    id_prefix: str = "seq-clip",
+    audio_layout: str = "exploded",
+) -> None:
+    ref_media = sources[cuts[0].source].media
 
+    def cut_src(cut: Cut) -> SourceInfo:
+        return sources[cut.source]
 
-def add_master_clip(parent: ET.Element, source: Path, media: MediaInfo, source_frames: int) -> None:
-    clip = add(parent, "clip", id="masterclip-1")
-    add(clip, "name", source.name)
-    add(clip, "duration", source_frames)
-    add_rate(clip, media)
-    clip_media = add(clip, "media")
-
-    video = add(clip_media, "video")
-    video_track = add(video, "track")
-    add_clipitem(
-        video_track,
-        item_id="masterclip-1-v",
-        name=source.name,
-        media=media,
-        source=source,
-        source_frames=source_frames,
-        start=0,
-        end=source_frames,
-        in_frame=0,
-        out_frame=source_frames,
-        mediatype="video",
-        track_index=1,
-        include_file=True,
-    )
-
-    audio = add(clip_media, "audio")
-    for channel in range(1, min(media.channels, 2) + 1):
-        track = add(audio, "track")
-        add_clipitem(
-            track,
-            item_id=f"masterclip-1-a{channel}",
-            name=source.name,
-            media=media,
-            source=source,
-            source_frames=source_frames,
-            start=0,
-            end=source_frames,
-            in_frame=0,
-            out_frame=source_frames,
-            mediatype="audio",
-            track_index=channel,
-        )
-
-
-def add_candidate_clip(parent: ET.Element, cut: Cut, source: Path, media: MediaInfo, source_frames: int) -> None:
-    in_frame = seconds_to_frames(cut.start, media.fps)
-    out_frame = seconds_to_frames(cut.end, media.fps)
-    duration = max(0, out_frame - in_frame)
-    name = f"{cut.index:02d}_{cut.label}"
-
-    clip = add(parent, "clip", id=f"candidate-{cut.index:03d}")
-    add(clip, "name", name)
-    add(clip, "duration", duration)
-    add_rate(clip, media)
-    add(clip, "in", in_frame)
-    add(clip, "out", out_frame)
-    clip_media = add(clip, "media")
-
-    video = add(clip_media, "video")
-    video_track = add(video, "track")
-    add_clipitem(
-        video_track,
-        item_id=f"candidate-{cut.index:03d}-v",
-        name=name,
-        media=media,
-        source=source,
-        source_frames=source_frames,
-        start=0,
-        end=duration,
-        in_frame=in_frame,
-        out_frame=out_frame,
-        mediatype="video",
-        track_index=1,
-    )
-
-    audio = add(clip_media, "audio")
-    for channel in range(1, min(media.channels, 2) + 1):
-        track = add(audio, "track")
-        add_clipitem(
-            track,
-            item_id=f"candidate-{cut.index:03d}-a{channel}",
-            name=name,
-            media=media,
-            source=source,
-            source_frames=source_frames,
-            start=0,
-            end=duration,
-            in_frame=in_frame,
-            out_frame=out_frame,
-            mediatype="audio",
-            track_index=channel,
-        )
-
-
-def add_sequence(parent: ET.Element, name: str, cuts: list[Cut], source: Path, media: MediaInfo, source_frames: int) -> None:
-    cut_frames = [(cut, seconds_to_frames(cut.duration, media.fps)) for cut in cuts]
+    cut_frames = [(cut, seconds_to_frames(cut.duration, cut_src(cut).media.fps)) for cut in cuts]
     sequence_frames = sum(frames for _, frames in cut_frames)
 
-    sequence = add(parent, "sequence", id="sequence-1")
-    add(sequence, "name", name)
+    sequence = add(parent, "sequence", id=seq_id)
+    add(sequence, "uuid", str(uuid_mod.uuid4()))
     add(sequence, "duration", sequence_frames)
-    add_rate(sequence, media)
-
-    timecode = add(sequence, "timecode")
-    add_rate(timecode, media)
-    add(timecode, "string", "00:00:00:00")
-    add(timecode, "frame", 0)
-    add(timecode, "displayformat", "NDF")
-
+    add_rate(sequence, ref_media)
+    add(sequence, "name", name)
     sequence_media = add(sequence, "media")
+
+    n_a = 1 if audio_layout == "single" else n_audio(ref_media)
+
+    def clip_ids(cut: Cut) -> tuple[str, list[str]]:
+        video_id = f"{id_prefix}-{cut.index:03d}-v"
+        audio_ids = [f"{id_prefix}-{cut.index:03d}-a{c}" for c in range(1, n_a + 1)]
+        return video_id, audio_ids
+
+    # ── 비디오 ──────────────────────────────────────────
     video = add(sequence_media, "video")
     fmt = add(video, "format")
-    add_video_characteristics(fmt, media)
-    video_track = add(video, "track")
+    sample = add(fmt, "samplecharacteristics")
+    add_rate(sample, ref_media)
+    add(sample, "width", ref_media.width)
+    add(sample, "height", ref_media.height)
+    add(sample, "anamorphic", "FALSE")
+    add(sample, "pixelaspectratio", "square")
+    add(sample, "fielddominance", "none")
 
+    video_track = add(video, "track")
+    add(video_track, "enabled", "TRUE")
+    add(video_track, "locked", "FALSE")
     timeline_pos = 0
     for clip_index, (cut, duration) in enumerate(cut_frames, 1):
-        in_frame = seconds_to_frames(cut.start, media.fps)
-        out_frame = seconds_to_frames(cut.end, media.fps)
-        clip_name = f"{cut.index:02d}_{cut.label}"
-        video_id = f"seq-clip-{cut.index:03d}-v"
-        audio_ids = [f"seq-clip-{cut.index:03d}-a{channel}" for channel in range(1, min(media.channels, 2) + 1)]
-        links = [(video_id, "video", 1, clip_index)] + [
-            (audio_id, "audio", channel, clip_index) for channel, audio_id in enumerate(audio_ids, 1)
-        ]
-        clipitem = add_clipitem(
-            video_track,
-            item_id=video_id,
-            name=clip_name,
-            media=media,
-            source=source,
-            source_frames=source_frames,
-            start=timeline_pos,
-            end=timeline_pos + duration,
-            in_frame=in_frame,
-            out_frame=out_frame,
-            mediatype="video",
-            track_index=1,
-        )
-        add_links(clipitem, links)
+        src = cut_src(cut)
+        in_frame = seconds_to_frames(cut.start, src.media.fps)
+        out_frame = seconds_to_frames(cut.end, src.media.fps)
+        video_id, audio_ids = clip_ids(cut)
+        clipitem = add(video_track, "clipitem", id=video_id, frameBlend="FALSE")
+        add(clipitem, "masterclipid", src.clip_id)
+        add(clipitem, "name", f"{cut.index:02d}_{cut.label}")
+        add(clipitem, "enabled", "TRUE")
+        add(clipitem, "duration", duration)
+        add(clipitem, "start", timeline_pos)
+        add(clipitem, "end", timeline_pos + duration)
+        add(clipitem, "in", in_frame)
+        add(clipitem, "out", out_frame)
+        add(clipitem, "alphatype", "none")
+        add_file(clipitem, src)
+        add_links(clipitem, video_id, audio_ids, clip_index)
         timeline_pos += duration
 
+    # ── 오디오 ──────────────────────────────────────────
+    # 참조 XML 구조: 모노 2트랙 분해 + premiereTrackType="Stereo" 트랙 속성.
+    # CS6 제약으로 가져오기 시 L/R 링크 2트랙이 된다 (스테레오 1트랙 복원 불가).
     audio = add(sequence_media, "audio")
-    add(audio, "numOutputChannels", min(media.channels, 2))
-    for channel in range(1, min(media.channels, 2) + 1):
-        audio_format = add(audio, "format")
-        add_audio_characteristics(audio_format, media)
-        track = add(audio, "track")
+    audio_format = add(audio, "format")
+    audio_sample = add(audio_format, "samplecharacteristics")
+    add(audio_sample, "depth", 16)
+    add(audio_sample, "samplerate", ref_media.sample_rate)
+    outputs = add(audio, "outputs")
+    for channel in range(1, n_audio(ref_media) + 1):
+        group = add(outputs, "group")
+        add(group, "index", channel)
+        add(group, "numchannels", 1)
+        add(group, "downmix", 0)
+        add(add(group, "channel"), "index", channel)
+
+    stereo = n_audio(ref_media) == 2
+    for channel in range(1, n_a + 1):
+        track_attrs = {}
+        if stereo and audio_layout == "single":
+            track_attrs = {"premiereTrackType": "Stereo"}
+        elif stereo:
+            track_attrs = {
+                "currentExplodedTrackIndex": str(channel - 1),
+                "totalExplodedTrackCount": "2",
+                "premiereTrackType": "Stereo",
+            }
+        track = add(audio, "track", **track_attrs)
+        add(track, "enabled", "TRUE")
+        add(track, "locked", "FALSE")
         timeline_pos = 0
         for clip_index, (cut, duration) in enumerate(cut_frames, 1):
-            in_frame = seconds_to_frames(cut.start, media.fps)
-            out_frame = seconds_to_frames(cut.end, media.fps)
-            clip_name = f"{cut.index:02d}_{cut.label}"
-            video_id = f"seq-clip-{cut.index:03d}-v"
-            audio_ids = [f"seq-clip-{cut.index:03d}-a{audio_channel}" for audio_channel in range(1, min(media.channels, 2) + 1)]
-            links = [(video_id, "video", 1, clip_index)] + [
-                (audio_id, "audio", audio_channel, clip_index)
-                for audio_channel, audio_id in enumerate(audio_ids, 1)
-            ]
-            clipitem = add_clipitem(
-                track,
-                item_id=f"seq-clip-{cut.index:03d}-a{channel}",
-                name=clip_name,
-                media=media,
-                source=source,
-                source_frames=source_frames,
-                start=timeline_pos,
-                end=timeline_pos + duration,
-                in_frame=in_frame,
-                out_frame=out_frame,
-                mediatype="audio",
-                track_index=channel,
-            )
-            add_links(clipitem, links)
+            src = cut_src(cut)
+            in_frame = seconds_to_frames(cut.start, src.media.fps)
+            out_frame = seconds_to_frames(cut.end, src.media.fps)
+            video_id, audio_ids = clip_ids(cut)
+            clipitem = add(track, "clipitem", id=audio_ids[channel - 1], frameBlend="FALSE")
+            add(clipitem, "masterclipid", src.clip_id)
+            add(clipitem, "name", f"{cut.index:02d}_{cut.label}")
+            add(clipitem, "enabled", "TRUE")
+            add(clipitem, "duration", duration)
+            add(clipitem, "start", timeline_pos)
+            add(clipitem, "end", timeline_pos + duration)
+            add(clipitem, "in", in_frame)
+            add(clipitem, "out", out_frame)
+            add_file(clipitem, src)
+            sourcetrack = add(clipitem, "sourcetrack")
+            add(sourcetrack, "mediatype", "audio")
+            add(sourcetrack, "trackindex", channel)
+            add_links(clipitem, video_id, audio_ids, clip_index)
             timeline_pos += duration
+        if audio_layout != "single":
+            add(track, "outputchannelindex", channel)
+
+    add_timecode(sequence, ref_media, with_reel=False)
 
 
-def build_xml(project_name: str, sequence_name: str, cuts: list[Cut], source: Path, media: MediaInfo) -> ET.Element:
-    source_frames = seconds_to_frames(media.duration, media.fps)
-
-    root = ET.Element("xmeml", version="5")
+def build_xml(
+    project_name: str,
+    sequence_name: str,
+    cuts: list[Cut],
+    sources: dict[str, SourceInfo],
+    *,
+    master_bin: bool = True,
+    candidates: bool = True,
+    audio_layout: str = "exploded",
+) -> ET.Element:
+    # 참조 XML(사용자 Premiere 내보내기)과 동일하게 version 4를 쓴다
+    root = ET.Element("xmeml", version="4")
     project = add(root, "project")
     add(project, "name", project_name)
     children = add(project, "children")
 
-    original_bin = add(children, "bin")
-    add(original_bin, "name", "00_원본")
-    original_children = add(original_bin, "children")
-    add_master_clip(original_children, source, media, source_frames)
+    if master_bin:
+        original_bin = add(children, "bin")
+        add(original_bin, "name", "00_원본")
+        original_children = add(original_bin, "children")
+        for src in sources.values():
+            add_master_clip(original_children, src)
 
-    candidates_bin = add(children, "bin")
-    add(candidates_bin, "name", "01_후보클립")
-    candidates_children = add(candidates_bin, "children")
-    for cut in cuts:
-        add_candidate_clip(candidates_children, cut, source, media, source_frames)
+    # 후보 구간은 clip(in/out)이 아니라 컷별 미니 시퀀스로 만든다.
+    # Premiere는 bin clip의 in/out을 서브클립으로 인식하지 못하고
+    # 원본 전체의 마스터 클립을 중복 생성하기 때문 (FCP7 XML 알려진 제약).
+    if candidates:
+        candidates_bin = add(children, "bin")
+        add(candidates_bin, "name", "01_후보클립")
+        candidates_children = add(candidates_bin, "children")
+        for cut in cuts:
+            add_sequence(
+                candidates_children,
+                f"{cut.index:02d}_{cut.label}",
+                [cut],
+                sources,
+                seq_id=f"sequence-cand-{cut.index:03d}",
+                id_prefix=f"cand-{cut.index:03d}",
+                audio_layout=audio_layout,
+            )
 
     sequence_bin = add(children, "bin")
     add(sequence_bin, "name", "02_시퀀스")
     sequence_children = add(sequence_bin, "children")
-    add_sequence(sequence_children, sequence_name, cuts, source, media, source_frames)
+    add_sequence(sequence_children, sequence_name, cuts, sources, audio_layout=audio_layout)
 
     return root
 
@@ -516,81 +571,29 @@ def write_xml(path: Path, root: ET.Element) -> None:
     path.write_bytes(b'<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE xmeml>\n' + body + b"\n")
 
 
-def write_guide(
-    path: Path,
-    xml_path: Path,
-    source: Path,
-    cuts: list[Cut],
-    media: MediaInfo,
-    project_name: str,
-    sequence_name: str,
-) -> None:
-    if path.exists():
-        raise FileExistsError(f"안내 문서가 이미 존재함(덮어쓰기 금지): {path}")
-    total = sum(cut.duration for cut in cuts)
-    lines = [
-        f"# {project_name} Premiere XML 사용 방법",
-        "",
-        "## 생성 목적",
-        "",
-        "이 파일은 완성 컷편집본이 아니라 Premiere에서 바로 다듬기 위한 편집 준비 패키지다.",
-        "원본 영상은 복사하지 않고 XML에서 원본 경로만 참조한다.",
-        "",
-        "## 생성 파일",
-        "",
-        f"- XML: `{xml_path.name}`",
-        f"- 원본 참조: `{source}`",
-        f"- 컷 수: {len(cuts)}개",
-        f"- 연결 시퀀스 길이: 약 {format_seconds(total)}",
-        f"- 소스 정보: {media.width}x{media.height}, {float(media.fps):.3f}fps, audio {media.sample_rate}Hz/{media.channels}ch",
-        "",
-        "## Premiere에서 여는 방법",
-        "",
-        "1. Premiere Pro에서 `파일 > 가져오기`를 누른다.",
-        f"2. `{xml_path.name}`을 선택한다.",
-        "3. 미디어 연결 창이 뜨면 위 원본 영상을 선택한다.",
-        "4. 프로젝트 패널에서 `00_원본`, `01_후보클립`, `02_시퀀스`가 들어왔는지 확인한다.",
-        f"5. `{sequence_name}` 시퀀스를 열고 컷 경계, 오디오, 빠진 장면을 직접 다듬는다.",
-        "",
-        "## 기대 구조",
-        "",
-        "- `00_원본`: 원본 mkv 참조",
-        "- `01_후보클립`: 컷리스트 기준 후보 구간",
-        "- `02_시퀀스`: 후보 구간을 순서대로 연결한 러프컷 타임라인",
-        "",
-        "## 실패 시 대체 경로",
-        "",
-        "- XML 가져오기가 실패하면 기존 EDL을 먼저 가져오고 원본을 다시 연결한다.",
-        "- MKV 연결이 불안정하면 원본을 ProRes/DNxHR 같은 편집용 중간 파일로 별도 변환한 뒤, 같은 컷리스트로 XML을 다시 만든다.",
-        "- 이 XML은 컷 순서와 원본 참조를 위한 자료이며, 자막/효과/전환/색보정까지 자동 재현하는 파일은 아니다.",
-        "",
-        "## 참고 근거",
-        "",
-        "- Adobe Premiere는 Final Cut Pro XML 내보내기/가져오기 흐름을 지원한다: https://helpx.adobe.com/premiere/desktop/render-and-export/export-files/export-a-project-as-a-final-cut-pro-xml-file.html",
-        "- FCPX의 `.fcpxml`은 Premiere가 직접 읽는 표준 XML과 다르므로 변환이 필요하다: https://helpx.adobe.com/premiere/desktop/organize-media/import-files/migrate-from-final-cut-pro-x.html",
-        "- EDL은 단순 프로젝트에 적합하므로 후보 클립/빈/풍부한 구조에는 XML이 더 맞다: https://helpx.adobe.com/premiere/desktop/render-and-export/export-files/export-a-project-as-an-edl-file.html",
-        "",
-        "## 컷 목록",
-        "",
-        "| 번호 | 구간명 | 시작 | 끝 | 길이 | 역할 |",
-        "|---:|---|---:|---:|---:|---|",
-    ]
-    for cut in cuts:
-        lines.append(
-            f"| {cut.index} | {cut.label} | {format_seconds(cut.start)} | "
-            f"{format_seconds(cut.end)} | {format_seconds(cut.duration)} | {cut.role} |"
-        )
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("source", help="원본 영상 경로")
+    parser.add_argument("source", help="원본 영상 파일 또는 원본들이 있는 폴더 (폴더면 컷리스트의 원본파일 컬럼 사용)")
     parser.add_argument("cutlist", help="컷리스트 CSV")
     parser.add_argument("output_xml", help="생성할 Final Cut Pro 7 XML")
     parser.add_argument("--project-name", default="CRA_PLAY_EDIT_ASSIST_V1")
     parser.add_argument("--sequence-name", default="러프컷_추천순서_v1")
-    parser.add_argument("--guide", help="생성할 사용 방법 Markdown")
+    parser.add_argument(
+        "--no-master-bin",
+        action="store_true",
+        help="00_원본 빈을 생략하고 Premiere가 마스터 클립을 자동 생성하게 한다",
+    )
+    parser.add_argument(
+        "--no-candidates",
+        action="store_true",
+        help="01_후보클립 빈(컷별 미니 시퀀스)을 생략하고 원본+러프컷 시퀀스만 만든다",
+    )
+    parser.add_argument(
+        "--audio-layout",
+        choices=["exploded", "single"],
+        default="exploded",
+        help="exploded: 참조 XML의 모노 2트랙 분해 / single: 오디오 클립 1개",
+    )
     args = parser.parse_args()
 
     source = Path(args.source)
@@ -602,15 +605,12 @@ def main() -> None:
         sys.exit(f"컷리스트 없음: {cutlist}")
 
     cuts = read_cuts(cutlist)
-    media = read_media_info(source, max(cut.end for cut in cuts))
-    root = build_xml(args.project_name, args.sequence_name, cuts, source, media)
+    sources = resolve_sources(cuts, source)
+    root = build_xml(args.project_name, args.sequence_name, cuts, sources, master_bin=not args.no_master_bin, candidates=not args.no_candidates, audio_layout=args.audio_layout)
     write_xml(output_xml, root)
 
-    if args.guide:
-        write_guide(Path(args.guide), output_xml, source.resolve(), cuts, media, args.project_name, args.sequence_name)
-
     total = sum(cut.duration for cut in cuts)
-    print(f"[premiere-xml] 컷 {len(cuts)}개, 시퀀스 약 {format_seconds(total)}")
+    print(f"[premiere-xml] 원본 {len(sources)}개, 컷 {len(cuts)}개, 시퀀스 약 {format_seconds(total)}")
     print(f"[premiere-xml] 완료: {output_xml}")
 
 
