@@ -4,8 +4,7 @@
 원본 영상은 복사하거나 수정하지 않고, XML에서 로컬 원본 경로를 참조한다.
 여러 원본 파일을 지원한다: 컷리스트의 `원본파일` 컬럼 + 소스 폴더 인자.
 
-XML 구조는 사용자 Premiere(CS6)가 직접 내보낸 참조 XML(crazyarcade.xml,
-workspace/inputs/crazy_arcade/)의 구조를 그대로 따른다:
+XML 구조는 사용자 Premiere(CS6)가 직접 내보낸 참조 XML의 구조를 그대로 따른다:
 
 - xmeml version 4
 - 마스터 클립: uuid + 자기참조 masterclipid + ismasterclip TRUE
@@ -576,7 +575,7 @@ def main() -> None:
     parser.add_argument("source", help="원본 영상 파일 또는 원본들이 있는 폴더 (폴더면 컷리스트의 원본파일 컬럼 사용)")
     parser.add_argument("cutlist", help="컷리스트 CSV")
     parser.add_argument("output_xml", help="생성할 Final Cut Pro 7 XML")
-    parser.add_argument("--project-name", default="CRA_PLAY_EDIT_ASSIST_V1")
+    parser.add_argument("--project-name", default="EDIT_ASSIST_V1")
     parser.add_argument("--sequence-name", default="러프컷_추천순서_v1")
     parser.add_argument(
         "--no-master-bin",

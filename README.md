@@ -21,10 +21,7 @@
 | `skills/` | 작업용 스킬 4종(신규) + 구버전 .skill 5종(`skills/temp_backup/`에 백업 보관) |
 | `tools/` | 프로젝트 내부 휴대용 도구. 현재 FFmpeg 8.1.2 essentials 설치됨 (`tools/README.md` 참고) |
 | `workspace/` | Git에 올리지 않는 로컬 작업 공간. 원본은 `workspace/inputs/`, 생성 산출물은 `workspace/outputs/`에 둠 |
-| `기획_리서치/` | 채널 진단, 트렌드 분석, 소재 리서치, 영상 제작 템플릿 |
-| `라그나로크M_영상/` | 대본 v1·v2, 썸네일 PNG — **아직 이관 안 됨 (원본 백업에서 복사 예정)** |
-| `크레이지아케이드_영상/` | 컷 분석 문서, 프리미어 EDL 등 Git에 남길 작업 자료. 대용량 원본/생성물은 `workspace/` 아래에서 관리 |
-| `AI보이스_학습용_오디오/` | 본인 음성 복제(TTS 학습)용 wav/mp3 — **아직 이관 안 됨 (원본 백업에서 복사 예정)** |
+| `기획_리서치/` | 채널 진단·방향(공용), 영상 제작 템플릿, 스킬·워크플로우 개선 기록 |
 
 원본 백업에서 제외한 것: 구 `.tools/`(ffmpeg 실행파일 — 현재 `tools/ffmpeg/`에 재설치됨),
 `subtitle_recovery_work/pydeps*`, `hf_cache`(파이썬 패키지·Whisper 모델 캐시 — 재설치 가능),
@@ -39,37 +36,11 @@
 - 안 되는 것: 맥락 없는 플레이 일지형 (100~300회)
 - 시청자가 김실버에게 기대하는 것: "같이 상처받은 사람"의 시선, 빠른 렉카가 아닌 "겪어본 유저의 구조 해설"
 
-## 소재 우선순위 (2026-06-26 리서치 기준)
+## 현재 상태
 
-1. 솔 인챈트 — 이슈성·적합도 모두 최고, 후속 영상 당장 가능
-2. 라그나로크M 클래식 — 추억 IP 부검형, 대본 이미 완성
-3. 리니지 클래식 — 기존 채널 자산 활용
-4. 2026 신작 MMORPG 묶음 — 체크리스트/위험신호형
-
-## 작업별 현재 상태
-
-### 1. 크레이지 아케이드 영상 — 가장 진척됨, 프리미어 편집 준비 완료
-
-- 완료: 촬영(3회, 총 2시간 24분+) → Whisper 자막 복구(srt) → 9단계 컷 분석 → 최종 13컷 컷리스트(목표 15~20분) → 프리미어용 EDL/CSV 생성 → Premiere XML 편집 패키지 생성
-- **다음 할 일: 프리미어에서 `workspace/outputs/크레이지아케이드_영상/크아_컷편집_러프/premiere_export/CRA_PLAY_EDIT_ASSIST_V1.xml` 가져오기 → `00_원본`, `01_후보클립`, `02_시퀀스` 확인 → 컷 경계 다듬기**
-- 사용법: `workspace/outputs/크레이지아케이드_영상/크아_컷편집_러프/premiere_export/CRA_PLAY_EDIT_ASSIST_V1_사용방법.md`
-- 주의: XML/EDL은 원본 파일을 참조한다. mkv 파일명을 바꾸지 말 것.
-
-### 2. 라그나로크M 클래식 영상 — 대본까지 완료
-
-- 완료: 대본 v2, 썸네일, AI 보이스 학습용 오디오 준비 (해당 파일들은 아직 이 폴더로 이관 안 됨 — 원본 백업 참고)
-- 다음 할 일: 음성 생성(직접 녹음 또는 AI 보이스) → 촬영/화면 소스 확보 → 편집
-
-### 3. 솔 인챈트 후속 — 기획 단계
-
-- 리서치상 1순위 소재. `기획_리서치/` 문서의 관점 참고:
-  "솔 인챈트가 욕먹는 진짜 이유, 일반 유저가 남을 자리가 없습니다"
-- 다음 할 일: `game-trend-research` 스킬로 최신 이슈 재확인 후 기획
-
-### 4. 스킬 체계 정비 — 진행 중
-
-- 신규 4종: `game-trend-research`, `youtube-channel-planning`, `gameplay-video-analysis`, `premiere-editing-export`
-- 구버전 .skill 5종은 `skills/temp_backup/`에 백업 보관 (신규로 통합 후 제거 여부 결정 — `skills/README.md` 참고)
+- 진행 중인 특정 영상 작업 없음 — 작업 상태는 `SESSION_HANDOFF.md` 참고.
+- 작업용 스킬 4종: `game-trend-research`, `youtube-channel-planning`, `gameplay-video-analysis`, `premiere-editing-export` (구버전 .skill 5종은 `skills/temp_backup/`에 백업, 상세는 `skills/README.md`).
+- 새 영상은 원본을 `workspace/inputs/`에 넣고 워크플로우 1단계(촬영본이면 5단계)부터 시작.
 
 ## 작업 시 규칙
 

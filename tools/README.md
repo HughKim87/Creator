@@ -45,7 +45,7 @@ tools\ffmpeg\bin\ffprobe.exe -version
 ```powershell
 C:\Users\Hugh\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe `
   skills\video-watch\scripts\watch.py `
-  workspace\inputs\crazy_arcade\2026-06-26 19-42-34.mkv `
+  "workspace\inputs\<원본영상>.mkv" `
   --no-whisper --start 00:02:00 --end 00:03:00 `
   --max-frames 6 --resolution 1024 `
   --out-dir temp\video-watch\install_verify_000200_000300_utf8
@@ -56,15 +56,12 @@ C:\Users\Hugh\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\py
 - `temp/video-watch/install_verify_000200_000300_utf8/frames/frame_0001.jpg`
 - `temp/video-watch/install_verify_000200_000300_utf8/frames/frame_0004.jpg`
 
-추가 검증:
+추가 검증 (2026-07-02, 장편 mkv 원본 기준):
 
-- 2026-07-02에 원본을 다시 가져온 뒤 `workspace/inputs/crazy_arcade/2026-06-26 19-42-34.mkv`
-  크기가 약 6.69GB로 바뀌었다.
-- FFprobe 기준 길이 `02:24:42`, 끝부분 패킷 `8681.x`초까지 확인됐다.
-- `02:15:00` 단일 프레임 추출과 `02:15:00-02:20:00` 구간 프레임 추출이 성공했다.
-- 이 원본 기준으로 후반부 화면 분석과 러프컷 생성이 가능하다.
-- Premiere XML 생성 도구 `skills/premiere-editing-export/scripts/make_premiere_xml.py` 문법 검사를 통과했다.
-- `CRA_PLAY_EDIT_ASSIST_3P_TEST.xml`, `CRA_PLAY_EDIT_ASSIST_V1.xml` 생성과 XML 파싱 검증이 성공했다.
+- 대용량(수 GB) 장편 mkv 원본에서 임의 지점 단일 프레임 추출과 구간 프레임 추출이 성공했다.
+- FFprobe로 전체 길이와 끝부분 패킷 타임스탬프까지 확인됐다.
+- 장편 원본 기준으로 후반부 화면 분석과 러프컷 생성이 가능하다.
+- Premiere XML 생성 도구 `skills/premiere-editing-export/scripts/make_premiere_xml.py` 문법 검사와 XML 생성·파싱 검증이 통과했다.
 
 ## remux_mkv_to_mp4.bat (2026-07-03 추가)
 

@@ -20,6 +20,13 @@ description: |
 - 사용자가 이해할 수 있는 짧은 사용 방법을 함께 만든다.
 - 완성본 자동화보다 `원본 + 후보클립 + 연결 시퀀스` 구조를 우선한다.
 
+## 환경 전제 (사용자 편집 환경 — 영상 무관, 항상 적용)
+
+사용자는 Premiere Pro **CS6**를 쓴다.
+
+- **mkv 원본은 편집 전에 mp4로 무손실 remux한다.** CS6가 mkv를 지원하지 않아 미디어 오프라인이 난다. `tools/remux_mkv_to_mp4.bat`(재인코딩 없음)로 변환한 mp4를 원본 경로로 참조한다.
+- **CS6는 FCP7 XML 오디오를 L/R 링크 모노 2트랙으로 가져온다(알려진 제약, 해결 불가).** 이 스크립트가 그 구조에 맞춰 오디오를 분해한다. 편집엔 지장 없고 볼륨만 2회 조정하면 된다 — 재시도하지 말 것.
+
 ## 입력
 
 - 원본 영상 경로
@@ -49,7 +56,7 @@ description: |
 원본 참조, 후보 클립, 연결 시퀀스를 함께 넣는 데 적합하다.
 
 ```bash
-<python> skills/premiere-editing-export/scripts/make_premiere_xml.py "원본.mkv" 컷리스트.csv premiere_export/CRA_PLAY_EDIT_ASSIST_V1.xml --guide premiere_export/CRA_PLAY_EDIT_ASSIST_V1_사용방법.md
+<python> skills/premiere-editing-export/scripts/make_premiere_xml.py "원본.mkv" 컷리스트.csv premiere_export/편집.xml --guide premiere_export/편집_사용방법.md
 ```
 
 - 컷리스트.csv는 `시작,끝[,라벨]` 또는 `시작/끝/구간명` 헤더 형식을 지원한다.
@@ -69,7 +76,7 @@ description: |
 - 컷리스트.csv: `시작,끝[,라벨]` 한 줄씩 (SS/MM:SS/HH:MM:SS)
 - 출력은 기존 파일을 덮어쓰지 않는다 (존재 시 중단)
 - 재인코딩 방식이라 컷 경계가 정확하다. 화질 조정은 `--crf`(낮을수록 고화질)
-- 산출물은 `크아_컷편집_러프` 같은 작업 폴더의 `generated/` 하위에 둔다
+- 산출물은 영상별 편집 작업 폴더의 `generated/` 하위에 둔다
 
 ## 출력 형식
 
