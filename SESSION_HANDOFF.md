@@ -1,56 +1,67 @@
 # SESSION_HANDOFF.md — 김실버유튜브
 
-최종 갱신: 2026-07-04 (Claude Cowork 세션 — 진행 중 영상 없음, 도구·문서 제네릭 정리 완료)
+최종 갱신: 2026-07-05 (Claude Cowork 세션 — srt 반영 → dB·자막·화면 3중 재분석 → 러프컷 기획 v1~v5 → Premiere XML v5 생성 완료. **Premiere 실제 가져오기 미검증**)
 
 규칙 원본:
 - Tier-1: `C:\Users\Hugh\Claude\Projects\Building WorkFlow\PROJECT_RULES.md`
-- Tier-2: 이 폴더의 `PROJECT_RULES.md` / 공통 원칙 `00_공통_작업원칙.md` / 흐름 `01_유튜브_제작_워크플로우.md`
+- Tier-2: 이 폴더의 `PROJECT_RULES.md` / `00_공통_작업원칙.md` / `01_유튜브_제작_워크플로우.md`
+- **이번 세션에 Tier-2에 '영상 길이 원칙' 신설(사용자 확정):** 길이 고정 목표 금지, 재미·퀄리티 기준 컷 선별의 결과로 확정. 문서에 길이는 '참고 측정치'로만 기록.
 
-## 현재 상태
+## 현재 진행 영상
 
-- **진행 중인 영상 편집 없음. 다음 영상 대기.**
-- `temp/`, `workspace/`는 비어 있음(이전 프로젝트 데이터 정리 완료). 다음 영상 원본을 `workspace/inputs/`에 넣고 시작.
-- 스킬·워크플로우·도구는 특정 영상에 종속되지 않는 범용 상태로 정리됨.
+- 원본: `workspace/inputs/2026-06-30 00-23-03.mp4` (82:04 · 1080p60 · 무수정 참조만)
+- 자막: `workspace/inputs/2026-06-30 00-23-03.srt` (사용자 PC 생성, 760블록) — **도착·반영 완료. 전사 재생성 금지, 이 파일이 기준.**
+- 게임: Escape the Backrooms. **솔로 플레이+시청자 채팅 소통 방송**(졸려님 공략 도움). 이전 핸드오프의 "co-op 2인" 추정은 대사로 오류 확인됨.
+- 방향: 공포 리액션 하이라이트 + **영화 백룸 연결이 뼈대** (아래 기획 참조)
 
-## 다음 영상 시작하는 법
+## 이번 세션 완료 작업
 
-워크플로우(`01_유튜브_제작_워크플로우.md`)대로:
-- 새 소재부터면 1단계(소재 조사) → 2 기획 → 3 대본 → 4 자막 → 5 영상분석 → 6 편집자료 → 7 검수.
-- 이미 촬영된 플레이 영상 편집이면 5단계(영상 분석)부터 진입 → 6단계(편집 자료 생성).
+1. **srt 교차 반영:** `round_map.csv`(기준 컷리스트) 19→26행 정밀화. 모든 하이라이트에 대사 근거 부착.
+2. **dB·자막·화면 3중 재분석 신규 발견:**
+   - 14:07 = 전체 최대 음량(-7.7dB) 찐텐 비명 — 기존 분석 누락분
+   - 29:29 = "열쇠 발견"이 아니라 **엔티티 정면 풀스크린 점프스케어**(-10.5dB, 썸네일 후보 `temp/video-watch/dialog-check/n4_key_2929.jpg`)
+   - 43:18~43:54 = 사망 이벤트 확인(43:47 인벤토리 화면)
+3. **리서치 2건:** `기획_리서치/백룸_시청자층_리서치_2026-07-05.md`
+   - 영화 백룸(A24·케인 파슨스) 5/27 한국 최초 개봉→100만 관객, 6/29 확장판 재개봉 발표. 게임 플레이어 +132%. **지금이 업로드 적기.**
+   - 타깃: 2030 영화 유입층+리미널 스페이스 감성층+로어 팬. 2차(5절): 간접 체험·의미 있는 정적·빈 공간 응시가 몰입 핵심.
+4. **러프컷 기획 v1→v5:** `workspace/outputs/analysis/02_러프컷_편집기획.md` (v5, 56컷)
+   - v2: 영화·로어 연결고리 10비트 승격(인트로 풀버전, 44:25 영화감상 토크 등)
+   - v3: 훅 = 비명 3연타 몽타주 약 20초(29:27/43:29/50:23), 사용자 요청 "10초 이상"
+   - v4: 1막을 '첫 탐험 몰입 시퀀스'로 재구성 — 7:12 "소름 돋는다, 이 커다란 공간에 아무도 없다" 등 탐험 소감 11컷 복원
+   - v5: 토크 구간(01·31·38) 점프컷 분해 — 무음 1.2~4.5초 제거·중복 문장 삭제·잘린 내용 복원("어두운 방에서 혼자", "누가 들어오면 개무섭겠다" 솔로 설정). 기법은 기획서 4b절.
+5. **XML 생성:** `workspace/outputs/premiere_export/백룸_러프컷_v1~v5.xml` — **최신 v5(56컷, 약 20:35, 시퀀스 `02_시퀀스_러프컷v5`)**. `skills/premiere-editing-export` 스킬 사용, pathurl Windows 치환·파싱 검증 완료. 안내: 같은 폴더 `백룸_러프컷_사용방법.md`.
 
-## 편집 환경 전제 (사용자 Premiere CS6 — 영상 무관, 항상 적용)
+## 컷리스트 파일 관계 (헷갈림 방지)
 
-- **mkv 원본은 편집 전에 mp4로 무손실 remux.** CS6가 mkv 미지원 → 미디어 오프라인. `tools/remux_mkv_to_mp4.bat` 사용.
-- **CS6는 XML 오디오를 L/R 링크 모노 2트랙으로 가져옴(정상·해결 불가).** 볼륨만 2회 조정, 재시도 금지.
-- **컷리스트가 기준 입력.** 화면(프레임) 검증으로 컷 경계를 먼저 다듬은 뒤 XML/EDL/러프컷을 생성한다(생성 전 검증). 이 전제들은 `skills/premiere-editing-export/SKILL.md`에도 있음.
+- `workspace/outputs/analysis/round_map.csv` — **분석 기준**(구간·근거·keep/maybe 판단, 26행)
+- `workspace/outputs/analysis/roughcut_cutlist.csv` — **XML 생성용 실행 컷리스트**(v5, 56컷, 라벨=XML 클립명)
+- 수정 순서: 화면/자막 근거 변경 → round_map 갱신 → roughcut_cutlist 반영 → XML 재생성 (헤더 컷 수·총 길이 검산 후)
 
-## 편집 작업 시 반복 체크 (지난 제작 회고에서 정리)
+## 다음 세션 할 일
 
-1. 컷리스트 확정 전에 화면 검증부터. 자막으로 후보만 넓히고 바로 XML 만들지 않는다.
-2. 설명 브리지 컷(대기방·설정창처럼 화면 변화 약한 구간)은 짧게. 컷리스트에 '짧은 브리지'로 표시.
-3. 플레이 컷은 시작-결과-반응을 함께 확인. 결과 후 로비가 길면 압축.
-4. 컷리스트 헤더 컷 수와 실제 행 수를 검산. XML 생성 전 행 수·총 길이 확인.
-5. XML 생성은 최종 기준 컷리스트 확정 후에만. 이미 Premiere 작업 중이면 새 XML보다 수정 지시서 우선.
+1. **사용자 Premiere CS6에서 v5 가져오기 확인** — 확인 전까지 "사용 가능 확정" 표현 금지(Tier-2 App-validated 규칙).
+2. 사용자와 ◇ 선택 컷 취사(참고: ◆만 약 12분, 전체 약 20:35). 줄일 때 ◇리액션→◇개그→◇로어 순, **탐험 소감·영화 연결고리는 최후 보존.**
+3. 제목·썸네일 확정(방향: 영화 백룸 검색 편승, 리서치 문서 4절. 썸네일 후보 n4 엔티티 정면).
+4. 확정 후 필요 시 러프컷 mp4(`make_roughcut.py`) 또는 최종 XML 재생성.
 
-## 환경 주의사항 (샌드박스/도구)
+## 환경·도구 주의 (이번 세션 재확인)
 
-- **Windows→샌드박스 파일 동기화 버그**: Write/Edit로 수정한 파일이 샌드박스 마운트에서 널바이트 섞인 손상 상태로 보일 수 있다(Windows 원본은 정상). 샌드박스에서 실행할 스크립트는 heredoc으로 재구성하거나 Windows 원본 기준.
-- 샌드박스 bash는 호출당 45초 제한 + 호출 간 프로세스 유지 안 됨. 대용량 ffmpeg는 사용자 PC `.bat` 실행 또는 /tmp 변환 후 분할 복사.
-- 사용자 PowerShell은 `.ps1` 차단 → 항상 `.bat`로 제공.
-- XML 생성 후 pathurl의 샌드박스 경로를 Windows 경로로 sed 치환 필요:
-  `s|file://localhost//sessions/<세션>/mnt/|file://localhost/C:/Users/Hugh/Claude/Projects/Building%20WorkFlow/Workspace/|`
-- `make_premiere_xml.py`의 XML 쓰기는 기존 파일 덮어쓰기 거부 — 새 이름으로 생성.
+- **Windows→샌드박스 동기화 버그 실재:** Write로 만든 round_map.csv가 샌드박스에서 11행으로 깨져 보였으나 Windows 원본은 정상(26행). 샌드박스에서 읽을 파일은 heredoc으로 생성, 검증은 Read 도구(Windows 쪽)로.
+- 샌드박스 네트워크: pypi·github만. 전사/모델 다운로드 불가(상세: `reports/whisper_medium_사용법_리서치.md`). srt 도착으로 이번 영상에선 더 이상 불필요.
+- XML pathurl 치환 sed: `s|file://localhost//sessions/<세션>/mnt/|file://localhost/C:/Users/Hugh/Claude/Projects/Building%20WorkFlow/Workspace/|`
+- 검증 프레임: `temp/video-watch/dialog-check/`(14장 추가: n1~n5·s4~s8·b_*), 기존 overview/·reactions/.
+- CS6 오디오 모노 2트랙·`.bat`만 사용 등 편집 환경 전제는 Tier-2 PROJECT_RULES 참조.
 
-## Git/파일 상태
+## 백업 (temp/backups/2026-07-05/)
 
-- `temp/`, `workspace/` 비어 있음. `skills/`, `tools/`(remux 배치·ffmpeg), 규칙·워크플로우 문서 유지.
-- `workspace/`는 의도적 git 미추적(대용량 미디어 이그노어).
+round_map.csv(2회)·01_흐름표·02_기획서(2회)·roughcut_cutlist(3회: v2/v3/v4)·영상_1편_제작_템플릿·PROJECT_RULES·SESSION_HANDOFF(금일분).
 
 ## 다음 세션 시작 프롬프트
 
 ```text
-Tier-1/Tier-2 PROJECT_RULES.md를 읽고 이 SESSION_HANDOFF.md 기준으로 진행해.
-진행 중 영상 없음 — 다음 영상 대기 상태. 도구·문서는 범용으로 정리돼 있다.
-다음 영상이 정해지면 워크플로우대로(새 소재는 1단계, 촬영본 편집은 5→6단계) 진행.
-CS6 전제(mkv→mp4 remux, XML 오디오 L/R 2트랙 정상)와 '생성 전 화면 검증' 원칙 적용.
+Tier-1/Tier-2 PROJECT_RULES.md와 SESSION_HANDOFF.md를 읽고 이어서 진행.
+진행 영상: workspace/inputs/2026-06-30 00-23-03.mp4 (Escape the Backrooms, 82분, 솔로+채팅 방송).
+상태: 러프컷 기획 v5 + 백룸_러프컷_v5.xml(56컷) 생성 완료, Premiere 가져오기 확인 대기.
+사용자 확인 결과 듣고 → ◇ 컷 취사선택 → 제목·썸네일 → 필요 시 XML/러프컷 mp4 재생성.
+길이는 고정 목표 없음(Tier-2 '영상 길이 원칙'). 컷 수정은 round_map → roughcut_cutlist → XML 순서.
 ```
