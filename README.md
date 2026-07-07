@@ -15,6 +15,7 @@
 | 위치 | 내용 |
 |---|---|
 | `PROJECT_RULES.md` | 이 프로젝트의 전역 지침 원본 (유일한 수정 지점) |
+| `문서_인덱스.md` | 현재 기준/현재 작업/참고/대체 문서를 구분하는 단일 진입점 |
 | `CLAUDE.md` / `AGENTS.md` / `GEMINI.md` | 플랫폼별 포인터 — `PROJECT_RULES.md`를 가리키기만 함 |
 | `00_공통_작업원칙.md` | 원본 보호, 파일 생성/삭제, 의도 확인 규칙 (모든 작업의 최상위 안전장치) |
 | `01_유튜브_제작_워크플로우.md` | 제작 7단계: 소재조사 → 기획 → 대본 → 자막 → 영상분석 → 편집자료 → 검수 |
@@ -38,7 +39,9 @@
 
 ## 현재 상태
 
-- 진행 중인 특정 영상 작업 없음 — 작업 상태는 `SESSION_HANDOFF.md` 참고.
+- 진행 중인 작업: 백룸 영상 5단계 기획서 확인. 현재 기준 산출물은 `workspace/outputs/analysis/08_백룸_기획서_대사스파인_2026-07-07.md`.
+- 다음 단일 작업: 기획서가 원본 대사 기반 메시지로 적절한지 확인한 뒤, 승인되면 6단계 화면 검증으로 이동.
+- 구 러프컷 v12 XML/컷리스트는 참조용이며 Premiere 미검증. 기획서 승인 전 편집 재개 금지.
 - 작업용 스킬 4종: `game-trend-research`, `youtube-channel-planning`, `gameplay-video-analysis`, `premiere-editing-export` (구버전 .skill 5종은 `skills/temp_backup/`에 백업, 상세는 `skills/README.md`).
 - 새 영상은 원본을 `workspace/inputs/`에 넣고 워크플로우 1단계(촬영본이면 5단계)부터 시작.
 
