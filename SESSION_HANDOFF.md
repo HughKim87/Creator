@@ -11,6 +11,7 @@
 - 현재 작업: 위 기획서가 원본 대사 기반 메시지로 적절한지 사용자 확인
 - 다음 단계 조건: 사용자 승인 후에만 6단계 화면 검증으로 이동
 - 금지: 승인 전 컷리스트, XML, 러프컷 재생성
+- 파일 정리: 구 리서치와 구 산출물은 `temp/archive/2026-07-08/`에 보관
 
 ## 2. 현재 입력
 
@@ -39,10 +40,10 @@
 
 | 산출물 | 상태 |
 |---|---|
-| `workspace/outputs/premiere_export/백룸_러프컷_v12.xml` | 참조용. Premiere 미검증 |
-| `workspace/outputs/analysis/roughcut_cutlist_v12.csv` | 참조용. 기획서 승인 후 재검토 |
-| `workspace/outputs/analysis/roughcut_cutlist.csv` | 이전 기준 파일. 바로 사용 금지 |
-| `workspace/outputs/analysis/07_v12_컷결정_로그_2026-07-06.md` | v12 판단 근거 참고용 |
+| `temp/archive/2026-07-08/workspace/outputs/premiere_export/백룸_러프컷_v12.xml` | 참조용. Premiere 미검증 |
+| `temp/archive/2026-07-08/workspace/outputs/analysis/roughcut_cutlist_v12.csv` | 참조용. 기획서 승인 후 재검토 |
+| `temp/archive/2026-07-08/workspace/outputs/analysis/roughcut_cutlist.csv` | 이전 기준 파일. 바로 사용 금지 |
+| `temp/archive/2026-07-08/workspace/outputs/analysis/07_v12_컷결정_로그_2026-07-06.md` | v12 판단 근거 참고용 |
 
 ## 5. 다음 세션 시작
 
