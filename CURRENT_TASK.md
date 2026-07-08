@@ -16,7 +16,8 @@
 
 - `PROJECT_RULES.md`
 - `SESSION_HANDOFF.md`
-- `문서_인덱스.md`
+- `docs/INDEX.md`
+- `docs/AGENT_MAINTENANCE.md`
 - `README.md`
 - `01_유튜브_제작_워크플로우.md`
 - `skills/README.md`

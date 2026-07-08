@@ -1,0 +1,13 @@
+.git/
+.agents/
+.codex/
+workspace/
+temp/
+tools/ffmpeg/
+*.mp4
+*.mkv
+*.mov
+*.wav
+*.mp3
+*.pyc
+__pycache__/

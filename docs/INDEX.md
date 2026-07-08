@@ -1,7 +1,7 @@
 # 문서 인덱스 — 김실버유튜브
 
 - 최종 갱신: 2026-07-08
-- 목적: 세션 시작 시 필요한 문서만 고르는 단일 진입점.
+- 목적: 세션 시작 시 필요한 문서만 고르는 `docs/INDEX.md` 표준 파일 맵.
 - 현재 상태: `workspace/`와 기존 `temp/` 내용은 삭제됨. 과거 원본·산출물·아카이브를 현재 기준으로 삼지 않는다.
 
 ## 0. 기본 로드
@@ -10,7 +10,7 @@
 
 1. `PROJECT_RULES.md`
 2. `SESSION_HANDOFF.md`
-3. `문서_인덱스.md`
+3. `docs/INDEX.md`
 
 ## 1. 현재 작업
 
@@ -42,9 +42,14 @@
 | 문서 | 상태 | 역할 | 읽는 조건 |
 |---|---|---|---|
 | `PROJECT_RULES.md` | 기준 | 전역 규칙 | 모든 세션 시작 |
+| `AGENTS.md` | 기준 | Codex 자동 인식 포인터 | Codex 진입점 확인 시 |
+| `CLAUDE.md` | 기준 | Claude Code 자동 인식 포인터와 규칙 import | Claude 진입점 확인 시 |
+| `GEMINI.md` | 기준 | Gemini CLI context 포인터와 규칙 import | Gemini 진입점 확인 시 |
 | `SESSION_HANDOFF.md` | 기준 | 현재 세션 상태 | 모든 세션 시작 |
-| `문서_인덱스.md` | 기준 | 문서 선택 기준 | 모든 세션 시작 |
+| `docs/INDEX.md` | 기준 | 문서 선택 기준 | 모든 세션 시작 |
 | `CURRENT_TASK.md` | 현재작업 | 현재 작업 목표, 입력, 출력, 금지 범위, 검증 기준 | 현재 작업 이어가기 |
+| `docs/AGENT_MAINTENANCE.md` | 기준 | AI 에이전트 표준 진입점, 문서 역할, 유지관리 검증 기준 | 프로젝트 구조·문서 체계 수정 시 |
+| `.geminiignore` | 기준 | Gemini CLI가 불필요한 대형/임시 파일을 읽지 않게 하는 제외 목록 | Gemini 컨텍스트 관리 확인 시 |
 | `00_공통_작업원칙.md` | 기준 | 원본 보호, 파일 생성/삭제, 의도 확인 | 작업 원칙 확인 필요 시 |
 | `01_유튜브_제작_워크플로우.md` | 기준 | 제작 단계와 단계별 완료 기준 | 전체 워크플로우 확인 시 |
 | `기획_리서치/기획단계_규격_2026-07-06.md` | 기준 | 5단계 대사 기반 기획 규격 | 5단계 기획 작업 시 |
@@ -72,6 +77,7 @@
 | 스킬 상태 확인 | `skills/README.md`, 필요한 `skills/*/SKILL.md` |
 | 도구 상태 확인 | `tools/README.md` |
 | 현재 작업 이어가기 | `CURRENT_TASK.md` |
+| 프로젝트 구조·문서 체계 수정 | `docs/AGENT_MAINTENANCE.md` |
 | 새 원본 영상 작업 시작 | 먼저 `workspace/inputs/`를 만들고 원본을 배치한 뒤 해당 단계 문서만 로드 |
 
 ## 6. AI 에이전트 로드 맵
@@ -80,13 +86,14 @@
 
 | 단계 | 판단 질문 | 읽을 문서 |
 |---:|---|---|
-| 1 | 이 프로젝트 규칙과 현재 상태는 무엇인가 | `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, `문서_인덱스.md` |
+| 1 | 이 프로젝트 규칙과 현재 상태는 무엇인가 | `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, `docs/INDEX.md` |
 | 2 | 이어지는 현재 작업이 있는가 | `CURRENT_TASK.md` |
 | 3 | 전체 단계 판단이 필요한가 | `01_유튜브_제작_워크플로우.md` |
 | 4 | 특정 단계 작업인가 | 해당 단계 기준 문서 또는 `skills/*/SKILL.md` |
 | 5 | 도구 실행이 필요한가 | `tools/README.md`, 해당 도구 도움말 |
-| 6 | 배경 판단이 필요한가 | 상태가 `참고`인 문서 |
-| 7 | 과거 이력 확인이 필요한가 | Git 이력. 폐기 문서는 현재 기준으로 읽지 않음 |
+| 6 | 프로젝트 구조나 문서 체계를 바꾸는가 | `docs/AGENT_MAINTENANCE.md` |
+| 7 | 배경 판단이 필요한가 | 상태가 `참고`인 문서 |
+| 8 | 과거 이력 확인이 필요한가 | Git 이력. 폐기 문서는 현재 기준으로 읽지 않음 |
 
 로드 최적화 원칙:
 
@@ -135,11 +142,12 @@
 
 | 사건 | 확인할 문서 |
 |---|---|
-| 커밋 완료 | `SESSION_HANDOFF.md`, `CURRENT_TASK.md`, `문서_인덱스.md` |
-| 보고서 삭제 또는 보관 | `README.md`, `문서_인덱스.md`, `SESSION_HANDOFF.md` |
-| 새 원본 제공 | `README.md`, `문서_인덱스.md`, `CURRENT_TASK.md`, `workspace/active/current_source.lock.md` |
+| 커밋 완료 | `SESSION_HANDOFF.md`, `CURRENT_TASK.md`, `docs/INDEX.md` |
+| 보고서 삭제 또는 보관 | `README.md`, `docs/INDEX.md`, `SESSION_HANDOFF.md` |
+| 새 원본 제공 | `README.md`, `docs/INDEX.md`, `CURRENT_TASK.md`, `workspace/active/current_source.lock.md` |
 | 현재 작업 완료 | `CURRENT_TASK.md`, `SESSION_HANDOFF.md` |
-| 스킬 추가·삭제·상태 변경 | `skills/README.md`, `문서_인덱스.md`, `01_유튜브_제작_워크플로우.md` |
+| 스킬 추가·삭제·상태 변경 | `skills/README.md`, `docs/INDEX.md`, `01_유튜브_제작_워크플로우.md` |
+| 프로젝트 구조·문서 체계 변경 | `README.md`, `PROJECT_RULES.md`, `docs/INDEX.md`, `docs/AGENT_MAINTENANCE.md`, `tools/doccheck/check_docs.py` |
 
 Git으로 바로 확인할 수 있는 커밋 SHA와 작업트리 상태는 문서에 고정하지 않는다.
 

@@ -31,16 +31,21 @@ SKIP_PREFIXES = {
 
 ROOT_DOCS = [
     "PROJECT_RULES.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "GEMINI.md",
     "SESSION_HANDOFF.md",
-    "문서_인덱스.md",
+    "docs/INDEX.md",
+    "docs/AGENT_MAINTENANCE.md",
     "README.md",
     "CURRENT_TASK.md",
+    ".geminiignore",
 ]
 
 ALWAYS_LOAD_DOCS = [
     "PROJECT_RULES.md",
     "SESSION_HANDOFF.md",
-    "문서_인덱스.md",
+    "docs/INDEX.md",
 ]
 
 STALE_PATTERNS = [
@@ -57,7 +62,27 @@ STALE_PATTERNS = [
 OLD_PATH_PATTERNS = [
     ("/sessions/", "과거 샌드박스 절대경로를 제거한다."),
     ("workspace/inputs/2026-06-30", "과거 백룸 원본 파일명을 제거한다."),
+    ("문서_인덱스.md", "문서 라우터는 표준 경로 `docs/INDEX.md`를 사용한다."),
 ]
+
+REQUIRED_PROJECT_RULES_PHRASES = [
+    "If the same objective fails 3 times in a row (fix → verify → fail), stop.",
+    "the last confirmed cause, the risk of continuing, and what to re-research",
+    "This outranks task persistence.",
+    "## Local Additions — 김실버유튜브",
+]
+
+POINTER_FILES = {
+    "AGENTS.md": ["PROJECT_RULES.md"],
+    "CLAUDE.md": ["@PROJECT_RULES.md"],
+    "GEMINI.md": ["@PROJECT_RULES.md"],
+}
+
+POINTER_FORBIDDEN_PATTERNS = {
+    "SESSION_HANDOFF.md": "포인터 파일에는 상태 문서를 직접 import하거나 규칙처럼 넣지 않는다.",
+    "docs/INDEX.md": "포인터 파일에는 라우터를 직접 import하지 않는다. PROJECT_RULES.md가 읽기 경로를 가진다.",
+    "Imported Claude Cowork": "포인터 파일에는 도메인 규칙이나 가져온 지침을 넣지 않는다.",
+}
 
 SKILL_REQUIRED_PATTERNS = {
     "입력": re.compile(r"입력"),
@@ -111,6 +136,8 @@ def allowed_pattern_definition(path: str, line: str) -> bool:
         return True
     if path == "PROJECT_RULES.md" and "rg -n" in line:
         return True
+    if path == "docs/AGENT_MAINTENANCE.md":
+        return True
     return False
 
 
@@ -147,13 +174,41 @@ def check_always_load_size(root: Path, findings: list[Finding]) -> None:
 
 
 def check_index_links(root: Path, findings: list[Finding]) -> None:
-    index = root / "문서_인덱스.md"
+    index = root / "docs" / "INDEX.md"
     if not index.exists():
         return
     content = read_text(index)
     for doc in ROOT_DOCS:
         if doc not in content:
-            findings.append(Finding("ERROR", "문서_인덱스.md", None, f"`{doc}` 읽는 조건이 인덱스에 없다."))
+            findings.append(Finding("ERROR", "docs/INDEX.md", None, f"`{doc}` 읽는 조건이 인덱스에 없다."))
+
+
+def check_agent_entrypoints(root: Path, findings: list[Finding]) -> None:
+    rules = root / "PROJECT_RULES.md"
+    if rules.exists():
+        content = read_text(rules)
+        for phrase in REQUIRED_PROJECT_RULES_PHRASES:
+            if phrase not in content:
+                findings.append(Finding("ERROR", "PROJECT_RULES.md", None, f"최상위 Stop Rule 원문 또는 로컬 추가 기준 누락: {phrase}"))
+
+    for filename, required_phrases in POINTER_FILES.items():
+        path = root / filename
+        if not path.exists():
+            continue
+        content = read_text(path)
+        for phrase in required_phrases:
+            if phrase not in content:
+                findings.append(Finding("ERROR", filename, None, f"포인터 파일에 `{phrase}` 연결이 없다."))
+        for phrase, reason in POINTER_FORBIDDEN_PATTERNS.items():
+            if phrase in content:
+                findings.append(Finding("ERROR", filename, None, reason))
+
+    gemini_ignore = root / ".geminiignore"
+    if gemini_ignore.exists():
+        content = read_text(gemini_ignore)
+        for phrase in ["workspace/", "temp/", "tools/ffmpeg/", ".git/"]:
+            if phrase not in content:
+                findings.append(Finding("ERROR", ".geminiignore", None, f"Gemini 제외 목록에 `{phrase}`가 없다."))
 
 
 def check_skills(root: Path, findings: list[Finding]) -> None:
@@ -183,6 +238,7 @@ def run(root: Path) -> int:
     check_stale_text(root, findings)
     check_always_load_size(root, findings)
     check_index_links(root, findings)
+    check_agent_entrypoints(root, findings)
     check_skills(root, findings)
 
     errors = [item for item in findings if item.level == "ERROR"]
