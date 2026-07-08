@@ -12,6 +12,8 @@
 | `tools/ffmpeg/bin/ffprobe.exe` | 존재 |
 | `tools/ffmpeg/bin/ffplay.exe` | 존재 |
 | `tools/remux_mkv_to_mp4.bat` | 존재 |
+| `tools/run_doccheck.bat` | 존재 |
+| `tools/doccheck/check_docs.py` | 존재 |
 | `tools/synccheck/*.py` | 존재 |
 
 ## FFmpeg
@@ -42,6 +44,24 @@ OBS 녹화본(mkv)을 Premiere CS6에서 쓸 수 있게 mp4로 무손실 변환�
 - 결과: 원본 옆에 `<원본이름>_remux.mp4` 생성
 - 같은 이름의 결과 파일이 있으면 건너뜀
 - 내부적으로 `tools/ffmpeg/bin/ffmpeg.exe` 사용
+
+## doccheck
+
+문서와 스킬 정합성을 검사하는 도구다.
+
+```bat
+tools\run_doccheck.bat
+```
+
+검사 항목:
+
+- 필수 루트 문서 존재
+- 오래된 상태 문구와 동적 커밋 상태 고정
+- 과거 세션 절대경로와 과거 원본 파일명
+- 기본 로드 문서 과대화 경고
+- `skills/*/SKILL.md`의 입력, 출력, 게이트, 중단 조건, AI 확정 금지, 요청 예시
+
+문서나 스킬을 수정한 뒤 최종 답변 전에 실행한다.
 
 ## 검증 상태
 
