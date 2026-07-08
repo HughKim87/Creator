@@ -229,14 +229,28 @@ C:\Users\Hugh\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\py
 
 권장 위치:
 
-- `workspace/outputs/analysis/09_영상명_6단계_화면검증_후보지도_YYYY-MM-DD.md`
-- `workspace/outputs/analysis/09_영상명_6단계_후보지도_YYYY-MM-DD.csv`
+- `workspace/outputs/06_analysis/영상명_6단계_화면검증_후보지도_YYYY-MM-DD.md`
+- `workspace/outputs/06_analysis/영상명_6단계_후보지도_YYYY-MM-DD.csv`
 
 임시 프레임은 `temp/video-watch/구간명/`에 둔다. 최종 판단은 Markdown/CSV에 남긴다.
 
 ## 출력 형식
 
 ```markdown
+## 산출물 상태
+
+- 상태: 산출물
+- 생성일:
+- 생성 목적: 6단계 영상 분석
+- 기준 입력: 5단계 기획서
+- 사용한 원본:
+- 사용한 기준 문서:
+- 생성 도구:
+- 검증 수준: Structure-validated 또는 Tool-validated
+- 다음 단계 사용 가능 여부: 사용자 대표 후보 승인 후 가능
+- 사용자 승인 필요: 예
+- 사용 금지 조건: 5단계 기획서가 바뀐 경우
+
 ## 기준 입력
 
 - 원본 영상:
@@ -340,3 +354,26 @@ C:\Users\Hugh\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\py
 - 같은 후보가 두 번 이상 "포인트 누락" 또는 "필요 없는 부분 과다"로 실패한다.
 
 이 경우 계속 후보를 늘리지 말고, 원본 상태, 기획서 비트, 화면 검증 방식 중 무엇이 문제인지 먼저 확인한다.
+
+## AI가 확정하지 말 것
+
+- 최종 대표 후보
+- 컷 경계
+- 컷리스트
+- XML, EDL, 러프컷
+- 영상의 최종 재미 판단
+- 화면 검증 없이 대사만으로 후보 확정
+
+## 좋은 요청 예시
+
+```text
+5단계 기획서의 대사 스파인 기준으로 6단계 화면 검증만 해줘.
+각 비트 주변 화면/자막/오디오 근거를 분리하고, 대표/예비/제외 후보 초안만 만들어줘.
+컷리스트, XML, 러프컷은 만들지 마.
+```
+
+```text
+B03~B07 비트만 먼저 검증해줘.
+각 후보의 사건, 결과, 반응이 화면상 이어지는지 확인하고,
+화면 근거가 약한 후보는 재검증으로 표시해줘.
+```
