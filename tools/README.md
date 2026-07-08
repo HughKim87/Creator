@@ -51,3 +51,19 @@ OBS 녹화본(mkv)을 Premiere CS6에서 쓸 수 있게 mp4로 무손실 변환�
 2. `ffprobe.exe`로 원본 길이 확인
 3. `video-watch`로 짧은 구간 프레임 추출
 4. 필요 시 `synccheck`로 컷 경계 검증
+
+## synccheck
+
+`tools/synccheck/`의 스크립트는 새 원본 경로와 컷리스트를 명령행 인자로 받아 실행한다. 과거 세션 절대경로나 특정 백룸 원본 파일명은 기준으로 삼지 않는다.
+
+예시:
+
+```powershell
+python tools\synccheck\vadcheck.py "workspace\inputs\원본.mp4" "workspace\inputs\원본.srt" --clip "B03:00:12:10-00:13:00"
+python tools\synccheck\align.py "workspace\inputs\원본.mp4" "workspace\inputs\원본.srt" --clip "B03:00:12:10-00:13:00"
+python tools\synccheck\full_scan.py "workspace\inputs\원본.mp4" "workspace\outputs\07_edit_export\cutlist.csv"
+python tools\synccheck\build_v9.py "workspace\outputs\07_edit_export\cutlist.csv" "workspace\outputs\07_edit_export\cutlist_adjusted.csv" --start 3=00:12:09.5
+```
+
+- `full_scan.py`는 제안만 출력하고 파일을 수정하지 않는다.
+- `build_v9.py`는 명시한 경계 수정만 반영해 새 CSV를 만든다. 기존 CSV는 덮어쓰지 않는다.

@@ -1,47 +1,133 @@
-import subprocess, sys, numpy as np, webrtcvad
-sys.path.insert(0,'/sessions/wonderful-admiring-galileo/mnt/outputs/synccheck')
+#!/usr/bin/env python3
+"""Check whether selected cut boundaries split speech.
+
+Usage:
+  python tools/synccheck/vadcheck.py VIDEO SRT --clip "NAME:START-END"
+"""
+import argparse
+import subprocess
+from pathlib import Path
+
 from srt_slice import parse
-VID="/sessions/wonderful-admiring-galileo/mnt/김실버유튜브/workspace/inputs/2026-06-30 00-23-03.mp4"
-SRT="/sessions/wonderful-admiring-galileo/mnt/김실버유튜브/workspace/inputs/2026-06-30 00-23-03.srt"
-blocks=parse(SRT); SR=16000; FR=0.03  # 30ms frames
 
-def speech_segs(lo,dur,aggr=3):
-    raw=subprocess.run(["ffmpeg","-v","error","-ss",str(lo),"-t",str(dur),"-i",VID,
-        "-vn","-ac","1","-ar",str(SR),"-f","s16le","-"],capture_output=True).stdout
-    vad=webrtcvad.Vad(aggr); n=int(SR*FR)*2
-    flags=[vad.is_speech(raw[i:i+n],SR) for i in range(0,len(raw)-n,n)]
-    # merge into segments (gap tolerance 0.3s, min dur 0.2s)
-    segs=[]; cur=None; gap=0
-    for i,f in enumerate(flags):
-        t=lo+i*FR
-        if f:
-            if cur is None: cur=[t,t+FR]
-            else: cur[1]=t+FR
-            gap=0
+
+SR = 16000
+FRAME = 0.03
+
+
+def parse_time(value):
+    parts = [float(p) for p in value.strip().split(":")]
+    if len(parts) == 1:
+        return parts[0]
+    if len(parts) == 2:
+        return parts[0] * 60 + parts[1]
+    if len(parts) == 3:
+        return parts[0] * 3600 + parts[1] * 60 + parts[2]
+    raise ValueError(f"Bad time: {value}")
+
+
+def parse_clip(value):
+    name, span = value.split(":", 1)
+    start, end = span.split("-", 1)
+    return name.strip(), parse_time(start), parse_time(end)
+
+
+def speech_segments(video, lo, dur, ffmpeg, aggressiveness=3):
+    try:
+        import webrtcvad
+    except ModuleNotFoundError as exc:
+        raise SystemExit("Missing dependency: install webrtcvad or webrtcvad-wheels") from exc
+
+    raw = subprocess.run(
+        [
+            ffmpeg,
+            "-v",
+            "error",
+            "-ss",
+            str(max(lo, 0)),
+            "-t",
+            str(dur),
+            "-i",
+            str(video),
+            "-vn",
+            "-ac",
+            "1",
+            "-ar",
+            str(SR),
+            "-f",
+            "s16le",
+            "-",
+        ],
+        capture_output=True,
+        check=True,
+    ).stdout
+    vad = webrtcvad.Vad(aggressiveness)
+    frame_bytes = int(SR * FRAME) * 2
+    flags = [
+        vad.is_speech(raw[i : i + frame_bytes], SR)
+        for i in range(0, len(raw) - frame_bytes, frame_bytes)
+    ]
+    out = []
+    cur = None
+    gap = 0
+    for i, flag in enumerate(flags):
+        t = max(lo, 0) + i * FRAME
+        if flag:
+            if cur is None:
+                cur = [t, t + FRAME]
+            else:
+                cur[1] = t + FRAME
+            gap = 0
         elif cur:
-            gap+=1
-            if gap>10: segs.append(cur); cur=None
-    if cur: segs.append(cur)
-    return [s for s in segs if s[1]-s[0]>=0.2]
+            gap += 1
+            if gap > 10:
+                out.append(cur)
+                cur = None
+    if cur:
+        out.append(cur)
+    return [seg for seg in out if seg[1] - seg[0] >= 0.2]
 
-def report(name, clip_lo, clip_hi):
-    print(f"== {name} (컷 {clip_lo}~{clip_hi}) ==")
-    segs=speech_segs(clip_lo-6,(clip_hi-clip_lo)+12)
-    print(" VAD 음성구간:", "; ".join(f"{a:.1f}-{b:.1f}" for a,b in segs))
-    bl=[(a,c,t) for a,c,t in blocks if c>=clip_lo-6 and a<=clip_hi+6]
-    for a,c,t in bl:
-        # nearest VAD onset to block start
-        cand=[s for s in segs if abs(s[0]-a)<3]
-        d=f"{min(cand,key=lambda s:abs(s[0]-a))[0]-a:+.2f}s" if cand else "  none<3s"
-        print(f"  srt[{a:8.2f}-{c:8.2f}] vs 실제발화시작 {d} | {t[:30]}")
-    # speech crossing cut boundaries?
-    for edge,label in [(clip_lo,'컷 시작'),(clip_hi,'컷 끝')]:
-        cross=[s for s in segs if s[0]<edge<s[1]]
+
+def report(video, blocks, name, clip_lo, clip_hi, ffmpeg):
+    print(f"== {name} ({clip_lo:.2f}~{clip_hi:.2f}) ==")
+    lo = max(clip_lo - 6, 0)
+    dur = (clip_hi - clip_lo) + 12
+    segs = speech_segments(video, lo, dur, ffmpeg)
+    print(" VAD speech:", "; ".join(f"{a:.1f}-{b:.1f}" for a, b in segs) or "none")
+
+    for start, end, text in blocks:
+        if end < clip_lo - 6 or start > clip_hi + 6:
+            continue
+        near = [seg for seg in segs if abs(seg[0] - start) < 3]
+        delta = f"{min(near, key=lambda seg: abs(seg[0] - start))[0] - start:+.2f}s" if near else "none<3s"
+        print(f"  srt[{start:8.2f}-{end:8.2f}] vs speech_start {delta} | {text[:50]}")
+
+    for edge, label in [(clip_lo, "START"), (clip_hi, "END")]:
+        cross = [seg for seg in segs if seg[0] < edge < seg[1]]
         if cross:
-            s=cross[0]; print(f"  ⚠ {label} {edge}s가 발화 중간을 자름 (발화 {s[0]:.1f}~{s[1]:.1f})")
+            seg = cross[0]
+            print(f"  WARN {label} {edge:.2f}s splits speech ({seg[0]:.1f}~{seg[1]:.1f})")
         else:
-            print(f"  ✓ {label} {edge}s: 발화 경계 침범 없음")
+            print(f"  OK {label} {edge:.2f}s does not split speech")
 
-report("CLIP01a", 34.3, 53.3)
-report("CLIP26", 2597.5, 2634)
-report("CLIP42", 4581.9, 4610.2)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("video", type=Path)
+    parser.add_argument("srt", type=Path)
+    parser.add_argument("--clip", action="append", required=True, help="NAME:START-END")
+    parser.add_argument("--ffmpeg", default="ffmpeg")
+    args = parser.parse_args()
+
+    if not args.video.exists():
+        raise SystemExit(f"Video not found: {args.video}")
+    if not args.srt.exists():
+        raise SystemExit(f"SRT not found: {args.srt}")
+
+    blocks = parse(str(args.srt))
+    for clip in args.clip:
+        report(args.video, blocks, *parse_clip(clip), args.ffmpeg)
+
+
+if __name__ == "__main__":
+    main()

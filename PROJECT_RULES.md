@@ -60,6 +60,9 @@ SESSION_HANDOFF.md
 - 구 `workspace/outputs/` 산출물은 `문서_인덱스.md`에서 명시한 경우에만 읽는다.
 - 워크플로우는 스킬의 세부 절차를 반복하지 않고, 스킬은 전체 워크플로우를 반복하지 않는다.
 - 여러 문서에 반복되는 규칙은 공통 기준 문서 하나로 분리한다.
+- 커밋 SHA, `git status`, 최근 변경 여부처럼 Git으로 확인 가능한 동적 상태는 문서에 고정하지 않는다.
+- 커밋, 보고서 삭제, 현재 작업 완료, 원본 추가처럼 상태가 바뀌는 작업 후에는 `README.md`, `SESSION_HANDOFF.md`, `문서_인덱스.md`, `CURRENT_TASK.md`의 상태 문구를 함께 점검한다.
+- 완료된 `CURRENT_TASK.md`는 작업 기록 저장소로 늘리지 않고, 새 원본 대기 또는 다음 실제 작업만 남긴다.
 
 ## 6. 파일 관리
 
@@ -129,3 +132,11 @@ SESSION_HANDOFF.md
 - 문서나 스킬 수정은 Git 이력으로만 관리한다.
 - 별도 사본 파일은 만들지 않는다.
 - 변경 확인이 필요하면 Git 상태와 diff를 확인한다.
+- 문서 정합성 확인에는 최소한 아래 검색을 사용한다.
+
+```powershell
+git status --short
+rg -n "최근 커밋|커밋 필요|보강 필요|정리 필요|복구되어 있다|현재는 보존" -S . --glob "!PROJECT_RULES.md"
+rg -n "workspace/inputs/2026-06-30|/sessions/" -S . --glob "!PROJECT_RULES.md"
+git diff --check
+```
