@@ -73,16 +73,42 @@ REQUIRED_PROJECT_RULES_PHRASES = [
 ]
 
 POINTER_FILES = {
-    "AGENTS.md": ["PROJECT_RULES.md"],
-    "CLAUDE.md": ["@PROJECT_RULES.md"],
-    "GEMINI.md": ["@PROJECT_RULES.md"],
+    "AGENTS.md": [
+        "Mandatory PROJECT_RULES Load Gate",
+        "read `PROJECT_RULES.md`",
+        "first line to the last line",
+        "Do not rely on memory, summaries",
+    ],
+    "CLAUDE.md": [
+        "Mandatory PROJECT_RULES Load Gate",
+        "@PROJECT_RULES.md",
+        "first line to the last line",
+        "Do not rely on memory, summaries",
+    ],
+    "GEMINI.md": [
+        "Mandatory PROJECT_RULES Load Gate",
+        "@PROJECT_RULES.md",
+        "first line to the last line",
+        "Do not rely on memory, summaries",
+    ],
 }
 
 POINTER_FORBIDDEN_PATTERNS = {
-    "SESSION_HANDOFF.md": "포인터 파일에는 상태 문서를 직접 import하거나 규칙처럼 넣지 않는다.",
-    "docs/INDEX.md": "포인터 파일에는 라우터를 직접 import하지 않는다. PROJECT_RULES.md가 읽기 경로를 가진다.",
+    "@SESSION_HANDOFF.md": "포인터 파일에는 상태 문서를 직접 import하거나 규칙처럼 넣지 않는다.",
+    "@docs/INDEX.md": "포인터 파일에는 라우터를 직접 import하지 않는다. PROJECT_RULES.md가 읽기 경로를 가진다.",
     "Imported Claude Cowork": "포인터 파일에는 도메인 규칙이나 가져온 지침을 넣지 않는다.",
 }
+
+MAINTENANCE_REQUIRED_PHRASES = [
+    "## 7. 구조적 문제",
+    "## 8. 방법별 점수",
+    "## 9. 조합 전략",
+    "Mandatory PROJECT_RULES Load Gate",
+    "Context Bloat",
+    "28.64%",
+    "20% 이상",
+    "https://developers.openai.com/codex/guides/agents-md",
+]
 
 SKILL_REQUIRED_PATTERNS = {
     "입력": re.compile(r"입력"),
@@ -209,6 +235,13 @@ def check_agent_entrypoints(root: Path, findings: list[Finding]) -> None:
         for phrase in ["workspace/", "temp/", "tools/ffmpeg/", ".git/"]:
             if phrase not in content:
                 findings.append(Finding("ERROR", ".geminiignore", None, f"Gemini 제외 목록에 `{phrase}`가 없다."))
+
+    maintenance = root / "docs" / "AGENT_MAINTENANCE.md"
+    if maintenance.exists():
+        content = read_text(maintenance)
+        for phrase in MAINTENANCE_REQUIRED_PHRASES:
+            if phrase not in content:
+                findings.append(Finding("ERROR", "docs/AGENT_MAINTENANCE.md", None, f"에이전트 유지관리 기준 누락: {phrase}"))
 
 
 def check_skills(root: Path, findings: list[Finding]) -> None:
