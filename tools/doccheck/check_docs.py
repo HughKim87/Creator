@@ -34,10 +34,10 @@ SIZE_LIMITS = {
     "GEMINI.md": 12,
     "PROJECT_BOOTSTRAP.md": 60,
     "docs/INDEX.md": 60,
-    "PROJECT_RULES.md": 180,
+    "PROJECT_RULES.md": 160,
     "docs/AGENT_MAINTENANCE.md": 60,
     "skills/SKILL_CONTRACT.md": 80,
-    "SESSION_HANDOFF.md": 70,
+    "SESSION_HANDOFF.md": 60,
     "CURRENT_TASK.md": 50,
 }
 
@@ -49,6 +49,8 @@ STALE_PATTERNS = [
     ("28.64%", "리서치 수치를 운영 검사 기준으로 고정하지 않는다."),
     ("\uae40\uc2e4\ubc84", "프레임워크 문서에는 작업별 고유명사를 고정하지 않는다."),
     ("\ubc31\ub8f8", "프레임워크 문서에는 원본별 고유명사를 고정하지 않는다."),
+    ("file:///", "문서 참조에는 절대 file 링크를 쓰지 않는다."),
+    ("C:\\Users\\Hugh\\.cache\\codex-runtimes", "특정 사용자 홈의 Python 실행 경로를 고정하지 않는다."),
 ]
 
 FORBIDDEN_ENTRYPOINTS = ["@PROJECT_RULES.md", "@SESSION_HANDOFF.md", "@docs/INDEX.md"]

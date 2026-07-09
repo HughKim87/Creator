@@ -30,7 +30,7 @@ description: |
 - 6단계 검증 브리프
 
 기획서가 없거나 G1/G2/G3/G4 게이트를 통과하지 않았으면 멈추고, 먼저
-`기획_리서치/기획단계_규격_2026-07-06.md`에 따라 5단계를 수행한다.
+`dialogue-based-planning`과 `기획_리서치/기획단계_규격_2026-07-06.md`에 따라 5단계를 수행한다.
 
 ## 핵심 원칙
 
@@ -114,7 +114,7 @@ tools\ffmpeg\bin\ffmpeg.exe -i "원본.mkv" -af "astats=metadata=1:reset=1,ameta
 `video-watch`로 후보 구간만 본다.
 
 ```powershell
-C:\Users\Hugh\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe `
+<python> `
   skills\video-watch\scripts\watch.py "원본.mkv" `
   --no-whisper --start 00:07:00 --end 00:11:10 `
   --max-frames 16 --resolution 1024 `
@@ -124,7 +124,7 @@ C:\Users\Hugh\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\py
 큰 구간에서 사건·반응 경계가 거칠면 지정 시각 프레임만 추가로 뽑는다.
 
 ```powershell
-C:\Users\Hugh\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe `
+<python> `
   skills\video-watch\scripts\watch.py "원본.mkv" `
   --no-whisper --detail transcript `
   --timestamps "00:10:35,00:10:45,00:10:58,00:11:05" `
@@ -141,6 +141,17 @@ C:\Users\Hugh\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\py
 | `event` | 화면에서 실제 사건이 보이는가 |
 | `reaction` | 대사·플레이 반응이 이어지는가 |
 | `result` | 사망, 성공, 이동, 규칙 발견 같은 결과가 보이는가 |
+
+### 3-1. synccheck 조건부 사용
+
+`tools/synccheck`는 모든 후보에 쓰지 않는다. 아래 상황에서만 보조 검증으로 사용한다.
+
+- 자막 타임코드와 실제 발화가 어긋난다.
+- 후보 시작/끝이 말 중간을 자를 위험이 있다.
+- 사건, 결과, 반응 경계가 화면만으로 불명확하다.
+- 7B 컷 경계 검증으로 넘길 조정 근거가 필요하다.
+
+synccheck 결과는 제안 근거일 뿐, 대표 후보나 컷 경계를 자동 확정하지 않는다.
 
 ### 4. 후보 판정
 

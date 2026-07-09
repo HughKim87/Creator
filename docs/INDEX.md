@@ -27,7 +27,7 @@
 | 규칙/안전/구조 변경 | `PROJECT_RULES.md`, `docs/AGENT_MAINTENANCE.md` |
 | 전체 제작 단계 판단 | `01_유튜브_제작_워크플로우.md` |
 | 작업 원칙 확인 | `PROJECT_RULES.md` |
-| 5단계 기획 | `기획_리서치/기획단계_규격_2026-07-06.md` |
+| 5단계 기획 | `skills/dialogue-based-planning/SKILL.md`, `기획_리서치/기획단계_규격_2026-07-06.md` |
 | 스킬 작업 | `skills/README.md`, `skills/SKILL_CONTRACT.md`, 필요한 `skills/*/SKILL.md` |
 | 도구 작업 | `tools/README.md`, 필요한 도구 도움말 |
 | 과거 운영 진단 배경 | `기획_리서치/프로젝트_운영문제_진단_및_개선안_2026-07-07.md` |

@@ -32,9 +32,8 @@
 ## Python
 
 - 프로젝트 내부에 별도 Python 배포판은 포함하지 않았다.
-- 2026-07-02 검증에 사용했던 실행 파일:
-  - `C:\Users\Hugh\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe`
 - 스킬 문서의 `<python>`은 실제 사용 가능한 Python 실행 파일로 바꿔 실행한다.
+- `tools/run_doccheck.bat`는 사용 가능한 Python을 순서대로 찾아 실행한다.
 
 ## remux_mkv_to_mp4.bat
 
