@@ -1,38 +1,46 @@
-# PROJECT_RULES.md — Global Rules (Single Source of Truth)
+# PROJECT_RULES.md — Full Rules (Conditional Source of Truth)
 
-This file is the canonical rule set for this project. Every AI agent
-(Claude, Codex, Gemini, or any other) must read and follow it first.
-`CLAUDE.md`, `AGENTS.md`, and `GEMINI.md` are pointers only; never add rules
-there. Edit this file when the global rules change.
+This file is the full rule source for this project. It is not the default
+startup file.
+
+Every AI agent starts with `PROJECT_BOOTSTRAP.md`, then uses `docs/INDEX.md` to
+decide whether this full rule file is required for the current task.
+
+Read this file from the first line to the last line when the task involves
+rules, safety, deletion, movement, overwrite, commit, external write,
+permissions, repeated failure, verification, backup, document-structure changes,
+or conflicting instructions.
+
+`CLAUDE.md`, `AGENTS.md`, and `GEMINI.md` are entrypoint pointers only; never
+add full rules there. Edit this file when the full project rules change.
 
 ## Project Purpose
 
-This repository is a framework for safely evaluating and adopting AI agent
-tooling: Claude, Codex, Gemini, agent frameworks, MCP servers, and related
-automation.
+This sub-project supports the 김실버 YouTube workflow and the AI-agent operating
+structure around it.
 
+- Startup kernel: `PROJECT_BOOTSTRAP.md`.
 - File map: `docs/INDEX.md`.
 - Session state: `SESSION_HANDOFF.md`. It is a working-state record, not a rule
   source. If it conflicts with this file, this file wins.
 
-## Read Order
+## Conditional Read Order
 
 Every agent, every session:
 
-1. `PROJECT_RULES.md`
-2. `SESSION_HANDOFF.md`
-3. The relevant `Workspace/<project>/README.md` or task-specific instruction
+1. `PROJECT_BOOTSTRAP.md`
+2. `docs/INDEX.md`
+3. only the documents selected by the index and current task
 
-Load other docs just-in-time through `docs/INDEX.md`.
+Read this full `PROJECT_RULES.md` only when `PROJECT_BOOTSTRAP.md` or
+`docs/INDEX.md` selects it, or when the task falls under the trigger conditions
+listed at the top of this file.
 
-## Tier Boundaries
+## Scope Boundaries
 
-This repo has two tiers.
+This project is a Tier-2 workspace under the broader Building WorkFlow
+repository.
 
-- Tier 1, repo root: common work rules, safety, backup, research workflow,
-  verification, skills, and handoff conventions.
-- Tier 2, `Workspace/<project>/`: independent domain projects. Each inherits
-  Tier-1 rules and may add stricter local rules.
 - Conflict rule: Tier 1 wins for security, safety, permissions, and backups.
   Tier 2 wins for domain-specific work methods.
 - File boundary: Tier-1 work must not edit `Workspace/`; Tier-2 work must not
@@ -151,8 +159,9 @@ wait for the user's decision. This outranks task persistence.
 
 ## Local Additions — 김실버유튜브
 
-The rules above are copied from the repo-root `PROJECT_RULES.md` and must not be
-rewritten in this sub-project. Add only stricter or domain-specific rules below.
+The rules above are the full conditional rule source for this sub-project.
+Keep this file focused on durable rules. Keep startup-only instructions in
+`PROJECT_BOOTSTRAP.md`.
 
 ## Local Purpose
 
@@ -162,16 +171,29 @@ rewritten in this sub-project. Add only stricter or domain-specific rules below.
 - Work only from files, docs, skills, tools, and media inside this sub-project
   unless the user explicitly asks otherwise.
 
+## Local Bootstrap Policy
+
+- Standard entrypoints load `PROJECT_BOOTSTRAP.md` first to keep the startup
+  context small.
+- `PROJECT_BOOTSTRAP.md` is a local loader and safety kernel. It does not replace
+  this full rule source.
+- Read this full `PROJECT_RULES.md` when the bootstrap trigger conditions apply:
+  rules, structure, safety, delete/move/overwrite, commit, external write,
+  permission, repeated failure, verification, backup, or conflict decisions.
+- If this file is selected by the bootstrap or `docs/INDEX.md`, read it to the
+  end before acting.
+
 ## Local Read Order
 
-After this file, read only what the task needs:
+After the bootstrap and router, read only what the task needs:
 
-1. `SESSION_HANDOFF.md`
-2. `docs/INDEX.md`
+1. `docs/INDEX.md`
+2. `SESSION_HANDOFF.md` when continuing current work or checking handoff state
 3. `CURRENT_TASK.md` when continuing current work
-4. `docs/AGENT_MAINTENANCE.md` only for project structure or documentation-system changes
-5. `01_유튜브_제작_워크플로우.md` only for workflow-stage decisions
-6. The required stage document or `skills/*/SKILL.md`
+4. Full `PROJECT_RULES.md` when a bootstrap trigger condition applies
+5. `docs/AGENT_MAINTENANCE.md` only for project structure or documentation-system changes
+6. `01_유튜브_제작_워크플로우.md` only for workflow-stage decisions
+7. The required stage document or `skills/*/SKILL.md`
 
 Selected instruction documents must be read to the end. Long reports and
 reference docs are not default-load documents.
@@ -189,6 +211,7 @@ reference docs are not default-load documents.
 ## Local Document Roles
 
 - `README.md`: entry point.
+- `PROJECT_BOOTSTRAP.md`: short startup loader and safety kernel.
 - `PROJECT_RULES.md`: root rules plus local additions.
 - `docs/INDEX.md`: document router and read conditions.
 - `docs/AGENT_MAINTENANCE.md`: agent entry points and documentation-system maintenance.

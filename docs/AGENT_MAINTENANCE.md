@@ -1,36 +1,39 @@
 # AI 에이전트 프로젝트 유지관리 기준
 
 - 상태: 기준
-- 목적: AI 에이전트가 이 프로젝트를 누락 없이 읽고, 필요할 때 필요한 문서만 열고, 구조를 망가뜨리지 않게 유지하는 기준.
-- 적용 대상: `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `PROJECT_RULES.md`, `docs/INDEX.md`, `README.md`, `SESSION_HANDOFF.md`, `CURRENT_TASK.md`, `skills/`, `tools/`.
+- 목적: AI 에이전트가 세션 시작 시 최소 컨텍스트만 읽고, 필요할 때 필요한 문서만 열고, 구조를 망가뜨리지 않게 유지하는 기준.
+- 적용 대상: `PROJECT_BOOTSTRAP.md`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `PROJECT_RULES.md`, `docs/INDEX.md`, `README.md`, `SESSION_HANDOFF.md`, `CURRENT_TASK.md`, `skills/`, `tools/`.
 
 ## 1. 표준 진입점
 
 | 파일 | 대상 | 역할 | 운영 규칙 |
 |---|---|---|---|
-| `AGENTS.md` | Codex 계열 | 자동 인식 지침 파일 | 포인터만 둔다. 규칙 본문을 쓰지 않는다 |
-| `CLAUDE.md` | Claude Code | 자동 인식 지침 파일 | `@PROJECT_RULES.md`로 원본 규칙을 import한다 |
-| `GEMINI.md` | Gemini CLI | 자동 인식 context 파일 | `@PROJECT_RULES.md`로 원본 규칙을 import한다 |
-| `PROJECT_RULES.md` | 모든 에이전트 | 단일 규칙 원본 | 최상위 원문과 로컬 추가 규칙만 둔다 |
+| `AGENTS.md` | Codex 계열 | 자동 인식 지침 파일 | `PROJECT_BOOTSTRAP.md`를 먼저 읽게 한다 |
+| `CLAUDE.md` | Claude Code | 자동 인식 지침 파일 | `@PROJECT_BOOTSTRAP.md`로 시작 커널을 import한다 |
+| `GEMINI.md` | Gemini CLI | 자동 인식 context 파일 | `@PROJECT_BOOTSTRAP.md`로 시작 커널을 import한다 |
+| `PROJECT_BOOTSTRAP.md` | 모든 에이전트 | 최소 시작 로더와 안전 커널 | 짧게 유지하고 전체 규칙 로드 조건만 둔다 |
+| `PROJECT_RULES.md` | 모든 에이전트 | 전체 규칙 원본 | 최상위 원문과 로컬 추가 규칙만 둔다 |
 | `docs/INDEX.md` | 모든 에이전트 | 파일 맵과 읽는 조건 | 문서 라우터 역할만 한다 |
 
-포인터 파일에는 프로젝트 규칙, 상태, 작업 절차, 도메인 지식을 넣지 않는다. 그런 내용은 `PROJECT_RULES.md`, `docs/INDEX.md`, 단계 문서, 스킬 문서 중 하나로 보내야 한다.
+포인터 파일에는 프로젝트 규칙, 상태, 작업 절차, 도메인 지식을 넣지 않는다. 시작에 반드시 필요한 최소 지시만 `PROJECT_BOOTSTRAP.md`에 두고, 나머지는 `PROJECT_RULES.md`, `docs/INDEX.md`, 단계 문서, 스킬 문서 중 하나로 보낸다.
 
 ## 2. 읽기 경로
 
-기본 로드는 아래만 허용한다.
+최소 시작 로드는 아래만 허용한다.
 
-1. `PROJECT_RULES.md`
-2. `SESSION_HANDOFF.md`
-3. `docs/INDEX.md`
+1. `PROJECT_BOOTSTRAP.md`
+2. `docs/INDEX.md`
 
-이어서 필요한 경우에만 `CURRENT_TASK.md`, 단계 문서, 스킬 문서, 도구 문서를 연다. 선택한 지시 문서는 끝까지 읽는다. 긴 리서치 보고서와 폐기 문서는 기본 로드하지 않는다.
+이어서 필요한 경우에만 `SESSION_HANDOFF.md`, `CURRENT_TASK.md`, `PROJECT_RULES.md`, 단계 문서, 스킬 문서, 도구 문서를 연다. 선택한 지시 문서는 끝까지 읽는다. 긴 리서치 보고서와 폐기 문서는 기본 로드하지 않는다.
+
+`PROJECT_RULES.md` 전체는 규칙, 안전, 삭제/이동/덮어쓰기, 커밋, 외부쓰기, 권한, 반복 실패, 검증, 백업, 문서 구조 변경, 충돌 판단이 있을 때만 읽는다.
 
 ## 3. 문서 역할
 
 | 문서 | 역할 | 금지 |
 |---|---|---|
 | `README.md` | 사람이 보는 프로젝트 입구와 현재 자산 요약 | 세부 절차 저장소로 확장 금지 |
+| `PROJECT_BOOTSTRAP.md` | 최소 시작 로더와 안전 커널 | 긴 규칙 원문, 작업 로그, 리서치 저장 금지 |
 | `PROJECT_RULES.md` | 영구 규칙 | 작업 로그, 커밋 상태, 긴 리서치 저장 금지 |
 | `docs/INDEX.md` | 문서 위치와 읽는 조건 | 규칙 본문 중복 금지 |
 | `SESSION_HANDOFF.md` | 다음 세션 인계 상태 | 장기 지식 저장소화 금지 |
@@ -54,11 +57,12 @@
 문서 구조를 바꿀 때는 아래 순서를 따른다.
 
 1. 표준 진입점 파일을 확인한다: `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`.
-2. 규칙 원본을 확인한다: `PROJECT_RULES.md`.
-3. 라우터를 확인한다: `docs/INDEX.md`.
-4. 상태 문서를 확인한다: `SESSION_HANDOFF.md`, `CURRENT_TASK.md`.
-5. 바뀐 경로를 전체 검색으로 정리한다.
-6. `tools\run_doccheck.bat`와 `git diff --check`를 실행한다.
+2. 시작 로더를 확인한다: `PROJECT_BOOTSTRAP.md`.
+3. 규칙 원본을 확인한다: `PROJECT_RULES.md`.
+4. 라우터를 확인한다: `docs/INDEX.md`.
+5. 상태 문서를 확인한다: `SESSION_HANDOFF.md`, `CURRENT_TASK.md`.
+6. 바뀐 경로를 전체 검색으로 정리한다.
+7. `tools\run_doccheck.bat`와 `git diff --check`를 실행한다.
 
 중간에 같은 목표가 3번 연속 실패하면 최상위 Stop Rule에 따라 멈춘다.
 
@@ -66,7 +70,8 @@
 
 구조 변경이 끝났다고 말하려면 아래를 만족해야 한다.
 
-- `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`가 포인터 또는 import 역할만 한다.
+- `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`가 `PROJECT_BOOTSTRAP.md` 포인터 또는 import 역할만 한다.
+- `PROJECT_BOOTSTRAP.md`가 짧은 시작 로더 역할만 하고 전체 규칙을 복사하지 않는다.
 - `PROJECT_RULES.md`에 최상위 Stop Rule 원문이 남아 있다.
 - 비표준 한글 라우터 파일명이 남아 있지 않다.
 - `docs/INDEX.md`가 모든 기준 문서의 읽는 조건을 가진다.
@@ -79,9 +84,9 @@ AI 에이전트는 아래 문제 때문에 프로젝트 규칙을 자주 손실�
 
 | 문제 | 증상 | 이 프로젝트 대응 |
 |---|---|---|
-| 부분 로드 | 규칙 파일 일부만 읽고 진행 | 표준 진입점에 `PROJECT_RULES.md` 전체 로드 게이트를 둔다 |
-| 요약 손실 | 핸드오프나 압축 요약에서 제약 조건이 빠짐 | Stop Rule, 읽기 순서, 문서 역할은 `PROJECT_RULES.md` 원문에만 둔다 |
-| 컨텍스트 과적재 | 문서를 많이 읽을수록 관련 없는 내용이 끼어듦 | 기본 로드는 3개 문서로 제한하고 `docs/INDEX.md`로 선택 로드한다 |
+| 부분 로드 | 규칙 파일 일부만 읽고 진행 | `PROJECT_BOOTSTRAP.md`를 끝까지 읽고, 필요한 문서도 끝까지 읽는다 |
+| 요약 손실 | 핸드오프나 압축 요약에서 제약 조건이 빠짐 | Stop Rule 핵심은 부트스트랩에 두고, 상세 규칙은 `PROJECT_RULES.md` 원문에 둔다 |
+| 컨텍스트 과적재 | 문서를 많이 읽을수록 관련 없는 내용이 끼어듦 | 기본 로드는 2개 문서로 제한하고 `docs/INDEX.md`로 선택 로드한다 |
 | 컨텍스트 충돌 | 과거 문서와 현재 문서가 서로 다른 기준을 말함 | 문서 상태를 `기준`, `현재작업`, `참고`, `폐기`로 나눈다 |
 | 세션 장기화 | 대화가 길어지며 실패 이력과 사용자 제약이 흐려짐 | 3회 연속 실패 Stop Rule과 종료 전 자가 검증을 사용한다 |
 | 도구 출력 팽창 | 긴 로그와 검색 결과가 작업 기준을 밀어냄 | 긴 리서치는 `reports/`에 두고 기본 로드하지 않는다 |
@@ -94,11 +99,12 @@ AI 에이전트는 아래 문제 때문에 프로젝트 규칙을 자주 손실�
 
 | 방법 | 실행 | 효과 | 유지 | 위험 | 조합 | 총점 | 판단 |
 |---|---:|---:|---:|---:|---:|---:|---|
-| 표준 진입점 전체 로드 게이트 | 5 | 4 | 5 | 5 | 5 | 24 | 즉시 적용 |
-| Claude/Gemini `@PROJECT_RULES.md` import | 5 | 4 | 5 | 4 | 5 | 23 | 즉시 적용 |
-| Codex `AGENTS.md` 명시 읽기 지시 | 5 | 3 | 5 | 4 | 5 | 22 | 즉시 적용 |
+| 표준 진입점 부트스트랩 게이트 | 5 | 5 | 5 | 5 | 5 | 25 | 즉시 적용 |
+| Claude/Gemini `@PROJECT_BOOTSTRAP.md` import | 5 | 5 | 5 | 4 | 5 | 24 | 즉시 적용 |
+| Codex `PROJECT_BOOTSTRAP.md` 명시 읽기 | 5 | 4 | 5 | 4 | 5 | 23 | 즉시 적용 |
+| `PROJECT_RULES.md` 조건부 전체 로드 | 5 | 4 | 5 | 5 | 5 | 24 | 즉시 적용 |
 | `docs/INDEX.md` 선택 라우팅 | 5 | 5 | 5 | 4 | 5 | 24 | 즉시 적용 |
-| 기본 로드 3개 문서 제한 | 5 | 4 | 5 | 4 | 5 | 23 | 즉시 적용 |
+| 기본 로드 2개 문서 제한 | 5 | 5 | 5 | 4 | 5 | 24 | 즉시 적용 |
 | `CURRENT_TASK.md`와 `SESSION_HANDOFF.md` 분리 | 5 | 4 | 4 | 4 | 5 | 22 | 유지 |
 | 3회 실패 Stop Rule | 5 | 5 | 4 | 5 | 5 | 24 | 유지 및 검증 |
 | `doccheck` 자동 검사 | 5 | 5 | 4 | 5 | 5 | 24 | 즉시 강화 |
@@ -115,8 +121,8 @@ AI 에이전트는 아래 문제 때문에 프로젝트 규칙을 자주 손실�
 
 | 조합 | 구성 | 효과 | 현재 판단 |
 |---|---|---|---|
-| 기본 안전 조합 | 표준 진입점 + `PROJECT_RULES.md` + `docs/INDEX.md` + `doccheck` | 규칙 손실과 문서 드리프트를 동시에 줄임 | 현재 적용 |
-| 토큰 최적화 조합 | 기본 로드 3개 + 선택 라우팅 + `.geminiignore` + 줄 수 경고 | 불필요한 컨텍스트 투입을 줄임 | 현재 적용 |
+| 기본 안전 조합 | 표준 진입점 + `PROJECT_BOOTSTRAP.md` + 조건부 `PROJECT_RULES.md` + `docs/INDEX.md` + `doccheck` | 규칙 손실과 문서 드리프트를 동시에 줄임 | 현재 적용 |
+| 토큰 최적화 조합 | 기본 로드 2개 + 선택 라우팅 + `.geminiignore` + 줄 수 경고 | 불필요한 컨텍스트 투입을 줄임 | 현재 적용 |
 | 장기 세션 조합 | `CURRENT_TASK.md` + `SESSION_HANDOFF.md` + Stop Rule + 종료 전 자가 검증 | 세션 압축과 상태 손실을 줄임 | 현재 적용 |
 | 리서치 관리 조합 | 긴 근거는 `reports/`, 기준은 `docs/AGENT_MAINTENANCE.md`, 경로는 `docs/INDEX.md` | 근거는 보존하고 기본 로드는 줄임 | 현재 적용 |
 | 강제 차단 조합 | `doccheck` + Claude hooks + Git hook | 규칙 위반을 실행 전에 막음 | hooks/Git hook은 향후 후보 |
@@ -126,22 +132,23 @@ AI 에이전트는 아래 문제 때문에 프로젝트 규칙을 자주 손실�
 
 이번 프로젝트에는 아래 결정을 적용한다.
 
-1. `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`는 모두 `Mandatory PROJECT_RULES Load Gate`를 가진다.
-2. `CLAUDE.md`와 `GEMINI.md`는 `@PROJECT_RULES.md`를 직접 import한다.
+1. `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`는 모두 `Mandatory Bootstrap Load Gate`를 가진다.
+2. `CLAUDE.md`와 `GEMINI.md`는 `@PROJECT_BOOTSTRAP.md`를 직접 import한다.
 3. `AGENTS.md`는 Codex용 명시 지시만 둔다. Codex 공식 문서에서 `@file` import를 표준 기능으로 확인하지 못했으므로 import 문법을 넣지 않는다.
-4. 규칙 본문은 `PROJECT_RULES.md`에만 둔다.
-5. 문서 위치와 읽는 조건은 `docs/INDEX.md`에만 둔다.
-6. 유지관리 기준과 리서치 근거는 이 문서에 둔다.
-7. `tools\run_doccheck.bat`는 진입점 게이트, Stop Rule 원문, 표준 라우터, Gemini 제외 목록을 검사한다.
-8. Claude hooks, Git hook, MCP retrieval, API prompt caching은 지금 바로 섞지 않는다. 현재 환경 전체에 공통 적용되지 않거나 유지비가 높기 때문이다.
+4. 시작 커널은 `PROJECT_BOOTSTRAP.md`에만 둔다.
+5. 전체 규칙 본문은 `PROJECT_RULES.md`에만 둔다.
+6. 문서 위치와 읽는 조건은 `docs/INDEX.md`에만 둔다.
+7. 유지관리 기준과 리서치 근거는 이 문서에 둔다.
+8. `tools\run_doccheck.bat`는 부트스트랩 게이트, Stop Rule 원문, 표준 라우터, Gemini 제외 목록을 검사한다.
+9. Claude hooks, Git hook, MCP retrieval, API prompt caching은 지금 바로 섞지 않는다. 현재 환경 전체에 공통 적용되지 않거나 유지비가 높기 때문이다.
 
 ## 11. 리서치 근거
 
 | 출처 | 핵심 근거 | 적용 |
 |---|---|---|
 | OpenAI Codex `AGENTS.md` | Codex는 작업 전 `AGENTS.md`를 읽고, 경로 계층과 크기 제한을 가진다 | `AGENTS.md`를 표준 진입점으로 유지 |
-| Claude Code memory | Claude는 `CLAUDE.md`와 `@path` import를 지원한다 | `@PROJECT_RULES.md` 사용 |
-| Gemini CLI context | Gemini는 `GEMINI.md`, `@file` import, ignore 파일을 사용한다 | `@PROJECT_RULES.md`와 `.geminiignore` 사용 |
+| Claude Code memory | Claude는 `CLAUDE.md`와 `@path` import를 지원한다 | `@PROJECT_BOOTSTRAP.md` 사용 |
+| Gemini CLI context | Gemini는 `GEMINI.md`, `@file` import, ignore 파일을 사용한다 | `@PROJECT_BOOTSTRAP.md`와 `.geminiignore` 사용 |
 | AGENTS.md open format | `AGENTS.md`는 에이전트용 README이며 nested 지침을 지원한다 | README와 에이전트 지침 분리 |
 | LangChain context engineering | 주요 전략은 write, select, compress, isolate | 선택 로드와 긴 보고서 분리 |
 | Drew Breunig long context | 과도한 컨텍스트는 poisoning, distraction, confusion, clash를 만든다 | 기본 로드 최소화 |

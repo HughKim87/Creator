@@ -30,6 +30,7 @@ SKIP_PREFIXES = {
 }
 
 ROOT_DOCS = [
+    "PROJECT_BOOTSTRAP.md",
     "PROJECT_RULES.md",
     "AGENTS.md",
     "CLAUDE.md",
@@ -43,8 +44,7 @@ ROOT_DOCS = [
 ]
 
 ALWAYS_LOAD_DOCS = [
-    "PROJECT_RULES.md",
-    "SESSION_HANDOFF.md",
+    "PROJECT_BOOTSTRAP.md",
     "docs/INDEX.md",
 ]
 
@@ -66,34 +66,54 @@ OLD_PATH_PATTERNS = [
 ]
 
 REQUIRED_PROJECT_RULES_PHRASES = [
+    "# PROJECT_RULES.md — Full Rules (Conditional Source of Truth)",
+    "This file is the full rule source for this project. It is not the default",
+    "Every AI agent starts with `PROJECT_BOOTSTRAP.md`",
     "If the same objective fails 3 times in a row (fix → verify → fail), stop.",
     "the last confirmed cause, the risk of continuing, and what to re-research",
     "This outranks task persistence.",
     "## Local Additions — 김실버유튜브",
 ]
 
+FORBIDDEN_PROJECT_RULES_PHRASES = [
+    "must read and follow it first",
+    "1. `PROJECT_RULES.md`\n2. `SESSION_HANDOFF.md`",
+    "The rules above are copied from the repo-root",
+    "must not be\nrewritten in this sub-project",
+]
+
+REQUIRED_BOOTSTRAP_PHRASES = [
+    "Status: always-load kernel",
+    "Full rule source: `PROJECT_RULES.md`",
+    "Document router: `docs/INDEX.md`",
+    "Full Rule Load Triggers",
+    "If the same objective fails 3 times in a row, stop.",
+    "This file is a loader, not a replacement for `PROJECT_RULES.md`.",
+]
+
 POINTER_FILES = {
     "AGENTS.md": [
-        "Mandatory PROJECT_RULES Load Gate",
-        "read `PROJECT_RULES.md`",
+        "Mandatory Bootstrap Load Gate",
+        "read `PROJECT_BOOTSTRAP.md`",
         "first line to the last line",
-        "Do not rely on memory, summaries",
+        "`PROJECT_RULES.md` only when the bootstrap trigger conditions",
     ],
     "CLAUDE.md": [
-        "Mandatory PROJECT_RULES Load Gate",
-        "@PROJECT_RULES.md",
+        "Mandatory Bootstrap Load Gate",
+        "@PROJECT_BOOTSTRAP.md",
         "first line to the last line",
-        "Do not rely on memory, summaries",
+        "mandatory bootstrap source",
     ],
     "GEMINI.md": [
-        "Mandatory PROJECT_RULES Load Gate",
-        "@PROJECT_RULES.md",
+        "Mandatory Bootstrap Load Gate",
+        "@PROJECT_BOOTSTRAP.md",
         "first line to the last line",
-        "Do not rely on memory, summaries",
+        "mandatory bootstrap source",
     ],
 }
 
 POINTER_FORBIDDEN_PATTERNS = {
+    "@PROJECT_RULES.md": "포인터 파일에는 전체 규칙 원본을 직접 import하지 않는다. PROJECT_BOOTSTRAP.md를 import한다.",
     "@SESSION_HANDOFF.md": "포인터 파일에는 상태 문서를 직접 import하거나 규칙처럼 넣지 않는다.",
     "@docs/INDEX.md": "포인터 파일에는 라우터를 직접 import하지 않는다. PROJECT_RULES.md가 읽기 경로를 가진다.",
     "Imported Claude Cowork": "포인터 파일에는 도메인 규칙이나 가져온 지침을 넣지 않는다.",
@@ -103,7 +123,9 @@ MAINTENANCE_REQUIRED_PHRASES = [
     "## 7. 구조적 문제",
     "## 8. 방법별 점수",
     "## 9. 조합 전략",
-    "Mandatory PROJECT_RULES Load Gate",
+    "Mandatory Bootstrap Load Gate",
+    "PROJECT_BOOTSTRAP.md",
+    "기본 로드 2개",
     "Context Bloat",
     "28.64%",
     "20% 이상",
@@ -210,12 +232,22 @@ def check_index_links(root: Path, findings: list[Finding]) -> None:
 
 
 def check_agent_entrypoints(root: Path, findings: list[Finding]) -> None:
+    bootstrap = root / "PROJECT_BOOTSTRAP.md"
+    if bootstrap.exists():
+        content = read_text(bootstrap)
+        for phrase in REQUIRED_BOOTSTRAP_PHRASES:
+            if phrase not in content:
+                findings.append(Finding("ERROR", "PROJECT_BOOTSTRAP.md", None, f"부트스트랩 필수 기준 누락: {phrase}"))
+
     rules = root / "PROJECT_RULES.md"
     if rules.exists():
         content = read_text(rules)
         for phrase in REQUIRED_PROJECT_RULES_PHRASES:
             if phrase not in content:
                 findings.append(Finding("ERROR", "PROJECT_RULES.md", None, f"최상위 Stop Rule 원문 또는 로컬 추가 기준 누락: {phrase}"))
+        for phrase in FORBIDDEN_PROJECT_RULES_PHRASES:
+            if phrase in content:
+                findings.append(Finding("ERROR", "PROJECT_RULES.md", None, f"조건부 로드 정책과 충돌하는 과거 문구: {phrase}"))
 
     for filename, required_phrases in POINTER_FILES.items():
         path = root / filename

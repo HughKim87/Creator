@@ -1,8 +1,8 @@
 # SESSION_HANDOFF.md — 김실버유튜브
 
-- 최종 갱신: 2026-07-08
+- 최종 갱신: 2026-07-09
 - 성격: 다음 세션 인계 문서. 규칙 원본이 아니다.
-- 먼저 읽을 문서: `PROJECT_RULES.md` → `SESSION_HANDOFF.md` → `docs/INDEX.md`
+- 먼저 읽을 문서: `PROJECT_BOOTSTRAP.md` → `docs/INDEX.md`; 이어지는 작업이면 `SESSION_HANDOFF.md`와 `CURRENT_TASK.md`
 - Git 이력은 `git log -1 --oneline`으로 확인한다. 커밋 SHA는 이 문서에 고정하지 않는다.
 
 ## 1. 현재 상태
@@ -68,6 +68,7 @@
 22. 커밋 SHA와 작업트리 상태를 문서에 고정하지 않는 문서 관리 원칙을 추가했다.
 23. 완료된 과거 운영 진단 문서를 `Superseded`로 낮췄다.
 24. `tools/synccheck/*.py`의 과거 세션 절대경로와 과거 원본 파일명 하드코딩을 제거했다.
+25. 시작 로드 구조를 `PROJECT_BOOTSTRAP.md` 최소 로드와 `PROJECT_RULES.md` 조건부 전체 로드로 변경했다.
 
 이 작업은 Git 커밋으로 저장되어 있다. 정확한 커밋은 `git log -1 --oneline`으로 확인한다.
 
@@ -105,7 +106,9 @@ reports/2026-07-08_프로젝트_재설계_진단/00~08_*.md
 ## 7. 다음 세션 시작 프롬프트
 
 ```text
-PROJECT_RULES.md, SESSION_HANDOFF.md, docs/INDEX.md를 읽고 이어서 진행.
+PROJECT_BOOTSTRAP.md와 docs/INDEX.md를 읽고 이어서 진행.
+이어지는 작업이면 SESSION_HANDOFF.md와 CURRENT_TASK.md를 읽는다.
+규칙, 안전, 삭제/이동/덮어쓰기, 커밋, 권한, 반복 실패, 검증, 문서 구조 변경이면 PROJECT_RULES.md 전체를 읽는다.
 현재 목표는 편집 재개가 아니라 김실버 프로젝트 운영 구조 재설계다.
 재설계 보고서 9개는 개선 반영 후 삭제됐으므로 기본 로드 대상이 아니다.
 CURRENT_TASK.md를 읽고, 새 원본 제공 여부와 시작 단계를 확인한다.

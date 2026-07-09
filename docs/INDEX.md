@@ -1,16 +1,17 @@
 # 문서 인덱스 — 김실버유튜브
 
-- 최종 갱신: 2026-07-08
-- 목적: 세션 시작 시 필요한 문서만 고르는 `docs/INDEX.md` 표준 파일 맵.
+- 최종 갱신: 2026-07-09
+- 목적: 세션 시작 시 필요한 최소 문서와 조건부 로드 문서를 고르는 `docs/INDEX.md` 표준 파일 맵.
 - 현재 상태: `workspace/`와 기존 `temp/` 내용은 삭제됨. 과거 원본·산출물·아카이브를 현재 기준으로 삼지 않는다.
 
-## 0. 기본 로드
+## 0. 최소 시작 로드
 
-모든 세션에서 아래 3개만 먼저 읽는다. 현재 작업을 이어갈 때는 그 다음 `CURRENT_TASK.md`를 읽는다.
+모든 세션에서 처음 강제되는 문서는 아래 2개만이다. 현재 작업을 이어갈 때만 `SESSION_HANDOFF.md`와 `CURRENT_TASK.md`를 추가로 읽는다.
 
-1. `PROJECT_RULES.md`
-2. `SESSION_HANDOFF.md`
-3. `docs/INDEX.md`
+1. `PROJECT_BOOTSTRAP.md`
+2. `docs/INDEX.md`
+
+`PROJECT_RULES.md` 전체는 규칙, 안전, 삭제/이동/덮어쓰기, 커밋, 외부쓰기, 권한, 반복 실패, 검증, 백업, 문서 구조 변경, 충돌 판단이 있을 때만 읽는다.
 
 ## 1. 현재 작업
 
@@ -41,11 +42,12 @@
 
 | 문서 | 상태 | 역할 | 읽는 조건 |
 |---|---|---|---|
-| `PROJECT_RULES.md` | 기준 | 전역 규칙 | 모든 세션 시작 |
+| `PROJECT_BOOTSTRAP.md` | 기준 | 최소 시작 로더와 안전 커널 | 모든 세션 시작 |
+| `PROJECT_RULES.md` | 기준 | 전체 전역 규칙 | 부트스트랩 트리거 조건 발생 시 |
 | `AGENTS.md` | 기준 | Codex 자동 인식 포인터 | Codex 진입점 확인 시 |
-| `CLAUDE.md` | 기준 | Claude Code 자동 인식 포인터와 규칙 import | Claude 진입점 확인 시 |
-| `GEMINI.md` | 기준 | Gemini CLI context 포인터와 규칙 import | Gemini 진입점 확인 시 |
-| `SESSION_HANDOFF.md` | 기준 | 현재 세션 상태 | 모든 세션 시작 |
+| `CLAUDE.md` | 기준 | Claude Code 자동 인식 포인터와 부트스트랩 import | Claude 진입점 확인 시 |
+| `GEMINI.md` | 기준 | Gemini CLI context 포인터와 부트스트랩 import | Gemini 진입점 확인 시 |
+| `SESSION_HANDOFF.md` | 기준 | 현재 세션 상태 | 이어지는 작업 또는 상태 확인 시 |
 | `docs/INDEX.md` | 기준 | 문서 선택 기준 | 모든 세션 시작 |
 | `CURRENT_TASK.md` | 현재작업 | 현재 작업 목표, 입력, 출력, 금지 범위, 검증 기준 | 현재 작업 이어가기 |
 | `docs/AGENT_MAINTENANCE.md` | 기준 | AI 에이전트 표준 진입점, 문서 역할, 유지관리 검증 기준 | 프로젝트 구조·문서 체계 수정 시 |
@@ -86,18 +88,20 @@
 
 | 단계 | 판단 질문 | 읽을 문서 |
 |---:|---|---|
-| 1 | 이 프로젝트 규칙과 현재 상태는 무엇인가 | `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, `docs/INDEX.md` |
-| 2 | 이어지는 현재 작업이 있는가 | `CURRENT_TASK.md` |
-| 3 | 전체 단계 판단이 필요한가 | `01_유튜브_제작_워크플로우.md` |
-| 4 | 특정 단계 작업인가 | 해당 단계 기준 문서 또는 `skills/*/SKILL.md` |
-| 5 | 도구 실행이 필요한가 | `tools/README.md`, 해당 도구 도움말 |
-| 6 | 프로젝트 구조나 문서 체계를 바꾸는가 | `docs/AGENT_MAINTENANCE.md` |
-| 7 | 배경 판단이 필요한가 | 상태가 `참고`인 문서 |
-| 8 | 과거 이력 확인이 필요한가 | Git 이력. 폐기 문서는 현재 기준으로 읽지 않음 |
+| 1 | 시작 커널과 문서 라우터는 무엇인가 | `PROJECT_BOOTSTRAP.md`, `docs/INDEX.md` |
+| 2 | 이어지는 현재 작업이나 상태 확인인가 | `SESSION_HANDOFF.md`, `CURRENT_TASK.md` |
+| 3 | 전체 규칙 트리거 조건이 있는가 | `PROJECT_RULES.md` |
+| 4 | 전체 단계 판단이 필요한가 | `01_유튜브_제작_워크플로우.md` |
+| 5 | 특정 단계 작업인가 | 해당 단계 기준 문서 또는 `skills/*/SKILL.md` |
+| 6 | 도구 실행이 필요한가 | `tools/README.md`, 해당 도구 도움말 |
+| 7 | 프로젝트 구조나 문서 체계를 바꾸는가 | `PROJECT_RULES.md`, `docs/AGENT_MAINTENANCE.md` |
+| 8 | 배경 판단이 필요한가 | 상태가 `참고`인 문서 |
+| 9 | 과거 이력 확인이 필요한가 | Git 이력. 폐기 문서는 현재 기준으로 읽지 않음 |
 
 로드 최적화 원칙:
 
 - 기본 로드 문서는 짧아야 한다. 길어지면 기준 문서와 참고 문서로 분리한다.
+- 전체 규칙 문서는 항상 주입하지 않는다. 부트스트랩 트리거 조건이 있을 때만 연다.
 - `기준` 문서는 판단 기준이고, `참고` 문서는 배경 설명이다.
 - `현재작업` 문서는 지금 할 일과 하지 않을 일만 담는다.
 - `폐기` 문서는 존재하더라도 현재 작업 입력으로 쓰지 않는다.
@@ -148,6 +152,7 @@
 | 현재 작업 완료 | `CURRENT_TASK.md`, `SESSION_HANDOFF.md` |
 | 스킬 추가·삭제·상태 변경 | `skills/README.md`, `docs/INDEX.md`, `01_유튜브_제작_워크플로우.md` |
 | 프로젝트 구조·문서 체계 변경 | `README.md`, `PROJECT_RULES.md`, `docs/INDEX.md`, `docs/AGENT_MAINTENANCE.md`, `tools/doccheck/check_docs.py` |
+| 시작 로드 정책 변경 | `PROJECT_BOOTSTRAP.md`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `PROJECT_RULES.md`, `docs/INDEX.md`, `docs/AGENT_MAINTENANCE.md`, `tools/doccheck/check_docs.py` |
 
 Git으로 바로 확인할 수 있는 커밋 SHA와 작업트리 상태는 문서에 고정하지 않는다.
 
@@ -158,6 +163,7 @@ Git으로 바로 확인할 수 있는 커밋 SHA와 작업트리 상태는 문�
 | 확인 대상 | 목적 |
 |---|---|
 | 최신 사용자 요청 | 실제 결과가 요청과 맞는지 확인 |
+| `PROJECT_BOOTSTRAP.md` | 최소 시작 로드 정책이 맞는지 확인 |
 | `CURRENT_TASK.md` | 이번 작업의 금지 범위와 검증 기준 확인 |
 | 수정한 기준 문서 | 새 상태 문구가 충돌하지 않는지 확인 |
 | `tools\run_doccheck.bat` | 문서 상태, 폐기 참조, 과거 경로, 스킬 필수 섹션 검사 |

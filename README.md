@@ -18,8 +18,9 @@
 
 | 위치 | 내용 |
 |---|---|
-| `PROJECT_RULES.md` | 이 프로젝트의 전역 지침 원본 |
-| `SESSION_HANDOFF.md` | 현재 세션 상태와 다음 작업 |
+| `PROJECT_BOOTSTRAP.md` | AI 에이전트가 세션 시작 시 읽는 최소 로더 |
+| `PROJECT_RULES.md` | 조건부로 읽는 전체 전역 지침 원본 |
+| `SESSION_HANDOFF.md` | 이어지는 작업의 현재 상태와 다음 작업 |
 | `docs/INDEX.md` | 현재 기준 문서와 로드 조건 |
 | `docs/AGENT_MAINTENANCE.md` | AI 에이전트 진입점, 문서 역할, 구조 유지관리 기준 |
 | `CURRENT_TASK.md` | 현재 작업 목표, 기준 파일, 금지 범위 |
@@ -57,6 +58,7 @@
 ## 문서 관리 방식
 
 - `PROJECT_RULES.md`는 영구 규칙만 담는다.
+- `PROJECT_BOOTSTRAP.md`는 세션 시작에 필요한 최소 안전 규칙과 로드 조건만 담는다.
 - `README.md`는 프로젝트 입구와 현재 자산 상태만 담는다.
 - `docs/INDEX.md`는 문서별 상태와 읽는 조건만 담는다.
 - `docs/AGENT_MAINTENANCE.md`는 에이전트 진입점과 문서 구조 유지관리 기준만 담는다.
@@ -69,12 +71,13 @@
 
 AI 에이전트는 이 폴더를 전부 훑지 않는다.
 
-1. `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, `docs/INDEX.md`를 먼저 끝까지 읽는다.
-2. 이어지는 작업이면 `CURRENT_TASK.md`를 읽는다.
-3. `docs/INDEX.md`에서 현재 요청에 맞는 단계 문서와 스킬만 고른다.
-4. 프로젝트 구조나 문서 체계를 바꿀 때만 `docs/AGENT_MAINTENANCE.md`를 읽는다.
-5. 고른 문서는 끝까지 읽고, 선택하지 않은 긴 참고 문서는 열지 않는다.
-6. 작업 완료 직전에는 요청과 결과, 문서 상태, 검증 명령 결과를 다시 확인한다.
+1. `PROJECT_BOOTSTRAP.md`와 `docs/INDEX.md`만 먼저 읽는다.
+2. 이어지는 작업이면 `SESSION_HANDOFF.md`와 `CURRENT_TASK.md`를 읽는다.
+3. 규칙, 안전, 삭제/이동/덮어쓰기, 커밋, 권한, 반복 실패, 검증, 문서 구조 변경이 있으면 `PROJECT_RULES.md` 전체를 읽는다.
+4. `docs/INDEX.md`에서 현재 요청에 맞는 단계 문서와 스킬만 고른다.
+5. 프로젝트 구조나 문서 체계를 바꿀 때만 `docs/AGENT_MAINTENANCE.md`를 읽는다.
+6. 고른 문서는 끝까지 읽고, 선택하지 않은 긴 참고 문서는 열지 않는다.
+7. 작업 완료 직전에는 요청과 결과, 문서 상태, 검증 명령 결과를 다시 확인한다.
 
 ## 다시 시작하는 방법
 
