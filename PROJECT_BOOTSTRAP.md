@@ -3,6 +3,9 @@
 - Always load this file, then `docs/INDEX.md`.
 - Full rules live in `PROJECT_RULES.md` and are loaded only when needed.
 - Keep startup context small; use the index to select task documents.
+- Goal: reusable AI-agent video workflow for many videos, not one-off notes.
+- Optimize for context economy, repeatable stages, verified outputs, and fewer
+  repeated mistakes.
 
 ## Startup
 

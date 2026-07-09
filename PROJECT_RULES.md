@@ -9,12 +9,31 @@ structure, or conflict decisions.
 
 ## Purpose
 
-This workspace supports the 김실버 YouTube workflow: planning, subtitles,
+This workspace is the top-level AI-agent operating framework for editing many
+김실버 YouTube videos through a repeatable workflow: planning, subtitles,
 highlight selection, editing support, review, and related automation.
 
 - Startup kernel: `PROJECT_BOOTSTRAP.md`
 - Router: `docs/INDEX.md`
 - Handoff: `SESSION_HANDOFF.md`
+
+## Operating Direction
+
+- Build a reusable workflow environment, not a pile of one-off instructions.
+- Optimize for throughput, context economy, repeatability, verified outputs,
+  and prevention of repeated mistakes.
+- Treat each video as one run through the same staged pipeline. Identify the
+  current source, stage, inputs, outputs, decisions, and blocker before deep work.
+- Load only the documents needed for the current source and stage. Do not bulk
+  read reports, old plans, or unrelated skills.
+- Keep durable state in project files such as `CURRENT_TASK.md` and
+  `SESSION_HANDOFF.md`, not in chat memory.
+- Put reusable corrections in the narrowest useful rule, contract, checklist, or
+  tool check. Do not expand startup prompts to solve stage-specific problems.
+- Use deterministic tools for extraction, conversion, validation, and repeated
+  file operations. Use AI for judgment, candidates, synthesis, and explanation.
+- Add new docs or rules only when they reduce repeated work, prevent known
+  failure, or route context more accurately.
 
 ## Priority
 
