@@ -122,7 +122,7 @@ python3 "${SKILL_DIR}/scripts/watch.py" "https://youtu.be/..." --detail transcri
    (`t=MM:SS` 표시로 시간 정렬).
 2. 전사(또는 기존 srt)와 프레임을 결합해 타임스탬프를 인용하며 답한다.
 3. 작업 폴더는 후속 질문이 없으면 삭제, 있으면 유지. `--out-dir`로
-   프로젝트 안에 만들었면 `00_공통_작업원칙.md`의 삭제 규칙을 따른다.
+   프로젝트 안에 만들었면 `PROJECT_RULES.md`의 삭제 규칙을 따른다.
 
 ## 한계와 주의
 

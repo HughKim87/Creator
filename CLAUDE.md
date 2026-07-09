@@ -1,15 +1,7 @@
 # CLAUDE.md
 
-Claude Code instruction entry point.
+Claude Code entrypoint.
 
-## Mandatory Bootstrap Load Gate
-
-The startup `PROJECT_BOOTSTRAP.md` file is imported below. Treat the imported
-content as the active startup instruction source for this project and read it
-from the first line to the last line before doing any task work.
-
-Do not rely on memory, summaries, prior session handoffs, or partial excerpts of
-`PROJECT_BOOTSTRAP.md`. If the import fails or the file is not available, stop
-and report that the mandatory bootstrap source is unavailable.
+Import only the startup kernel. Do not add project rules here.
 
 @PROJECT_BOOTSTRAP.md
