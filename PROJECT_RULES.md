@@ -10,8 +10,8 @@ structure, or conflict decisions.
 ## Purpose
 
 This workspace is the top-level AI-agent operating framework for editing many
-김실버 YouTube videos through a repeatable workflow: planning, subtitles,
-highlight selection, editing support, review, and related automation.
+videos through a repeatable workflow: planning, subtitles, highlight selection,
+editing support, review, and related automation.
 
 - Startup kernel: `PROJECT_BOOTSTRAP.md`
 - Router: `docs/INDEX.md`
@@ -34,6 +34,11 @@ highlight selection, editing support, review, and related automation.
   file operations. Use AI for judgment, candidates, synthesis, and explanation.
 - Add new docs or rules only when they reduce repeated work, prevent known
   failure, or route context more accurately.
+- Keep framework rules, routers, and skill contracts free of task-specific
+  proper nouns. Put channel, person, client, source, and episode facts in
+  task-specific inputs or state documents.
+- Keep workflow-domain terms such as YouTube when they define the target
+  platform, tool, skill name, or validation surface.
 
 ## Priority
 
@@ -118,7 +123,7 @@ intent in one sentence before doing more work.
 - Label unverified or weak-source claims.
 - Ask one short question only when the user must decide.
 
-## Local Additions — 김실버유튜브
+## Local Additions — Video Workflow
 
 - Planning comes before editing.
 - A final video's message must be traceable to original spoken lines.

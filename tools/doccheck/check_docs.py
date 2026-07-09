@@ -47,6 +47,8 @@ STALE_PATTERNS = [
     ("workspace/inputs/2026-06-30", "과거 원본 파일명을 현재 기준으로 쓰지 않는다."),
     ("미커밋 변경", "작업트리 상태는 Git 명령으로 확인한다."),
     ("28.64%", "리서치 수치를 운영 검사 기준으로 고정하지 않는다."),
+    ("\uae40\uc2e4\ubc84", "프레임워크 문서에는 작업별 고유명사를 고정하지 않는다."),
+    ("\ubc31\ub8f8", "프레임워크 문서에는 원본별 고유명사를 고정하지 않는다."),
 ]
 
 FORBIDDEN_ENTRYPOINTS = ["@PROJECT_RULES.md", "@SESSION_HANDOFF.md", "@docs/INDEX.md"]

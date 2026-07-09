@@ -15,7 +15,7 @@ Claude는 영상 입력이 없다. 이 스킬은 `scripts/watch.py`로 프레임
 영상 내용에 근거한 답을 하게 한다.
 
 원본: https://github.com/bradautomates/claude-video (MIT). 이 폴더의 사본은
-김실버 프로젝트용으로 관리한다.
+영상 제작 프로젝트용으로 관리한다.
 
 ## 이 프로젝트에서의 두 가지 용도
 

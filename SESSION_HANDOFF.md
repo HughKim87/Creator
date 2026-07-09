@@ -1,4 +1,4 @@
-# SESSION_HANDOFF.md — 김실버유튜브
+# SESSION_HANDOFF.md — Video Workflow
 
 - 갱신: 2026-07-09
 - 성격: 다음 세션 인계 상태. 규칙 원본이 아니다.

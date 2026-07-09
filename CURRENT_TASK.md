@@ -1,4 +1,4 @@
-# CURRENT_TASK.md - 김실버유튜브
+# CURRENT_TASK.md - Video Workflow
 
 - 갱신: 2026-07-09
 - 성격: 현재 작업 카드. 규칙이나 장기 로그가 아니다.
