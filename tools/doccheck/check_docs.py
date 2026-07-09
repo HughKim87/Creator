@@ -65,6 +65,12 @@ OLD_PATH_PATTERNS = [
     ("문서_인덱스.md", "문서 라우터는 표준 경로 `docs/INDEX.md`를 사용한다."),
 ]
 
+# 본문(.md)에서 참조하는 다른 .md 경로의 존재를 검사할 때 예외로 두는 대상.
+REFERENCE_ALLOWLIST = {
+    "Workspace/README.md",  # Tier-1 상위 저장소 포인터. 이 서브프로젝트 밖 문서다.
+}
+MD_REFERENCE_PATTERN = re.compile(r"`([^`]+?\.md)`|\]\(([^)]+?\.md)\)")
+
 REQUIRED_PROJECT_RULES_PHRASES = [
     "# PROJECT_RULES.md — Full Rules (Conditional Source of Truth)",
     "This file is the full rule source for this project. It is not the default",
@@ -297,12 +303,50 @@ def check_skills(root: Path, findings: list[Finding]) -> None:
                 findings.append(Finding("ERROR", relative, None, f"필수 섹션 또는 표현 누락: {label}"))
 
 
+def check_reference_links(root: Path, findings: list[Finding]) -> None:
+    """본문(.md)에서 참조한 다른 .md 문서가 실제로 존재하는지 검사한다.
+
+    glob 패턴(`skills/*/SKILL.md`), `@import` 경로, 런타임 `workspace/` 경로,
+    상위 티어 포인터는 정상 참조로 보고 건너뛴다.
+    """
+    for path in root.rglob("*.md"):
+        if is_skipped(path, root):
+            continue
+        relative = rel(path, root)
+        for index, line in enumerate(read_text(path).splitlines(), 1):
+            for group_a, group_b in MD_REFERENCE_PATTERN.findall(line):
+                raw = (group_a or group_b).strip()
+                if raw.startswith(("http://", "https://")):
+                    continue
+                ref = raw.lstrip("@")
+                if ref.startswith("./"):
+                    ref = ref[2:]
+                if not ref or ref.startswith("#"):
+                    continue
+                if "*" in ref or "?" in ref:
+                    continue
+                if ref.startswith("workspace/"):
+                    continue
+                if ref in REFERENCE_ALLOWLIST:
+                    continue
+                if not (root / ref).exists():
+                    findings.append(
+                        Finding(
+                            "ERROR",
+                            relative,
+                            index,
+                            f"참조한 문서 `{ref}`가 존재하지 않는다. 링크를 고치거나 문서를 만든다.",
+                        )
+                    )
+
+
 def run(root: Path) -> int:
     findings: list[Finding] = []
     check_required_docs(root, findings)
     check_stale_text(root, findings)
     check_always_load_size(root, findings)
     check_index_links(root, findings)
+    check_reference_links(root, findings)
     check_agent_entrypoints(root, findings)
     check_skills(root, findings)
 
