@@ -28,7 +28,7 @@
 | 전체 제작 단계 판단 | `01_유튜브_제작_워크플로우.md` |
 | 작업 원칙 확인 | `PROJECT_RULES.md` |
 | 5단계 기획 | `기획_리서치/기획단계_규격_2026-07-06.md` |
-| 스킬 작업 | `skills/README.md`, 필요한 `skills/*/SKILL.md` |
+| 스킬 작업 | `skills/README.md`, `skills/SKILL_CONTRACT.md`, 필요한 `skills/*/SKILL.md` |
 | 도구 작업 | `tools/README.md`, 필요한 도구 도움말 |
 | 과거 운영 진단 배경 | `기획_리서치/프로젝트_운영문제_진단_및_개선안_2026-07-07.md` |
 
@@ -38,6 +38,7 @@
 - `PROJECT_BOOTSTRAP.md`: 항상 로드되는 최소 커널
 - `PROJECT_RULES.md`: 조건부 전체 규칙 원본
 - `docs/AGENT_MAINTENANCE.md`: 문서 구조 유지관리 체크리스트
+- `skills/SKILL_CONTRACT.md`: 스킬 문서 공통 작성 기준
 - `.geminiignore`: Gemini 컨텍스트 제외 목록
 
 ## 로드 원칙

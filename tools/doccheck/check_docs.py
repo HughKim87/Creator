@@ -22,6 +22,7 @@ REQUIRED_FILES = [
     "SESSION_HANDOFF.md",
     "docs/INDEX.md",
     "docs/AGENT_MAINTENANCE.md",
+    "skills/SKILL_CONTRACT.md",
     "README.md",
     "CURRENT_TASK.md",
     ".geminiignore",
@@ -35,6 +36,7 @@ SIZE_LIMITS = {
     "docs/INDEX.md": 60,
     "PROJECT_RULES.md": 180,
     "docs/AGENT_MAINTENANCE.md": 60,
+    "skills/SKILL_CONTRACT.md": 80,
     "SESSION_HANDOFF.md": 70,
     "CURRENT_TASK.md": 50,
 }
