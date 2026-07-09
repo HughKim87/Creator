@@ -42,6 +42,8 @@ that the mandatory full rule source is unavailable.
 - Do not delete, move, or overwrite important files without explicit user intent.
 - State the edit scope before modifying existing files.
 - Prefer structured validation over assuming tool success means task success.
+- After writing any file, verify it (NUL-byte scan + content check). Never leave a
+  corrupt file: restore it from Git and retry. See `PROJECT_RULES.md` File Write Safety.
 - Korean is the default report language.
 
 ## 4. Stop Rule

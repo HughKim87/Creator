@@ -119,6 +119,21 @@ Security > accuracy > cost. Resolve tradeoffs in that order.
 - If the same environment, shell, runtime, encoding, or path mistake repeats,
   pause and fix the workflow before continuing.
 
+## File Write Safety
+
+- File writes to this project must land byte-exact. After writing or editing any
+  file, verify it before moving on: scan for NUL bytes and confirm the expected
+  content is intact. A file that contains NUL bytes or partial/garbled text is
+  corrupt.
+- Never leave a corrupt file in place. Restore the last good version from Git
+  with `git show HEAD:<path> > <path>`, then retry. Do not report success while a
+  corrupt file remains.
+- A write tool returning "success" is NOT proof the file is correct. Only a
+  post-write byte check (NUL scan + content check) counts as verification.
+- For large non-ASCII (CJK) content or many files, prefer a shell byte-stream
+  write (for example writing to a temp file, verifying it, then copying it over)
+  instead of blind batched editor writes.
+
 ## File and Backup Rules
 
 - State the scope before editing an existing file.
