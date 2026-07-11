@@ -1,49 +1,57 @@
-# AI 에이전트 문서 유지관리
+# AI Agent Document Maintenance
 
-- 성격: 문서 구조 변경용 체크리스트.
-- 원칙: 규칙을 늘리지 말고 줄인다. 위험한 행동만 멈추고, 되돌릴 수 있는 작업은 자율 진행한다.
+- Role: checklist for document structure changes.
+- Principle: reduce rules rather than grow them. Stop only dangerous actions;
+  proceed autonomously on reversible work.
 
-## 목표 크기
+## Target Sizes
 
-| 파일 | 목표 |
+| File | Target |
 |---|---:|
-| `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` | 각 12줄 이하 |
-| `PROJECT_BOOTSTRAP.md` | 60줄 이하 |
-| `docs/INDEX.md` | 60줄 이하 |
-| `PROJECT_RULES.md` | 160줄 이하 |
-| `SESSION_HANDOFF.md` | 60줄 이하 |
-| `CURRENT_TASK.md` | 40줄 이하 |
+| `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` | ≤ 12 lines each |
+| `PROJECT_BOOTSTRAP.md` | ≤ 60 lines |
+| `docs/INDEX.md` | ≤ 60 lines |
+| `PROJECT_RULES.md` | ≤ 160 lines |
+| `SESSION_HANDOFF.md` | ≤ 80 lines |
 
-## 유지 규칙
+## Maintenance Rules
 
-- 시작 로드는 `PROJECT_BOOTSTRAP.md`와 `docs/INDEX.md`만.
-- `PROJECT_RULES.md`는 안전, 규칙, 삭제/이동/덮어쓰기, 커밋, 권한, 반복 실패, 검증, 구조 변경 때만 읽는다.
-- 긴 리서치와 설계 근거는 운영 규칙 문서에 넣지 않는다.
-- 같은 규칙이 두 문서 이상 반복되면 하나만 남긴다.
-- 문구 보존보다 역할, 크기, 깨진 참조, 위험 행동을 검사한다.
+- Startup load is `PROJECT_BOOTSTRAP.md` and `docs/INDEX.md` only.
+- Load `PROJECT_RULES.md` per "Load Full Rules When" in `PROJECT_BOOTSTRAP.md`.
+- Keep long research and design rationale out of operating rule documents.
+- If the same rule repeats in two or more documents, keep one.
+- Inspect roles, sizes, broken references, and risky behavior over wording.
 
-## 문서 작성 규칙
+## Authoring Rules
 
-- 새 문서는 첫 10줄 안에 역할, 읽는 시점, 보존 기준을 쓴다.
-- 본문에는 그 문서만 가진 결정, 절차, 데이터만 쓴다.
-- 반복 영상 작업에 재사용되지 않는 내용은 운영 규칙이 아니라 작업 산출물로 둔다.
-- 프레임워크 문서에는 채널, 인물, 클라이언트, 원본별 고유명사를 고정하지 않는다.
-- 워크플로우 도메인명, 플랫폼명, 도구명, 스킬명은 필요한 경우 유지한다.
-- 공통 규칙은 원본 문서로 연결하고 복사하지 않는다.
-- 조사 근거는 출처와 판단만 남기고 운영 규칙과 섞지 않는다.
-- 과거 상태, 커밋 SHA, 임시 작업 상태는 남기지 않는다.
-- 스킬 문서는 `skills/SKILL_CONTRACT.md`를 공통 계약으로 쓰고 단계별 차이만 적는다.
+- A new document states its role, when to read it, and retention criteria
+  within the first 10 lines.
+- The body contains only decisions, procedures, and data unique to that
+  document.
+- Content not reused across repeated video work belongs in task outputs, not
+  operating rules.
+- Do not pin channel, person, client, or per-source proper nouns in framework
+  documents.
+- Keep workflow domain names, platform names, tool names, and skill names when
+  needed.
+- Link shared rules to their source document; do not copy them.
+- Keep only sources and judgments from research; do not mix them into
+  operating rules.
+- Do not keep past states, commit SHAs, or transient work status.
+- Skill documents use `skills/SKILL_CONTRACT.md` as the shared contract and
+  record only per-stage differences.
+- Language policy: see Output in `PROJECT_RULES.md`.
 
-## 작업 순서
+## Work Order
 
-1. 바꿀 파일을 한 번에 하나씩 수정한다.
-2. 파일마다 NUL 바이트와 핵심 내용이 정상인지 확인한다.
-3. 관련 참조를 `rg`로 확인한다.
-4. `tools\run_doccheck.bat`와 `git diff --check`를 실행한다.
-5. 검증한 것과 못 한 것을 최종 보고한다.
+1. Modify one file at a time.
+2. Verify each file for NUL bytes and expected content.
+3. Check related references with `rg`.
+4. Run `tools\run_doccheck.bat` and `git diff --check`.
+5. Report what was verified and what was not.
 
-## 삭제 기준
+## Deletion Criteria
 
-- 한 번 쓰는 제안서나 실행안은 적용 후 삭제한다.
-- 과거 상태, 커밋 SHA, 작업트리 상태는 문서에 고정하지 않는다.
-- 삭제는 사용자의 명시 의도나 승인된 실행안에 포함될 때만 한다.
+- Delete one-shot proposals or execution plans after they are applied.
+- Do not pin past states, commit SHAs, or worktree status in documents.
+- Delete or move only with the user's explicit intent or an approved plan.

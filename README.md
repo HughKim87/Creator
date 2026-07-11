@@ -2,7 +2,7 @@
 
 AI 에이전트가 반복 영상 제작 작업을 안정적으로 처리하기 위한 독립 작업 폴더다.
 
-- 현재 상태: 원본 영상, 자막, 편집 산출물 없음. 새 원본 대기.
+- 현재 작업 상태의 원본은 `SESSION_HANDOFF.md`다.
 
 ## 핵심 방향
 
@@ -17,20 +17,19 @@ AI 에이전트가 반복 영상 제작 작업을 안정적으로 처리하기 �
 | `PROJECT_BOOTSTRAP.md` | 세션 시작 최소 커널 |
 | `PROJECT_RULES.md` | 조건부 전체 규칙 |
 | `docs/INDEX.md` | 문서 라우터 |
-| `SESSION_HANDOFF.md` | 다음 세션 상태 |
-| `CURRENT_TASK.md` | 현재 작업 카드 |
-| `01_유튜브_제작_워크플로우.md` | 1~8단계 게이트 |
+| `SESSION_HANDOFF.md` | 작업 상태 단일 원본(세션 인계 + 활성 작업 카드) |
+| `01_youtube_production_workflow.md` | 1~8단계 게이트 |
 | `skills/` | 단계별 실행 스킬 |
 | `tools/` | FFmpeg, synccheck, doccheck, remux |
-| `기획_리서치/` | 5단계 기획 규격과 운영 진단 |
+| `planning_research/` | 5단계 기획 규격과 운영 진단 |
 
 ## 에이전트 사용 방식
 
 1. `PROJECT_BOOTSTRAP.md`와 `docs/INDEX.md`만 먼저 읽는다.
 2. 필요한 문서만 라우터에서 골라 끝까지 읽는다.
-3. 규칙, 안전, 삭제/이동/덮어쓰기, 커밋, 권한, 반복 실패, 검증, 문서 구조 변경이면 `PROJECT_RULES.md`를 읽는다.
+3. `PROJECT_RULES.md` 로드 조건과 마무리 검증(Finish Check)은
+   `PROJECT_BOOTSTRAP.md`를 따른다.
 4. 되돌릴 수 있는 로컬 작업은 자율 진행하고, 되돌릴 수 없는 작업은 승인받는다.
-5. 문서·스킬·도구 변경 후 `tools\run_doccheck.bat`와 `git diff --check`를 실행한다.
 
 ## 다시 시작
 

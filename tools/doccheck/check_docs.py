@@ -24,7 +24,6 @@ REQUIRED_FILES = [
     "docs/AGENT_MAINTENANCE.md",
     "skills/SKILL_CONTRACT.md",
     "README.md",
-    "CURRENT_TASK.md",
     ".geminiignore",
 ]
 
@@ -37,8 +36,7 @@ SIZE_LIMITS = {
     "PROJECT_RULES.md": 160,
     "docs/AGENT_MAINTENANCE.md": 60,
     "skills/SKILL_CONTRACT.md": 80,
-    "SESSION_HANDOFF.md": 60,
-    "CURRENT_TASK.md": 50,
+    "SESSION_HANDOFF.md": 80,
 }
 
 STALE_PATTERNS = [

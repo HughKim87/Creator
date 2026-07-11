@@ -30,7 +30,7 @@ description: |
 - 6단계 검증 브리프
 
 기획서가 없거나 G1/G2/G3/G4 게이트를 통과하지 않았으면 멈추고, 먼저
-`dialogue-based-planning`과 `기획_리서치/기획단계_규격_2026-07-06.md`에 따라 5단계를 수행한다.
+`dialogue-based-planning`과 `planning_research/planning_stage_spec_2026-07-06.md`에 따라 5단계를 수행한다.
 
 ## 핵심 원칙
 

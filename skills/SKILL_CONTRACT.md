@@ -1,40 +1,46 @@
-# 스킬 문서 공통 계약
+# Shared Skill Document Contract
 
-- 역할: `skills/*/SKILL.md`에 반복하지 않을 공통 작성 기준.
-- 읽는 시점: 스킬을 만들거나 고치거나, 스킬 작업을 라우팅할 때.
-- 보존 기준: 스킬 문서의 반복 항목을 줄이는 한 유지한다.
+- Role: shared authoring standards not repeated in each `skills/*/SKILL.md`.
+- Read when: creating or fixing a skill, or routing skill work.
+- Retention: keep while it reduces repeated items across skill documents.
+- Skill stage documents themselves are written in Korean (see Output in
+  `PROJECT_RULES.md`); their required section names stay in Korean below.
 
-## 원칙
+## Principles
 
-- 스킬 파일은 해당 단계의 고유 입력, 판단, 출력만 적는다.
-- 공통 안전 규칙은 `PROJECT_RULES.md`로 연결하고 복사하지 않는다.
-- 도구 사용법은 `tools/README.md`나 해당 스크립트 도움말로 넘긴다.
-- 긴 조사 원문, 과거 진행 상태, 커밋 SHA는 스킬 문서에 넣지 않는다.
+- A skill file contains only that stage's unique inputs, judgments, and
+  outputs.
+- Link shared safety rules to `PROJECT_RULES.md`; do not copy them.
+- Defer tool usage to `tools/README.md` or the script's own help.
+- Do not put long research text, past progress, or commit SHAs in skill
+  documents.
 
-## 필수 항목
+## Required Sections
 
-각 스킬은 아래 항목을 가져야 한다. 이름은 단계에 맞게 바꿀 수 있다.
+Each skill must have the sections below. Names may be adapted per stage.
 
-1. 입력
-2. 출력
-3. 게이트
-4. 중단 조건
-5. 다음 단계 전달물
-6. AI가 확정하지 말 것
-7. 좋은 요청 예시
+1. 입력 (inputs)
+2. 출력 (outputs)
+3. 게이트 (gates)
+4. 중단 조건 (stop conditions)
+5. 다음 단계 전달물 (handoff to next stage)
+6. AI가 확정하지 말 것 (what AI must not finalize)
+7. 좋은 요청 예시 (good request examples)
 
-## 작성 기준
+## Authoring Standards
 
-- 입력: 필요한 파일, 선행 단계, 없을 때의 기본 행동을 쓴다.
-- 출력: 다음 단계가 그대로 사용할 파일, 표, 필드, 승인 상태를 쓴다.
-- 게이트: 통과와 실패를 판단할 수 있는 조건만 쓴다.
-- 중단 조건: 계속하면 손실, 왜곡, 덮어쓰기, 잘못된 확정이 생기는 경우만 쓴다.
-- 다음 단계 전달물: 다음 스킬이 읽을 최소 정보와 경로를 쓴다.
-- AI가 확정하지 말 것: 사용자가 최종 결정해야 하는 선택만 쓴다.
-- 좋은 요청 예시: 실제로 사용자가 말할 짧은 문장만 쓴다.
+- 입력: required files, prerequisite stages, and default behavior when missing.
+- 출력: files, tables, fields, and approval states the next stage uses as-is.
+- 게이트: only conditions that can decide pass or fail.
+- 중단 조건: only cases where continuing causes loss, distortion, overwrite,
+  or wrong finalization.
+- 다음 단계 전달물: the minimum information and paths the next skill reads.
+- AI가 확정하지 말 것: only choices the user must decide.
+- 좋은 요청 예시: only short sentences a user would actually say.
 
-## 정리 기준
+## Cleanup Standards
 
-- 같은 문장이 두 스킬 이상 반복되면 이 파일로 올린다.
-- 한 스킬이 너무 길어지면 도구 절차, 예시, 배경 설명을 별도 파일로 분리한다.
-- 삭제된 구버전 스킬이나 적용 완료된 보강 계획은 기준 자료로 쓰지 않는다.
+- If the same sentence repeats in two or more skills, hoist it into this file.
+- If one skill grows too long, split tool procedures, examples, and background
+  into separate files.
+- Do not use deleted legacy skills or applied reinforcement plans as reference.

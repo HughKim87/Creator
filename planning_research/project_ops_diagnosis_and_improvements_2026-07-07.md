@@ -4,7 +4,7 @@
 - 재정리: 2026-07-08
 - 현재 상태: Superseded. 2026-07-08 재설계 작업으로 주요 개선 항목 반영 완료.
 - 성격: 과거 운영 문제 진단 참고 문서. 기본 로드 금지.
-- 현재 기준: `PROJECT_RULES.md`, `docs/INDEX.md`, `01_유튜브_제작_워크플로우.md`, `skills/README.md`.
+- 현재 기준: `PROJECT_RULES.md`, `docs/INDEX.md`, `01_youtube_production_workflow.md`, `skills/README.md`.
 
 ## 0. 현재 결론
 
@@ -18,7 +18,7 @@
 2. 작업 스킬
 3. 영상 분석/편집 보조 도구
 
-따라서 이 문서의 권장 작업은 2026-07-08 재설계 작업으로 대부분 처리됐다. 현재 판단은 `docs/INDEX.md`와 `CURRENT_TASK.md`를 따른다.
+따라서 이 문서의 권장 작업은 2026-07-08 재설계 작업으로 대부분 처리됐다. 현재 판단은 `docs/INDEX.md`와 `SESSION_HANDOFF.md`를 따른다.
 
 ## 1. 현재 남은 데이터
 
@@ -28,8 +28,8 @@
 | `SESSION_HANDOFF.md` | 존재 | 재정리됨 |
 | `docs/INDEX.md` | 존재 | 재정리됨 |
 | 공통 작업 원칙 | `PROJECT_RULES.md`로 흡수 | 유효 |
-| `01_유튜브_제작_워크플로우.md` | 존재 | 1~8단계 게이트 기준으로 보강 완료 |
-| `기획_리서치/기획단계_규격_2026-07-06.md` | 존재 | 5단계 기준으로 유효 |
+| `01_youtube_production_workflow.md` | 존재 | 1~8단계 게이트 기준으로 보강 완료 |
+| `planning_research/planning_stage_spec_2026-07-06.md` | 존재 | 5단계 기준으로 유효 |
 | `skills/` | 존재 | 작업용 스킬 7종과 보조 스킬 1종 유지 |
 | `tools/` | 존재 | FFmpeg, synccheck, remux 유지 |
 | `workspace/` | 없음 | 원본·산출물 없음 |

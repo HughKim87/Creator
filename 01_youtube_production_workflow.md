@@ -44,7 +44,7 @@
 | 2 | `youtube-channel-planning` |
 | 3 | `youtube-script-planning` |
 | 4 | `subtitle-cleanup` |
-| 5 | `dialogue-based-planning` + `기획_리서치/기획단계_규격_2026-07-06.md` |
+| 5 | `dialogue-based-planning` + `planning_research/planning_stage_spec_2026-07-06.md` |
 | 6 | `gameplay-video-analysis` + `video-watch` |
 | 7 | `premiere-editing-export` |
 | 8 | `final-video-review` |
@@ -103,7 +103,7 @@
 
 ## 5단계와 6단계
 
-5단계 영상 기획은 `기획_리서치/기획단계_규격_2026-07-06.md`를 따른다.
+5단계 영상 기획은 `planning_research/planning_stage_spec_2026-07-06.md`를 따른다.
 
 - 컨트롤링 아이디어는 원본 대사 인용으로 뒷받침한다.
 - 대사 스파인은 소리만 들어도 이야기여야 한다.

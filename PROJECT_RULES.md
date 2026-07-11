@@ -26,8 +26,7 @@ editing support, review, and related automation.
   current source, stage, inputs, outputs, decisions, and blocker before deep work.
 - Load only the documents needed for the current source and stage. Do not bulk
   read reports, old plans, or unrelated skills.
-- Keep durable state in project files such as `CURRENT_TASK.md` and
-  `SESSION_HANDOFF.md`, not in chat memory.
+- Keep durable state in `SESSION_HANDOFF.md`, not in chat memory.
 - Put reusable corrections in the narrowest useful rule, contract, checklist, or
   tool check. Do not expand startup prompts to solve stage-specific problems.
 - Use deterministic tools for extraction, conversion, validation, and repeated
@@ -68,6 +67,7 @@ Ask before irreversible or risky actions.
 
 ## File Rules
 
+- Use English (ASCII) names for all folders and files in this project.
 - State edit scope before changing existing files.
 - Use Git for history. Do not create duplicate backup copies.
 - Never overwrite original videos, original subtitles, or user-authored sources.
@@ -97,6 +97,11 @@ Ask before irreversible or risky actions.
 
 ## Verification And Stop Rule
 
+The agent runs verification itself with the tools it has. Do not hand
+verification steps to the user. If an environment limit blocks a check, run
+an equivalent check (for example, on a cleaned copy) and report what the
+equivalent check does and does not prove.
+
 Report verification precisely:
 
 - Generated: created only.
@@ -116,7 +121,11 @@ intent in one sentence before doing more work.
 
 ## Output
 
-- Korean is the default report language.
+- Language policy: English for agent-facing framework documents (entrypoints,
+  `PROJECT_BOOTSTRAP.md`, `PROJECT_RULES.md`, `docs/INDEX.md`,
+  `docs/AGENT_MAINTENANCE.md`, `skills/SKILL_CONTRACT.md`). Korean for
+  user-facing documents (`SESSION_HANDOFF.md`, `README.md`,
+  workflow/skill stage documents, reports) and for chat replies.
 - Be concise and direct; lead with the answer.
 - Include source links in research reports.
 - Add a red-team section when decisions or risk claims are involved.
