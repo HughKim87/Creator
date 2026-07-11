@@ -1,0 +1,6 @@
+{
+  "_comment": "Gemini CLI guard template - user-level settings, not enforced by this repo. Merge into the user's Gemini settings.json. Policy source of truth: PROJECT_RULES.md. Verify keys against https://google-gemini.github.io/gemini-cli/docs/cli/enterprise.html before applying.",
+  "tools": {
+    "sandbox": true
+  }
+}

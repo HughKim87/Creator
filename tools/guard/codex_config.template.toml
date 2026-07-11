@@ -1,0 +1,11 @@
+# Codex CLI guard template — user-level settings, not enforced by this repo.
+# Merge into the user's Codex config (config.toml in the Codex home directory).
+# Source of truth for policy: PROJECT_RULES.md (Hard Safety / File Rules).
+# Verify option names against the official reference before applying:
+# https://developers.openai.com/codex/config-reference
+
+# Ask before running commands Codex cannot verify as safe.
+approval_policy = "untrusted"
+
+# Writes stay inside the workspace; no full machine access.
+sandbox_mode = "workspace-write"

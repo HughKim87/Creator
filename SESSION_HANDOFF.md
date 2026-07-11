@@ -36,13 +36,26 @@
 - 파일/폴더명 영어 전환: `01_youtube_production_workflow.md`,
   `planning_research/` 및 내부 문서 2개. 영어 파일명 규칙을 File Rules에 추가.
 - 구 CURRENT_TASK 문서를 이 파일로 통합하고 삭제. doccheck 기준과 참조 갱신.
+- 결정적 가드레일 추가: `.claude/settings.json` + `tools/guard/agent_guard.py`
+  (PreToolUse 차단 + Stop 시 doccheck 강제). 차단/허용/루프방지 분기
+  단위 테스트 완료. 상세는 `tools/README.md`의 guard 절.
+- git 계층 강제 추가: `.githooks/pre-commit`(doccheck), `.gitattributes`,
+  `--no-verify` 우회 차단. 이 사본에는 `core.hooksPath` 설정 완료.
+- `CLAUDE.md`에 Cowork용 평문 로드 지시 추가(@ import 미확장 보완 완결).
+- 새 원본 백업 확인 규칙을 File Rules에 추가. Codex/Gemini 사용자 설정
+  템플릿을 `tools/guard/`에 배치(저장소 강제 불가, 사용자 1회 적용).
 
 ## 다음 작업
 
 - 새 원본이 들어오면 활성 작업 카드부터 작성한다.
 - 새 소스가 없으면 편집 산출물을 만들지 않는다.
 - 구조 변경을 더 할 때만 `PROJECT_RULES.md`, `docs/AGENT_MAINTENANCE.md`를 읽는다.
-- 검토 후보(미적용): Cowork에서 `CLAUDE.md`의 `@` import 미확장 보완.
+- 보류(사용자 결정으로 연기): 동시 세션 커밋 조율 규칙화(우선 습관으로
+  운용: 편집 전 git status 확인), 스킬의 네이티브 `.claude/skills/` 이전
+  (실제 영상 작업에서 수동 라우팅이 불편할 때 재검토).
+- 가드레일 실사용 검증 대기: Claude Code 실세션에서 `/hooks`로 등록 확인 후
+  차단 1건을 실제로 유발해 본다. `py -3` 런처가 없으면
+  `.claude/settings.json`의 명령을 사용 가능한 Python으로 바꾼다.
 
 ## 주의
 

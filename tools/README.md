@@ -72,6 +72,34 @@ tools\run_doccheck.bat
 3. `video-watch`로 짧은 구간 프레임 추출
 4. 필요 시 `synccheck`로 컷 경계 검증
 
+## guard (결정적 가드레일)
+
+`tools/guard/agent_guard.py`는 Claude Code hooks(`.claude/settings.json`)가
+호출하는 차단 스크립트다. 규칙 원본은 `PROJECT_RULES.md`이고, 이 스크립트는
+그중 "절대 금지" 항목만 기계적으로 강제한다.
+
+- PreToolUse: git push, reset --hard, clean -f, 재귀 강제 삭제,
+  `inputs/`(원본) 삭제·덮어쓰기, 미디어/자막 파일 삭제, 비밀 파일 접근 차단.
+- Stop: 문서(.md/.py/.bat) 변경이 있으면 doccheck를 실행하고, 실패 시
+  종료를 막고 오류를 되돌려준다. `stop_hook_active`로 무한 루프를 방지한다.
+- 실패 시 개방(fail-open): 입력 파싱 실패나 도구 부재 시 차단하지 않는다.
+- Claude Code 전용. Codex, Gemini는 `tools/guard/`의 사용자 설정 템플릿
+  (`codex_config.template.toml`, `gemini_settings.template.json`)을 1회 적용한다.
+
+테스트: 샘플 훅 JSON을 stdin으로 넣어 exit 코드를 확인한다(차단=2, 허용=0).
+
+### git pre-commit (전 에이전트 공통)
+
+`.githooks/pre-commit`이 커밋 직전 doccheck를 강제한다. 어느 에이전트가
+작업했든 동일하게 적용된다. 새 클론에서는 1회 설정이 필요하다:
+
+```
+git config core.hooksPath .githooks
+```
+
+`--no-verify` 우회는 규칙 위반이며 agent_guard가 차단한다. 줄바꿈 정책은
+`.gitattributes`가 관리한다.
+
 ## synccheck
 
 `tools/synccheck/`의 스크립트는 새 원본 경로와 컷리스트를 명령행 인자로 받아 실행한다. 과거 세션 절대경로나 특정 원본 파일명은 기준으로 삼지 않는다.

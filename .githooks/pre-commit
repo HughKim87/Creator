@@ -1,0 +1,24 @@
+#!/bin/sh
+# Pre-commit gate: doccheck must pass before any commit, for every agent.
+# Bypassing with --no-verify is prohibited by PROJECT_RULES.md.
+ROOT="$(git rev-parse --show-toplevel)"
+SCRIPT="$ROOT/tools/doccheck/check_docs.py"
+[ -f "$SCRIPT" ] || exit 0
+
+if command -v py >/dev/null 2>&1; then
+  py -3 "$SCRIPT"
+elif command -v python3 >/dev/null 2>&1; then
+  python3 "$SCRIPT"
+elif command -v python >/dev/null 2>&1; then
+  python "$SCRIPT"
+else
+  echo "pre-commit: python not found, skipping doccheck" >&2
+  exit 0
+fi
+
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  echo "pre-commit: doccheck failed. Fix documents before committing." >&2
+  exit 1
+fi
+exit 0
