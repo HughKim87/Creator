@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 TEXT_SUFFIXES = {".md", ".py", ".bat", ".txt"}
-SKIP_DIRS = {".git", ".agents", ".codex", "workspace", "temp", "inputs", "__pycache__"}
+SKIP_DIRS = {".git", ".agents", ".codex", "workspace", "temp", "inputs", "outputs", "__pycache__"}
 SKIP_PREFIXES = {"tools/ffmpeg/"}
 
 REQUIRED_FILES = [
@@ -109,6 +109,10 @@ def check_nul_and_stale(root: Path, findings: list[Finding]) -> None:
             if relative == "tools/doccheck/check_docs.py":
                 continue
             for phrase, reason in STALE_PATTERNS:
+                # 고유명사 규칙은 프레임워크 문서용. 작업 상태 문서는 작업
+                # 대상 이름(예: 현재 영상 제목)을 기록할 수 있어 예외로 둔다.
+                if relative == "SESSION_HANDOFF.md" and "고유명사" in reason:
+                    continue
                 if phrase in line:
                     add(findings, "ERROR", relative, index, f"`{phrase}` 발견. {reason}")
             if re.search(r"(커밋|commit).*[0-9a-f]{7,40}", line, re.IGNORECASE):
