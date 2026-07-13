@@ -45,6 +45,8 @@ BASH_DENY = [
      "Project temp output is prohibited. Use the durable stage output location."),
     (r"(?i)(--out-dir|--output|\s-o)\s+[\"']?[^&|;\"']*workspace[\\/]outputs(?:[\\/]|[\"'\s]|$)",
      "Duplicate workspace/outputs trees are prohibited. Use the project outputs/ directory."),
+    (r"(?i)(--out-dir|--output|\s-o)\s+[\"']?(?:[^&|;\"']*[\\/])?runs(?:[\\/]|[\"'\s]|$)",
+     "A separate runs/ tree is prohibited. Put input-derived files under outputs/."),
 ]
 
 PATH_DENY = [
@@ -54,6 +56,8 @@ PATH_DENY = [
      "Writing under project temp/ is blocked. Use the durable stage output location."),
     (r"(?i)(^|[\\/])workspace[\\/]outputs([\\/]|$)",
      "Writing under workspace/outputs is blocked. Use the project outputs/ directory."),
+    (r"(?i)(^|[\\/])runs([\\/]|$)",
+     "Writing under runs/ is blocked. Put input-derived files under outputs/."),
     (r"(?i)(^|[\\/])backups?([\\/]|$)|\.bak(?:[_\.-]|$)",
      "Duplicate backup copies are prohibited. Use Git history and the approved original backup."),
     (r"(?i)(^|[\\/])\.env(\.|$|[\\/])", "Secrets files are off limits."),

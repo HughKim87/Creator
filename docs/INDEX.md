@@ -8,17 +8,18 @@
 1. `PROJECT_BOOTSTRAP.md`
 2. `docs/INDEX.md`
 
-For continuing work, read `SESSION_HANDOFF.md`.
+For continuing work, read `SESSION_HANDOFF.md`, then the output state it routes to.
 Load `PROJECT_RULES.md` per "Load Full Rules When" in `PROJECT_BOOTSTRAP.md`.
 
-The single source of current work state is `SESSION_HANDOFF.md`.
+The root handoff is a reusable pointer. Current video state lives only in
+`outputs/SESSION_HANDOFF.md` when that file exists.
 
 ## Router
 
 | Situation | Read |
 |---|---|
 | Project entry overview | `README.md` |
-| Continuing work | `SESSION_HANDOFF.md` |
+| Continuing work | `SESSION_HANDOFF.md`, then `outputs/SESSION_HANDOFF.md` |
 | Rules/safety/structure change | `PROJECT_RULES.md`, `docs/AGENT_MAINTENANCE.md` |
 | Production stage decision | `01_youtube_production_workflow.md` |
 | Stage 7 editing quality consistency | `docs/EDITING_QUALITY_STANDARD.md`, `skills/premiere-editing-export/SKILL.md` |

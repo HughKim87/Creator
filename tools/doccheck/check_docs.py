@@ -16,6 +16,15 @@ TEXT_SUFFIXES = {".md", ".py", ".bat", ".txt"}
 SKIP_DIRS = {".git", ".agents", ".codex", "workspace", "temp", "inputs", "outputs", "__pycache__"}
 SKIP_PREFIXES = {"tools/ffmpeg/"}
 MEDIA_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".mp3", ".wav", ".m4a", ".mp4", ".mkv", ".mov", ".avi"}
+ALLOWED_TOP_LEVEL_DIRS = {
+    ".agents", ".claude", ".codex", ".git", ".githooks", "docs", "inputs",
+    "outputs", "planning_research", "skills", "tests", "tools",
+}
+ALLOWED_ROOT_FILES = {
+    ".gitattributes", ".geminiignore", ".gitignore", "01_youtube_production_workflow.md",
+    "AGENTS.md", "CLAUDE.md", "GEMINI.md", "PROJECT_BOOTSTRAP.md",
+    "PROJECT_RULES.md", "README.md", "SESSION_HANDOFF.md",
+}
 
 REQUIRED_FILES = [
     "PROJECT_BOOTSTRAP.md",
@@ -40,7 +49,7 @@ SIZE_LIMITS = {
     "PROJECT_RULES.md": 160,
     "docs/AGENT_MAINTENANCE.md": 60,
     "skills/SKILL_CONTRACT.md": 80,
-    "SESSION_HANDOFF.md": 80,
+    "SESSION_HANDOFF.md": 20,
 }
 
 STALE_PATTERNS = [
@@ -57,7 +66,7 @@ STALE_PATTERNS = [
 
 FORBIDDEN_ENTRYPOINTS = ["@PROJECT_RULES.md", "@SESSION_HANDOFF.md", "@docs/INDEX.md"]
 MD_REF_RE = re.compile(r"`([^`]+?\.md)`|\]\(([^)]+?\.md)\)")
-ALLOW_REFS = {"Workspace/README.md"}
+ALLOW_REFS = {"Workspace/README.md", "outputs/SESSION_HANDOFF.md"}
 
 
 @dataclass
@@ -113,10 +122,6 @@ def check_nul_and_stale(root: Path, findings: list[Finding]) -> None:
             if relative == "tools/doccheck/check_docs.py":
                 continue
             for phrase, reason in STALE_PATTERNS:
-                # 고유명사 규칙은 프레임워크 문서용. 작업 상태 문서는 작업
-                # 대상 이름(예: 현재 영상 제목)을 기록할 수 있어 예외로 둔다.
-                if relative == "SESSION_HANDOFF.md" and "고유명사" in reason:
-                    continue
                 if phrase in line:
                     add(findings, "ERROR", relative, index, f"`{phrase}` 발견. {reason}")
             if re.search(r"(커밋|commit).*[0-9a-f]{7,40}", line, re.IGNORECASE):
@@ -201,6 +206,42 @@ def check_workspace_hygiene(root: Path, findings: list[Finding]) -> None:
             add(findings, "ERROR", rel(path, root), None, "중복 백업 파일 이름을 사용하지 않는다.")
 
 
+def check_folder_ownership(root: Path, findings: list[Finding]) -> None:
+    for path in root.iterdir():
+        if path.is_dir() and path.name not in ALLOWED_TOP_LEVEL_DIRS:
+            add(findings, "ERROR", path.name, None, "분류되지 않은 루트 폴더다. 영상 작업 폴더는 outputs/ 아래에 둔다.")
+        elif path.is_file() and path.name not in ALLOWED_ROOT_FILES:
+            add(findings, "ERROR", path.name, None, "분류되지 않은 루트 파일이다. 입력 기반 파일은 outputs/ 아래에 둔다.")
+
+    if (root / "NEXT_SESSION_TASK.md").exists():
+        add(findings, "ERROR", "NEXT_SESSION_TASK.md", None, "루트에 영상별 작업 상태를 중복 저장하지 않는다.")
+
+    handoff = root / "SESSION_HANDOFF.md"
+    if handoff.exists():
+        content = read_text(handoff)
+        if "outputs/SESSION_HANDOFF.md" not in content:
+            add(findings, "ERROR", "SESSION_HANDOFF.md", None, "루트 핸드오프는 outputs/SESSION_HANDOFF.md를 안내해야 한다.")
+        for task_marker in ("source_id:", "## 현재 목표", "## 다음 작업"):
+            if task_marker in content:
+                add(findings, "ERROR", "SESSION_HANDOFF.md", None, f"영상별 상태 표식 `{task_marker}`는 outputs/에 둔다.")
+
+    task_state = root / "outputs" / "SESSION_HANDOFF.md"
+    if task_state.exists():
+        match = re.search(r"source_id:\s*`?([A-Za-z0-9_.-]+)`?", read_text(task_state))
+        if match:
+            source_id = match.group(1)
+            for path in text_files(root):
+                if source_id in read_text(path):
+                    add(findings, "ERROR", rel(path, root), None, f"현재 영상 식별자 `{source_id}`는 outputs/ 밖에 둘 수 없다.")
+
+    for path in root.rglob("*.py"):
+        relative = Path(rel(path, root))
+        if not relative.parts or relative.parts[0] in {"inputs", "outputs"}:
+            continue
+        if relative.parts[0] not in {"tools", "skills", "tests"}:
+            add(findings, "ERROR", relative.as_posix(), None, "outputs/ 밖의 Python은 공용 도구·스킬·프레임워크 테스트여야 한다.")
+
+
 def find_new_python_files(root: Path, findings: list[Finding]) -> list[Path]:
     git = ["git", "-c", f"safe.directory={root.as_posix()}"]
     commands = [
@@ -257,13 +298,16 @@ def check_python_lifecycle(
             continue
 
         if parts[0] == "outputs":
-            header = "\n".join(read_text(path).splitlines()[:20]).lower()
             if "support" not in parts[1:-1]:
-                add(findings, "ERROR", relative_text, None, "작업 한정 Python 파일은 단계 출력의 `support/` 아래에 둔다.")
-            elif "lifecycle: task-scoped" not in header or "cleanup:" not in header:
+                add(findings, "ERROR", relative_text, None, "작업 한정 Python은 `outputs/<stage>/support/` 아래에 둔다.")
+                continue
+            if path.name.startswith("test_") and "tests" in parts[1:-1]:
+                continue
+            header = "\n".join(read_text(path).splitlines()[:20]).lower()
+            if "lifecycle: task-scoped" not in header or "cleanup:" not in header:
                 add(findings, "ERROR", relative_text, None, "첫 20줄에 `Lifecycle: task-scoped`와 `Cleanup:` 조건을 기록한다.")
             else:
-                add(findings, "WARN", relative_text, None, "작업 한정 Python 파일이다. 종료 보고에서 유지·통합·정리 판단을 밝힌다.")
+                add(findings, "WARN", relative_text, None, "작업 한정 Python이다. 종료 보고에서 유지·통합·승격·정리 판단을 밝힌다.")
             continue
 
         add(findings, "ERROR", relative_text, None, "신규 Python 파일의 역할이 불명확하다. `tools/`, 스킬 `scripts/`, `tests/`, 또는 단계 `support/`를 사용한다.")
@@ -379,6 +423,7 @@ def run(root: Path) -> int:
     check_refs(root, findings)
     check_gemini_ignore(root, findings)
     check_workspace_hygiene(root, findings)
+    check_folder_ownership(root, findings)
     check_python_lifecycle(root, findings)
     check_skill_asset_contract(root, findings)
     check_media_registry(root, findings)

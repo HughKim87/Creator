@@ -90,6 +90,58 @@ class PythonFileLifecycleTests(unittest.TestCase):
             self.assertFalse(any(item.level == "ERROR" for item in findings))
             self.assertTrue(any(item.level == "WARN" for item in findings))
 
+    def test_task_scoped_test_stays_with_its_output_support_code(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "outputs/07_edit_export/support/tests/test_inspect_once.py"
+            self.write(root, relative, "def test_placeholder():\n    assert True\n")
+            self.assertEqual(self.findings_for(root, relative), [])
+
+    def test_rejects_task_scoped_script_outside_outputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "runs/source/support/inspect_once.py"
+            self.write(root, relative, "# Lifecycle: task-scoped\n# Cleanup: after review\n")
+            findings = self.findings_for(root, relative)
+            self.assertTrue(any(item.level == "ERROR" for item in findings))
+
+
+class FolderOwnershipTests(unittest.TestCase):
+    def findings_for(self, root):
+        findings = []
+        DOCHECK.check_folder_ownership(root, findings)
+        return findings
+
+    def test_rejects_an_unclassified_top_level_task_folder(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "runs").mkdir()
+            findings = self.findings_for(root)
+            self.assertTrue(any(item.level == "ERROR" and item.path == "runs" for item in findings))
+
+    def test_root_handoff_must_not_contain_video_state(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "SESSION_HANDOFF.md").write_text(
+                "outputs/SESSION_HANDOFF.md\nsource_id: example\n", encoding="utf-8"
+            )
+            findings = self.findings_for(root)
+            self.assertTrue(any("source_id:" in item.message for item in findings))
+
+    def test_current_source_id_cannot_leak_into_framework_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "outputs").mkdir()
+            (root / "tools").mkdir()
+            (root / "outputs" / "SESSION_HANDOFF.md").write_text(
+                "source_id: `sample_20260714`\n", encoding="utf-8"
+            )
+            (root / "tools" / "README.md").write_text(
+                "sample_20260714\n", encoding="utf-8"
+            )
+            findings = self.findings_for(root)
+            self.assertTrue(any("sample_20260714" in item.message for item in findings))
+
 
 if __name__ == "__main__":
     unittest.main()

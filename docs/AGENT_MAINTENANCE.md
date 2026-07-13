@@ -12,7 +12,8 @@
 | `PROJECT_BOOTSTRAP.md` | ≤ 60 lines |
 | `docs/INDEX.md` | ≤ 60 lines |
 | `PROJECT_RULES.md` | ≤ 160 lines |
-| `SESSION_HANDOFF.md` | ≤ 80 lines |
+| `SESSION_HANDOFF.md` | ≤ 20 lines |
+| `outputs/SESSION_HANDOFF.md` | ≤ 120 lines |
 
 ## Maintenance Rules
 
@@ -28,8 +29,9 @@
   within the first 10 lines.
 - The body contains only decisions, procedures, and data unique to that
   document.
-- Content not reused across repeated video work belongs in task outputs, not
-  operating rules.
+- User material belongs only in `inputs/`. Every input-derived file, including
+  task state, helper code, and tests, belongs only in `outputs/`.
+- Root controllers and framework folders contain only cross-video material.
 - Do not pin channel, person, client, or per-source proper nouns in framework
   documents.
 - Keep workflow domain names, platform names, tool names, and skill names when

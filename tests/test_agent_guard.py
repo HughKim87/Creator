@@ -22,6 +22,7 @@ class AgentGuardTests(unittest.TestCase):
         self.assertTrue(self.denied_bash("python watch.py --out-dir temp/video-watch"))
         self.assertTrue(self.denied_bash("python watch.py --output outputs/temp/frames"))
         self.assertTrue(self.denied_bash("python watch.py --out-dir workspace/outputs/frames"))
+        self.assertTrue(self.denied_bash("python task.py --out-dir runs/source/support"))
 
     def test_allows_durable_output(self):
         self.assertFalse(self.denied_bash("python watch.py --out-dir outputs/06_analysis/source_assets"))
@@ -31,6 +32,7 @@ class AgentGuardTests(unittest.TestCase):
         self.assertTrue(self.denied_path("outputs/backups/file.md"))
         self.assertTrue(self.denied_path("SESSION_HANDOFF.md.bak_1"))
         self.assertTrue(self.denied_path("workspace/outputs/frames/a.jpg"))
+        self.assertTrue(self.denied_path("runs/source/support/task.py"))
 
 
 if __name__ == "__main__":

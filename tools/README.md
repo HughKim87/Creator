@@ -1,6 +1,7 @@
 # 프로젝트 내부 도구
 
-이 폴더는 영상 분석/편집 자동화에 필요한 로컬 도구를 둔다.
+이 폴더는 입력 자료와 무관하게 여러 영상에 재사용하는 로컬 도구만 둔다.
+특정 영상 전용 코드는 관련 `outputs/<stage>/support/`에 둔다.
 
 ## 현재 상태
 
@@ -39,12 +40,12 @@
 
 ### Python 파일 생명주기
 
-- 작업에 필요하고 기존 모듈이 합리적인 위치가 아니면 새 `.py`를 만들 수 있다. 재사용 가능성은 우선 판단 사항이지 절대 조건이 아니다.
-- 생성 전 관련 스크립트를 확인하고, 생성 이유와 `durable`·`merge candidate`·`task-scoped` 중 예상 수명을 밝힌다.
-- 유지할 도구는 `tools/README.md` 또는 담당 스킬에 등록한다. 같은 책임의 테스트는 기존 테스트에 추가하고, 책임이 다르면 새 테스트 파일을 허용한다.
-- 작업 한정 스크립트를 보존해야 한다면 단계 출력의 `support/` 아래에 두고 첫 20줄 안에 `Lifecycle: task-scoped`와 `Cleanup:` 조건을 기록한다.
-- 사용 후에는 `keep`·`merge`·`cleanup` 중 처리 판단을 보고한다. 정리 대상은 승인 없이 삭제하지 않는다.
-- doccheck는 신규 Python 파일의 위치·도구 등록·작업 한정 수명 표시를 검사한다.
+- 새 `.py`가 필요하면 먼저 기존 모듈의 책임과 입력 계약을 확인한다.
+- 여러 영상에 같은 계약으로 재사용할 코드는 `tools/` 또는 담당 스킬에 두고 문서화한다.
+- 입력 자료나 특정 편집본에 의존하는 코드는 관련 `outputs/<stage>/support/`에 두며 테스트도 함께 둔다.
+- 작업 전용 코드는 첫 20줄 안에 `Lifecycle: task-scoped`와 `Cleanup:` 조건을 기록한다.
+- 사용 후에는 `keep`·`merge`·`promote`·`cleanup` 판단을 보고한다. 공용 승격은 입력별 상수를 제거하고 교차 영상 계약을 검증한 뒤에만 한다.
+- doccheck는 신규 Python의 위치, 공용 도구 등록, 작업 전용 수명 표시를 검사한다.
 
 ## remux_mkv_to_mp4.bat
 
@@ -67,6 +68,7 @@ tools\run_doccheck.bat
 
 - 필수 루트 문서 존재
 - AI 에이전트 표준 진입점과 포인터 파일 구조
+- `inputs/`·`outputs/`·공용 프레임워크의 폴더 소유권 위반
 - 오래된 상태 문구와 동적 커밋 상태 고정
 - 과거 세션 절대경로와 과거 원본 파일명
 - 프로젝트 `temp/`, 스킬의 임시 출력 경로, 중복 백업 파일
@@ -94,7 +96,7 @@ tools\run_doccheck.bat
 그중 "절대 금지" 항목만 기계적으로 강제한다.
 
 - PreToolUse: git push, reset --hard, clean -f, 재귀 강제 삭제,
-  `inputs/`(원본) 삭제·덮어쓰기, 미디어/자막 파일 삭제, `temp/`·백업 경로 쓰기, 비밀 파일 접근 차단.
+  `inputs/` 쓰기, 미디어/자막 삭제, `temp/`·`runs/`·중복 출력·백업 경로 쓰기, 비밀 파일 접근 차단.
 - Stop: 문서(.md/.py/.bat) 변경이 있으면 doccheck를 실행하고, 실패 시
   종료를 막고 오류를 되돌려준다. `stop_hook_active`로 무한 루프를 방지한다.
 - 실패 시 개방(fail-open): 입력 파싱 실패나 도구 부재 시 차단하지 않는다.
@@ -152,10 +154,10 @@ python tools\register_source_assets.py `
 예시:
 
 ```powershell
-python tools\synccheck\vadcheck.py "workspace\inputs\원본.mp4" "workspace\inputs\원본.srt" --clip "B03:00:12:10-00:13:00"
-python tools\synccheck\align.py "workspace\inputs\원본.mp4" "workspace\inputs\원본.srt" --clip "B03:00:12:10-00:13:00"
-python tools\synccheck\full_scan.py "workspace\inputs\원본.mp4" "workspace\outputs\07_edit_export\cutlist.csv"
-python tools\synccheck\build_v9.py "workspace\outputs\07_edit_export\cutlist.csv" "workspace\outputs\07_edit_export\cutlist_adjusted.csv" --start 3=00:12:09.5
+python tools\synccheck\vadcheck.py "inputs\원본.mp4" "inputs\원본.srt" --clip "B03:00:12:10-00:13:00"
+python tools\synccheck\align.py "inputs\원본.mp4" "inputs\원본.srt" --clip "B03:00:12:10-00:13:00"
+python tools\synccheck\full_scan.py "inputs\원본.mp4" "outputs\07_edit_export\cutlist.csv"
+python tools\synccheck\build_v9.py "outputs\07_edit_export\cutlist.csv" "outputs\07_edit_export\cutlist_adjusted.csv" --start 3=00:12:09.5
 ```
 
 - `full_scan.py`는 제안만 출력하고 파일을 수정하지 않는다.

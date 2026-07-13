@@ -43,7 +43,7 @@ cause, the risk of continuing, and what to re-research. Then wait.
 
 | Situation | Read |
 |---|---|
-| Continuing work | `SESSION_HANDOFF.md` |
+| Continuing work | `SESSION_HANDOFF.md`, then `outputs/SESSION_HANDOFF.md` when present |
 | Project docs/rules/tools change | `PROJECT_RULES.md`, `docs/AGENT_MAINTENANCE.md` |
 | Workflow decision | `01_youtube_production_workflow.md` |
 | Stage work | relevant `skills/*/SKILL.md` or stage document |

@@ -26,16 +26,14 @@ editing support, review, and related automation.
   current source, stage, inputs, outputs, decisions, and blocker before deep work.
 - Load only the documents needed for the current source and stage. Do not bulk
   read reports, old plans, or unrelated skills.
-- Keep durable state in `SESSION_HANDOFF.md`, not in chat memory.
+- Keep root `SESSION_HANDOFF.md` generic; durable task state lives in `outputs/SESSION_HANDOFF.md`.
 - Put reusable corrections in the narrowest useful rule, contract, checklist, or
   tool check. Do not expand startup prompts to solve stage-specific problems.
 - Use deterministic tools for extraction, conversion, validation, and repeated
   file operations. Use AI for judgment, candidates, synthesis, and explanation.
 - Add new docs or rules only when they reduce repeated work, prevent known
   failure, or route context more accurately.
-- Keep framework rules, routers, and skill contracts free of task-specific
-  proper nouns. Put channel, person, client, source, and episode facts in
-  task-specific inputs or state documents.
+- Keep framework files free of task facts; put channel, person, client, source, and episode facts only in `inputs/` or `outputs/`.
 - Keep workflow-domain terms such as YouTube when they define the target
   platform, tool, skill name, or validation surface.
 
@@ -70,16 +68,17 @@ Ask before irreversible or risky actions.
 
 - Use English (ASCII) names for all folders and files in this project.
 - State edit scope before changing existing files.
+- `inputs/` is user material only; agents change nothing there without an explicit request.
+- Every input-derived file belongs under `outputs/`: results, state, review pages, task scripts, and task tests.
+- Root controllers, `docs/`, `tools/`, `skills/`, `tests/`, and `planning_research/` are reusable framework only.
+- Do not add a top-level task folder; subdivide tasks only inside the owning `outputs/` stage.
 - Use Git for text history. Do not create duplicate backup copies.
 - Never overwrite original videos, original subtitles, or user-authored sources.
 - For a new source, record only whether the user already has an external backup; never create or copy one without an explicit request.
-- Reuse unchanged outputs. Version only changed inputs or decisions; promote through
-  `CURRENT.json`, mark prior versions `superseded`, and report cleanup candidates.
-- A new Python file is allowed when needed and no existing module is a reasonable owner; reuse is preferred, not mandatory.
-- Before creating one, inspect related scripts and state its purpose and intended lifecycle: durable, merge candidate, or task-scoped.
-- Document durable tools in `tools/README.md` or the owning skill. After use, report keep, merge, or cleanup disposition; do not leave unexplained one-off scripts.
-- Extend a related test module when it has the same responsibility; create a separate test module when the responsibility is distinct.
-- Do not create empty `workspace/` scaffolding without an actual source task.
+- Reuse unchanged outputs; version changed decisions through `CURRENT.json`, mark prior versions `superseded`, and report cleanup candidates.
+- Necessary task Python belongs in `outputs/<stage>/support/`; its tests stay with it.
+- Add Python to `tools/`, a skill, or root `tests/` only for an input-independent cross-video contract; document its owner.
+- Before creating Python, inspect related code and state its lifecycle; after use report keep, merge, promote, or cleanup.
 - Delete or move files only when the user's intent is clear.
 
 ## File Write Safety
