@@ -1,6 +1,6 @@
 # Document Index — Video Workflow
 
-- Updated: 2026-07-11
+- Updated: 2026-07-14
 - Role: router that selects only the documents needed. No work state lives here.
 
 ## Default Load
@@ -27,6 +27,7 @@ The root handoff is a reusable pointer. Current video state lives only in
 | Five-stage planning | `skills/dialogue-based-planning/SKILL.md`, `planning_research/planning_stage_spec_2026-07-06.md` |
 | Skill work | `skills/README.md`, `skills/SKILL_CONTRACT.md`, relevant `skills/*/SKILL.md` |
 | Tool work | `tools/README.md`, then specific tool help |
+| Multi-agent workflow/tool adoption | `planning_research/multi_agent_file_workflow_solution_research_2026-07-14.md` |
 | Past operational diagnosis | `planning_research/project_ops_diagnosis_and_improvements_2026-07-07.md` |
 
 ## Reference Documents

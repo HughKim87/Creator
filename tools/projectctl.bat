@@ -2,7 +2,7 @@
 setlocal
 
 set "ROOT=%~dp0.."
-set "SCRIPT=%ROOT%\tools\doccheck\check_docs.py"
+set "SCRIPT=%ROOT%\tools\projectctl.py"
 set "PY="
 
 if exist "%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" (

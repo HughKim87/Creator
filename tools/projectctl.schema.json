@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "projectctl.schema.json",
+  "title": "Project agent control state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "handoff_path",
+    "active_task",
+    "last_completed",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "handoff_path": {
+      "const": "outputs/SESSION_HANDOFF.md"
+    },
+    "active_task": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/active_task"
+        }
+      ]
+    },
+    "last_completed": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/completed_task"
+        }
+      ]
+    },
+    "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "$defs": {
+    "active_task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "agent",
+        "session",
+        "started_at",
+        "base_commit"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "session": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "started_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "completed_task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "agent",
+        "session",
+        "started_at",
+        "base_commit",
+        "finished_at",
+        "summary",
+        "verification"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "session": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "started_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "finished_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string"
+        },
+        "verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "checked_at",
+            "checks"
+          ],
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "checked_at": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "checks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

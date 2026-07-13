@@ -12,6 +12,8 @@
 - Read selected instruction documents to the end.
 - Do not rely on memory, summaries, or partial excerpts for controlling docs.
 - If a required rule file cannot be read, stop and report the missing file.
+- Before continuing, run `projectctl context`; before file edits, claim the task with `start`.
+- Use `tools/README.md` for exact commands; task facts remain in the routed output handoff.
 
 ## Load Full Rules When
 
@@ -52,5 +54,5 @@ cause, the risk of continuing, and what to re-research. Then wait.
 
 ## Finish Check
 
-For document, skill, tool, or structure changes, run `tools\run_doccheck.bat`
-and `git diff --check`, then report verification gaps.
+For document, skill, tool, or structure changes, use `projectctl finish` after
+claiming the task, or `projectctl verify` for read-only checks. Report gaps.

@@ -15,6 +15,8 @@
 | `tools/remux_mkv_to_mp4.bat` | 존재 |
 | `tools/source_frame_assets.py` | 존재 |
 | `tools/register_source_assets.py` | 존재 |
+| `tools/projectctl.py`, `tools/projectctl.bat` | 존재 |
+| `tools/projectctl.schema.json` | 존재 |
 | `tools/run_doccheck.bat` | 존재 |
 | `tools/doccheck/check_docs.py` | 존재 |
 | `tools/synccheck/*.py` | 존재 |
@@ -79,6 +81,27 @@ tools\run_doccheck.bat
 - `skills/*/SKILL.md`의 입력, 출력, 게이트, 중단 조건, AI 확정 금지, 요청 예시
 
 문서나 스킬을 수정한 뒤 최종 답변 전에 실행한다.
+
+## projectctl (에이전트 공통 제어)
+
+Claude·Codex·Gemini가 같은 작업 상태와 종료 검사를 사용하게 하는 공용 명령이다.
+영상별 사실은 복제하지 않고 `outputs/SESSION_HANDOFF.md`를 계속 단일 정본으로
+사용한다. `outputs/AGENT_CONTROL.json`에는 활성 작업, 담당 에이전트, 마지막으로
+검증 완료된 작업의 짧은 영수증만 기록한다. 형식은 `tools/projectctl.schema.json`이다.
+
+```bat
+tools\projectctl.bat context
+tools\projectctl.bat start --task <ascii-slug> --title "<작업명>" --agent <codex|claude|gemini>
+tools\projectctl.bat verify
+tools\projectctl.bat finish --task <ascii-slug> --summary "<완료 요약>"
+```
+
+- `status`, `context`, `verify`는 상태 파일을 수정하지 않는다.
+- `start`는 이미 다른 활성 작업이 있으면 실패해 세션 간 작업 충돌을 드러낸다.
+- `finish`는 doccheck, 전체 단위 테스트, staged/unstaged `git diff --check`가
+  모두 통과한 경우에만 활성 작업을 완료 처리한다.
+- 상태 파일이 손상됐거나 스키마 버전이 다르면 자동 초기화하지 않고 중단한다.
+- 이 도구는 작업 조율 장치다. 콘텐츠 판단과 실제 진행 상태는 핸드오프에 기록한다.
 
 ## 검증 상태
 
