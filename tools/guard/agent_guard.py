@@ -41,11 +41,21 @@ BASH_DENY = [
      "Deleting media/subtitle files is blocked. Originals must be preserved."),
     (r">\s*\"?[^&|;\"]*[\\/]inputs[\\/]",
      "Redirecting output into inputs/ (original sources) is blocked."),
+    (r"(?i)(--out-dir|--output|\s-o)\s+[\"']?(?:[^&|;\"']*[\\/])?temp(?:[\\/]|[\"'\s]|$)",
+     "Project temp output is prohibited. Use the durable stage output location."),
+    (r"(?i)(--out-dir|--output|\s-o)\s+[\"']?[^&|;\"']*workspace[\\/]outputs(?:[\\/]|[\"'\s]|$)",
+     "Duplicate workspace/outputs trees are prohibited. Use the project outputs/ directory."),
 ]
 
 PATH_DENY = [
     (r"(?i)(^|[\\/])inputs[\\/]",
      "Writing under inputs/ (original sources) is blocked. Save outputs elsewhere."),
+    (r"(?i)(^|[\\/])temp([\\/]|$)",
+     "Writing under project temp/ is blocked. Use the durable stage output location."),
+    (r"(?i)(^|[\\/])workspace[\\/]outputs([\\/]|$)",
+     "Writing under workspace/outputs is blocked. Use the project outputs/ directory."),
+    (r"(?i)(^|[\\/])backups?([\\/]|$)|\.bak(?:[_\.-]|$)",
+     "Duplicate backup copies are prohibited. Use Git history and the approved original backup."),
     (r"(?i)(^|[\\/])\.env(\.|$|[\\/])", "Secrets files are off limits."),
     (r"(?i)id_rsa|(^|[\\/])\.ssh([\\/]|$)", "SSH key material is off limits."),
 ]

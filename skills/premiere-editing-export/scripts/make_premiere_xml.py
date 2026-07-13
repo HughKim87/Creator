@@ -16,6 +16,8 @@ XML 구조는 사용자 Premiere(CS6)가 직접 내보낸 참조 XML의 구조�
 
 1. 헤더 없음: 시작,끝[,라벨]  (원본은 소스 인자 파일 하나)
 2. 헤더 있음: 시작/끝/구간명/원본파일/역할 컬럼
+   - 선택 컬럼 `sequence`, `order`, `cut_id`로 한 XML 안에 여러 시퀀스를 만든다.
+   - `cut_id`는 전체 입력에서 고유해야 한다.
 """
 import argparse
 import csv
@@ -25,6 +27,7 @@ import subprocess
 import sys
 import uuid as uuid_mod
 import xml.etree.ElementTree as ET
+from collections import OrderedDict
 from dataclasses import dataclass
 from fractions import Fraction
 from pathlib import Path
@@ -44,6 +47,9 @@ class Cut:
     label: str
     role: str = ""
     source: str = ""
+    sequence: str = ""
+    cut_id: str = ""
+    order: int = 0
 
     @property
     def duration(self) -> float:
@@ -123,6 +129,9 @@ def read_cuts(path: Path) -> list[Cut]:
         label_i = None
         role_i = None
         source_i = None
+        sequence_i = None
+        cut_id_i = None
+        order_i = None
         for key in ("구간명", "label", "name", "segment_name", "title"):
             if key in header:
                 label_i = header[key]
@@ -135,6 +144,18 @@ def read_cuts(path: Path) -> list[Cut]:
             if key in header:
                 source_i = header[key]
                 break
+        for key in ("시퀀스", "sequence", "sequence_name"):
+            if key in header:
+                sequence_i = header[key]
+                break
+        for key in ("cut_id", "컷id", "컷_id", "id"):
+            if key in header:
+                cut_id_i = header[key]
+                break
+        for key in ("순서", "order"):
+            if key in header:
+                order_i = header[key]
+                break
         if start_i is None or end_i is None:
             raise ValueError("헤더 컷리스트에는 시작/끝 컬럼이 필요함")
         data_rows = rows[1:]
@@ -144,9 +165,14 @@ def read_cuts(path: Path) -> list[Cut]:
             label = row[label_i].strip() if label_i is not None and label_i < len(row) else f"cut_{i:03d}"
             role = row[role_i].strip() if role_i is not None and role_i < len(row) else ""
             src_name = row[source_i].strip() if source_i is not None and source_i < len(row) else ""
+            sequence = row[sequence_i].strip() if sequence_i is not None and sequence_i < len(row) else ""
+            cut_id_text = row[cut_id_i].strip() if cut_id_i is not None and cut_id_i < len(row) else ""
+            cut_id = cut_id_text or f"cut_{i:03d}"
+            order_text = row[order_i].strip() if order_i is not None and order_i < len(row) else ""
+            order = int(order_text) if order_text else i
             if end <= start:
                 raise ValueError(f"끝이 시작보다 빠름: {row}")
-            cuts.append(Cut(i, start, end, label, role, src_name))
+            cuts.append(Cut(i, start, end, label, role, src_name, sequence, cut_id, order))
     else:
         for i, row in enumerate(rows, 1):
             if len(row) < 2:
@@ -156,7 +182,7 @@ def read_cuts(path: Path) -> list[Cut]:
             label = row[2].strip() if len(row) > 2 else f"cut_{i:03d}"
             if end <= start:
                 raise ValueError(f"끝이 시작보다 빠름: {row}")
-            cuts.append(Cut(i, start, end, label))
+            cuts.append(Cut(i, start, end, label, cut_id=f"cut_{i:03d}", order=i))
 
     return cuts
 
@@ -237,6 +263,11 @@ class SourceInfo:
         return f"masterclip-{self.index}"
 
 
+@dataclass
+class BuildContext:
+    files_written: set[str]
+
+
 def resolve_sources(cuts: list[Cut], source_arg: Path) -> dict[str, SourceInfo]:
     """소스 인자(파일 또는 폴더)와 컷의 원본파일 컬럼으로 소스 맵을 만든다."""
     if source_arg.is_dir():
@@ -262,6 +293,46 @@ def resolve_sources(cuts: list[Cut], source_arg: Path) -> dict[str, SourceInfo]:
         frames = seconds_to_frames(media.duration, media.fps)
         sources[name] = SourceInfo(i, path, media, frames)
     return sources
+
+
+def validate_cuts(cuts: list[Cut], sources: dict[str, SourceInfo]) -> None:
+    """조용한 보정 없이 XML 생성 전에 입력 결함을 명시적으로 실패시킨다."""
+    if not cuts:
+        raise ValueError("컷리스트가 비어 있음")
+
+    fps_values = {src.media.fps for src in sources.values()}
+    channel_values = {src.media.channels for src in sources.values()}
+    if len(fps_values) > 1:
+        raise ValueError(f"혼합 FPS는 지원하지 않음: {sorted(str(v) for v in fps_values)}")
+    if len(channel_values) > 1:
+        raise ValueError(f"혼합 오디오 채널 수는 지원하지 않음: {sorted(channel_values)}")
+
+    seen_ids: set[str] = set()
+    for cut in cuts:
+        if cut.cut_id in seen_ids:
+            raise ValueError(f"중복 cut_id: {cut.cut_id}")
+        seen_ids.add(cut.cut_id)
+        if cut.source not in sources:
+            raise ValueError(f"알 수 없는 원본: {cut.source}")
+        src = sources[cut.source]
+        in_frame = seconds_to_frames(cut.start, src.media.fps)
+        out_frame = seconds_to_frames(cut.end, src.media.fps)
+        if in_frame < 0 or out_frame > src.frames:
+            raise ValueError(
+                f"소스 범위 밖 컷: {cut.cut_id} ({in_frame}~{out_frame}, source=0~{src.frames})"
+            )
+        if out_frame <= in_frame:
+            raise ValueError(f"0프레임 컷: {cut.cut_id}")
+
+
+def group_cuts(cuts: list[Cut], fallback_name: str) -> OrderedDict[str, list[Cut]]:
+    groups: OrderedDict[str, list[Cut]] = OrderedDict()
+    for cut in cuts:
+        name = cut.sequence or fallback_name
+        groups.setdefault(name, []).append(cut)
+    for name in groups:
+        groups[name].sort(key=lambda cut: (cut.order, cut.index))
+    return groups
 
 
 def add(parent: ET.Element, tag: str, text: str | int | None = None, **attrs: str) -> ET.Element:
@@ -297,15 +368,12 @@ def path_url(path: Path) -> str:
     return "file://localhost/" + quote(posix, safe="/:")
 
 
-_FILES_WRITTEN: set[str] = set()
-
-
-def add_file(parent: ET.Element, src: SourceInfo) -> ET.Element:
+def add_file(parent: ET.Element, src: SourceInfo, context: BuildContext) -> ET.Element:
     # 소스별 전체 file 정의는 문서에서 처음 한 번만 쓰고, 이후에는 id 참조만 쓴다.
     file_el = add(parent, "file", id=src.file_id)
-    if src.file_id in _FILES_WRITTEN:
+    if src.file_id in context.files_written:
         return file_el
-    _FILES_WRITTEN.add(src.file_id)
+    context.files_written.add(src.file_id)
     media = src.media
     add(file_el, "name", src.path.name)
     add(file_el, "pathurl", path_url(src.path))
@@ -349,7 +417,7 @@ def add_links(clipitem: ET.Element, video_id: str, audio_ids: list[str], clip_in
         add(link, "groupindex", 1)
 
 
-def add_master_clip(parent: ET.Element, src: SourceInfo) -> None:
+def add_master_clip(parent: ET.Element, src: SourceInfo, context: BuildContext) -> None:
     # 참조 XML 구조: uuid + 자기참조 masterclipid + ismasterclip TRUE.
     # 이 3요소가 없으면 Premiere가 타임라인 클립을 마스터 클립과 연결하지 못한다.
     media = src.media
@@ -373,7 +441,7 @@ def add_master_clip(parent: ET.Element, src: SourceInfo) -> None:
     add(clipitem, "alphatype", "none")
     add(clipitem, "pixelaspectratio", "square")
     add(clipitem, "anamorphic", "FALSE")
-    add_file(clipitem, src)
+    add_file(clipitem, src, context)
     add_links(clipitem, video_id, audio_ids, 1)
 
     audio = add(clip_media, "audio")
@@ -382,7 +450,7 @@ def add_master_clip(parent: ET.Element, src: SourceInfo) -> None:
         clipitem = add(track, "clipitem", id=audio_ids[channel - 1], frameBlend="FALSE")
         add(clipitem, "masterclipid", src.clip_id)
         add(clipitem, "name", src.path.name)
-        add_file(clipitem, src)
+        add_file(clipitem, src, context)
         sourcetrack = add(clipitem, "sourcetrack")
         add(sourcetrack, "mediatype", "audio")
         add(sourcetrack, "trackindex", channel)
@@ -395,6 +463,7 @@ def add_sequence(
     cuts: list[Cut],
     sources: dict[str, SourceInfo],
     *,
+    context: BuildContext,
     seq_id: str = "sequence-1",
     id_prefix: str = "seq-clip",
     audio_layout: str = "exploded",
@@ -404,7 +473,12 @@ def add_sequence(
     def cut_src(cut: Cut) -> SourceInfo:
         return sources[cut.source]
 
-    cut_frames = [(cut, seconds_to_frames(cut.duration, cut_src(cut).media.fps)) for cut in cuts]
+    cut_frames = []
+    for cut in cuts:
+        src = cut_src(cut)
+        in_frame = seconds_to_frames(cut.start, src.media.fps)
+        out_frame = seconds_to_frames(cut.end, src.media.fps)
+        cut_frames.append((cut, out_frame - in_frame))
     sequence_frames = sum(frames for _, frames in cut_frames)
 
     sequence = add(parent, "sequence", id=seq_id)
@@ -445,13 +519,13 @@ def add_sequence(
         add(clipitem, "masterclipid", src.clip_id)
         add(clipitem, "name", f"{cut.index:02d}_{cut.label}")
         add(clipitem, "enabled", "TRUE")
-        add(clipitem, "duration", duration)
+        add(clipitem, "duration", src.frames)
         add(clipitem, "start", timeline_pos)
         add(clipitem, "end", timeline_pos + duration)
         add(clipitem, "in", in_frame)
         add(clipitem, "out", out_frame)
         add(clipitem, "alphatype", "none")
-        add_file(clipitem, src)
+        add_file(clipitem, src, context)
         add_links(clipitem, video_id, audio_ids, clip_index)
         timeline_pos += duration
 
@@ -495,12 +569,12 @@ def add_sequence(
             add(clipitem, "masterclipid", src.clip_id)
             add(clipitem, "name", f"{cut.index:02d}_{cut.label}")
             add(clipitem, "enabled", "TRUE")
-            add(clipitem, "duration", duration)
+            add(clipitem, "duration", src.frames)
             add(clipitem, "start", timeline_pos)
             add(clipitem, "end", timeline_pos + duration)
             add(clipitem, "in", in_frame)
             add(clipitem, "out", out_frame)
-            add_file(clipitem, src)
+            add_file(clipitem, src, context)
             sourcetrack = add(clipitem, "sourcetrack")
             add(sourcetrack, "mediatype", "audio")
             add(sourcetrack, "trackindex", channel)
@@ -522,6 +596,10 @@ def build_xml(
     candidates: bool = True,
     audio_layout: str = "exploded",
 ) -> ET.Element:
+    validate_cuts(cuts, sources)
+    context = BuildContext(files_written=set())
+    sequence_groups = group_cuts(cuts, sequence_name)
+
     # 참조 XML(사용자 Premiere 내보내기)과 동일하게 version 4를 쓴다
     root = ET.Element("xmeml", version="4")
     project = add(root, "project")
@@ -533,7 +611,7 @@ def build_xml(
         add(original_bin, "name", "00_원본")
         original_children = add(original_bin, "children")
         for src in sources.values():
-            add_master_clip(original_children, src)
+            add_master_clip(original_children, src, context)
 
     # 후보 구간은 clip(in/out)이 아니라 컷별 미니 시퀀스로 만든다.
     # Premiere는 bin clip의 in/out을 서브클립으로 인식하지 못하고
@@ -548,6 +626,7 @@ def build_xml(
                 f"{cut.index:02d}_{cut.label}",
                 [cut],
                 sources,
+                context=context,
                 seq_id=f"sequence-cand-{cut.index:03d}",
                 id_prefix=f"cand-{cut.index:03d}",
                 audio_layout=audio_layout,
@@ -556,7 +635,18 @@ def build_xml(
     sequence_bin = add(children, "bin")
     add(sequence_bin, "name", "02_시퀀스")
     sequence_children = add(sequence_bin, "children")
-    add_sequence(sequence_children, sequence_name, cuts, sources, audio_layout=audio_layout)
+    for group_index, (group_name, group) in enumerate(sequence_groups.items(), 1):
+        single_group = len(sequence_groups) == 1
+        add_sequence(
+            sequence_children,
+            group_name,
+            group,
+            sources,
+            context=context,
+            seq_id="sequence-1" if single_group else f"sequence-main-{group_index:03d}",
+            id_prefix="seq-clip" if single_group else f"seq-{group_index:03d}-clip",
+            audio_layout=audio_layout,
+        )
 
     return root
 
@@ -609,7 +699,11 @@ def main() -> None:
     write_xml(output_xml, root)
 
     total = sum(cut.duration for cut in cuts)
-    print(f"[premiere-xml] 원본 {len(sources)}개, 컷 {len(cuts)}개, 시퀀스 약 {format_seconds(total)}")
+    sequence_count = len(group_cuts(cuts, args.sequence_name))
+    print(
+        f"[premiere-xml] 원본 {len(sources)}개, 컷 {len(cuts)}개, "
+        f"시퀀스 {sequence_count}개, 합계 약 {format_seconds(total)}"
+    )
     print(f"[premiere-xml] 완료: {output_xml}")
 
 

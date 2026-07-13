@@ -38,6 +38,30 @@ Each skill must have the sections below. Names may be adapted per stage.
 - AI가 확정하지 말 것: only choices the user must decide.
 - 좋은 요청 예시: only short sentences a user would actually say.
 
+## Source-Derived Artifact Contract
+
+- Carry the stable `source_id` from stage 4 through stage 8. Resolve it from the
+  existing source fingerprint; do not invent a per-run alias.
+- A source-derived output records `source_id`, `source_start`, `source_end`, and
+  any reused `asset_ids`. A revision also records `baseline_version` and
+  `changed_ranges`.
+- Classify retained artifacts as `reusable_source_evidence`,
+  `version_specific_render_evidence`, or `current_deliverable`.
+- Query the shared source asset manifest before capture. Register every retained
+  media file after creation; unregistered media is a failed gate.
+- Source evidence is reusable across edit versions. Render evidence is tied to
+  one edit version and cannot prove original content.
+
+## Version Lifecycle
+
+- Rerunning unchanged inputs reuses the existing output; it does not create a
+  timestamped or numbered copy.
+- Create a version only for changed governing input or decision. Record
+  `status`, `supersedes`, and `current_pointer`, then update `CURRENT.json` only
+  after the stage gates pass.
+- Mark prior versions `superseded`. Report cleanup candidates, but do not delete
+  or move them without clear user intent.
+
 ## Cleanup Standards
 
 - If the same sentence repeats in two or more skills, hoist it into this file.

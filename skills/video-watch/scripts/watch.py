@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import argparse
 import sys
-import tempfile
 from pathlib import Path
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -53,7 +52,7 @@ def main() -> int:
     )
     ap.add_argument("--start", type=str, default=None, help="Range start (SS, MM:SS, or HH:MM:SS)")
     ap.add_argument("--end", type=str, default=None, help="Range end (SS, MM:SS, or HH:MM:SS)")
-    ap.add_argument("--out-dir", type=str, default=None, help="Working directory (default: tmp)")
+    ap.add_argument("--out-dir", type=str, required=True, help="Durable output directory; temp paths are rejected")
     ap.add_argument(
         "--no-whisper",
         action="store_true",
@@ -85,10 +84,9 @@ def main() -> int:
     budget_cap = max_frames if max_frames is not None else 100
     cue_timestamps = parse_timestamps(args.timestamps)
 
-    if args.out_dir:
-        work = Path(args.out_dir).expanduser().resolve()
-    else:
-        work = Path(tempfile.mkdtemp(prefix="watch-"))
+    work = Path(args.out_dir).expanduser().resolve()
+    if any(part.lower() in {"temp", "tmp"} for part in work.parts):
+        raise SystemExit("temporary output directories are not allowed; choose a durable output path")
     work.mkdir(parents=True, exist_ok=True)
     print(f"[watch] working dir: {work}", file=sys.stderr)
 

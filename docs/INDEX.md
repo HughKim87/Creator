@@ -21,6 +21,7 @@ The single source of current work state is `SESSION_HANDOFF.md`.
 | Continuing work | `SESSION_HANDOFF.md` |
 | Rules/safety/structure change | `PROJECT_RULES.md`, `docs/AGENT_MAINTENANCE.md` |
 | Production stage decision | `01_youtube_production_workflow.md` |
+| Stage 7 editing quality consistency | `docs/EDITING_QUALITY_STANDARD.md`, `skills/premiere-editing-export/SKILL.md` |
 | Working principles | `PROJECT_RULES.md` |
 | Five-stage planning | `skills/dialogue-based-planning/SKILL.md`, `planning_research/planning_stage_spec_2026-07-06.md` |
 | Skill work | `skills/README.md`, `skills/SKILL_CONTRACT.md`, relevant `skills/*/SKILL.md` |

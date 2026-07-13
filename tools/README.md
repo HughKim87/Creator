@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-`workspace/`와 기존 `temp/` 내용이 삭제되어 과거 검증 산출물은 남아 있지 않다. 아래 도구 파일 자체는 현재 남아 있다.
+프로젝트 임시 폴더는 사용하지 않는다. 재사용할 프레임은 원본 시간 기반 공용 자산으로 관리한다.
 
 | 도구 | 상태 |
 |---|---|
@@ -12,6 +12,8 @@
 | `tools/ffmpeg/bin/ffprobe.exe` | 존재 |
 | `tools/ffmpeg/bin/ffplay.exe` | 존재 |
 | `tools/remux_mkv_to_mp4.bat` | 존재 |
+| `tools/source_frame_assets.py` | 존재 |
+| `tools/register_source_assets.py` | 존재 |
 | `tools/run_doccheck.bat` | 존재 |
 | `tools/doccheck/check_docs.py` | 존재 |
 | `tools/synccheck/*.py` | 존재 |
@@ -34,6 +36,15 @@
 - 프로젝트 내부에 별도 Python 배포판은 포함하지 않았다.
 - 스킬 문서의 `<python>`은 실제 사용 가능한 Python 실행 파일로 바꿔 실행한다.
 - `tools/run_doccheck.bat`는 사용 가능한 Python을 순서대로 찾아 실행한다.
+
+### Python 파일 생명주기
+
+- 작업에 필요하고 기존 모듈이 합리적인 위치가 아니면 새 `.py`를 만들 수 있다. 재사용 가능성은 우선 판단 사항이지 절대 조건이 아니다.
+- 생성 전 관련 스크립트를 확인하고, 생성 이유와 `durable`·`merge candidate`·`task-scoped` 중 예상 수명을 밝힌다.
+- 유지할 도구는 `tools/README.md` 또는 담당 스킬에 등록한다. 같은 책임의 테스트는 기존 테스트에 추가하고, 책임이 다르면 새 테스트 파일을 허용한다.
+- 작업 한정 스크립트를 보존해야 한다면 단계 출력의 `support/` 아래에 두고 첫 20줄 안에 `Lifecycle: task-scoped`와 `Cleanup:` 조건을 기록한다.
+- 사용 후에는 `keep`·`merge`·`cleanup` 중 처리 판단을 보고한다. 정리 대상은 승인 없이 삭제하지 않는다.
+- doccheck는 신규 Python 파일의 위치·도구 등록·작업 한정 수명 표시를 검사한다.
 
 ## remux_mkv_to_mp4.bat
 
@@ -58,6 +69,10 @@ tools\run_doccheck.bat
 - AI 에이전트 표준 진입점과 포인터 파일 구조
 - 오래된 상태 문구와 동적 커밋 상태 고정
 - 과거 세션 절대경로와 과거 원본 파일명
+- 프로젝트 `temp/`, 스킬의 임시 출력 경로, 중복 백업 파일
+- 단계 스킬의 `source_id`·자산 목록·현재본 포인터 누락
+- 원본 자산 목록이나 `CURRENT.json`에 등록되지 않은 출력 미디어
+- 신규 Python 도구의 문서 등록 누락과 설명 없는 작업 한정 스크립트
 - 기본 로드 문서 과대화 경고
 - `skills/*/SKILL.md`의 입력, 출력, 게이트, 중단 조건, AI 확정 금지, 요청 예시
 
@@ -65,11 +80,11 @@ tools\run_doccheck.bat
 
 ## 검증 상태
 
-과거 검증 산출물은 삭제됐다. 새 원본 영상이 들어오면 아래 순서로 다시 확인한다.
+기존 검증 자산은 원본 시간 목록에 등록해 재사용한다. 새 원본 영상이 들어오면 아래 순서로 확인한다.
 
 1. `ffmpeg.exe -version` 실행 확인
 2. `ffprobe.exe`로 원본 길이 확인
-3. `video-watch`로 짧은 구간 프레임 추출
+3. `source_frame_assets.py`로 짧은 원본 구간 프레임 조회·추출
 4. 필요 시 `synccheck`로 컷 경계 검증
 
 ## guard (결정적 가드레일)
@@ -79,7 +94,7 @@ tools\run_doccheck.bat
 그중 "절대 금지" 항목만 기계적으로 강제한다.
 
 - PreToolUse: git push, reset --hard, clean -f, 재귀 강제 삭제,
-  `inputs/`(원본) 삭제·덮어쓰기, 미디어/자막 파일 삭제, 비밀 파일 접근 차단.
+  `inputs/`(원본) 삭제·덮어쓰기, 미디어/자막 파일 삭제, `temp/`·백업 경로 쓰기, 비밀 파일 접근 차단.
 - Stop: 문서(.md/.py/.bat) 변경이 있으면 doccheck를 실행하고, 실패 시
   종료를 막고 오류를 되돌려준다. `stop_hook_active`로 무한 루프를 방지한다.
 - 실패 시 개방(fail-open): 입력 파싱 실패나 도구 부재 시 차단하지 않는다.
@@ -100,6 +115,36 @@ git config core.hooksPath .githooks
 `--no-verify` 우회는 규칙 위반이며 agent_guard가 차단한다. 줄바꿈 정책은
 `.gitattributes`가 관리한다.
 
+## 원본 시간 프레임 자산
+
+`source_frame_assets.py`는 고정 원본의 절대 시간으로 프레임을 조회·추출한다. 동일한
+`source_id`·원본 시각·해상도가 이미 등록돼 있으면 기존 파일을 반환하고 새 이미지를 만들지 않는다.
+
+```powershell
+python tools\source_frame_assets.py "원본.mp4" `
+  --source-id <source_id> --start 00:10:00 --end 00:11:00 --count 12 `
+  --width 1024 --asset-root outputs\06_analysis\source_assets\<source_id> `
+  --manifest outputs\06_analysis\source_asset_manifest.csv
+```
+
+- 파일명과 CSV에는 원본 밀리초와 원본 프레임 번호가 들어간다.
+- 같은 원본 지문에 이미 등록된 `source_id`가 있으면 다른 ID 사용을 거부한다.
+- 같은 `source_id`에 다른 원본 지문을 섞으려 하면 명시적 승격 전까지 거부한다.
+- 편집본 시각은 컷리스트로 원본 시각을 해석한 뒤 조회한다.
+- 기존 자산은 삭제하거나 덮어쓰지 않는다.
+- 실행 결과는 `reused`, `created` 수와 실제 경로를 JSON으로 출력한다.
+
+이미 존재하는 접촉시트·오디오·프레임 묶음은
+`outputs/06_analysis/source_asset_catalog.csv`에 원본 시작·끝 시각과 용도를 기록한 뒤 등록한다.
+
+```powershell
+python tools\register_source_assets.py `
+  --catalog outputs\06_analysis\source_asset_catalog.csv `
+  --manifest outputs\06_analysis\source_asset_manifest.csv
+```
+
+등록 시 원본 크기·수정 시각·FPS와 자산 해시를 확정한다. 같은 자산 ID나 경로를 중복 등록하면 실패한다.
+
 ## synccheck
 
 `tools/synccheck/`의 스크립트는 새 원본 경로와 컷리스트를 명령행 인자로 받아 실행한다. 과거 세션 절대경로나 특정 원본 파일명은 기준으로 삼지 않는다.
@@ -115,3 +160,21 @@ python tools\synccheck\build_v9.py "workspace\outputs\07_edit_export\cutlist.csv
 
 - `full_scan.py`는 제안만 출력하고 파일을 수정하지 않는다.
 - `build_v9.py`는 명시한 경계 수정만 반영해 새 CSV를 만든다. 기존 CSV는 덮어쓰지 않는다.
+- `synccheck`는 발화·자막 경계 위험을 찾는 보조 도구다. microbeat의 기능, 유지·제거,
+  편집 템포를 결정하는 도구로 사용하지 않는다.
+
+## 편집 품질 일관성 감사
+
+`edit_quality_audit.py`는 콘텐츠 기준 단일 시퀀스 컷리스트를 비트별로 묶어 컷 수·선택 길이·
+평균·최장 컷을 계산하고, 모드별 장구간과 후반 밀도 편차를 검토 대상으로 표시한다.
+
+```powershell
+python tools/edit_quality_audit.py <콘텐츠_컷리스트.csv> <품질_프로필.csv> `
+  --output <새_감사보고서.md>
+```
+
+- 경고선은 목표 컷 길이가 아니라 재검토 기준이다.
+- 긴 컷의 화면·문장·사건 근거는 프로필의 `waive`·`justification`에 기록하며 보고서에 `WAIVED`로 남는다.
+- 근거 없는 경고는 `REVIEW`로 남고 보고서 상태가 `REVIEW_REQUIRED`가 된다.
+- 같은 컷이 두 번 들어 있는 멀티시퀀스 CSV는 거부한다.
+- 기존 감사 보고서는 덮어쓰지 않는다.

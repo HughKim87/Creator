@@ -3,7 +3,10 @@
 """Small documentation consistency checker."""
 from __future__ import annotations
 
+import csv
+import json
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,6 +15,7 @@ from pathlib import Path
 TEXT_SUFFIXES = {".md", ".py", ".bat", ".txt"}
 SKIP_DIRS = {".git", ".agents", ".codex", "workspace", "temp", "inputs", "outputs", "__pycache__"}
 SKIP_PREFIXES = {"tools/ffmpeg/"}
+MEDIA_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".mp3", ".wav", ".m4a", ".mp4", ".mkv", ".mov", ".avi"}
 
 REQUIRED_FILES = [
     "PROJECT_BOOTSTRAP.md",
@@ -172,6 +176,200 @@ def check_gemini_ignore(root: Path, findings: list[Finding]) -> None:
             add(findings, "ERROR", ".geminiignore", None, f"`{phrase}` 제외가 없다.")
 
 
+def check_workspace_hygiene(root: Path, findings: list[Finding]) -> None:
+    if (root / "temp").exists():
+        add(findings, "ERROR", "temp", None, "프로젝트 임시 폴더를 사용하지 않는다.")
+
+    forbidden_skill_phrases = (
+        "--out-dir temp",
+        "temp/video-watch",
+        "temp\\video-watch",
+        "workspace/outputs",
+        "workspace\\outputs",
+    )
+    for path in (root / "skills").glob("*/SKILL.md"):
+        content = read_text(path)
+        for phrase in forbidden_skill_phrases:
+            if phrase in content:
+                add(findings, "ERROR", rel(path, root), None, f"금지된 임시 출력 경로 `{phrase}`가 있다.")
+
+    backup_name = re.compile(r"(?i)(\.bak(?:[_\.-].*)?$|\.backup$|~$)")
+    for path in root.rglob("*"):
+        if not path.is_file() or ".git" in path.parts:
+            continue
+        if backup_name.search(path.name):
+            add(findings, "ERROR", rel(path, root), None, "중복 백업 파일 이름을 사용하지 않는다.")
+
+
+def find_new_python_files(root: Path, findings: list[Finding]) -> list[Path]:
+    git = ["git", "-c", f"safe.directory={root.as_posix()}"]
+    commands = [
+        git + ["ls-files", "--others", "--exclude-standard", "--", "*.py"],
+        git + ["diff", "--name-only", "--diff-filter=A", "HEAD", "--", "*.py"],
+    ]
+    paths: set[Path] = set()
+    for command in commands:
+        try:
+            result = subprocess.run(
+                command, cwd=root, capture_output=True, text=True, timeout=30,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            add(findings, "WARN", "Git", None, f"신규 Python 파일을 확인하지 못했다: {exc}")
+            return []
+        if result.returncode != 0:
+            add(findings, "WARN", "Git", None, "신규 Python 파일을 확인하지 못했다.")
+            return []
+        paths.update(Path(line.strip()) for line in result.stdout.splitlines() if line.strip())
+    return sorted(paths, key=lambda item: item.as_posix())
+
+
+def check_python_lifecycle(
+    root: Path,
+    findings: list[Finding],
+    new_files: list[Path] | None = None,
+) -> None:
+    candidates = find_new_python_files(root, findings) if new_files is None else new_files
+    tools_doc = read_text(root / "tools" / "README.md") if (root / "tools" / "README.md").exists() else ""
+    for relative in candidates:
+        relative = Path(relative)
+        path = root / relative
+        parts = relative.parts
+        if not parts or not path.exists():
+            continue
+        relative_text = relative.as_posix()
+
+        if parts[0] == "tests":
+            if path.name.startswith("test_"):
+                continue
+            add(findings, "ERROR", relative_text, None, "테스트 파일 이름은 `test_`로 시작해야 한다.")
+            continue
+
+        if parts[0] == "tools":
+            if path.name not in tools_doc and relative_text not in tools_doc:
+                add(findings, "ERROR", relative_text, None, "신규 Python 도구가 `tools/README.md`에 등록되지 않았다.")
+            continue
+
+        if len(parts) >= 4 and parts[0] == "skills" and parts[2] == "scripts":
+            skill_doc = root / "skills" / parts[1] / "SKILL.md"
+            content = read_text(skill_doc) if skill_doc.exists() else ""
+            if path.name not in content and relative_text not in content:
+                add(findings, "ERROR", relative_text, None, "신규 스킬 스크립트가 담당 `SKILL.md`에 등록되지 않았다.")
+            continue
+
+        if parts[0] == "outputs":
+            header = "\n".join(read_text(path).splitlines()[:20]).lower()
+            if "support" not in parts[1:-1]:
+                add(findings, "ERROR", relative_text, None, "작업 한정 Python 파일은 단계 출력의 `support/` 아래에 둔다.")
+            elif "lifecycle: task-scoped" not in header or "cleanup:" not in header:
+                add(findings, "ERROR", relative_text, None, "첫 20줄에 `Lifecycle: task-scoped`와 `Cleanup:` 조건을 기록한다.")
+            else:
+                add(findings, "WARN", relative_text, None, "작업 한정 Python 파일이다. 종료 보고에서 유지·통합·정리 판단을 밝힌다.")
+            continue
+
+        add(findings, "ERROR", relative_text, None, "신규 Python 파일의 역할이 불명확하다. `tools/`, 스킬 `scripts/`, `tests/`, 또는 단계 `support/`를 사용한다.")
+
+
+def check_skill_asset_contract(root: Path, findings: list[Finding]) -> None:
+    stage_skills = [
+        "subtitle-cleanup",
+        "dialogue-based-planning",
+        "gameplay-video-analysis",
+        "video-watch",
+        "premiere-editing-export",
+        "final-video-review",
+    ]
+    for name in stage_skills:
+        path = root / "skills" / name / "SKILL.md"
+        if not path.exists():
+            continue
+        content = read_text(path)
+        if "source_id" not in content:
+            add(findings, "ERROR", rel(path, root), None, "단계 간 안정된 source_id 인계가 없다.")
+
+    for name in ("gameplay-video-analysis", "premiere-editing-export", "final-video-review"):
+        path = root / "skills" / name / "SKILL.md"
+        if not path.exists():
+            continue
+        content = read_text(path)
+        for phrase in ("source_asset_manifest", "CURRENT.json"):
+            if phrase not in content:
+                add(findings, "ERROR", rel(path, root), None, f"자산 생명주기 필드 `{phrase}`가 없다.")
+
+    watch = root / "skills" / "video-watch" / "SKILL.md"
+    if watch.exists():
+        for index, line in enumerate(read_text(watch).splitlines(), 1):
+            if "python" in line and "--detail transcript" in line and "--out-dir" not in line:
+                add(findings, "ERROR", rel(watch, root), index, "필수 --out-dir가 빠진 실행 예시다.")
+
+
+def iter_json_strings(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, list):
+        for item in value:
+            yield from iter_json_strings(item)
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from iter_json_strings(item)
+
+
+def check_media_registry(root: Path, findings: list[Finding]) -> None:
+    outputs = root / "outputs"
+    if not outputs.exists():
+        return
+    media = [path for path in outputs.rglob("*") if path.is_file() and path.suffix.lower() in MEDIA_SUFFIXES]
+    if not media:
+        return
+
+    registered_files: set[Path] = set()
+    registered_dirs: set[Path] = set()
+    manifest = outputs / "06_analysis" / "source_asset_manifest.csv"
+    if manifest.exists():
+        try:
+            with manifest.open(encoding="utf-8-sig", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+            for row in rows:
+                if row.get("status") != "current" or not row.get("path"):
+                    continue
+                path = (root / row["path"]).resolve()
+                if not path.is_relative_to(root):
+                    add(findings, "ERROR", rel(manifest, root), None, f"자산 경로가 프로젝트를 벗어난다: {row['path']}")
+                elif path.is_dir():
+                    registered_dirs.add(path)
+                elif path.is_file():
+                    registered_files.add(path)
+                else:
+                    add(findings, "ERROR", rel(manifest, root), None, f"현재 자산이 없다: {row['path']}")
+        except (OSError, csv.Error) as exc:
+            add(findings, "ERROR", rel(manifest, root), None, f"자산 목록을 읽지 못했다: {exc}")
+
+    current_files = list(outputs.rglob("CURRENT.json"))
+    for current in current_files:
+        try:
+            payload = json.loads(read_text(current))
+        except (OSError, json.JSONDecodeError) as exc:
+            add(findings, "ERROR", rel(current, root), None, f"현재본 포인터를 읽지 못했다: {exc}")
+            continue
+        for value in iter_json_strings(payload):
+            if not value.startswith(("outputs/", "inputs/")):
+                continue
+            path = (root / value).resolve()
+            if not path.is_relative_to(root):
+                add(findings, "ERROR", rel(current, root), None, f"현재본 경로가 프로젝트를 벗어난다: {value}")
+            elif path.is_dir():
+                registered_dirs.add(path)
+            elif path.is_file():
+                registered_files.add(path)
+            else:
+                add(findings, "ERROR", rel(current, root), None, f"현재본 참조가 없다: {value}")
+
+    for path in media:
+        resolved = path.resolve()
+        if resolved in registered_files or any(resolved.is_relative_to(directory) for directory in registered_dirs):
+            continue
+        add(findings, "ERROR", rel(path, root), None, "원본 자산 목록이나 CURRENT.json에 등록되지 않은 미디어다.")
+
+
 def run(root: Path) -> int:
     findings: list[Finding] = []
     check_required(root, findings)
@@ -180,6 +378,10 @@ def run(root: Path) -> int:
     check_entrypoints(root, findings)
     check_refs(root, findings)
     check_gemini_ignore(root, findings)
+    check_workspace_hygiene(root, findings)
+    check_python_lifecycle(root, findings)
+    check_skill_asset_contract(root, findings)
+    check_media_registry(root, findings)
 
     errors = [item for item in findings if item.level == "ERROR"]
     warnings = [item for item in findings if item.level == "WARN"]

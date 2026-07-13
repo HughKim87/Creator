@@ -4,7 +4,8 @@ description: |
   5단계 영상 기획서가 확정된 뒤, 긴 게임 플레이 원본 영상·자막·음성·화면 프레임을 저토큰 방식으로
   검증해 기획서의 대사 스파인이 실제 화면에서 성립하는지 확인하고 7단계 편집 자료 생성을 위한 후보 지도와
   인계 브리프를 만든다. "게임 플레이 영상 분석해줘", "기획서 기준으로 화면 검증해줘", "자동 컷편집 전에
-  후보를 검증해줘", "하이라이트 후보를 기획서 기준으로 정리해줘", "라운드맵 만들어줘" 같은 요청에서 사용한다.
+  후보를 검증해줘", "하이라이트 후보를 기획서 기준으로 정리해줘", "기존 영상 캡처 재활용해줘",
+  "라운드맵 만들어줘" 같은 요청에서 사용한다.
 ---
 
 # 게임 플레이 영상 분석
@@ -42,12 +43,16 @@ description: |
 - **대표/예비/제외를 구분한다.** 같은 기능의 비명·사망·탐색을 모두 살리지 않는다.
 - 원본 영상과 원본 자막은 절대 수정하지 않는다.
 - 한 번 본 구간은 Markdown/CSV로 저장하고, 다음 세션에서 다시 이미지 판독을 반복하지 않는다.
+- 화면 자산은 편집본 시간이 아니라 원본 `source_id`와 원본 시간/프레임으로 식별한다.
+- 새 캡처 전에 원본 자산 목록을 조회하고, 범위·해상도가 충분하면 기존 자료를 그대로 사용한다.
 
 ## 입력 확인
 
 1. 원본 영상 경로를 확인한다.
-2. 같은 이름의 원본 `.srt`가 있으면 우선 사용한다. 새 전사는 비용이 필요할 때만 생성한다.
-3. 5단계 기획서에서 아래 정보를 가져온다.
+2. `source_asset_manifest.csv`에서 원본 경로·크기·수정 시각이 맞는 기존 `source_id`를 찾는다.
+   같은 원본에 새 ID를 만들거나, 지문이 달라진 원본을 기존 ID에 섞지 않는다.
+3. 같은 이름의 원본 `.srt`가 있으면 우선 사용한다. 새 전사는 비용이 필요할 때만 생성한다.
+4. 5단계 기획서에서 아래 정보를 가져온다.
 
 | 필드 | 설명 |
 |---|---|
@@ -59,7 +64,7 @@ description: |
 | `screen_question` | 화면에서 확인할 질문 |
 | `must_preserve_sentence` | 문장 단위 보존 여부 |
 
-4. `ffprobe`로 원본이 끝까지 읽히는지 확인한다. 메타데이터 길이만 믿지 않는다.
+5. `ffprobe`로 원본이 끝까지 읽히는지 확인한다. 메타데이터 길이만 믿지 않는다.
 
 ```powershell
 tools\ffmpeg\bin\ffprobe.exe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 "원본.mkv"
@@ -111,27 +116,28 @@ tools\ffmpeg\bin\ffmpeg.exe -i "원본.mkv" -af "astats=metadata=1:reset=1,ameta
 
 ### 3. 화면 검증
 
-`video-watch`로 후보 구간만 본다.
+기존 원본 자산 목록을 먼저 조회하고, 없는 원본 시각만 `source_frame_assets.py`로 추출한다.
 
 ```powershell
 <python> `
-  skills\video-watch\scripts\watch.py "원본.mkv" `
-  --no-whisper --start 00:07:00 --end 00:11:10 `
-  --max-frames 16 --resolution 1024 `
-  --out-dir temp\video-watch\구간명
+  tools\source_frame_assets.py "원본.mkv" `
+  --source-id <source_id> --start 00:07:00 --end 00:11:10 --count 16 `
+  --width 1024 --asset-root outputs\06_analysis\source_assets\<source_id> `
+  --manifest outputs\06_analysis\source_asset_manifest.csv
 ```
 
 큰 구간에서 사건·반응 경계가 거칠면 지정 시각 프레임만 추가로 뽑는다.
 
 ```powershell
 <python> `
-  skills\video-watch\scripts\watch.py "원본.mkv" `
-  --no-whisper --detail transcript `
-  --timestamps "00:10:35,00:10:45,00:10:58,00:11:05" `
-  --start 00:10:20 --end 00:11:10 `
-  --resolution 1024 `
-  --out-dir temp\video-watch\구간명_cues
+  tools\source_frame_assets.py "원본.mkv" `
+  --source-id <source_id> --timestamps "00:10:35,00:10:45,00:10:58,00:11:05" `
+  --width 1024 --asset-root outputs\06_analysis\source_assets\<source_id> `
+  --manifest outputs\06_analysis\source_asset_manifest.csv
 ```
+
+편집본 시각으로 받은 요청은 최신 컷리스트의 누적 타임라인 범위를 이용해 원본 시각으로 변환한 뒤 조회한다.
+자막·오버레이·전환·합성 결과처럼 렌더 자체를 확인해야 할 때만 편집본 캡처를 별도 검증 근거로 만든다.
 
 각 후보는 아래 네 단위로 본다.
 
@@ -160,6 +166,9 @@ synccheck 결과는 제안 근거일 뿐, 대표 후보나 컷 경계를 자동 
 | 필드 | 의미 |
 |---|---|
 | `candidate_id` | 후보 ID |
+| `source_id` | 고정 원본 ID |
+| `source_start`, `source_end` | 원본 기준 후보 범위 |
+| `frame_asset_ids` | 재사용한 원본 프레임 자산 ID |
 | `act` | 기획서 막 번호 |
 | `bit_id` | 연결되는 대사 스파인 번호 |
 | `story_function` | 동기, 공포증거, 자기인정, 규칙학습, 적응, 퇴각 등 |
@@ -236,14 +245,16 @@ synccheck 결과는 제안 근거일 뿐, 대표 후보나 컷 경계를 자동 
 
 ## 저장 위치
 
-화면을 확인한 구간은 반드시 Markdown과 가능하면 CSV로 저장한다.
+화면을 확인한 구간은 반드시 Markdown과 가능하면 CSV로 저장한다. 원본 프레임은 영상별 공용 자산으로 등록한다.
 
 권장 위치:
 
-- `workspace/outputs/06_analysis/영상명_6단계_화면검증_후보지도_YYYY-MM-DD.md`
-- `workspace/outputs/06_analysis/영상명_6단계_후보지도_YYYY-MM-DD.csv`
+- `outputs/06_analysis/*_6단계_화면검증_후보지도_YYYY-MM-DD.md`
+- `outputs/06_analysis/영상명_6단계_후보지도_YYYY-MM-DD.csv`
+- `outputs/06_analysis/source_asset_manifest.csv`
+- `outputs/06_analysis/source_assets/<source_id>/`
 
-임시 프레임은 `temp/video-watch/구간명/`에 둔다. 최종 판단은 Markdown/CSV에 남긴다.
+검토 HTML과 접촉 시트는 공용 자산 경로를 참조한다. 같은 장면을 작업별 폴더에 복제하지 않는다.
 
 ## 출력 형식
 
@@ -251,6 +262,14 @@ synccheck 결과는 제안 근거일 뿐, 대표 후보나 컷 경계를 자동 
 ## 산출물 상태
 
 - 상태: 산출물
+- source_id:
+- source_start/source_end:
+- asset_ids:
+- artifact_role: current_deliverable
+- baseline_version:
+- changed_ranges:
+- supersedes:
+- current_pointer: outputs/06_analysis/CURRENT.json
 - 생성일:
 - 생성 목적: 6단계 영상 분석
 - 기준 입력: 5단계 기획서
@@ -281,8 +300,8 @@ synccheck 결과는 제안 근거일 뿐, 대표 후보나 컷 경계를 자동 
 
 ## 후보 구간 지도
 
-| candidate_id | act | start | end | story_function | screen_evidence | subtitle_evidence | audio_evidence | risk | decision |
-|---|---:|---|---|---|---|---|---|---|---|
+| candidate_id | source_id | source_start | source_end | frame_asset_ids | act | bit_id | story_function | screen_evidence | subtitle_evidence | audio_evidence | risk | decision |
+|---|---|---:|---:|---|---:|---|---|---|---|---|---|---|
 
 ## 대표/예비 후보표
 
@@ -321,6 +340,8 @@ synccheck 결과는 제안 근거일 뿐, 대표 후보나 컷 경계를 자동 
 통과:
 - 대표 후보에는 화면 근거가 있다.
 - 화면 근거가 없는 대사 중심 후보는 그 이유가 기록되어 있다.
+- 화면 근거가 원본 `source_id`와 원본 시간/프레임으로 역추적된다.
+- 보존한 모든 화면·오디오 파일이 `source_asset_manifest.csv`에 등록되어 있다.
 
 실패:
 - 대사만 보고 화면 검증 완료로 처리한다.
@@ -349,9 +370,23 @@ synccheck 결과는 제안 근거일 뿐, 대표 후보나 컷 경계를 자동 
 실패:
 - 후보표는 있지만 왜 살려야 하는지 알 수 없다.
 
+### G6. 기준본과 재실행
+
+통과:
+- 같은 입력의 재실행은 기존 후보지도와 자산을 재사용한다.
+- 변경된 입력이나 판단이 있을 때만 새 버전을 만들고, 게이트 통과 후 `CURRENT.json`을 갱신한다.
+
+실패:
+- 날짜나 실행 횟수만 바뀌었는데 새 후보지도·캡처를 만든다.
+
 ## 편집 자동화 연결
 
 6단계 산출물은 7단계의 입력이다. 컷리스트, XML, EDL, 러프컷은 여기서 만들지 않는다.
+
+## 다음 단계 전달물
+
+7단계에는 현재 후보지도 경로, `source_id`, 원본 지문, 원본 시간 범위,
+`frame_asset_ids`, `source_asset_manifest.csv`, `CURRENT.json`과 사용자 승인 상태를 넘긴다.
 
 7단계에서 컷리스트를 만들 때는 먼저 6단계 후보 지도의 `decision`, `story_function`, `risk`,
 `context_needed`를 확인한다. 결과가 이상하면 원본을 다시 무작정 보지 말고, 먼저 후보 지도의 판정 기준을 수정한다.

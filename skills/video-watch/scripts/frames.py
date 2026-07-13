@@ -205,15 +205,16 @@ def extract(
     ffmpeg = require_tool("ffmpeg")
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    for existing in out_dir.glob("frame_*.jpg"):
-        existing.unlink()
+    existing = sorted(out_dir.glob("frame_*.jpg"))
+    if existing:
+        raise SystemExit(f"refusing to replace {len(existing)} existing frame file(s) in {out_dir}")
 
     output_pattern = str(out_dir / "frame_%04d.jpg")
     cmd: list[str] = [
         ffmpeg,
         "-hide_banner",
         "-loglevel", "error",
-        "-y",
+        "-n",
     ]
 
     # -ss before -i = fast seek. Use -t after -i instead of input-side -to:
@@ -271,15 +272,16 @@ def extract_scene_candidates(
     ffmpeg = require_tool("ffmpeg")
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    for existing in out_dir.glob("frame_*.jpg"):
-        existing.unlink()
+    existing = sorted(out_dir.glob("frame_*.jpg"))
+    if existing:
+        raise SystemExit(f"refusing to replace {len(existing)} existing frame file(s) in {out_dir}")
 
     output_pattern = str(out_dir / "frame_%04d.jpg")
     cmd: list[str] = [
         ffmpeg,
         "-hide_banner",
         "-loglevel", "info",
-        "-y",
+        "-n",
     ]
     if start_seconds is not None:
         cmd += ["-ss", f"{start_seconds:.3f}"]
@@ -382,8 +384,9 @@ def extract_at_timestamps(
     ffmpeg = require_tool("ffmpeg")
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    for existing in out_dir.glob("cue_*.jpg"):
-        existing.unlink()
+    existing = sorted(out_dir.glob("cue_*.jpg"))
+    if existing:
+        raise SystemExit(f"refusing to replace {len(existing)} existing cue file(s) in {out_dir}")
 
     lo = start_seconds or 0.0
     hi = end_seconds if end_seconds is not None else float("inf")
@@ -403,7 +406,7 @@ def extract_at_timestamps(
             ffmpeg,
             "-hide_banner",
             "-loglevel", "error",
-            "-y",
+            "-n",
             "-ss", f"{t:.3f}",
             "-i", str(Path(video_path).resolve()),
             "-frames:v", "1",
@@ -634,15 +637,16 @@ def extract_keyframes(
     ffmpeg = require_tool("ffmpeg")
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    for existing in out_dir.glob("frame_*.jpg"):
-        existing.unlink()
+    existing = sorted(out_dir.glob("frame_*.jpg"))
+    if existing:
+        raise SystemExit(f"refusing to replace {len(existing)} existing frame file(s) in {out_dir}")
 
     output_pattern = str(out_dir / "frame_%04d.jpg")
     cmd: list[str] = [
         ffmpeg,
         "-hide_banner",
         "-loglevel", "info",
-        "-y",
+        "-n",
     ]
     if start_seconds is not None:
         cmd += ["-ss", f"{start_seconds:.3f}"]
