@@ -115,9 +115,10 @@ Report verification precisely:
 - App-validated: intended user-facing app opened, rendered, imported, played,
   or used it successfully.
 
-If the same objective fails 3 times in a row (fix → verify → fail), stop. Report
-the last confirmed cause, the risk of continuing, and what to re-research, then
-wait for the user's decision. This outranks task persistence.
+Within one user execution request, 3 same-objective failures in a row stop work.
+Every new proceed, continue, or resume request resets the counter to zero, even
+in the same session and task. Never carry active counts from handoffs or earlier
+requests. Report cause, risk, and re-research target, then wait.
 
 If the user rejects the same direction twice, stop and restate the understood
 intent in one sentence before doing more work.

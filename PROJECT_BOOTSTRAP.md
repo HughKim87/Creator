@@ -38,8 +38,10 @@ Open `PROJECT_RULES.md` before work involving:
 
 ## Stop Rule
 
-If the same objective fails 3 times in a row, stop. Report the last confirmed
-cause, the risk of continuing, and what to re-research. Then wait.
+Count same-objective failures only within one user execution request. Stop at 3.
+Every new proceed, continue, or resume request resets the counter to zero, even
+in the same session and task; handoff history never carries into the new count.
+Report the cause, continuation risk, and re-research target. Then wait.
 
 ## Route
 
