@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test dependencies
+        run: pip install pytest
+
+      - name: Doc structure check (doccheck)
+        run: python tools/doccheck/check_docs.py
+
+      - name: Run tests
+        run: python -m pytest tests/ -q
