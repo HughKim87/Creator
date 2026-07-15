@@ -13,10 +13,10 @@
 | `youtube-channel-planning` | 2 | 채널 기획 | 1차 보강 완료 |
 | `youtube-script-planning` | 3 | 대본 구조, 주장 흐름, 장면 목적 | 1차 신설 완료 |
 | `subtitle-cleanup` | 4 | 자막 생성/정리, 원문 보존, 타임코드 신뢰도 표시 | source_id 인계 반영 |
-| `dialogue-based-planning` | 5 | 원본 대사 기반 컨트롤링 아이디어, 대사 스파인, 6단계 브리프 | source_id 인계 반영 |
-| `gameplay-video-analysis` | 6 | 화면 검증, 후보 지도, 7단계 인계 브리프 | 원본 시간 자산 재사용 반영 |
+| `dialogue-based-planning` | 5 | 승인 데이터 기반 시청자 약속, 중심 메시지 1개, 근거 스파인, AI 검토 대표 캘리브레이션 브리프 | 텍스트 승인 대신 샘플 후 판단 반영 |
+| `gameplay-video-analysis` | 6 | 기획 전 사건·화면·음성·시청자 관심·반증 근거 지도 | 데이터 분석 선행 게이트 반영 |
 | `video-watch` | 보조 | 영상 프레임 추출과 전사 보조 | 안정 경로·기존 결과 재사용 반영 |
-| `premiere-editing-export` | 7 | 컷리스트를 Premiere용 XML/EDL/CSV/러프컷으로 변환 | 증분 검증·CURRENT 반영 |
+| `premiere-editing-export` | 7 | 임시 기획의 제한 대표 샘플을 자체 검증하고 승인 뒤 전체 XML/EDL/CSV로 증분 확장 | 대표 샘플 우선·영향 범위 롤백 반영 |
 | `final-video-review` | 8 | 최종 검수표, 수정 필요 목록, 업로드 전 확인 | 원본·렌더 증거 분리 반영 |
 | `korean-game-research` | 보조 | 신작 게임 출시·업데이트·사전예약 리서치 → 구글 캘린더 등록(승인 후) | 복원 + SKILL_CONTRACT 정리 완료 |
 | `youtube-timestamp-hashtag` | 보조 | YouTube Studio 설명란 타임스탬프/해시태그 자동화 (Chrome MCP) | 복원 + SKILL_CONTRACT 정리 + 저장 DOM 실측 검증(5~7단계) |

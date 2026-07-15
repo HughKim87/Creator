@@ -17,6 +17,10 @@
 | `tools/register_source_assets.py` | 존재 |
 | `tools/projectctl.py`, `tools/projectctl.bat` | 존재 |
 | `tools/projectctl.schema.json` | 존재 |
+| `tools/workflow_gate.py` | 존재 |
+| `tools/project_preflight.ps1` | 존재 |
+| `tools/run_python.bat` | 존재 |
+| `tools/git_project.bat` | 존재 |
 | `tools/run_doccheck.bat` | 존재 |
 | `tools/doccheck/check_docs.py` | 존재 |
 | `tools/synccheck/*.py` | 존재 |
@@ -37,8 +41,37 @@
 ## Python
 
 - 프로젝트 내부에 별도 Python 배포판은 포함하지 않았다.
-- 스킬 문서의 `<python>`은 실제 사용 가능한 Python 실행 파일로 바꿔 실행한다.
-- `tools/run_doccheck.bat`는 사용 가능한 Python을 순서대로 찾아 실행한다.
+- 저장소 Python 명령은 실행 파일을 추측하지 말고 `tools\run_python.bat`으로 실행한다.
+- `tools/projectctl.bat`와 `tools/run_doccheck.bat`도 같은 `run_python.bat` 실행기를 사용한다.
+
+```bat
+tools\run_python.bat -m unittest discover -s tests -p "test_*.py"
+tools\run_python.bat tools\workflow_gate.py audit
+```
+
+`run_python.bat`은 앱 제공 Python을 먼저 확인하고, 일반 `python`과 `py -3`은 실제
+최소 실행이 성공할 때만 사용한다. `where` 결과만 보고 실행 가능하다고 간주하지 않는다.
+
+## 프로젝트 사전점검
+
+넓은 파일 조회, Python 실행, Git 상태 확인 전에 아래 명령을 한 번 실행한다.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\project_preflight.ps1
+```
+
+- 필수 제어 파일 존재 여부를 확인한다.
+- 실제로 존재하는 검색 루트만 반환한다. 존재를 확인하지 않은 선택 경로를 `rg`나 재귀 조회에 넘기지 않는다.
+- `run_python.bat`으로 Python 실행 경로를 검증한다.
+- `git_project.bat`으로 저장소의 `safe.directory`를 적용한 Git 호출을 검증한다.
+- `projectctl context`를 포함하므로 별도 상태 조회가 필요 없다.
+
+저장소 Git 명령은 샌드박스 소유권 차이 때문에 직접 `git`을 호출하지 않고 아래 래퍼를 사용한다.
+
+```bat
+tools\git_project.bat status --short
+tools\git_project.bat diff --check
+```
 
 ### Python 파일 생명주기
 
@@ -98,10 +131,35 @@ tools\projectctl.bat finish --task <ascii-slug> --summary "<완료 요약>"
 
 - `status`, `context`, `verify`는 상태 파일을 수정하지 않는다.
 - `start`는 이미 다른 활성 작업이 있으면 실패해 세션 간 작업 충돌을 드러낸다.
-- `finish`는 doccheck, 전체 단위 테스트, staged/unstaged `git diff --check`가
-  모두 통과한 경우에만 활성 작업을 완료 처리한다.
+- `finish`는 doccheck, workflow gate, 전체 단위 테스트, staged/unstaged
+  `git diff --check`가 모두 통과한 경우에만 활성 작업을 완료 처리한다.
 - 상태 파일이 손상됐거나 스키마 버전이 다르면 자동 초기화하지 않고 중단한다.
 - 이 도구는 작업 조율 장치다. 콘텐츠 판단과 실제 진행 상태는 핸드오프에 기록한다.
+
+## workflow gate
+
+`workflow_gate.py`는 `docs/WORKFLOW_CONTRACT.json`을 읽어 단계 상태, 규칙 원장,
+편집 변경 원장과 `CURRENT.json`의 승격 주장을 교차 검사한다. 닫힌 게이트는 정상
+상태일 수 있지만, 모순된 승격은 오류다.
+
+```powershell
+<python> tools/workflow_gate.py audit
+<python> tools/workflow_gate.py assert-transition --to planning
+<python> tools/workflow_gate.py assert-transition --to edit_calibration
+<python> tools/workflow_gate.py assert-transition --to edit_full
+<python> tools/workflow_gate.py assert-transition --to validation
+<python> tools/workflow_gate.py assert-transition --to final
+```
+
+- `audit`: 상태 정합성을 검사한다. 복구 상태에서 모든 전진 단계가 닫혀 있어도
+  모순이 없으면 성공한다.
+- `assert-transition`: 요청한 단계의 필수 증거와 활성 규칙이 모두 통과했을 때만
+  성공한다.
+- 모든 전환은 `phase_order`의 바로 이전 단계가 `approved_for_next_phase`여야 한다. 개별 transition에 이 조건이 빠져도 도구가 자동 차단한다.
+- 계약 감사는 대표 샘플의 초반·중간·후반 범위, AI 실제 AV 선검증, 사용자에게 한 가지 권고안만 제시, MP4 현재 요청 허가, 영향 범위 롤백 정책도 검사한다.
+- `current_deliverable`은 final 게이트가 닫혀 있으면 허용하지 않는다.
+- `calibration_generation_allowed`는 AI 자체 검토 기획으로 제한된 대표 샘플만 허용한다.
+- `generation_lock_released`는 사용자 승인 대표 샘플과 승인 기준본이 있어야만 전체 편집에 대해 해제할 수 있다.
 
 ## 검증 상태
 

@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -112,6 +113,18 @@ class ProjectControlTests(unittest.TestCase):
             (self.root / PROJECTCTL.STATE_RELATIVE).read_text(encoding="utf-8"),
             "{broken",
         )
+
+    def test_shared_verification_includes_workflow_gate(self):
+        names = []
+
+        def passed(_root, name, _command, timeout=300):
+            names.append((name, timeout))
+            return {"name": name, "ok": True, "returncode": 0, "detail": "ok"}
+
+        with mock.patch.object(PROJECTCTL, "_run_check", side_effect=passed):
+            result = PROJECTCTL.verify_project(self.root)
+        self.assertTrue(result["ok"])
+        self.assertIn("workflow_gate", [name for name, _timeout in names])
 
 
 if __name__ == "__main__":

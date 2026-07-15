@@ -1,6 +1,6 @@
 # Document Index — Video Workflow
 
-- Updated: 2026-07-14
+- Updated: 2026-07-15
 - Role: router that selects only the documents needed. No work state lives here.
 
 ## Default Load
@@ -22,6 +22,7 @@ The root handoff is a reusable pointer. Current video state lives only in
 | Continuing work | `SESSION_HANDOFF.md`, then `outputs/SESSION_HANDOFF.md` |
 | Rules/safety/structure change | `PROJECT_RULES.md`, `docs/AGENT_MAINTENANCE.md` |
 | Production stage decision | `01_youtube_production_workflow.md` |
+| Phase gate, promotion, or workflow recovery | `docs/WORKFLOW_CONTRACT.json`, then `outputs/WORKFLOW_STATE.json` and `outputs/WORKFLOW_RULE_REGISTRY.json` |
 | Stage 7 editing quality consistency | `docs/EDITING_QUALITY_STANDARD.md`, `skills/premiere-editing-export/SKILL.md` |
 | Working principles | `PROJECT_RULES.md` |
 | Five-stage planning | `skills/dialogue-based-planning/SKILL.md`, `planning_research/planning_stage_spec_2026-07-06.md` |

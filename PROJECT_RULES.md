@@ -72,7 +72,7 @@ Ask before irreversible or risky actions.
 - Every input-derived file belongs under `outputs/`: results, state, review pages, task scripts, and task tests.
 - Root controllers, `docs/`, `tools/`, `skills/`, `tests/`, and `planning_research/` are reusable framework only.
 - Do not add a top-level task folder; subdivide tasks only inside the owning `outputs/` stage.
-- Use Git for text history. Do not create duplicate backup copies.
+- Git staging and commits are only for reusable workflow and framework material. Never stage or commit `inputs/`, `outputs/`, or any artifact tied to one video. A reusable part discovered during video work must first be moved or refactored into a framework folder outside `inputs/` and `outputs/`, with per-video paths, facts, and constants removed; only that promoted framework version may be staged or committed. Do not create duplicate backup copies.
 - Never overwrite original videos, original subtitles, or user-authored sources.
 - For a new source, record only whether the user already has an external backup; never create or copy one without an explicit request.
 - Reuse unchanged outputs; version changed decisions through `CURRENT.json`, mark prior versions `superseded`, and report cleanup candidates.

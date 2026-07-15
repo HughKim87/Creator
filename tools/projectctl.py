@@ -281,6 +281,11 @@ def verify_project(root: Path) -> dict:
         _run_check(root, "doccheck", [sys.executable, str(root / "tools/doccheck/check_docs.py")]),
         _run_check(
             root,
+            "workflow_gate",
+            [sys.executable, str(root / "tools/workflow_gate.py"), "audit"],
+        ),
+        _run_check(
+            root,
             "unit_tests",
             [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"],
         ),

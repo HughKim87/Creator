@@ -45,8 +45,11 @@ Each skill must have the sections below. Names may be adapted per stage.
 - A source-derived output records `source_id`, `source_start`, `source_end`, and
   any reused `asset_ids`. A revision also records `baseline_version` and
   `changed_ranges`.
-- Classify retained artifacts as `reusable_source_evidence`,
-  `version_specific_render_evidence`, or `current_deliverable`.
+- Classify retained evidence as `reusable_source_evidence` or
+  `version_specific_render_evidence`. Separately assign the promotion role from
+  `docs/WORKFLOW_CONTRACT.json`: `draft`, `calibration_candidate`,
+  `historical_failure_evidence`, `approved_baseline`, `current_deliverable`, or
+  `superseded`.
 - Query the shared source asset manifest before capture. Register every retained
   media file after creation; unregistered media is a failed gate.
 - Source evidence is reusable across edit versions. Render evidence is tied to

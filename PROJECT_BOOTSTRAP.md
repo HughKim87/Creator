@@ -12,7 +12,7 @@
 - Read selected instruction documents to the end.
 - Do not rely on memory, summaries, or partial excerpts for controlling docs.
 - If a required rule file cannot be read, stop and report the missing file.
-- Before continuing, run `projectctl context`; before file edits, claim the task with `start`.
+- Before continuing, run `tools/project_preflight.ps1`; it validates Python, Git, existing scan roots, and includes `projectctl context`. Before file edits, claim the task with `start`.
 - Use `tools/README.md` for exact commands; task facts remain in the routed output handoff.
 
 ## Load Full Rules When

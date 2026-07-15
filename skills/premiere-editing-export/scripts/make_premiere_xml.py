@@ -17,6 +17,8 @@ XML 구조는 사용자 Premiere(CS6)가 직접 내보낸 참조 XML의 구조�
 1. 헤더 없음: 시작,끝[,라벨]  (원본은 소스 인자 파일 하나)
 2. 헤더 있음: 시작/끝/구간명/원본파일/역할 컬럼
    - 선택 컬럼 `sequence`, `order`, `cut_id`로 한 XML 안에 여러 시퀀스를 만든다.
+   - `timeline_start`, `video_track`, `audio_mode`, `audio_start`, `audio_end`로
+     컷어웨이와 분리된 오디오 경계를 표현한다. `audio_mode=none`은 무음 컷어웨이다.
    - `cut_id`는 전체 입력에서 고유해야 한다.
 """
 import argparse
@@ -27,7 +29,7 @@ import subprocess
 import sys
 import uuid as uuid_mod
 import xml.etree.ElementTree as ET
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from dataclasses import dataclass
 from fractions import Fraction
 from pathlib import Path
@@ -50,6 +52,11 @@ class Cut:
     sequence: str = ""
     cut_id: str = ""
     order: int = 0
+    timeline_start: float | None = None
+    video_track: int = 1
+    audio_mode: str = "linked"
+    audio_start: float | None = None
+    audio_end: float | None = None
 
     @property
     def duration(self) -> float:
@@ -132,6 +139,11 @@ def read_cuts(path: Path) -> list[Cut]:
         sequence_i = None
         cut_id_i = None
         order_i = None
+        timeline_start_i = None
+        video_track_i = None
+        audio_mode_i = None
+        audio_start_i = None
+        audio_end_i = None
         for key in ("구간명", "label", "name", "segment_name", "title"):
             if key in header:
                 label_i = header[key]
@@ -156,6 +168,26 @@ def read_cuts(path: Path) -> list[Cut]:
             if key in header:
                 order_i = header[key]
                 break
+        for key in ("timeline_start", "타임라인시작"):
+            if key in header:
+                timeline_start_i = header[key]
+                break
+        for key in ("video_track", "비디오트랙"):
+            if key in header:
+                video_track_i = header[key]
+                break
+        for key in ("audio_mode", "오디오모드"):
+            if key in header:
+                audio_mode_i = header[key]
+                break
+        for key in ("audio_start", "오디오시작"):
+            if key in header:
+                audio_start_i = header[key]
+                break
+        for key in ("audio_end", "오디오끝"):
+            if key in header:
+                audio_end_i = header[key]
+                break
         if start_i is None or end_i is None:
             raise ValueError("헤더 컷리스트에는 시작/끝 컬럼이 필요함")
         data_rows = rows[1:]
@@ -170,9 +202,31 @@ def read_cuts(path: Path) -> list[Cut]:
             cut_id = cut_id_text or f"cut_{i:03d}"
             order_text = row[order_i].strip() if order_i is not None and order_i < len(row) else ""
             order = int(order_text) if order_text else i
+            timeline_text = row[timeline_start_i].strip() if timeline_start_i is not None and timeline_start_i < len(row) else ""
+            video_track_text = row[video_track_i].strip() if video_track_i is not None and video_track_i < len(row) else ""
+            audio_mode = row[audio_mode_i].strip().lower() if audio_mode_i is not None and audio_mode_i < len(row) else ""
+            audio_start_text = row[audio_start_i].strip() if audio_start_i is not None and audio_start_i < len(row) else ""
+            audio_end_text = row[audio_end_i].strip() if audio_end_i is not None and audio_end_i < len(row) else ""
             if end <= start:
                 raise ValueError(f"끝이 시작보다 빠름: {row}")
-            cuts.append(Cut(i, start, end, label, role, src_name, sequence, cut_id, order))
+            cuts.append(
+                Cut(
+                    i,
+                    start,
+                    end,
+                    label,
+                    role,
+                    src_name,
+                    sequence,
+                    cut_id,
+                    order,
+                    parse_ts(timeline_text) if timeline_text else None,
+                    int(video_track_text) if video_track_text else 1,
+                    audio_mode or "linked",
+                    parse_ts(audio_start_text) if audio_start_text else None,
+                    parse_ts(audio_end_text) if audio_end_text else None,
+                )
+            )
     else:
         for i, row in enumerate(rows, 1):
             if len(row) < 2:
@@ -323,6 +377,25 @@ def validate_cuts(cuts: list[Cut], sources: dict[str, SourceInfo]) -> None:
             )
         if out_frame <= in_frame:
             raise ValueError(f"0프레임 컷: {cut.cut_id}")
+        if cut.timeline_start is not None and cut.timeline_start < 0:
+            raise ValueError(f"음수 timeline_start: {cut.cut_id}")
+        if cut.video_track < 1:
+            raise ValueError(f"video_track은 1 이상이어야 함: {cut.cut_id}")
+        if cut.audio_mode not in {"linked", "none"}:
+            raise ValueError(f"지원하지 않는 audio_mode: {cut.cut_id}={cut.audio_mode}")
+        if cut.audio_mode == "none" and (cut.audio_start is not None or cut.audio_end is not None):
+            raise ValueError(f"audio_mode=none에는 audio_start/end를 쓸 수 없음: {cut.cut_id}")
+        if (cut.audio_start is None) != (cut.audio_end is None):
+            raise ValueError(f"audio_start/end는 함께 지정해야 함: {cut.cut_id}")
+        if cut.audio_mode != "none":
+            audio_start = cut.start if cut.audio_start is None else cut.audio_start
+            audio_end = cut.end if cut.audio_end is None else cut.audio_end
+            audio_in = seconds_to_frames(audio_start, src.media.fps)
+            audio_out = seconds_to_frames(audio_end, src.media.fps)
+            if audio_in < 0 or audio_out > src.frames:
+                raise ValueError(f"소스 범위 밖 오디오: {cut.cut_id}")
+            if audio_out <= audio_in:
+                raise ValueError(f"0프레임 오디오: {cut.cut_id}")
 
 
 def group_cuts(cuts: list[Cut], fallback_name: str) -> OrderedDict[str, list[Cut]]:
@@ -402,18 +475,27 @@ def n_audio(media: MediaInfo) -> int:
     return min(media.channels, 2)
 
 
-def add_links(clipitem: ET.Element, video_id: str, audio_ids: list[str], clip_index: int) -> None:
+def add_links(
+    clipitem: ET.Element,
+    video_id: str,
+    audio_ids: list[str],
+    clip_index: int,
+    *,
+    video_track_index: int = 1,
+    audio_clip_index: int | None = None,
+) -> None:
+    audio_clip_index = clip_index if audio_clip_index is None else audio_clip_index
     link = add(clipitem, "link")
     add(link, "linkclipref", video_id)
     add(link, "mediatype", "video")
-    add(link, "trackindex", 1)
+    add(link, "trackindex", video_track_index)
     add(link, "clipindex", clip_index)
     for channel, audio_id in enumerate(audio_ids, 1):
         link = add(clipitem, "link")
         add(link, "linkclipref", audio_id)
         add(link, "mediatype", "audio")
         add(link, "trackindex", channel)
-        add(link, "clipindex", clip_index)
+        add(link, "clipindex", audio_clip_index)
         add(link, "groupindex", 1)
 
 
@@ -473,13 +555,82 @@ def add_sequence(
     def cut_src(cut: Cut) -> SourceInfo:
         return sources[cut.source]
 
-    cut_frames = []
+    layout = []
+    cursor = 0
+    video_clip_counts: dict[int, int] = defaultdict(int)
+    audio_clip_count = 0
     for cut in cuts:
         src = cut_src(cut)
         in_frame = seconds_to_frames(cut.start, src.media.fps)
         out_frame = seconds_to_frames(cut.end, src.media.fps)
-        cut_frames.append((cut, out_frame - in_frame))
-    sequence_frames = sum(frames for _, frames in cut_frames)
+        video_duration = out_frame - in_frame
+        timeline_start = (
+            seconds_to_frames(cut.timeline_start, ref_media.fps)
+            if cut.timeline_start is not None
+            else cursor
+        )
+        audio_enabled = cut.audio_mode != "none"
+        audio_in = None
+        audio_out = None
+        audio_duration = 0
+        if audio_enabled:
+            audio_in = seconds_to_frames(
+                cut.start if cut.audio_start is None else cut.audio_start,
+                src.media.fps,
+            )
+            audio_out = seconds_to_frames(
+                cut.end if cut.audio_end is None else cut.audio_end,
+                src.media.fps,
+            )
+            audio_duration = audio_out - audio_in
+            audio_clip_count += 1
+        video_clip_counts[cut.video_track] += 1
+        timeline_end = timeline_start + max(video_duration, audio_duration)
+        cursor = max(cursor, timeline_end)
+        layout.append(
+            {
+                "cut": cut,
+                "video_duration": video_duration,
+                "audio_duration": audio_duration,
+                "audio_in": audio_in,
+                "audio_out": audio_out,
+                "timeline_start": timeline_start,
+                "timeline_end": timeline_end,
+                "video_clip_index": video_clip_counts[cut.video_track],
+                "audio_clip_index": audio_clip_count if audio_enabled else None,
+            }
+        )
+
+    for track_index in sorted(video_clip_counts):
+        intervals = sorted(
+            (
+                item["timeline_start"],
+                item["timeline_start"] + item["video_duration"],
+                item["cut"].cut_id,
+            )
+            for item in layout
+            if item["cut"].video_track == track_index
+        )
+        for previous, current in zip(intervals, intervals[1:]):
+            if current[0] < previous[1]:
+                raise ValueError(
+                    f"같은 비디오 트랙의 타임라인 중복: V{track_index} {previous[2]} / {current[2]}"
+                )
+
+    audio_intervals = sorted(
+        (
+            item["timeline_start"],
+            item["timeline_start"] + item["audio_duration"],
+            item["cut"].cut_id,
+        )
+        for item in layout
+        if item["audio_clip_index"] is not None
+    )
+    for previous, current in zip(audio_intervals, audio_intervals[1:]):
+        if current[0] < previous[1]:
+            raise ValueError(f"같은 오디오 레인의 타임라인 중복: {previous[2]} / {current[2]}")
+
+    sequence_frames = max(item["timeline_end"] for item in layout)
 
     sequence = add(parent, "sequence", id=seq_id)
     add(sequence, "uuid", str(uuid_mod.uuid4()))
@@ -492,7 +643,11 @@ def add_sequence(
 
     def clip_ids(cut: Cut) -> tuple[str, list[str]]:
         video_id = f"{id_prefix}-{cut.index:03d}-v"
-        audio_ids = [f"{id_prefix}-{cut.index:03d}-a{c}" for c in range(1, n_a + 1)]
+        audio_ids = (
+            [f"{id_prefix}-{cut.index:03d}-a{c}" for c in range(1, n_a + 1)]
+            if cut.audio_mode != "none"
+            else []
+        )
         return video_id, audio_ids
 
     # ── 비디오 ──────────────────────────────────────────
@@ -506,28 +661,37 @@ def add_sequence(
     add(sample, "pixelaspectratio", "square")
     add(sample, "fielddominance", "none")
 
-    video_track = add(video, "track")
-    add(video_track, "enabled", "TRUE")
-    add(video_track, "locked", "FALSE")
-    timeline_pos = 0
-    for clip_index, (cut, duration) in enumerate(cut_frames, 1):
-        src = cut_src(cut)
-        in_frame = seconds_to_frames(cut.start, src.media.fps)
-        out_frame = seconds_to_frames(cut.end, src.media.fps)
-        video_id, audio_ids = clip_ids(cut)
-        clipitem = add(video_track, "clipitem", id=video_id, frameBlend="FALSE")
-        add(clipitem, "masterclipid", src.clip_id)
-        add(clipitem, "name", f"{cut.index:02d}_{cut.label}")
-        add(clipitem, "enabled", "TRUE")
-        add(clipitem, "duration", src.frames)
-        add(clipitem, "start", timeline_pos)
-        add(clipitem, "end", timeline_pos + duration)
-        add(clipitem, "in", in_frame)
-        add(clipitem, "out", out_frame)
-        add(clipitem, "alphatype", "none")
-        add_file(clipitem, src, context)
-        add_links(clipitem, video_id, audio_ids, clip_index)
-        timeline_pos += duration
+    for track_index in range(1, max(video_clip_counts) + 1):
+        video_track = add(video, "track")
+        add(video_track, "enabled", "TRUE")
+        add(video_track, "locked", "FALSE")
+        for item in layout:
+            cut = item["cut"]
+            if cut.video_track != track_index:
+                continue
+            src = cut_src(cut)
+            in_frame = seconds_to_frames(cut.start, src.media.fps)
+            out_frame = seconds_to_frames(cut.end, src.media.fps)
+            video_id, audio_ids = clip_ids(cut)
+            clipitem = add(video_track, "clipitem", id=video_id, frameBlend="FALSE")
+            add(clipitem, "masterclipid", src.clip_id)
+            add(clipitem, "name", f"{cut.index:02d}_{cut.label}")
+            add(clipitem, "enabled", "TRUE")
+            add(clipitem, "duration", src.frames)
+            add(clipitem, "start", item["timeline_start"])
+            add(clipitem, "end", item["timeline_start"] + item["video_duration"])
+            add(clipitem, "in", in_frame)
+            add(clipitem, "out", out_frame)
+            add(clipitem, "alphatype", "none")
+            add_file(clipitem, src, context)
+            add_links(
+                clipitem,
+                video_id,
+                audio_ids,
+                item["video_clip_index"],
+                video_track_index=track_index,
+                audio_clip_index=item["audio_clip_index"],
+            )
 
     # ── 오디오 ──────────────────────────────────────────
     # 참조 XML 구조: 모노 2트랙 분해 + premiereTrackType="Stereo" 트랙 속성.
@@ -559,27 +723,33 @@ def add_sequence(
         track = add(audio, "track", **track_attrs)
         add(track, "enabled", "TRUE")
         add(track, "locked", "FALSE")
-        timeline_pos = 0
-        for clip_index, (cut, duration) in enumerate(cut_frames, 1):
+        for item in layout:
+            cut = item["cut"]
+            if item["audio_clip_index"] is None:
+                continue
             src = cut_src(cut)
-            in_frame = seconds_to_frames(cut.start, src.media.fps)
-            out_frame = seconds_to_frames(cut.end, src.media.fps)
             video_id, audio_ids = clip_ids(cut)
             clipitem = add(track, "clipitem", id=audio_ids[channel - 1], frameBlend="FALSE")
             add(clipitem, "masterclipid", src.clip_id)
             add(clipitem, "name", f"{cut.index:02d}_{cut.label}")
             add(clipitem, "enabled", "TRUE")
             add(clipitem, "duration", src.frames)
-            add(clipitem, "start", timeline_pos)
-            add(clipitem, "end", timeline_pos + duration)
-            add(clipitem, "in", in_frame)
-            add(clipitem, "out", out_frame)
+            add(clipitem, "start", item["timeline_start"])
+            add(clipitem, "end", item["timeline_start"] + item["audio_duration"])
+            add(clipitem, "in", item["audio_in"])
+            add(clipitem, "out", item["audio_out"])
             add_file(clipitem, src, context)
             sourcetrack = add(clipitem, "sourcetrack")
             add(sourcetrack, "mediatype", "audio")
             add(sourcetrack, "trackindex", channel)
-            add_links(clipitem, video_id, audio_ids, clip_index)
-            timeline_pos += duration
+            add_links(
+                clipitem,
+                video_id,
+                audio_ids,
+                item["video_clip_index"],
+                video_track_index=cut.video_track,
+                audio_clip_index=item["audio_clip_index"],
+            )
         if audio_layout != "single":
             add(track, "outputchannelindex", channel)
 
