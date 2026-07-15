@@ -164,7 +164,8 @@ def check_refs(root: Path, findings: list[Finding]) -> None:
         for index, line in enumerate(read_text(path).splitlines(), 1):
             for group_a, group_b in MD_REF_RE.findall(line):
                 raw = (group_a or group_b).strip().lstrip("@")
-                if raw.startswith(("http://", "https://", "#", "workspace/")):
+                if raw.startswith(("http://", "https://", "#", "workspace/", "../")):
+                    # "../"는 저장소 밖(Tier-1 등) 환경 의존 참조라 검사하지 않는다.
                     continue
                 if "*" in raw or "?" in raw or raw in ALLOW_REFS:
                     continue
