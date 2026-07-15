@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -36,25 +37,18 @@ class ToolWrapperTests(unittest.TestCase):
             ROOT.resolve(),
         )
 
+class PreflightTests(unittest.TestCase):
     def test_preflight_returns_only_existing_scan_roots(self):
-        script = ROOT / "tools" / "project_preflight.ps1"
+        script = ROOT / "tools" / "project_preflight.py"
         result = subprocess.run(
-            [
-                "powershell.exe",
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
-                str(script),
-                "-Json",
-            ],
+            [sys.executable, str(script), "--json"],
             cwd=ROOT,
             capture_output=True,
             text=True,
-            encoding="utf-8-sig",
+            encoding="utf-8",
             errors="replace",
             check=False,
-            timeout=30,
+            timeout=60,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         payload = json.loads(result.stdout)

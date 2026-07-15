@@ -19,7 +19,7 @@
 | `tools/projectctl.schema.json` | 존재 |
 | `tools/workflow_gate.py` | 존재 |
 | `tools/edit_memory.py` | 존재 |
-| `tools/project_preflight.ps1` | 존재 |
+| `tools/project_preflight.py`, `tools/project_preflight.bat` | 존재 |
 | `tools/run_python.bat` | 존재 |
 | `tools/git_project.bat` | 존재 |
 | `tools/run_doccheck.bat` | 존재 |
@@ -57,8 +57,8 @@ tools\run_python.bat tools\workflow_gate.py audit
 
 넓은 파일 조회, Python 실행, Git 상태 확인 전에 아래 명령을 한 번 실행한다.
 
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\project_preflight.ps1
+```bat
+tools\project_preflight.bat
 ```
 
 - 필수 제어 파일 존재 여부를 확인한다.
