@@ -157,7 +157,10 @@ tools\projectctl.bat finish --task <ascii-slug> --summary "<완료 요약>"
 - `assert-transition`: 요청한 단계의 필수 증거와 활성 규칙이 모두 통과했을 때만
   성공한다.
 - 모든 전환은 `phase_order`의 바로 이전 단계가 `approved_for_next_phase`여야 한다. 개별 transition에 이 조건이 빠져도 도구가 자동 차단한다.
-- 계약 감사는 대표 샘플의 초반·중간·후반 범위, AI 실제 AV 선검증, 사용자에게 한 가지 권고안만 제시, MP4 현재 요청 허가, 영향 범위 롤백 정책도 검사한다.
+- 계약 감사는 대표 샘플의 초반·중간·후반 범위, AI 범위별 선검증, 사용자에게 한 가지 권고안만 제시, MP4 현재 요청 허가, 영향 범위 롤백 정책도 검사한다.
+- `validation_scopes`의 오디오 신호·편집 의미·연속 A/V·앱·사용자 방향을 따로 검사하며, `passed` 범위에는 존재하는 근거 파일이 필요하다.
+- 브라우저 같은 한 도구 표면의 실패가 오디오 신호처럼 무관한 범위를 차단하면 감사 오류다.
+- `task_blocked=true`는 필수 범위 식별, 기존 근거·프로젝트 도구·동등 방법 확인, 대안 없음이 모두 기록된 경우에만 허용된다.
 - `current_deliverable`은 final 게이트가 닫혀 있으면 허용하지 않는다.
 - `calibration_generation_allowed`는 AI 자체 검토 기획으로 제한된 대표 샘플만 허용한다.
 - `generation_lock_released`는 사용자 승인 대표 샘플과 승인 기준본이 있어야만 전체 편집에 대해 해제할 수 있다.

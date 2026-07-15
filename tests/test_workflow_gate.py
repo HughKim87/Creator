@@ -36,11 +36,41 @@ class WorkflowGateTests(unittest.TestCase):
                 "final",
             ],
             "transition_policy": {"require_immediate_predecessor_approval": True},
+            "validation_scope_policy": {
+                "required_scopes": [
+                    "audio_signal",
+                    "edit_semantic",
+                    "continuous_av",
+                    "app",
+                    "user_direction",
+                ],
+                "allowed_statuses": ["pending", "passed", "failed", "not_required"],
+                "required_scope_fields": ["status", "evidence", "limitations"],
+                "scope_check_paths": {
+                    "audio_signal": "phases.edit_calibration.checks.audio_source_signal_analyzed",
+                    "edit_semantic": "phases.edit_calibration.checks.semantic_checks_passed",
+                    "continuous_av": "phases.validation.checks.full_av_playback_reviewed",
+                    "app": "phases.validation.checks.app_validated",
+                    "user_direction": "phases.edit_calibration.checks.user_direction_approved",
+                },
+                "tool_surface_failure_scope_is_local": True,
+                "audio_signal_requires_browser_playback": False,
+                "passed_scope_survives_unrelated_surface_failure": True,
+                "blocker_checklist": [
+                    "required_scope_identified",
+                    "available_project_tools_checked",
+                    "existing_evidence_checked",
+                    "equivalent_methods_checked",
+                    "no_viable_alternative",
+                ],
+            },
             "calibration_policy": {
                 "required_positions": ["opening", "middle", "ending"],
                 "agent_checks_before_user": [
-                    "actual_av_playback",
+                    "audio_signal_analysis",
                     "speech_boundaries",
+                    "screen_audio_causality",
+                    "rhythm",
                     "message_visible_without_review_metadata",
                 ],
                 "recommended_packages_shown_to_user": 1,
@@ -71,7 +101,11 @@ class WorkflowGateTests(unittest.TestCase):
                 "edit_full": {
                     "requires": [
                         "phases.edit_calibration.approved_for_next_phase",
-                        "phases.edit_calibration.checks.actual_av_playback_reviewed",
+                        "phases.edit_calibration.checks.audio_source_signal_analyzed",
+                        "phases.edit_calibration.checks.speech_boundary_analysis_validated",
+                        "phases.edit_calibration.checks.screen_audio_causality_validated",
+                        "phases.edit_calibration.checks.rhythm_analysis_validated",
+                        "phases.edit_calibration.checks.message_visible_without_review_metadata",
                         "phases.edit_calibration.checks.agent_self_reviewed",
                         "phases.edit_calibration.checks.user_direction_approved",
                         "generation_lock_released",
@@ -108,10 +142,18 @@ class WorkflowGateTests(unittest.TestCase):
         phases["planning"]["checks"]["user_direction_approved"] = False
         phases["edit_calibration"]["checks"].update(
             {
-                "actual_av_playback_reviewed": False,
+                "audio_source_signal_analyzed": False,
+                "semantic_checks_passed": False,
+                "speech_boundary_analysis_validated": False,
+                "screen_audio_causality_validated": False,
+                "rhythm_analysis_validated": False,
+                "message_visible_without_review_metadata": False,
                 "agent_self_reviewed": False,
                 "user_direction_approved": False,
             }
+        )
+        phases["validation"]["checks"].update(
+            {"full_av_playback_reviewed": False, "app_validated": False}
         )
         self.state = {
             "schema_version": 1,
@@ -120,6 +162,25 @@ class WorkflowGateTests(unittest.TestCase):
             "calibration_generation_allowed": False,
             "generation_lock_released": False,
             "approved_edit_baseline": None,
+            "validation_scopes": {
+                scope: {
+                    "status": "pending",
+                    "evidence": [],
+                    "limitations": ["not evaluated in this fixture"],
+                }
+                for scope in self.contract["validation_scope_policy"]["required_scopes"]
+            },
+            "blocker_declaration": {
+                "task_blocked": False,
+                "scope": None,
+                "reason": None,
+                "required_scope_identified": False,
+                "available_project_tools_checked": False,
+                "existing_evidence_checked": False,
+                "equivalent_methods_checked": False,
+                "no_viable_alternative": False,
+            },
+            "tool_surface_failures": [],
             "phases": phases,
         }
         self.registry = {
@@ -207,6 +268,22 @@ class WorkflowGateTests(unittest.TestCase):
         self.registry["rules"][0]["verification_status"] = "passed"
         self.registry["rules"][0]["evidence"] = ["outputs/evidence.txt"]
 
+    def pass_scope(self, scope):
+        checks = {
+            "audio_signal": ("edit_calibration", "audio_source_signal_analyzed"),
+            "edit_semantic": ("edit_calibration", "semantic_checks_passed"),
+            "continuous_av": ("validation", "full_av_playback_reviewed"),
+            "app": ("validation", "app_validated"),
+            "user_direction": ("edit_calibration", "user_direction_approved"),
+        }
+        evidence = self.root / "outputs" / f"{scope}.txt"
+        evidence.write_text("verified", encoding="utf-8")
+        self.state["validation_scopes"][scope].update(
+            {"status": "passed", "evidence": [f"outputs/{scope}.txt"]}
+        )
+        phase, check = checks[scope]
+        self.state["phases"][phase]["checks"][check] = True
+
     def test_ai_reviewed_provisional_plan_opens_only_calibration(self):
         self.pass_rule()
         self.state["phases"]["data_analysis"]["checks"]["ready"] = True
@@ -231,11 +308,16 @@ class WorkflowGateTests(unittest.TestCase):
         self.state["phases"]["edit_calibration"]["approved_for_next_phase"] = True
         self.state["phases"]["edit_calibration"]["checks"].update(
             {
-                "actual_av_playback_reviewed": True,
+                "speech_boundary_analysis_validated": True,
+                "screen_audio_causality_validated": True,
+                "rhythm_analysis_validated": True,
+                "message_visible_without_review_metadata": True,
                 "agent_self_reviewed": True,
-                "user_direction_approved": True,
             }
         )
+        self.pass_scope("audio_signal")
+        self.pass_scope("edit_semantic")
+        self.pass_scope("user_direction")
         self.state["calibration_generation_allowed"] = True
         self.write_all()
         blocked = WORKFLOW_GATE.audit_project(self.root)
@@ -251,6 +333,77 @@ class WorkflowGateTests(unittest.TestCase):
         allowed = WORKFLOW_GATE.audit_project(self.root)
         self.assertTrue(allowed.coherent)
         self.assertEqual(allowed.blockers["edit_full"], [])
+
+    def test_audio_signal_can_pass_while_continuous_av_is_pending(self):
+        self.pass_scope("audio_signal")
+        self.current = {
+            "artifact_role": "calibration_candidate",
+            "active_calibration_candidate": {
+                "validation": {
+                    "direct_audio_signal_analyzed": True,
+                    "browser_playback_required_for_audio_analysis": False,
+                }
+            },
+        }
+        self.write_all()
+        result = WORKFLOW_GATE.audit_project(self.root)
+        self.assertTrue(result.coherent)
+        self.assertEqual(self.state["validation_scopes"]["continuous_av"]["status"], "pending")
+
+    def test_browser_failure_cannot_affect_audio_signal_scope(self):
+        self.state["tool_surface_failures"] = [
+            {
+                "id": "browser-local",
+                "surface": "browser_local_playback",
+                "affected_scopes": ["audio_signal"],
+                "task_blocker": False,
+                "alternatives_checked": ["source_audio_analysis"],
+            }
+        ]
+        self.write_all()
+        result = WORKFLOW_GATE.audit_project(self.root)
+        self.assertFalse(result.coherent)
+        self.assertTrue(any("browser playback failure" in error for error in result.errors))
+
+    def test_task_blocker_requires_all_alternative_checks(self):
+        self.state["blocker_declaration"].update(
+            {
+                "task_blocked": True,
+                "scope": "continuous_av",
+                "reason": "no playback surface",
+                "required_scope_identified": True,
+            }
+        )
+        self.state["tool_surface_failures"] = [
+            {
+                "id": "player-failure",
+                "surface": "local_player",
+                "affected_scopes": ["continuous_av"],
+                "task_blocker": True,
+                "alternatives_checked": [],
+            }
+        ]
+        self.write_all()
+        result = WORKFLOW_GATE.audit_project(self.root)
+        self.assertFalse(result.coherent)
+        self.assertTrue(any("every alternative" in error for error in result.errors))
+        self.assertTrue(any("cannot block before alternatives" in error for error in result.errors))
+
+    def test_current_cannot_require_browser_for_audio_analysis(self):
+        self.pass_scope("audio_signal")
+        self.current = {
+            "artifact_role": "calibration_candidate",
+            "active_calibration_candidate": {
+                "validation": {
+                    "direct_audio_signal_analyzed": True,
+                    "browser_playback_required_for_audio_analysis": True,
+                }
+            },
+        }
+        self.write_all()
+        result = WORKFLOW_GATE.audit_project(self.root)
+        self.assertFalse(result.coherent)
+        self.assertTrue(any("cannot require browser playback" in error for error in result.errors))
 
     def test_calibration_permission_must_be_boolean(self):
         self.state["calibration_generation_allowed"] = "yes"
@@ -273,6 +426,21 @@ class WorkflowGateTests(unittest.TestCase):
         result = WORKFLOW_GATE.audit_project(self.root)
         self.assertFalse(result.coherent)
         self.assertTrue(any("one recommended package" in error for error in result.errors))
+
+    def test_missing_validation_scope_policy_is_a_contract_error(self):
+        del self.contract["validation_scope_policy"]
+        self.write_all()
+        result = WORKFLOW_GATE.audit_project(self.root)
+        self.assertFalse(result.coherent)
+        self.assertTrue(any("missing validation_scope_policy" in error for error in result.errors))
+
+    def test_passed_scope_requires_existing_evidence(self):
+        self.state["validation_scopes"]["audio_signal"]["status"] = "passed"
+        self.state["phases"]["edit_calibration"]["checks"]["audio_source_signal_analyzed"] = True
+        self.write_all()
+        result = WORKFLOW_GATE.audit_project(self.root)
+        self.assertFalse(result.coherent)
+        self.assertTrue(any("passed validation scope requires evidence" in error for error in result.errors))
 
     def test_edit_memory_prevents_rejected_revision_from_remaining_candidate(self):
         self.contract["edit_memory_view_path"] = "outputs/07_edit_export/edit_memory/CURRENT.json"

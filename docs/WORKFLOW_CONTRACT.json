@@ -51,6 +51,43 @@
     "feedback_is_cleared_only_by_explicit_superseding_event": true,
     "overall_score_requires_actual_av_observation": true
   },
+  "validation_scope_policy": {
+    "required_scopes": [
+      "audio_signal",
+      "edit_semantic",
+      "continuous_av",
+      "app",
+      "user_direction"
+    ],
+    "allowed_statuses": [
+      "pending",
+      "passed",
+      "failed",
+      "not_required"
+    ],
+    "required_scope_fields": [
+      "status",
+      "evidence",
+      "limitations"
+    ],
+    "scope_check_paths": {
+      "audio_signal": "phases.edit_calibration.checks.audio_source_signal_analyzed",
+      "edit_semantic": "phases.edit_calibration.checks.semantic_checks_passed",
+      "continuous_av": "phases.validation.checks.full_av_playback_reviewed",
+      "app": "phases.validation.checks.app_validated",
+      "user_direction": "phases.edit_calibration.checks.user_direction_approved"
+    },
+    "tool_surface_failure_scope_is_local": true,
+    "audio_signal_requires_browser_playback": false,
+    "passed_scope_survives_unrelated_surface_failure": true,
+    "blocker_checklist": [
+      "required_scope_identified",
+      "available_project_tools_checked",
+      "existing_evidence_checked",
+      "equivalent_methods_checked",
+      "no_viable_alternative"
+    ]
+  },
   "transition_policy": {
     "require_immediate_predecessor_approval": true
   },
@@ -62,7 +99,7 @@
       "ending"
     ],
     "agent_checks_before_user": [
-      "actual_av_playback",
+      "audio_signal_analysis",
       "chronology",
       "speech_boundaries",
       "screen_audio_causality",
@@ -121,7 +158,11 @@
         "phases.edit_calibration.checks.baseline_and_changeset_recorded",
         "phases.edit_calibration.checks.automatic_checks_passed",
         "phases.edit_calibration.checks.semantic_checks_passed",
-        "phases.edit_calibration.checks.actual_av_playback_reviewed",
+        "phases.edit_calibration.checks.audio_source_signal_analyzed",
+        "phases.edit_calibration.checks.speech_boundary_analysis_validated",
+        "phases.edit_calibration.checks.screen_audio_causality_validated",
+        "phases.edit_calibration.checks.rhythm_analysis_validated",
+        "phases.edit_calibration.checks.message_visible_without_review_metadata",
         "phases.edit_calibration.checks.agent_self_reviewed",
         "phases.edit_calibration.checks.user_direction_approved",
         "generation_lock_released"
