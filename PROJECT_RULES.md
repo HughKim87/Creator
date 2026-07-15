@@ -102,8 +102,8 @@ Ask before irreversible or risky actions.
 
 ## Verification And Stop Rule
 
-The agent runs verification itself with the tools it has. Do not hand verification steps to the user.
-If an environment limit blocks a check, run an equivalent and report what it does and does not prove.
+The agent classifies each claim by validation scope, then verifies it with available project tools; do not hand basic defect detection to the user.
+A tool-surface failure affects only that surface. Before declaring a task blocked, inspect existing evidence, project tools, and equivalent methods, then report what each result proves.
 
 Report verification precisely:
 

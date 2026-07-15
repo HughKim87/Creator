@@ -76,6 +76,10 @@ def _active_rules(registry: dict[str, Any]) -> list[dict[str, Any]]:
     return [rule for rule in rules if rule.get("status") == "active"] if isinstance(rules, list) else []
 
 
+def _string_list(value: Any) -> bool:
+    return isinstance(value, list) and all(isinstance(item, str) and item for item in value)
+
+
 def _validate_contract_policies(contract: dict[str, Any], result: GateResult) -> None:
     transition_policy = contract.get("transition_policy")
     if not isinstance(transition_policy, dict) or transition_policy.get(
@@ -91,7 +95,13 @@ def _validate_contract_policies(contract: dict[str, Any], result: GateResult) ->
         if not isinstance(positions, list) or set(positions) != {"opening", "middle", "ending"}:
             result.errors.append("calibration_policy must cover opening, middle, and ending")
         checks = calibration.get("agent_checks_before_user")
-        required_checks = {"actual_av_playback", "speech_boundaries", "message_visible_without_review_metadata"}
+        required_checks = {
+            "audio_signal_analysis",
+            "speech_boundaries",
+            "screen_audio_causality",
+            "rhythm",
+            "message_visible_without_review_metadata",
+        }
         if not isinstance(checks, list) or not required_checks.issubset(checks):
             result.errors.append("calibration_policy is missing required agent prechecks")
         if calibration.get("recommended_packages_shown_to_user") != 1:
@@ -102,6 +112,44 @@ def _validate_contract_policies(contract: dict[str, Any], result: GateResult) ->
             result.errors.append("calibration_policy must forbid full edit before the user checkpoint")
         if calibration.get("mp4_requires_current_request_authorization") is not True:
             result.errors.append("calibration_policy must require current-request MP4 authorization")
+
+    scope_policy = contract.get("validation_scope_policy")
+    expected_scopes = {"audio_signal", "edit_semantic", "continuous_av", "app", "user_direction"}
+    expected_statuses = {"pending", "passed", "failed", "not_required"}
+    expected_fields = {"status", "evidence", "limitations"}
+    expected_blocker_checks = {
+        "required_scope_identified",
+        "available_project_tools_checked",
+        "existing_evidence_checked",
+        "equivalent_methods_checked",
+        "no_viable_alternative",
+    }
+    if not isinstance(scope_policy, dict):
+        result.errors.append("workflow contract missing validation_scope_policy")
+    else:
+        scopes = scope_policy.get("required_scopes")
+        if not _string_list(scopes) or set(scopes) != expected_scopes:
+            result.errors.append("validation_scope_policy must define the five validation scopes")
+        statuses = scope_policy.get("allowed_statuses")
+        if not _string_list(statuses) or set(statuses) != expected_statuses:
+            result.errors.append("validation_scope_policy has invalid allowed_statuses")
+        fields = scope_policy.get("required_scope_fields")
+        if not _string_list(fields) or not expected_fields.issubset(fields):
+            result.errors.append("validation_scope_policy is missing required scope fields")
+        check_paths = scope_policy.get("scope_check_paths")
+        if not isinstance(check_paths, dict) or set(check_paths) != expected_scopes:
+            result.errors.append("validation_scope_policy must map every scope to one state check")
+        elif any(not isinstance(path, str) or not path for path in check_paths.values()):
+            result.errors.append("validation_scope_policy scope check paths must be non-empty strings")
+        if scope_policy.get("tool_surface_failure_scope_is_local") is not True:
+            result.errors.append("validation_scope_policy must keep tool-surface failures scope-local")
+        if scope_policy.get("audio_signal_requires_browser_playback") is not False:
+            result.errors.append("audio-signal validation must not require browser playback")
+        if scope_policy.get("passed_scope_survives_unrelated_surface_failure") is not True:
+            result.errors.append("passed validation scopes must survive unrelated surface failures")
+        checklist = scope_policy.get("blocker_checklist")
+        if not _string_list(checklist) or set(checklist) != expected_blocker_checks:
+            result.errors.append("validation_scope_policy has an incomplete blocker checklist")
 
     routing = contract.get("revision_routing")
     required_routes = {
@@ -114,6 +162,123 @@ def _validate_contract_policies(contract: dict[str, Any], result: GateResult) ->
         result.errors.append("workflow contract missing revision_routing entries")
     elif any(not isinstance(routing[key], list) or not routing[key] for key in required_routes):
         result.errors.append("workflow contract revision_routing entries must be non-empty arrays")
+
+
+def _validate_validation_state(
+    root: Path,
+    contract: dict[str, Any],
+    state: dict[str, Any],
+    result: GateResult,
+) -> None:
+    policy = contract.get("validation_scope_policy")
+    if not isinstance(policy, dict):
+        return
+    required_scopes = policy.get("required_scopes")
+    allowed_statuses = set(policy.get("allowed_statuses", []))
+    required_fields = set(policy.get("required_scope_fields", []))
+    check_paths = policy.get("scope_check_paths")
+    if not _string_list(required_scopes) or not isinstance(check_paths, dict):
+        return
+
+    scopes = state.get("validation_scopes")
+    if not isinstance(scopes, dict):
+        result.errors.append("workflow state missing validation_scopes")
+        return
+    for scope in required_scopes:
+        entry = scopes.get(scope)
+        if not isinstance(entry, dict):
+            result.errors.append(f"workflow state missing validation scope: {scope}")
+            continue
+        missing = sorted(required_fields - set(entry))
+        if missing:
+            result.errors.append(f"validation scope {scope} missing fields: {', '.join(missing)}")
+        status = entry.get("status")
+        if status not in allowed_statuses:
+            result.errors.append(f"validation scope {scope} has invalid status={status}")
+        evidence = entry.get("evidence")
+        if not isinstance(evidence, list):
+            result.errors.append(f"validation scope {scope} evidence must be an array")
+            evidence = []
+        if status == "passed" and not evidence:
+            result.errors.append(f"passed validation scope requires evidence: {scope}")
+        for evidence_path in evidence:
+            if not isinstance(evidence_path, str) or not evidence_path or not _path(root, evidence_path).exists():
+                result.errors.append(f"validation scope {scope} evidence path missing: {evidence_path}")
+        limitations = entry.get("limitations")
+        if not _string_list(limitations):
+            result.errors.append(f"validation scope {scope} limitations must be a non-empty string array")
+        check_path = check_paths.get(scope)
+        if isinstance(check_path, str):
+            check_passed = dotted_get(state, check_path) is True
+            scope_passed = status == "passed"
+            if check_passed != scope_passed:
+                result.errors.append(
+                    f"validation scope {scope} status conflicts with state check: {check_path}"
+                )
+
+    blocker = state.get("blocker_declaration")
+    checklist = policy.get("blocker_checklist")
+    if not isinstance(blocker, dict):
+        result.errors.append("workflow state missing blocker_declaration")
+        blocker = {}
+    if not isinstance(blocker.get("task_blocked"), bool):
+        result.errors.append("blocker_declaration.task_blocked must be a boolean")
+    if _string_list(checklist):
+        for field_name in checklist:
+            if not isinstance(blocker.get(field_name), bool):
+                result.errors.append(f"blocker_declaration.{field_name} must be a boolean")
+    if blocker.get("task_blocked") is True:
+        if blocker.get("scope") not in required_scopes:
+            result.errors.append("blocked task must identify one required validation scope")
+        if not isinstance(blocker.get("reason"), str) or not blocker.get("reason"):
+            result.errors.append("blocked task must include a reason")
+        if _string_list(checklist) and any(blocker.get(field_name) is not True for field_name in checklist):
+            result.errors.append("task blocker requires every alternative and evidence check to pass")
+    elif blocker.get("no_viable_alternative") is True:
+        result.errors.append("no_viable_alternative cannot be true when the task is not blocked")
+
+    failures = state.get("tool_surface_failures")
+    if not isinstance(failures, list):
+        result.errors.append("workflow state tool_surface_failures must be an array")
+        return
+    for index, failure in enumerate(failures, 1):
+        if not isinstance(failure, dict):
+            result.errors.append(f"tool surface failure {index} must be an object")
+            continue
+        failure_id = failure.get("id")
+        surface = failure.get("surface")
+        affected = failure.get("affected_scopes")
+        if not isinstance(failure_id, str) or not failure_id:
+            result.errors.append(f"tool surface failure {index} has no id")
+        if not isinstance(surface, str) or not surface:
+            result.errors.append(f"tool surface failure {failure_id or index} has no surface")
+        if not _string_list(affected) or not set(affected).issubset(required_scopes):
+            result.errors.append(f"tool surface failure {failure_id or index} has invalid affected_scopes")
+            affected = []
+        if not isinstance(failure.get("task_blocker"), bool):
+            result.errors.append(f"tool surface failure {failure_id or index} task_blocker must be boolean")
+        alternatives = failure.get("alternatives_checked")
+        if not isinstance(alternatives, list) or any(
+            not isinstance(item, str) or not item for item in alternatives
+        ):
+            result.errors.append(
+                f"tool surface failure {failure_id or index} alternatives_checked must be a string array"
+            )
+        if isinstance(surface, str) and "browser" in surface.lower() and "audio_signal" in affected:
+            result.errors.append("browser playback failure cannot affect audio_signal validation")
+        if failure.get("task_blocker") is True:
+            if blocker.get("task_blocked") is not True:
+                result.errors.append(
+                    f"tool surface failure {failure_id or index} cannot block an unblocked task"
+                )
+            if blocker.get("scope") not in affected:
+                result.errors.append(
+                    f"tool surface failure {failure_id or index} does not affect the declared blocker scope"
+                )
+            if not alternatives:
+                result.errors.append(
+                    f"tool surface failure {failure_id or index} cannot block before alternatives are checked"
+                )
 
 
 def _transition_blockers(
@@ -180,6 +345,7 @@ def audit_project(root: Path) -> GateResult:
     if edit_memory is not None and edit_memory.get("schema_version") != 1:
         result.errors.append("unsupported edit memory schema_version")
     _validate_contract_policies(contract, result)
+    _validate_validation_state(root, contract, state, result)
 
     source_ids = {state.get("source_id"), registry.get("source_id"), ledger.get("source_id")}
     if None in source_ids or len(source_ids) != 1:
@@ -315,6 +481,24 @@ def audit_project(root: Path) -> GateResult:
                 result.errors.append("edit CURRENT is current_deliverable while the final gate is closed")
             if not lock_released and role in {"approved_baseline", "current_deliverable"}:
                 result.errors.append(f"edit CURRENT role {role} conflicts with the generation lock")
+            active_candidate = edit_current.get("active_calibration_candidate")
+            candidate_validation = (
+                active_candidate.get("validation") if isinstance(active_candidate, dict) else None
+            )
+            if isinstance(candidate_validation, dict):
+                audio_scope = state.get("validation_scopes", {}).get("audio_signal", {})
+                audio_scope_passed = (
+                    isinstance(audio_scope, dict) and audio_scope.get("status") == "passed"
+                )
+                direct_audio_passed = candidate_validation.get("direct_audio_signal_analyzed") is True
+                if audio_scope_passed != direct_audio_passed:
+                    result.errors.append(
+                        "edit CURRENT direct audio analysis conflicts with workflow audio_signal scope"
+                    )
+                if candidate_validation.get("browser_playback_required_for_audio_analysis") is not False:
+                    result.errors.append(
+                        "edit CURRENT cannot require browser playback for audio analysis"
+                    )
 
     if state.get("mode") == "workflow_recovery" and lock_released:
         result.errors.append("workflow_recovery mode cannot have generation lock released")
