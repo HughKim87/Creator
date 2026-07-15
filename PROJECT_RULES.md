@@ -19,7 +19,7 @@ editing support, review, and related automation.
 
 ## Operating Direction
 
-- Build a reusable workflow environment, not a pile of one-off instructions.
+- Build a reusable workflow environment, not one-off instructions; judge every improvement against `docs/DESIGN_PRINCIPLES.md`.
 - Optimize for throughput, context economy, repeatability, verified outputs,
   and prevention of repeated mistakes.
 - Treat each video as one run through the same staged pipeline. Identify the
