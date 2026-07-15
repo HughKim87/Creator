@@ -7,6 +7,7 @@
   "state_path": "outputs/WORKFLOW_STATE.json",
   "rule_registry_path": "outputs/WORKFLOW_RULE_REGISTRY.json",
   "edit_change_ledger_path": "outputs/07_edit_export/EDIT_CHANGE_LEDGER.json",
+  "edit_memory_view_path": "outputs/07_edit_export/edit_memory/CURRENT.json",
   "phase_order": [
     "data_analysis",
     "planning",
@@ -40,7 +41,15 @@
     "one_user_creative_checkpoint_before_full_expansion": true,
     "data_reanalysis_requires_source_or_audience_change": true,
     "full_rebuild_requires_explicit_user_approval": true,
-    "revision_model": "approved_baseline_plus_changeset"
+    "revision_model": "working_and_approved_baselines_plus_revision_dag"
+  },
+  "memory_policy": {
+    "event_store_is_append_only": true,
+    "working_baseline_may_advance_without_user_approval": true,
+    "approved_baseline_requires_user_direction": true,
+    "rejection_memory_survives_execution_request_reset": true,
+    "feedback_is_cleared_only_by_explicit_superseding_event": true,
+    "overall_score_requires_actual_av_observation": true
   },
   "transition_policy": {
     "require_immediate_predecessor_approval": true

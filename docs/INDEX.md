@@ -24,6 +24,7 @@ The root handoff is a reusable pointer. Current video state lives only in
 | Production stage decision | `01_youtube_production_workflow.md` |
 | Phase gate, promotion, or workflow recovery | `docs/WORKFLOW_CONTRACT.json`, then `outputs/WORKFLOW_STATE.json` and `outputs/WORKFLOW_RULE_REGISTRY.json` |
 | Stage 7 editing quality consistency | `docs/EDITING_QUALITY_STANDARD.md`, `skills/premiere-editing-export/SKILL.md` |
+| Stage 7 revision lineage, feedback memory, or baseline selection | `docs/EDIT_MEMORY_KERNEL.md`, then `outputs/07_edit_export/edit_memory/CURRENT.json` |
 | Working principles | `PROJECT_RULES.md` |
 | Five-stage planning | `skills/dialogue-based-planning/SKILL.md`, `planning_research/planning_stage_spec_2026-07-06.md` |
 | Skill work | `skills/README.md`, `skills/SKILL_CONTRACT.md`, relevant `skills/*/SKILL.md` |

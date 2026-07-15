@@ -18,6 +18,7 @@
 | `tools/projectctl.py`, `tools/projectctl.bat` | 존재 |
 | `tools/projectctl.schema.json` | 존재 |
 | `tools/workflow_gate.py` | 존재 |
+| `tools/edit_memory.py` | 존재 |
 | `tools/project_preflight.ps1` | 존재 |
 | `tools/run_python.bat` | 존재 |
 | `tools/git_project.bat` | 존재 |
@@ -160,6 +161,19 @@ tools\projectctl.bat finish --task <ascii-slug> --summary "<완료 요약>"
 - `current_deliverable`은 final 게이트가 닫혀 있으면 허용하지 않는다.
 - `calibration_generation_allowed`는 AI 자체 검토 기획으로 제한된 대표 샘플만 허용한다.
 - `generation_lock_released`는 사용자 승인 대표 샘플과 승인 기준본이 있어야만 전체 편집에 대해 해제할 수 있다.
+
+## edit memory
+
+`edit_memory.py`는 편집 판단을 규칙 문장 대신 이벤트, 수정 계보, 타임라인 노드·연결,
+피드백, 평가 증거, 이중 기준본으로 저장한다. 데이터 계약은
+`docs/EDIT_MEMORY_KERNEL.md`를 따른다. 영상별 데이터베이스와 생성 뷰는
+`outputs/07_edit_export/edit_memory/`에 둔다.
+
+```bat
+tools\run_python.bat tools\edit_memory.py apply --db <database> --input <event-batch.json>
+tools\run_python.bat tools\edit_memory.py validate --db <database>
+tools\run_python.bat tools\edit_memory.py export --db <database> --output <CURRENT.json>
+```
 
 ## 검증 상태
 

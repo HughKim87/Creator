@@ -154,11 +154,17 @@ def _transition_blockers(
 
 def audit_project(root: Path) -> GateResult:
     result = GateResult()
+    edit_memory: dict[str, Any] | None = None
     try:
         contract = load_json(root / CONTRACT_PATH)
         state = load_json(_path(root, contract["state_path"]))
         registry = load_json(_path(root, contract["rule_registry_path"]))
         ledger = load_json(_path(root, contract["edit_change_ledger_path"]))
+        edit_memory_path = contract.get("edit_memory_view_path")
+        if edit_memory_path is not None:
+            if not isinstance(edit_memory_path, str) or not edit_memory_path:
+                raise WorkflowGateError("workflow contract edit_memory_view_path must be a path string")
+            edit_memory = load_json(_path(root, edit_memory_path))
     except (KeyError, WorkflowGateError) as exc:
         result.errors.append(str(exc))
         return result
@@ -171,6 +177,8 @@ def audit_project(root: Path) -> GateResult:
         result.errors.append("unsupported rule registry schema_version")
     if ledger.get("schema_version") != 1:
         result.errors.append("unsupported edit ledger schema_version")
+    if edit_memory is not None and edit_memory.get("schema_version") != 1:
+        result.errors.append("unsupported edit memory schema_version")
     _validate_contract_policies(contract, result)
 
     source_ids = {state.get("source_id"), registry.get("source_id"), ledger.get("source_id")}
@@ -221,6 +229,59 @@ def audit_project(root: Path) -> GateResult:
     calibration_allowed = state.get("calibration_generation_allowed")
     if not isinstance(calibration_allowed, bool):
         result.errors.append("workflow state calibration_generation_allowed must be a boolean")
+
+    if edit_memory is not None:
+        revisions = edit_memory.get("revisions")
+        if not isinstance(revisions, list):
+            result.errors.append("edit memory revisions must be an array")
+            revisions = []
+        revision_index = {
+            revision.get("revision_id"): revision
+            for revision in revisions
+            if isinstance(revision, dict) and isinstance(revision.get("revision_id"), str)
+        }
+        for revision in revision_index.values():
+            if revision.get("source_id") != state.get("source_id"):
+                result.errors.append(
+                    f"edit memory source_id mismatch for {revision.get('revision_id')}: "
+                    f"{revision.get('source_id')}"
+                )
+        memory_baselines = edit_memory.get("baselines")
+        if not isinstance(memory_baselines, dict):
+            result.errors.append("edit memory baselines must be an object")
+            memory_baselines = {}
+        memory_approved = memory_baselines.get("approved")
+        memory_approved_id = (
+            memory_approved.get("revision_id") if isinstance(memory_approved, dict) else None
+        )
+        if memory_approved_id != approved_baseline:
+            result.errors.append("approved baseline differs between workflow state and edit memory")
+        memory_working = memory_baselines.get("working")
+        if not isinstance(memory_working, dict) or memory_working.get("revision_id") is None:
+            result.warnings.append("edit memory has no working baseline; autonomous revision must select one")
+
+        calibration_phase = state.get("phases", {}).get("edit_calibration", {})
+        candidate = calibration_phase.get("candidate", {}) if isinstance(calibration_phase, dict) else {}
+        memory_revision_id = candidate.get("memory_revision_id") if isinstance(candidate, dict) else None
+        if memory_revision_id is not None:
+            memory_revision = revision_index.get(memory_revision_id)
+            if memory_revision is None:
+                result.errors.append(f"edit calibration memory revision missing: {memory_revision_id}")
+            elif memory_revision.get("status") == "rejected":
+                if calibration_phase.get("status") != "rejected_user_av_review":
+                    result.errors.append("rejected edit memory revision is not rejected in workflow state")
+                if candidate.get("artifact_role") != "historical_failure_evidence":
+                    result.errors.append("rejected edit memory revision must be historical_failure_evidence")
+                if memory_revision.get("agent_actual_av_evaluation_count", 0) == 0:
+                    result.warnings.append(
+                        f"user rejected before agent actual A/V observation: {memory_revision_id}"
+                    )
+
+        active_memory_feedback = edit_memory.get("active_feedback")
+        if isinstance(active_memory_feedback, list) and active_memory_feedback:
+            result.warnings.append(
+                f"edit memory retains {len(active_memory_feedback)} active feedback events"
+            )
 
     phase_order = contract.get("phase_order", [])
     phases = state.get("phases", {})

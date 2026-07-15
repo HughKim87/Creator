@@ -274,6 +274,36 @@ class WorkflowGateTests(unittest.TestCase):
         self.assertFalse(result.coherent)
         self.assertTrue(any("one recommended package" in error for error in result.errors))
 
+    def test_edit_memory_prevents_rejected_revision_from_remaining_candidate(self):
+        self.contract["edit_memory_view_path"] = "outputs/07_edit_export/edit_memory/CURRENT.json"
+        self.state["phases"]["edit_calibration"]["status"] = "candidate_ready"
+        self.state["phases"]["edit_calibration"]["candidate"] = {
+            "memory_revision_id": "cal-r4",
+            "artifact_role": "calibration_candidate",
+        }
+        memory = {
+            "schema_version": 1,
+            "revisions": [
+                {
+                    "revision_id": "cal-r4",
+                    "source_id": "sample",
+                    "status": "rejected",
+                    "agent_actual_av_evaluation_count": 0,
+                }
+            ],
+            "baselines": {
+                "working": {"revision_id": None},
+                "approved": {"revision_id": None},
+            },
+            "active_feedback": [{"event_id": "reject-r4"}],
+        }
+        self.write_all()
+        self.write_json("outputs/07_edit_export/edit_memory/CURRENT.json", memory)
+        result = WORKFLOW_GATE.audit_project(self.root)
+        self.assertFalse(result.coherent)
+        self.assertTrue(any("not rejected in workflow state" in error for error in result.errors))
+        self.assertTrue(any("historical_failure_evidence" in error for error in result.errors))
+
 
 if __name__ == "__main__":
     unittest.main()
