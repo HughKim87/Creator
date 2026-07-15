@@ -17,8 +17,9 @@ SKIP_DIRS = {".git", ".agents", ".codex", "workspace", "temp", "inputs", "output
 SKIP_PREFIXES = {"tools/ffmpeg/"}
 MEDIA_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".mp3", ".wav", ".m4a", ".mp4", ".mkv", ".mov", ".avi"}
 ALLOWED_TOP_LEVEL_DIRS = {
-    ".agents", ".claude", ".codex", ".git", ".githooks", "docs", "inputs",
-    "outputs", "planning_research", "skills", "tests", "tools",
+    ".agents", ".claude", ".codex", ".git", ".githooks", ".github",
+    ".pytest_cache", "docs", "inputs", "outputs", "planning_research",
+    "skills", "tests", "tools",
 }
 ALLOWED_ROOT_FILES = {
     ".gitattributes", ".geminiignore", ".gitignore", "01_youtube_production_workflow.md",

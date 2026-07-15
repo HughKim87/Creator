@@ -32,3 +32,4 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+.pytest_cache
