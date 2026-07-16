@@ -30,6 +30,7 @@ The root handoff is a reusable pointer. Current video state lives only in
 | Five-stage planning | `skills/dialogue-based-planning/SKILL.md`, `planning_research/planning_stage_spec_2026-07-06.md` |
 | Skill work | `skills/README.md`, `skills/SKILL_CONTRACT.md`, relevant `skills/*/SKILL.md` |
 | Tool work | `tools/README.md`, then specific tool help |
+| Project diagnosis or cross-agent validation | `gpt/CROSS_VALIDATION.md`, then the named report |
 | Multi-agent workflow/tool adoption | `planning_research/multi_agent_file_workflow_solution_research_2026-07-14.md` |
 | Past operational diagnosis | `planning_research/project_ops_diagnosis_and_improvements_2026-07-07.md` |
 
@@ -40,6 +41,7 @@ The root handoff is a reusable pointer. Current video state lives only in
 - `PROJECT_RULES.md`: conditional full rule source
 - `docs/AGENT_MAINTENANCE.md`: document maintenance checklist
 - `skills/SKILL_CONTRACT.md`: shared skill authoring contract
+- `gpt/CROSS_VALIDATION.md`: read-only cross-agent audit protocol; not workflow state
 - `.geminiignore`: Gemini context exclusion list
 
 ## Load Principles

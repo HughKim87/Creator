@@ -18,7 +18,7 @@ SKIP_PREFIXES = {"tools/ffmpeg/"}
 MEDIA_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".mp3", ".wav", ".m4a", ".mp4", ".mkv", ".mov", ".avi"}
 ALLOWED_TOP_LEVEL_DIRS = {
     ".agents", ".claude", ".codex", ".git", ".githooks", ".github",
-    ".pytest_cache", "docs", "inputs", "outputs", "planning_research",
+    ".pytest_cache", "docs", "gpt", "inputs", "outputs", "planning_research",
     "skills", "tests", "tools",
 }
 ALLOWED_ROOT_FILES = {
