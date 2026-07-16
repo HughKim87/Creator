@@ -1,0 +1,75 @@
+asset_id,source_id,source_path,source_time_seconds,source_end_seconds,width,kind,precision,candidate_ids,bit_ids,tags,path,status,notes
+review_C01_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,30,126,1600,contact_sheet,source_range,C01,,동기·셋업,outputs/review_2026-07-11/media/C01.png,current,원본 시간 기준 검토 카드
+review_C01_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,30,126,,audio_clip,source_range,C01,,동기·셋업,outputs/review_2026-07-11/media/C01.mp3,current,원본 시간 기준 검토 오디오
+review_C02_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,190,225,1600,contact_sheet,source_range,C02,,공포 예열,outputs/review_2026-07-11/media/C02.png,current,원본 시간 기준 검토 카드
+review_C02_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,190,225,,audio_clip,source_range,C02,,공포 예열,outputs/review_2026-07-11/media/C02.mp3,current,원본 시간 기준 검토 오디오
+review_C03_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,605,655,1600,contact_sheet,source_range,C03,,공포증거·노크,outputs/review_2026-07-11/media/C03.png,current,원본 시간 기준 검토 카드
+review_C03_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,605,655,,audio_clip,source_range,C03,,공포증거·노크,outputs/review_2026-07-11/media/C03.mp3,current,원본 시간 기준 검토 오디오
+review_C04_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,727,760,1600,contact_sheet,source_range,C04,,공포증거·현실,outputs/review_2026-07-11/media/C04.png,current,원본 시간 기준 검토 카드
+review_C04_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,727,760,,audio_clip,source_range,C04,,공포증거·현실,outputs/review_2026-07-11/media/C04.mp3,current,원본 시간 기준 검토 오디오
+review_C05_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,835,885,1600,contact_sheet,source_range,C05,,첫 붕괴·허세,outputs/review_2026-07-11/media/C05.png,current,원본 시간 기준 검토 카드
+review_C05_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,835,885,,audio_clip,source_range,C05,,첫 붕괴·허세,outputs/review_2026-07-11/media/C05.mp3,current,원본 시간 기준 검토 오디오
+review_C06_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1090,1170,1600,contact_sheet,source_range,C06,,자각 핵심,outputs/review_2026-07-11/media/C06.png,current,원본 시간 기준 검토 카드
+review_C06_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1090,1170,,audio_clip,source_range,C06,,자각 핵심,outputs/review_2026-07-11/media/C06.mp3,current,원본 시간 기준 검토 오디오
+review_C07_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1250,1295,1600,contact_sheet,source_range,C07,,허세 자백,outputs/review_2026-07-11/media/C07.png,current,원본 시간 기준 검토 카드
+review_C07_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1250,1295,,audio_clip,source_range,C07,,허세 자백,outputs/review_2026-07-11/media/C07.mp3,current,원본 시간 기준 검토 오디오
+review_C08_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1340,1450,1600,contact_sheet,source_range,C08,,자기설득 실패,outputs/review_2026-07-11/media/C08.png,current,원본 시간 기준 검토 카드
+review_C08_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1340,1450,,audio_clip,source_range,C08,,자기설득 실패,outputs/review_2026-07-11/media/C08.mp3,current,원본 시간 기준 검토 오디오
+review_C09_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2080,2264,1600,contact_sheet,source_range,C09,,추격·콜드오픈,outputs/review_2026-07-11/media/C09.png,current,원본 시간 기준 검토 카드
+review_C09_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2080,2264,,audio_clip,source_range,C09,,추격·콜드오픈,outputs/review_2026-07-11/media/C09.mp3,current,원본 시간 기준 검토 오디오
+review_C10_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2290,2360,1600,contact_sheet,source_range,C10,,추격 후 반응,outputs/review_2026-07-11/media/C10.png,current,원본 시간 기준 검토 카드
+review_C10_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2290,2360,,audio_clip,source_range,C10,,추격 후 반응,outputs/review_2026-07-11/media/C10.mp3,current,원본 시간 기준 검토 오디오
+review_C11_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2580,2620,1600,contact_sheet,source_range,C11,,중반 반응,outputs/review_2026-07-11/media/C11.png,current,원본 시간 기준 검토 카드
+review_C11_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2580,2620,,audio_clip,source_range,C11,,중반 반응,outputs/review_2026-07-11/media/C11.mp3,current,원본 시간 기준 검토 오디오
+review_C12_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2835,2935,1600,contact_sheet,source_range,C12,,공포 상승,outputs/review_2026-07-11/media/C12.png,current,원본 시간 기준 검토 카드
+review_C12_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2835,2935,,audio_clip,source_range,C12,,공포 상승,outputs/review_2026-07-11/media/C12.mp3,current,원본 시간 기준 검토 오디오
+review_C13_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3015,3070,1600,contact_sheet,source_range,C13,,사망 후보,outputs/review_2026-07-11/media/C13.png,current,원본 시간 기준 검토 카드
+review_C13_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3015,3070,,audio_clip,source_range,C13,,사망 후보,outputs/review_2026-07-11/media/C13.mp3,current,원본 시간 기준 검토 오디오
+review_C14_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3105,3175,1600,contact_sheet,source_range,C14,,재도전 반응,outputs/review_2026-07-11/media/C14.png,current,원본 시간 기준 검토 카드
+review_C14_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3105,3175,,audio_clip,source_range,C14,,재도전 반응,outputs/review_2026-07-11/media/C14.mp3,current,원본 시간 기준 검토 오디오
+review_C15_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3500,3530,1600,contact_sheet,source_range,C15,,후반 단서,outputs/review_2026-07-11/media/C15.png,current,원본 시간 기준 검토 카드
+review_C15_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3500,3530,,audio_clip,source_range,C15,,후반 단서,outputs/review_2026-07-11/media/C15.mp3,current,원본 시간 기준 검토 오디오
+review_C16_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3755,3775,1600,contact_sheet,source_range,C16,,후반 반응,outputs/review_2026-07-11/media/C16.png,current,원본 시간 기준 검토 카드
+review_C16_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3755,3775,,audio_clip,source_range,C16,,후반 반응,outputs/review_2026-07-11/media/C16.mp3,current,원본 시간 기준 검토 오디오
+review_C17_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3955,4065,1600,contact_sheet,source_range,C17,,후반 위기,outputs/review_2026-07-11/media/C17.png,current,원본 시간 기준 검토 카드
+review_C17_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3955,4065,,audio_clip,source_range,C17,,후반 위기,outputs/review_2026-07-11/media/C17.mp3,current,원본 시간 기준 검토 오디오
+review_C18_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,4095,4125,1600,contact_sheet,source_range,C18,,후반 전환,outputs/review_2026-07-11/media/C18.png,current,원본 시간 기준 검토 카드
+review_C18_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,4095,4125,,audio_clip,source_range,C18,,후반 전환,outputs/review_2026-07-11/media/C18.mp3,current,원본 시간 기준 검토 오디오
+review_C19_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,4335,4355,1600,contact_sheet,source_range,C19,,후반 단서,outputs/review_2026-07-11/media/C19.png,current,원본 시간 기준 검토 카드
+review_C19_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,4335,4355,,audio_clip,source_range,C19,,후반 단서,outputs/review_2026-07-11/media/C19.mp3,current,원본 시간 기준 검토 오디오
+review_C20_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,4495,4520,1600,contact_sheet,source_range,C20,,결말 진입,outputs/review_2026-07-11/media/C20.png,current,원본 시간 기준 검토 카드
+review_C20_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,4495,4520,,audio_clip,source_range,C20,,결말 진입,outputs/review_2026-07-11/media/C20.mp3,current,원본 시간 기준 검토 오디오
+review_C21_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,4675,4695,1600,contact_sheet,source_range,C21,,결말 직전,outputs/review_2026-07-11/media/C21.png,current,원본 시간 기준 검토 카드
+review_C21_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,4675,4695,,audio_clip,source_range,C21,,결말 직전,outputs/review_2026-07-11/media/C21.mp3,current,원본 시간 기준 검토 오디오
+review_C22_sheet,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,4785,4924,1600,contact_sheet,source_range,C22,,엔딩,outputs/review_2026-07-11/media/C22.png,current,원본 시간 기준 검토 카드
+review_C22_audio,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,4785,4924,,audio_clip,source_range,C22,,엔딩,outputs/review_2026-07-11/media/C22.mp3,current,원본 시간 기준 검토 오디오
+legacy_quality_B02,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,192.30,200.85,,range_frame,source_range,,B02,기존 품질검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/quality_v4/B02.png,current,v4에서 이관
+legacy_quality_B06a,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1254.45,1294.03,,range_frame,source_range,,B06,기존 품질검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/quality_v4/B06a.png,current,v4에서 이관
+legacy_quality_B06b,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1254.45,1294.03,,range_frame,source_range,,B06,기존 품질검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/quality_v4/B06b.png,current,v4에서 이관
+legacy_quality_B07a,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1364.29,1450.00,,range_frame,source_range,,B07,기존 품질검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/quality_v4/B07a.png,current,v4에서 이관
+legacy_quality_B07b,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1364.29,1450.00,,range_frame,source_range,,B07,기존 품질검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/quality_v4/B07b.png,current,v4에서 이관
+legacy_quality_B09a,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2294.06,2602.22,,range_frame,source_range,,B09,기존 품질검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/quality_v4/B09a.png,current,v4에서 이관
+legacy_quality_B09b,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2294.06,2602.22,,range_frame,source_range,,B09,기존 품질검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/quality_v4/B09b.png,current,v4에서 이관
+legacy_quality_B09c,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2294.06,2602.22,,range_frame,source_range,,B09,기존 품질검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/quality_v4/B09c.png,current,v4에서 이관
+legacy_quality_B10a,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2846.49,2932.45,,range_frame,source_range,,B10,기존 품질검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/quality_v4/B10a.png,current,v4에서 이관
+legacy_quality_B10b,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2846.49,2932.45,,range_frame,source_range,,B10,기존 품질검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/quality_v4/B10b.png,current,v4에서 이관
+legacy_quality_hook_current,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2182.00,2205.10,,range_frame,source_range,C09,HOOK,기존 훅 품질검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/quality_v4/hook_current.png,current,v4에서 이관
+legacy_v5_chase_added,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1940.51,1969.15,,range_frame,source_range,,B08,추격 추가 검토,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_analysis/chase_added.png,current,v5에서 이관
+legacy_v5_clark_microwave,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1059.75,1101.46,,range_frame,source_range,,B04,클라크·전자레인지,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_analysis/clark_microwave.png,current,v5에서 이관
+legacy_v5_dark_room,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1235.00,1250.20,,range_frame,source_range,,B05,어두운 방,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_analysis/dark_room.png,current,v5에서 이관
+legacy_v5_early_fear,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,531.30,552.90,,range_frame,source_range,,B02,초반 공포,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_analysis/early_fear.png,current,v5에서 이관
+legacy_v5_empathy,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,915.15,921.30,,range_frame,source_range,,B04,공감 반응,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_analysis/empathy.png,current,v5에서 이관
+legacy_v5_entity_shadow,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,653.75,714.60,,range_frame,source_range,,B03,개체 그림자,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_analysis/entity_shadow.png,current,v5에서 이관
+legacy_v5_fall,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1477.98,1497.42,,range_frame,source_range,,B07,추락,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_analysis/fall.png,current,v5에서 이관
+legacy_v5_hook_death,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3022.90,3035.80,,range_frame,source_range,C13,HOOK,사망 훅 후보,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_analysis/hook_death_candidate.png,current,v5에서 이관
+legacy_v5_hook_peak,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2182.00,2205.10,,range_frame,source_range,C09,HOOK,추격 훅 후보,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_analysis/hook_peak.png,current,v5에서 이관
+legacy_v5_intro,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,322.43,423.05,,range_frame,source_range,,B02,인트로 검토,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_analysis/intro.png,current,v5에서 이관
+legacy_v5_transition,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1648.34,1739.34,,range_frame,source_range,,B07,전환 검토,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_analysis/transition.png,current,v5에서 이관
+legacy_verify_B03,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3014.40,3035.80,,contact_sheet,source_range,C13,B03,대표 시퀀스 검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_verification/B03_contact.jpg,current,v5에서 이관
+legacy_verify_C02,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2082.00,2114.00,,contact_sheet,source_range,C09,C02,대표 시퀀스 검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_verification/C02_contact.jpg,current,v5에서 이관
+legacy_verify_C05b,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2190.50,2233.50,,contact_sheet,source_range,C09,C05b,대표 시퀀스 검증,outputs/06_analysis/source_assets/backrooms_20260630/legacy/v5_verification/C05b_contact.jpg,current,v5에서 이관
+legacy_frames_B05,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,1106.41,1176.13,512,frame_set,source_range,C06,B05,기존 원본 프레임 묶음,outputs/06_analysis/source_assets/backrooms_20260630/legacy/video_watch/full-edit-B05,current,video-watch에서 이관
+legacy_frames_B13,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,3502.09,3524.77,512,frame_set,source_range,C15,B13,기존 원본 프레임 묶음,outputs/06_analysis/source_assets/backrooms_20260630/legacy/video_watch/full-edit-B13,current,video-watch에서 이관
+legacy_frames_B15,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,4101.19,4134.94,512,frame_set,source_range,C18,B15,기존 원본 프레임 묶음,outputs/06_analysis/source_assets/backrooms_20260630/legacy/video_watch/full-edit-B15,current,video-watch에서 이관
+legacy_frames_hook,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2180.00,2206.00,512,frame_set,source_range,C09,HOOK,기존 훅 프레임 묶음,outputs/06_analysis/source_assets/backrooms_20260630/legacy/video_watch/full-edit-hook,current,video-watch에서 이관
+legacy_frames_v3_hook,backrooms_20260630,inputs/2026-06-30 00-23-03.mp4,2180.00,2206.00,768,frame_set,source_range,C09,HOOK,기존 v3 훅 프레임 묶음,outputs/06_analysis/source_assets/backrooms_20260630/legacy/video_watch/v3-hook,current,video-watch에서 이관

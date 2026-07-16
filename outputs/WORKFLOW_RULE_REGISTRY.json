@@ -1,0 +1,387 @@
+{
+  "schema_version": 1,
+  "source_id": "backrooms_20260630",
+  "contract": "docs/WORKFLOW_CONTRACT.json",
+  "updated_at": "2026-07-15",
+  "purpose": "사용자 피드백과 재발 방지 규칙을 한곳에서 추적하고 다음 단계의 통과 조건으로 사용한다.",
+  "rules": [
+    {
+      "id": "WF-001",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "data_analysis",
+      "rule": "데이터 분석, 영상 기획, 대표 편집, 전체 편집, 실제 검증 순서를 건너뛰지 않는다.",
+      "source": "2026-07-15 사용자 워크플로우 복구 요청",
+      "enforcement": {"type": "process_gate", "check": "workflow_gate transition order"},
+      "required_before": "planning",
+      "verification_status": "passed",
+      "evidence": [
+        "docs/WORKFLOW_CONTRACT.json",
+        "tools/workflow_gate.py",
+        "tests/test_workflow_gate.py"
+      ]
+    },
+    {
+      "id": "WF-002",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "validation",
+      "rule": "상위 단계가 미승인 상태이면 다음 단계 생성과 current_deliverable 승격을 차단한다.",
+      "source": "v8에서 6단계 미승인 상태로 7단계 전체 편집을 승격한 실패",
+      "enforcement": {"type": "automatic", "check": "workflow_gate audit and assert-transition"},
+      "required_before": "planning",
+      "verification_status": "passed",
+      "evidence": [
+        "tools/workflow_gate.py",
+        "tests/test_workflow_gate.py",
+        "outputs/07_edit_export/CURRENT.json"
+      ]
+    },
+    {
+      "id": "WF-003",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "edit_calibration",
+      "rule": "전체 편집과 그 수정은 사용자 승인 대표 샘플을 기준본으로 삼고 변경분으로만 관리하며 전체 재작성은 사용자의 명시적 승인 없이는 금지한다.",
+      "source": "v8 전면 재구성에서 이전 개선사항이 사라진 실패",
+      "enforcement": {"type": "process_gate", "check": "approved baseline and EDIT_CHANGE_LEDGER"},
+      "required_before": "edit_full",
+      "verification_status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "WF-004",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "edit_calibration",
+      "rule": "사용자는 첫 결함 탐지자가 아니며 AI가 기계·의미·재생 검증을 먼저 완료한 한 가지 권고안만 제시한다.",
+      "source": "사용자에게 A·B·C 수동 분석과 오류 탐지를 반복시킨 실패",
+      "enforcement": {"type": "process_gate", "check": "agent self-review evidence before user direction request"},
+      "required_before": "edit_full",
+      "verification_status": "passed",
+      "evidence": [
+        "outputs/07_edit_export/integrated_calibration_v2_r2_design_2026-07-16.md",
+        "outputs/07_edit_export/integrated_calibration_v2_r2_audio_analysis_2026-07-16.md",
+        "outputs/07_edit_export/integrated_calibration_v2_r2_quality_audit_v2.md",
+        "outputs/07_edit_export/edit_memory/integrated_calibration_v2_r2_user_direction_approval_2026-07-16.json"
+      ]
+    },
+    {
+      "id": "WF-005",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "validation",
+      "rule": "실제 영상과 음성을 함께 재생 검증하기 전에는 최종 품질 승인이나 전체 품질 점수를 선언하지 않는다.",
+      "source": "SRT·XML 구조 점수를 실제 영상 품질처럼 제시한 실패",
+      "enforcement": {"type": "app_playback", "check": "full AV playback and audio listening evidence"},
+      "required_before": "final",
+      "verification_status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "WF-006",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "validation",
+      "rule": "각 진행·계속·재개 명령은 독립 실행 단위이며 실패 카운터를 0에서 시작하고 이전 명령의 카운트를 이월하지 않는다.",
+      "source": "사용자 명시 지시",
+      "enforcement": {"type": "process_rule", "check": "PROJECT_BOOTSTRAP Stop Rule"},
+      "required_before": "planning",
+      "verification_status": "passed",
+      "evidence": ["PROJECT_BOOTSTRAP.md", "PROJECT_RULES.md"]
+    },
+    {
+      "id": "WF-007",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "planning",
+      "rule": "같은 편집 방향이 두 번 거부되면 새 버전을 만들지 않고 이해한 의도와 원인을 다시 확정한다.",
+      "source": "반복 거부 후에도 v6부터 v9까지 계속 확장한 실패",
+      "enforcement": {"type": "process_rule", "check": "PROJECT_RULES rejection stop rule"},
+      "required_before": "planning",
+      "verification_status": "passed",
+      "evidence": ["PROJECT_RULES.md"]
+    },
+    {
+      "id": "WF-008",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "edit_calibration",
+      "rule": "사용자의 창작 방향 판단은 텍스트 기획 승인이 아니라 AI가 실제 AV를 자체 검증한 대표 캘리브레이션에서 한 번 받는다.",
+      "source": "전체 결과를 늦게 본 뒤 처음부터 되돌아가는 무거운 승인 구조에 대한 사용자 피드백",
+      "enforcement": {"type": "process_gate", "check": "one creative checkpoint after agent-reviewed calibration"},
+      "required_before": "edit_full",
+      "verification_status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "WF-009",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "edit_calibration",
+      "rule": "원본 지문과 대상 시청자 가설이 같으면 데이터 분석을 재사용하고 메시지·리듬·국소 컷 문제는 영향 단계와 범위만 되돌린다.",
+      "source": "마지막 결과 거절 때 전체 작업을 처음부터 반복하는 비용에 대한 사용자 피드백",
+      "enforcement": {"type": "process_gate", "check": "revision routing and data reuse policy"},
+      "required_before": "edit_calibration",
+      "verification_status": "passed",
+      "evidence": [
+        "docs/WORKFLOW_CONTRACT.json",
+        "01_youtube_production_workflow.md",
+        "skills/premiere-editing-export/SKILL.md"
+      ]
+    },
+    {
+      "id": "WF-010",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "data_analysis",
+      "rule": "모든 단계 전환은 계약에 적힌 개별 조건과 별개로 바로 이전 단계의 approved_for_next_phase 승인을 요구한다.",
+      "source": "세션 전체 프레임워크 감사에서 planning·edit_full 전환의 선행 단계 승인 강제가 균일하지 않았던 문제",
+      "enforcement": {"type": "automatic", "check": "workflow_gate immediate predecessor approval"},
+      "required_before": "planning",
+      "verification_status": "passed",
+      "evidence": [
+        "docs/WORKFLOW_CONTRACT.json",
+        "tools/workflow_gate.py",
+        "tests/test_workflow_gate.py"
+      ]
+    },
+    {
+      "id": "DATA-001",
+      "status": "active",
+      "scope": "source",
+      "owner_phase": "data_analysis",
+      "rule": "백룸 게임 시청자가 드라마 백룸과 리미널 스페이스에 관심이 있다는 가설을 근거와 원본 장면에 연결한다.",
+      "source": "2026-07-14 사용자 피드백",
+      "enforcement": {"type": "semantic_checklist", "check": "audience evidence map"},
+      "required_before": "planning",
+      "verification_status": "passed",
+      "evidence": [
+        "outputs/06_analysis/backrooms_data_evidence_reaudit_v1_2026-07-15.md",
+        "outputs/06_analysis/backrooms_data_evidence_reaudit_v1_2026-07-15.csv",
+        "outputs/06_analysis/source_asset_manifest.csv",
+        "outputs/04_subtitle_check/subtitle_timecheck_report_2026-07-11.md"
+      ]
+    },
+    {
+      "id": "STORY-001",
+      "status": "active",
+      "scope": "source",
+      "owner_phase": "planning",
+      "rule": "영상의 중심 메시지는 한 개로 제한하고 모든 스파인 비트가 그 메시지에 기여해야 한다.",
+      "source": "v8에서 논지가 백룸 분석 체크리스트처럼 늘어난 실패",
+      "enforcement": {"type": "semantic_checklist", "check": "one thesis and beat contribution map"},
+      "required_before": "edit_calibration",
+      "verification_status": "passed",
+      "evidence": [
+        "outputs/05_planning/video_plan_backrooms_integrated_v1_2026-07-15.md"
+      ]
+    },
+    {
+      "id": "STORY-002",
+      "status": "active",
+      "scope": "source",
+      "owner_phase": "planning",
+      "rule": "백룸·리미널 스페이스의 의미는 관련 없는 화면 위 설명으로 주입하지 않고 공간·소리·빛·행동의 원본 증거로 보여준다.",
+      "source": "주차장 화면 위 49.7초 설명 구간에 대한 사용자 피드백",
+      "enforcement": {"type": "semantic_checklist", "check": "claim-to-screen-and-audio evidence mapping"},
+      "required_before": "edit_calibration",
+      "verification_status": "passed",
+      "evidence": [
+        "outputs/05_planning/video_plan_backrooms_integrated_v1_2026-07-15.md"
+      ]
+    },
+    {
+      "id": "STORY-003",
+      "status": "active",
+      "scope": "source",
+      "owner_phase": "planning",
+      "rule": "김실버의 허세·붕괴·학습과 공포 직후 코미디를 백룸 체험 메시지와 함께 보존한다.",
+      "source": "v8에서 분석 논지 때문에 캐릭터 재미가 약해진 실패",
+      "enforcement": {"type": "semantic_checklist", "check": "character arc and tension-release map"},
+      "required_before": "edit_calibration",
+      "verification_status": "passed",
+      "evidence": [
+        "outputs/05_planning/video_plan_backrooms_integrated_v1_2026-07-15.md"
+      ]
+    },
+    {
+      "id": "STORY-004",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "edit_calibration",
+      "rule": "대표 샘플의 메시지와 인물 변화는 검증 페이지의 기획 설명을 읽지 않아도 실제 영상과 음성만으로 이해되어야 한다.",
+      "source": "전체 영상을 봐도 단순히 무서워하기만 하고 영상 메시지가 느껴지지 않았던 실패",
+      "enforcement": {"type": "actual_av_semantic_check", "check": "blind narrative playback without review metadata"},
+      "required_before": "edit_full",
+      "verification_status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "EDIT-001",
+      "status": "active",
+      "scope": "source",
+      "owner_phase": "edit_calibration",
+      "rule": "훅은 10~16초 안의 이해 가능한 미니 사건 하나로 구성하고 감정적 피크와 결과를 포함한다.",
+      "source": "v8의 28.3초 설명형 훅 실패 후 확정한 개선 기준",
+      "enforcement": {"type": "automatic_and_semantic", "check": "hook duration plus event-peak-result review"},
+      "required_before": "edit_full",
+      "verification_status": "passed",
+      "evidence": [
+        "outputs/07_edit_export/integrated_calibration_v1_r3_microbeat_decisions.csv",
+        "outputs/07_edit_export/integrated_calibration_v1_r3_audit_2026-07-15.md",
+        "outputs/07_edit_export/support/tests/test_build_integrated_calibration_v1.py"
+      ]
+    },
+    {
+      "id": "EDIT-002",
+      "status": "active",
+      "scope": "source",
+      "owner_phase": "edit_calibration",
+      "rule": "훅 이후 실제 백룸 공간 진입보다 설명을 먼저 길게 배치하지 않는다.",
+      "source": "v8에서 실제 진입이 약 94초까지 늦어진 실패",
+      "enforcement": {"type": "semantic_checklist", "check": "hook-to-entry and information-unit review"},
+      "required_before": "edit_full",
+      "verification_status": "passed",
+      "evidence": [
+        "outputs/07_edit_export/integrated_calibration_v1_r3_cutlist.csv",
+        "outputs/07_edit_export/integrated_calibration_v1_r3_audit_2026-07-15.md"
+      ]
+    },
+    {
+      "id": "EDIT-003",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "edit_calibration",
+      "rule": "발화 중간에서 음성을 자르지 않는다. 화면 전환은 J/L컷으로 처리하고 불필요한 내용은 문장 전체를 제거한다.",
+      "source": "발화 도중 컷 편집이 반복된 사용자 피드백",
+      "enforcement": {"type": "automatic_and_listening", "check": "SRT boundary plus audio listening"},
+      "required_before": "edit_full",
+      "verification_status": "pending",
+      "evidence": [
+        "outputs/07_edit_export/integrated_calibration_v1_r3_microbeat_decisions.csv",
+        "outputs/07_edit_export/integrated_calibration_v1_r3_audit_2026-07-15.md"
+      ]
+    },
+    {
+      "id": "EDIT-004",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "edit_calibration",
+      "rule": "명시된 콜드오픈 훅을 제외하면 현재 이야기 시점보다 미래인 플레이 화면을 B-roll로 삽입하지 않는다.",
+      "source": "v9 A에서 훅과 게임 진입 사이에 후반 플레이 화면이 섞인 실패",
+      "enforcement": {"type": "automatic_and_semantic", "check": "chronology and future B-roll regression"},
+      "required_before": "edit_full",
+      "verification_status": "passed",
+      "evidence": [
+        "outputs/07_edit_export/integrated_calibration_v1_r3_cutlist.csv",
+        "outputs/07_edit_export/support/tests/test_build_integrated_calibration_v1.py",
+        "outputs/07_edit_export/integrated_calibration_v1_r3_audit_2026-07-15.md"
+      ]
+    },
+    {
+      "id": "EDIT-005",
+      "status": "active",
+      "scope": "source",
+      "owner_phase": "edit_calibration",
+      "rule": "추격은 발견·회피·막힘·탄원·결과의 2~8초 마이크로비트로 분해하고 공포 직후의 코미디와 이완을 보존한다.",
+      "source": "긴 추격과 저정보 플레이 화면을 보존한 실패 후 확정한 개선 기준",
+      "enforcement": {"type": "automatic_and_semantic", "check": "chase microbeat map and duration review"},
+      "required_before": "edit_full",
+      "verification_status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "UI-001",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "validation",
+      "rule": "검증 페이지의 원본 재생·컷 순서 검토 플레이어를 fixed 또는 sticky로 고정하지 않는다.",
+      "source": "자막 타임스탬프 검토를 가린다는 사용자 피드백",
+      "enforcement": {"type": "automatic", "check": "review page CSS regression"},
+      "required_before": "final",
+      "verification_status": "passed",
+      "evidence": [
+        "outputs/review_2026-07-15/integrated_calibration_v1_r3.html",
+        "outputs/07_edit_export/support/tests/test_build_integrated_calibration_v1_review.py"
+      ]
+    },
+    {
+      "id": "UI-002",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "edit_calibration",
+      "rule": "검증 페이지는 상세 기획·편집 의도와 AI 비트별 유지·추가·개선·제거·재설계 제안을 제공하고 같은 중심 문장을 중복 표시하지 않는다.",
+      "source": "검증 페이지의 의도 설명 부족·중복 문장·사용자 수동 스파인 분석 요구에 대한 피드백",
+      "enforcement": {"type": "page_schema_and_semantic_review", "check": "intent detail, duplicate thesis, and AI action plan"},
+      "required_before": "edit_full",
+      "verification_status": "passed",
+      "evidence": [
+        "outputs/review_2026-07-15/integrated_calibration_v1_r3.html",
+        "outputs/07_edit_export/support/tests/test_build_integrated_calibration_v1_review.py",
+        "outputs/07_edit_export/integrated_calibration_v1_r3_microbeat_decisions.csv"
+      ]
+    },
+    {
+      "id": "SCORE-001",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "validation",
+      "rule": "평가 점수에는 포함 범위와 제외 범위를 표시하며 실제 AV 검증 전 점수를 전체 품질 점수라고 부르지 않는다.",
+      "source": "v8의 제한된 92점을 전체 완성도처럼 제시한 실패",
+      "enforcement": {"type": "report_schema", "check": "score scope and AV validation fields"},
+      "required_before": "final",
+      "verification_status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "TOOL-001",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "data_analysis",
+      "rule": "저장소 Python 작업은 python 또는 py 실행 가능성을 추측하지 않고 공용 실행기에서 최소 실행을 확인한 뒤 수행한다.",
+      "source": "2026-07-15 복구 작업에서 python 별칭과 py -3을 연속으로 잘못 호출한 실패",
+      "enforcement": {"type": "automatic", "check": "run_python.bat resolver and integration test"},
+      "required_before": "planning",
+      "verification_status": "passed",
+      "evidence": [
+        "tools/run_python.bat",
+        "tests/test_tool_wrappers.py",
+        "tools/README.md"
+      ]
+    },
+    {
+      "id": "TOOL-002",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "data_analysis",
+      "rule": "저장소 Git 작업은 샌드박스 소유권 차이를 처리하는 safe.directory 공용 래퍼로 실행한다.",
+      "source": "2026-07-15 복구 작업에서 Git dubious ownership으로 상태 조회가 실패한 사례",
+      "enforcement": {"type": "automatic", "check": "git_project.bat safe-directory integration test"},
+      "required_before": "planning",
+      "verification_status": "passed",
+      "evidence": [
+        "tools/git_project.bat",
+        "tests/test_tool_wrappers.py",
+        "tools/README.md"
+      ]
+    },
+    {
+      "id": "TOOL-003",
+      "status": "active",
+      "scope": "global",
+      "owner_phase": "data_analysis",
+      "rule": "넓은 파일 검색은 사전점검이 반환한 실제 존재 경로만 대상으로 하며 선택 경로의 부재를 작업 실패로 만들지 않는다.",
+      "source": "2026-07-15 복구 작업에서 존재하지 않는 scripts 경로를 rg 입력에 포함한 실패",
+      "enforcement": {"type": "automatic", "check": "project_preflight.py existing scan roots integration test"},
+      "required_before": "planning",
+      "verification_status": "passed",
+      "evidence": [
+        "tools/project_preflight.py",
+        "tools/project_preflight.bat",
+        "tests/test_tool_wrappers.py",
+        "PROJECT_BOOTSTRAP.md"
+      ]
+    }
+  ]
+}

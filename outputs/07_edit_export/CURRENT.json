@@ -1,0 +1,228 @@
+{
+  "source_id": "backrooms_20260630",
+  "version": "integrated-calibration-v2-r2",
+  "status": "working_direction_approved_pending_continuous_av",
+  "artifact_role": "calibration_candidate",
+  "updated_at": "2026-07-16",
+  "workflow_state_pointer": "outputs/WORKFLOW_STATE.json",
+  "rule_registry_pointer": "outputs/WORKFLOW_RULE_REGISTRY.json",
+  "change_ledger_pointer": "outputs/07_edit_export/EDIT_CHANGE_LEDGER.json",
+  "edit_memory_view_pointer": "outputs/07_edit_export/edit_memory/CURRENT.json",
+  "edit_memory_database_pointer": "outputs/07_edit_export/edit_memory/edit_memory.sqlite3",
+  "full_edit_promotion_allowed": false,
+  "promotion_lock_reason": "integrated-calibration-v2-r2는 사용자 방향 승인을 받은 working 기준본이다. 실제 연속 A/V·Premiere 검증 전에는 approved·current_deliverable 또는 전체 편집 생성으로 승격할 수 없다.",
+  "baseline_version": null,
+  "working_baseline_version": "integrated-calibration-v2-r2",
+  "planning_baseline": "outputs/05_planning/video_plan_backrooms_integrated_v1_2026-07-15.md",
+  "analysis_baseline": "outputs/06_analysis/backrooms_data_evidence_reaudit_v1_2026-07-15.md",
+  "message": "영화로 보던 백룸은, 직접 헤매고 규칙을 배우며 익숙해질수록 무서움은 줄어도 끝내 긴장이 남는 체험이었다.",
+  "active_calibration_candidate": {
+    "revision_id": "integrated-calibration-v2-r2",
+    "parent_revision_id": "integrated-calibration-v2-r1",
+    "status": "working_direction_approved_pending_continuous_av",
+    "artifact_role": "calibration_candidate",
+    "sample_count": 3,
+    "total_selected_seconds": 51.402,
+    "continuous_source_ranges": [
+      "322.421-343.438",
+      "2333.217-2351.207",
+      "4342.274-4354.669"
+    ],
+    "files": {
+      "design": "outputs/07_edit_export/integrated_calibration_v2_r2_design_2026-07-16.md",
+      "cutlist": "outputs/07_edit_export/integrated_calibration_v2_r2_cutlist.csv",
+      "content_cutlist": "outputs/07_edit_export/integrated_calibration_v2_r2_content_cutlist.csv",
+      "microbeat_decisions": "outputs/07_edit_export/integrated_calibration_v2_r2_microbeat_decisions.csv",
+      "quality_profile": "outputs/07_edit_export/integrated_calibration_v2_r2_quality_profile.csv",
+      "quality_audit": "outputs/07_edit_export/integrated_calibration_v2_r2_quality_audit_v2.md",
+      "audio_analysis": "outputs/07_edit_export/integrated_calibration_v2_r2_audio_analysis_2026-07-16.md",
+      "audio_boundary_metrics": "outputs/07_edit_export/integrated_calibration_v2_r2_audio_boundary_metrics.csv",
+      "edit_memory_seed": "outputs/07_edit_export/edit_memory/integrated_calibration_v2_r2_seed.json",
+      "user_direction_event": "outputs/07_edit_export/edit_memory/integrated_calibration_v2_r2_user_direction_approval_2026-07-16.json",
+      "full_edit_expansion_design": "outputs/07_edit_export/full_edit_expansion_v1_design_2026-07-16.md"
+    },
+    "validation": {
+      "generated": true,
+      "parsed": true,
+      "structure_validated": true,
+      "tool_validated": true,
+      "quality_audit_ready": true,
+      "quality_audit_waived_findings": 3,
+      "selected_av_decode_validated": true,
+      "selected_av_decode_count": 3,
+      "registered_source_frames_inspected": true,
+      "subtitle_and_silence_boundaries_checked": true,
+      "direct_audio_signal_analyzed": true,
+      "vad_boundaries_checked": true,
+      "all_six_audio_boundaries_safe": true,
+      "screen_audio_causality_validated": true,
+      "rhythm_analysis_validated": true,
+      "message_visible_without_review_metadata": true,
+      "loudness_highlight_roles_classified": true,
+      "final_audio_listening_validated": false,
+      "continuous_av_playback_reviewed": false,
+      "browser_playback_required_for_audio_analysis": false,
+      "premiere_app_validated": false,
+      "user_direction_approved": true,
+      "user_direction_approval_scope": "production_intent_and_three_sample_roles_without_continuous_av",
+      "user_approved": false,
+      "numeric_quality_score": null
+    }
+  },
+  "historical_v8_changed_ranges": [
+    {
+      "sections": ["HOOK", "B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "B11", "B12", "B13", "B14", "B15", "B16", "B17", "B18"],
+      "action": "full_spine_rebuild_from_source_evidence",
+      "before": {"version": "v7", "cuts": 88, "duration_seconds": 578.28},
+      "after": {"version": "v8", "cuts": 58, "duration_seconds": 665.586}
+    },
+    {
+      "sections": ["B04", "B07", "B08", "B10", "B11", "B18"],
+      "action": "repair_mid_speech_boundaries",
+      "draft_srt_crossings": 27,
+      "final_srt_crossings": 0
+    },
+    {
+      "sections": ["B01", "B02", "B05", "B06", "B09", "B12", "B13", "B14", "B16", "B17"],
+      "action": "add_backrooms_liminal_space_sound_light_worldbuilding_and_implementation_evidence"
+    }
+  ],
+  "historical_v8_change_decision_file": "outputs/07_edit_export/full_edit_v8_change_decisions_2026-07-14.csv",
+  "source_timeline_assets": {
+    "catalog": "outputs/06_analysis/source_asset_catalog.csv",
+    "manifest": "outputs/06_analysis/source_asset_manifest.csv",
+    "manifest_rows": 114
+  },
+  "historical_v8_primary_files": {
+    "content_cutlist": "outputs/07_edit_export/cutlist_full_18beat_v8.csv",
+    "premiere_cutlist": "outputs/07_edit_export/cutlist_full_18beat_v8_multisequence.csv",
+    "premiere_xml": "outputs/07_edit_export/backrooms_full_18beat_v8.xml",
+    "subtitle_review": "outputs/review_2026-07-14/subtitle_review_full_v8_interactive_v1.html"
+  },
+  "historical_v8_validation_files": [
+    "outputs/07_edit_export/backrooms_full_18beat_v8_audit_2026-07-14.md",
+    "outputs/07_edit_export/backrooms_full_18beat_v8_boundary_review_2026-07-14.md",
+    "outputs/07_edit_export/backrooms_full_18beat_v8_quality_audit_2026-07-14.md",
+    "outputs/07_edit_export/spine_review_v8_ai_assessment_2026-07-14.json",
+    "outputs/07_edit_export/full_edit_v8_change_decisions_2026-07-14.csv",
+    "outputs/07_edit_export/full_edit_v8_microbeat_record_2026-07-14.md",
+    "outputs/07_edit_export/edit_quality_profile_v8.csv"
+  ],
+  "historical_v8_guidance_files": [
+    "outputs/07_edit_export/backrooms_full_18beat_v8_guide.md",
+    "outputs/07_edit_export/backrooms_editing_method_2026-07-12.md"
+  ],
+  "render_evidence": [],
+  "baseline_render_evidence_not_valid_for_v8": [
+    "outputs/07_edit_export/roughcut_hook_opening_v6.mp4",
+    "outputs/07_edit_export/roughcut_full_v6.mp4"
+  ],
+  "review_page_revision": "interactive_v1",
+  "review_page_contract": "docs/EDITING_QUALITY_STANDARD.md",
+  "review_page_contract_section": "검증 페이지 공통 계약",
+  "review_page_validation": {
+    "generated": true,
+    "parsed": true,
+    "structure_validated": true,
+    "tool_validated": true,
+    "audio_listening_validated": false,
+    "app_validated": false,
+    "user_content_approved": false
+  },
+  "historical_rejected_calibration": {
+    "version": "integrated-calibration-v1",
+    "status": "rejected_user_av_review",
+    "artifact_role": "historical_failure_evidence",
+    "memory_revision_id": "integrated-calibration-v1-r4",
+    "planning_baseline": "integrated-plan-v1",
+    "revision": "r4",
+    "full_expansion_allowed": false,
+    "source_fps": "60/1",
+    "message": "영화로 보던 백룸은, 직접 헤매고 규칙을 배우며 익숙해질수록 무서움은 줄어도 끝내 긴장이 남는 체험이었다.",
+    "sequences": [
+      {"name": "CAL_A_훅과첫진입", "duration_seconds": 29.267, "purpose": "E08 위협 접근-허세-붕괴를 반복 화면 없이 진행한 뒤 E01-E02 시간 순서 리셋"},
+      {"name": "CAL_B_빛변화와코미디", "duration_seconds": 13.717, "purpose": "E10 문제-발견 반응-실제 조작-밝아짐-코미디"},
+      {"name": "CAL_C_적응과공포잔존", "duration_seconds": 20.317, "purpose": "E11 반복 학습과 공포 잔존, E14 부인-중단-자백 및 0.4초 여운"}
+    ],
+    "changed_ranges": [
+      {"sequence": "CAL_A_훅과첫진입", "action": "replace_replayed_v2_with_progressive_reveal_and_trim_repeated_taunt", "hook_seconds": 11.900, "same_event_v2_clips": 0, "cue_internal_silence_boundary": 2338.837},
+      {"sequence": "CAL_B_빛변화와코미디", "action": "remove_repeated_direction_and_keep_discovery_switch_result", "discovery": "3506.540-3507.940", "switch": "3513.940-3516.340", "payoff_end": 3523.740},
+      {"sequence": "CAL_C_적응과공포잔존", "action": "remove_redundant_and_context_dependent_cues_add_past_flashback_and_split_ending", "flashback_v2": "4272.000-4274.000", "ending_v2_count": 2, "tail_frames": 24}
+    ],
+    "user_feedback": {
+      "recorded": true,
+      "summary": "훅 디테일 보강 후 결과물을 반복 분석·개선해 자기평가 90점 이상 달성",
+      "applied_scope": "7C hook progression, B action compression, C message and ending visual density",
+      "final_direction_approved": false
+    },
+    "files": {
+      "cutlist": "outputs/07_edit_export/integrated_calibration_v1_r4_cutlist.csv",
+      "microbeat_decisions": "outputs/07_edit_export/integrated_calibration_v1_r4_microbeat_decisions.csv",
+      "content_cutlist": "outputs/07_edit_export/integrated_calibration_v1_r4_content_cutlist.csv",
+      "quality_profile": "outputs/07_edit_export/integrated_calibration_v1_r4_quality_profile.csv",
+      "quality_audit": "outputs/07_edit_export/integrated_calibration_v1_r4_quality_audit.md",
+      "premiere_xml": "outputs/07_edit_export/integrated_calibration_v1_r4.xml",
+      "review_page": "outputs/review_2026-07-15/integrated_calibration_v1_r4.html",
+      "guide": "outputs/07_edit_export/integrated_calibration_v1_r4_guide.md",
+      "audit": "outputs/07_edit_export/integrated_calibration_v1_r4_audit_2026-07-15.md"
+    },
+    "supersedes": [
+      "outputs/07_edit_export/integrated_calibration_v1_r3_cutlist.csv",
+      "outputs/07_edit_export/integrated_calibration_v1_r3_microbeat_decisions.csv",
+      "outputs/07_edit_export/integrated_calibration_v1_r3_content_cutlist.csv",
+      "outputs/07_edit_export/integrated_calibration_v1_r3_quality_profile.csv",
+      "outputs/07_edit_export/integrated_calibration_v1_r3_quality_audit.md",
+      "outputs/07_edit_export/integrated_calibration_v1_r3.xml",
+      "outputs/review_2026-07-15/integrated_calibration_v1_r3.html",
+      "outputs/07_edit_export/integrated_calibration_v1_r3_guide.md",
+      "outputs/07_edit_export/integrated_calibration_v1_r3_audit_2026-07-15.md"
+    ],
+    "validation": {
+      "generated": true,
+      "parsed": true,
+      "structure_validated": true,
+      "tool_validated": true,
+      "automatic_tests_passed": 41,
+      "quality_audit_ready": true,
+      "srt_boundary_validated": true,
+      "chronology_validated": true,
+      "representative_frames_validated": true,
+      "selected_av_decode_validated": true,
+      "selected_av_decode_count": 23,
+      "user_feedback_recorded_in_edit_memory": true,
+      "user_revision_feedback_applied": false,
+      "structure_visual_self_reviewed": true,
+      "structure_visual_preflight_score": 92,
+      "score_scope": "structure_and_screen_preflight_without_continuous_av_or_premiere",
+      "ai_self_reviewed": false,
+      "browser_audio_playback_validated": false,
+      "premiere_app_validated": false,
+      "user_approved": false,
+      "user_rejected": true
+    }
+  },
+  "review_page_supersedes": [
+    "outputs/review_2026-07-14/subtitle_review_full_v7_interactive_v2.html"
+  ],
+  "supersedes": [
+    "outputs/07_edit_export/cutlist_full_18beat_v7.csv",
+    "outputs/07_edit_export/cutlist_full_18beat_v7_multisequence.csv",
+    "outputs/07_edit_export/backrooms_full_18beat_v7.xml"
+  ],
+  "preserve_as_historical_until_user_approval": [
+    "outputs/review_2026-07-14/subtitle_review_full_v7_interactive_v2.html",
+    "outputs/07_edit_export/cutlist_full_18beat_v7.csv",
+    "outputs/07_edit_export/cutlist_full_18beat_v7_multisequence.csv",
+    "outputs/07_edit_export/backrooms_full_18beat_v7.xml"
+  ],
+  "cleanup_candidates_after_user_approval": [
+    "outputs/07_edit_export/support/build_v7_cutlists.py",
+    "outputs/07_edit_export/support/build_v8_cutlists.py",
+    "outputs/07_edit_export/support/build_subtitle_review.py",
+    "outputs/07_edit_export/support/build_integrated_calibration_v1.py",
+    "outputs/07_edit_export/support/build_integrated_calibration_v1_review.py",
+    "outputs/07_edit_export/support/tests/test_build_integrated_calibration_v1.py",
+    "outputs/07_edit_export/support/tests/test_build_integrated_calibration_v1_review.py",
+    "outputs/07_edit_export/support/tests/test_integrated_calibration_v1_xml.py"
+  ]
+}

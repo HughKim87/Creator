@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "source_id": "backrooms_20260630",
+  "updated_at": "2026-07-16",
+  "policy": "legacy_compatibility_view_of_edit_memory_kernel",
+  "edit_memory_database": "outputs/07_edit_export/edit_memory/edit_memory.sqlite3",
+  "edit_memory_view": "outputs/07_edit_export/edit_memory/CURRENT.json",
+  "working_baseline": "integrated-calibration-v2-r2",
+  "approved_baseline": null,
+  "generation_allowed": false,
+  "full_rebuild_authorization": null,
+  "changesets": [],
+  "frozen_history": [
+    {
+      "version": "v6",
+      "status": "historical_failure_evidence",
+      "reusable_only_as": "failure case and render evidence"
+    },
+    {
+      "version": "v7",
+      "status": "historical_failure_evidence",
+      "reusable_only_as": "hook, character arc, and comedy reference"
+    },
+    {
+      "version": "v8",
+      "status": "historical_failure_evidence",
+      "reusable_only_as": "audience-interest and theme candidate evidence"
+    },
+    {
+      "version": "v9-r2",
+      "status": "historical_failure_evidence",
+      "reusable_only_as": "chronology and boundary regression evidence"
+    }
+  ],
+  "next_changeset_required_fields": [
+    "id",
+    "baseline_id",
+    "changed_ranges",
+    "reason",
+    "rule_ids",
+    "before",
+    "after",
+    "automatic_validation",
+    "semantic_validation",
+    "av_validation"
+  ]
+}

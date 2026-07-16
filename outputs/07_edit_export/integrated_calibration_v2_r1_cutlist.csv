@@ -1,0 +1,4 @@
+"sequence","order","cut_id","start","end","label","role","timeline_start","video_track","audio_mode","audio_start","audio_end"
+"CAL_A_첫진입_연속","1","V2R1_ENTRY_CONTINUOUS","322.421","343.438","로비에서백룸첫공간까지","E02_첫진입_연속사건","","1","linked","",""
+"CAL_B_규칙과허세_연속","1","V2R1_RULE_COMEDY_CONTINUOUS","2333.865","2351.207","위협접근부터도주까지","E08_규칙확인_허세_공포반전","","1","linked","",""
+"CAL_C_적응과공포잔존_연속","1","V2R1_PARADOX_CONTINUOUS","4342.274","4354.669","반복적응과남은공포","E11_중심메시지_연속발화","","1","linked","",""

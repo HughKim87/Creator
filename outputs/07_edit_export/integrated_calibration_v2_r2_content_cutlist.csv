@@ -1,0 +1,4 @@
+"sequence","order","cut_id","start","end","label","role","timeline_start","video_track","audio_mode","audio_start","audio_end"
+"INTEGRATED_CALIBRATION_V2_R2_AUDIT_ONLY","1","HOOK_01","322.421","343.438","로비에서백룸첫공간까지","E02_첫진입_연속사건","","1","linked","",""
+"INTEGRATED_CALIBRATION_V2_R2_AUDIT_ONLY","2","B01_01","2333.217","2351.207","위협접근부터도주까지","E08_규칙확인_허세_공포반전","","1","linked","",""
+"INTEGRATED_CALIBRATION_V2_R2_AUDIT_ONLY","3","B02_01","4342.274","4354.669","반복적응과남은공포","E11_중심메시지_연속발화","","1","linked","",""

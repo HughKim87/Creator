@@ -1,0 +1,266 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "created_at": "2026-07-15T10:05:30+00:00",
+    "schema_version": "1",
+    "updated_at": "2026-07-16T04:41:06+00:00"
+  },
+  "event_count": 80,
+  "revisions": [
+    {
+      "revision_id": "integrated-calibration-v1-r3",
+      "parent_revision_id": null,
+      "source_id": "backrooms_20260630",
+      "hypothesis": "훅 디테일을 동일 사건 화면과 반응 분해로 강화한다",
+      "status": "superseded",
+      "created_at": "2026-07-15T09:20:00+00:00",
+      "created_event_id": "r3-revision-historical",
+      "node_count": 0,
+      "edge_count": 0,
+      "evaluation_count": 0,
+      "actual_av_evaluation_count": 0,
+      "agent_actual_av_evaluation_count": 0,
+      "user_actual_av_evaluation_count": 0
+    },
+    {
+      "revision_id": "integrated-calibration-v1-r4",
+      "parent_revision_id": "integrated-calibration-v1-r3",
+      "source_id": "backrooms_20260630",
+      "hypothesis": "위협의 접근과 재등장을 압축하고 세 대표 장면으로 영상 방향을 검증한다",
+      "status": "rejected",
+      "created_at": "2026-07-15T09:20:00+00:00",
+      "created_event_id": "r4-revision-created",
+      "node_count": 23,
+      "edge_count": 17,
+      "evaluation_count": 2,
+      "actual_av_evaluation_count": 1,
+      "agent_actual_av_evaluation_count": 0,
+      "user_actual_av_evaluation_count": 1
+    },
+    {
+      "revision_id": "integrated-calibration-v2-r1",
+      "parent_revision_id": "integrated-calibration-v1-r4",
+      "source_id": "backrooms_20260630",
+      "hypothesis": "첫 진입, 규칙 실험과 허세 붕괴, 적응 뒤 남은 공포를 각각 한 개의 연속 원본 오디오 사건으로 검증하면 제작 의도와 발화 연속성이 영상 안에서 자립한다",
+      "status": "candidate",
+      "created_at": "2026-07-15T10:32:36Z",
+      "created_event_id": "v2r1-revision-created",
+      "node_count": 3,
+      "edge_count": 0,
+      "evaluation_count": 1,
+      "actual_av_evaluation_count": 0,
+      "agent_actual_av_evaluation_count": 0,
+      "user_actual_av_evaluation_count": 0
+    },
+    {
+      "revision_id": "integrated-calibration-v2-r2",
+      "parent_revision_id": "integrated-calibration-v2-r1",
+      "source_id": "backrooms_20260630",
+      "hypothesis": "원본 오디오 VAD와 데시벨 경계 분석으로 첫 반응 절단을 교정하면 세 연속 표본의 발화 경계와 하이라이트 역할이 자립한다",
+      "status": "working",
+      "created_at": "2026-07-16T00:30:00Z",
+      "created_event_id": "v2r2-revision-created",
+      "node_count": 3,
+      "edge_count": 0,
+      "evaluation_count": 2,
+      "actual_av_evaluation_count": 0,
+      "agent_actual_av_evaluation_count": 0,
+      "user_actual_av_evaluation_count": 0
+    }
+  ],
+  "baselines": {
+    "approved": {
+      "revision_id": null,
+      "note": "no user-approved edit baseline exists",
+      "updated_at": "2026-07-15T09:20:00+00:00"
+    },
+    "preferred": {
+      "revision_id": null,
+      "note": "no preferred candidate after r4 rejection",
+      "updated_at": "2026-07-15T09:20:00+00:00"
+    },
+    "working": {
+      "revision_id": "integrated-calibration-v2-r2",
+      "note": "사용자가 제작 의도와 세 대표 표본 방향을 승인했다. 실제 연속 A/V·Premiere 검증 전이므로 approved 기준본은 아니다.",
+      "updated_at": "2026-07-16T13:37:56+09:00"
+    }
+  },
+  "active_feedback": [
+    {
+      "event_id": "r4-feedback-c-semantic-stitch",
+      "revision_id": "integrated-calibration-v1-r4",
+      "target_type": "sequence",
+      "target_id": "CAL_C_적응과공포재조명",
+      "verdict": "reject",
+      "dimension": "semantic_continuity",
+      "severity": "critical",
+      "scope": "CAL_C 전체",
+      "observation": "4342→4790→4914→4920초 발화를 조립해 회고와 최종 자백의 맥락이 영상에서 자립하지 못함",
+      "evidence": "r4 cutlist source ranges",
+      "persists_until": "superseded_by_verified_fix_on_descendant_revision",
+      "supersedes_event_id": null
+    },
+    {
+      "event_id": "r4-feedback-hook-mid-cue-cut",
+      "revision_id": "integrated-calibration-v1-r4",
+      "target_type": "timeline_node",
+      "target_id": "A_HOOK_TAUNT",
+      "verdict": "reject",
+      "dimension": "utterance_completeness",
+      "severity": "critical",
+      "scope": "CAL_A 훅",
+      "observation": "2336.323–2341.940 발화 중 2338.837에서 절단해 뒤 문장을 제거함",
+      "evidence": "SRT cue 243과 r4 audit의 cue-internal silence boundary",
+      "persists_until": "superseded_by_verified_fix_on_descendant_revision",
+      "supersedes_event_id": null
+    },
+    {
+      "event_id": "r4-feedback-overall-rejected",
+      "revision_id": "integrated-calibration-v1-r4",
+      "target_type": "revision",
+      "target_id": "integrated-calibration-v1-r4",
+      "verdict": "reject",
+      "dimension": "production_intent_alignment",
+      "severity": "critical",
+      "scope": "전체 캘리브레이션",
+      "observation": "영상 제작 의도와 전달하려는 내용이 영상 자체에서 보이지 않고 단순 컷 모음처럼 느껴짐",
+      "evidence": "사용자 실제 재생 검토",
+      "persists_until": "superseded_by_verified_fix_on_descendant_revision",
+      "supersedes_event_id": null
+    },
+    {
+      "event_id": "r4-feedback-score-scope",
+      "revision_id": "integrated-calibration-v1-r4",
+      "target_type": "evaluation",
+      "target_id": "r4-structure-preflight",
+      "verdict": "reject",
+      "dimension": "evaluation_scope_integrity",
+      "severity": "critical",
+      "scope": "품질 판정",
+      "observation": "실제 연속 A/V 검토가 없는 92점을 영상 성공 점수처럼 사용함",
+      "evidence": "structure score 92; agent actual A/V observation false; user rejected",
+      "persists_until": "superseded_by_verified_fix_on_descendant_revision",
+      "supersedes_event_id": null
+    },
+    {
+      "event_id": "r4-feedback-speech-hard-cuts",
+      "revision_id": "integrated-calibration-v1-r4",
+      "target_type": "revision",
+      "target_id": "integrated-calibration-v1-r4",
+      "verdict": "reject",
+      "dimension": "speech_continuity",
+      "severity": "critical",
+      "scope": "전체 캘리브레이션",
+      "observation": "컷 사이가 뚝뚝 끊기고 말하던 내용이 잘려 사용자가 첫 A/V 결함 탐지자가 됨",
+      "evidence": "연속 A/V에 대한 agent 평가 이벤트 부재",
+      "persists_until": "superseded_by_verified_fix_on_descendant_revision",
+      "supersedes_event_id": null
+    },
+    {
+      "event_id": "r4-feedback-b-semantic-stitch",
+      "revision_id": "integrated-calibration-v1-r4",
+      "target_type": "sequence",
+      "target_id": "CAL_B_빛과스위치코미디",
+      "verdict": "reject",
+      "dimension": "semantic_continuity",
+      "severity": "high",
+      "scope": "CAL_B 전체",
+      "observation": "3422→3506→3510→3513→3520초의 떨어진 발화를 하드컷으로 연결해 행동 인과가 약함",
+      "evidence": "r4 cutlist source ranges",
+      "persists_until": "superseded_by_verified_fix_on_descendant_revision",
+      "supersedes_event_id": null
+    }
+  ],
+  "evaluations": [
+    {
+      "event_id": "r4-eval-structure-92",
+      "revision_id": "integrated-calibration-v1-r4",
+      "evaluator": "agent",
+      "method": "structure_and_screen_preflight",
+      "scope": "structure_and_screen_only_without_continuous_av_or_premiere",
+      "verdict": "scoped_pass_not_video_quality",
+      "evidence": "CURRENT.json pending_calibration.validation; semantic and actual A/V gates were false",
+      "actual_av_observed": false,
+      "dimensions": {
+        "structure_visual_preflight_score": 92
+      }
+    },
+    {
+      "event_id": "r4-eval-user-rejection",
+      "revision_id": "integrated-calibration-v1-r4",
+      "evaluator": "user",
+      "method": "actual_av_playback",
+      "scope": "integrated_calibration_r4_full_review",
+      "verdict": "rejected",
+      "evidence": "User reported abrupt cuts, clipped speech, poor line selection, and unclear video intent",
+      "actual_av_observed": true,
+      "dimensions": {
+        "production_intent_alignment": "failed",
+        "semantic_clarity": "failed",
+        "speech_continuity": "failed"
+      }
+    },
+    {
+      "event_id": "v2r1-eval-structure-visual-decode",
+      "revision_id": "integrated-calibration-v2-r1",
+      "evaluator": "agent",
+      "method": "structure_visual_frame_and_av_decode_preflight",
+      "scope": "three_continuous_source_ranges_without_actual_audio_listening_or_premiere",
+      "verdict": "scoped_pass_pending_actual_av",
+      "evidence": "integrated_calibration_v2_r1_design_2026-07-15.md; ffmpeg decode and silencedetect; registered source frames",
+      "actual_av_observed": false,
+      "dimensions": {
+        "browser_localhost_playback_blocked": true,
+        "continuous_source_range_per_sample": true,
+        "internal_hard_cut_count": 0,
+        "numeric_quality_score_created": false,
+        "registered_source_frames_inspected": true,
+        "subtitle_and_silence_boundaries_checked": true,
+        "video_audio_stream_decode_passed": true
+      }
+    },
+    {
+      "event_id": "v2r2-eval-audio-signal-boundaries",
+      "revision_id": "integrated-calibration-v2-r2",
+      "evaluator": "agent",
+      "method": "source_audio_vad_silencedetect_astats_loudness_analysis",
+      "scope": "three_continuous_source_ranges_and_all_six_boundaries",
+      "verdict": "audio_signal_boundaries_pass_after_b_start_repair",
+      "evidence": "integrated_calibration_v2_r2_audio_analysis_2026-07-16.md; integrated_calibration_v2_r2_audio_boundary_metrics.csv; vad_report_2026-07-11.json",
+      "actual_av_observed": false,
+      "dimensions": {
+        "audio_source_analyzed_directly": true,
+        "boundary_window_seconds": 0.5,
+        "browser_playback_required_for_audio_boundary_analysis": false,
+        "internal_hard_cut_count": 0,
+        "numeric_video_quality_score_created": false,
+        "primary_peak_sequence": "CAL_B_규칙과허세_연속",
+        "quiet_payoff_sequence": "CAL_C_적응과공포잔존_연속",
+        "r1_b_start_split_speech": true,
+        "r2_all_six_boundaries_safe": true,
+        "silencedetect_threshold_db": -35,
+        "vad_report_segments_used": true
+      }
+    },
+    {
+      "event_id": "v2r2-eval-user-direction-approved-20260716",
+      "revision_id": "integrated-calibration-v2-r2",
+      "evaluator": "user",
+      "method": "chat_direction_checkpoint",
+      "scope": "production_intent_and_three_representative_sample_roles_without_continuous_av_playback",
+      "verdict": "direction_approved_for_full_edit_expansion_design",
+      "evidence": "2026-07-16 사용자 대화: r2 방향으로 전체 편집을 진행할지 묻는 질문에 '진행해'로 승인",
+      "actual_av_observed": false,
+      "dimensions": {
+        "approved_baseline_selection_allowed": false,
+        "continuous_av_observed": false,
+        "generation_lock_release_allowed": false,
+        "mp4_generation_authorized": false,
+        "premiere_app_validated": false,
+        "production_intent_direction": "approved",
+        "representative_sample_roles": "approved",
+        "working_baseline_selection_allowed": true
+      }
+    }
+  ]
+}

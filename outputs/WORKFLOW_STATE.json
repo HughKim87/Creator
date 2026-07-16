@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "source_id": "backrooms_20260630",
+  "contract": "docs/WORKFLOW_CONTRACT.json",
+  "rule_registry": "outputs/WORKFLOW_RULE_REGISTRY.json",
+  "edit_change_ledger": "outputs/07_edit_export/EDIT_CHANGE_LEDGER.json",
+  "edit_memory_view": "outputs/07_edit_export/edit_memory/CURRENT.json",
+  "updated_at": "2026-07-16",
+  "mode": "workflow_recovery",
+  "calibration_generation_allowed": true,
+  "generation_lock_released": false,
+  "lock_reason": "사용자가 integrated-calibration-v2-r2의 제작 의도와 세 대표 표본 방향을 승인해 working 기준본으로 지정했다. 그러나 실제 연속 A/V·Premiere 검증을 보지 않은 방향 승인이라 approved 기준본과 전체 편집 생성 잠금은 해제하지 않는다.",
+  "current_allowed_action": "outputs/07_edit_export/full_edit_expansion_v1_design_2026-07-16.md에 따라 r2 A·B·C의 실제 연속 A/V 검증 방법을 확보할 것; 통과 전 approved baseline·feedback supersede·전체 컷리스트·XML·MP4·current_deliverable 승격 금지",
+  "approved_edit_baseline": null,
+  "current_deliverable": null,
+  "validation_scopes": {
+    "audio_signal": {
+      "status": "passed",
+      "evidence": [
+        "outputs/07_edit_export/integrated_calibration_v2_r2_audio_analysis_2026-07-16.md",
+        "outputs/07_edit_export/integrated_calibration_v2_r2_audio_boundary_metrics.csv"
+      ],
+      "limitations": [
+        "발화 경계와 음량·하이라이트 역할을 검증하며 완성본 연속 A/V 또는 앱 검증을 뜻하지 않는다."
+      ]
+    },
+    "edit_semantic": {
+      "status": "passed",
+      "evidence": [
+        "outputs/07_edit_export/integrated_calibration_v2_r2_design_2026-07-16.md",
+        "outputs/07_edit_export/integrated_calibration_v2_r2_microbeat_decisions.csv"
+      ],
+      "limitations": [
+        "세 대표 표본의 이야기 기능과 인과를 검증하며 사용자 방향 승인을 뜻하지 않는다."
+      ]
+    },
+    "continuous_av": {
+      "status": "pending",
+      "evidence": [],
+      "limitations": [
+        "완성본의 연속 화면·오디오 재생은 final 게이트에서 검증한다. 이 대기는 통과한 오디오 신호 검증을 무효화하지 않는다."
+      ]
+    },
+    "app": {
+      "status": "pending",
+      "evidence": [],
+      "limitations": [
+        "Premiere 가져오기·재생·렌더 검증은 전체 편집 산출물 생성 뒤 수행한다."
+      ]
+    },
+    "user_direction": {
+      "status": "passed",
+      "evidence": [
+        "outputs/07_edit_export/edit_memory/integrated_calibration_v2_r2_user_direction_approval_2026-07-16.json"
+      ],
+      "limitations": [
+        "제작 의도·세 대표 표본 역할에 대한 대화 방향 승인이다. 실제 연속 A/V·Premiere·최종 사용자 검증을 뜻하지 않는다."
+      ]
+    }
+  },
+  "blocker_declaration": {
+    "task_blocked": false,
+    "scope": null,
+    "reason": null,
+    "required_scope_identified": true,
+    "available_project_tools_checked": true,
+    "existing_evidence_checked": true,
+    "equivalent_methods_checked": true,
+    "no_viable_alternative": false
+  },
+  "tool_surface_failures": [
+    {
+      "id": "browser-local-playback-2026-07-15",
+      "surface": "browser_local_playback",
+      "affected_scopes": [
+        "continuous_av"
+      ],
+      "task_blocker": false,
+      "alternatives_checked": [
+        "existing_full_vad_report",
+        "ffmpeg_silencedetect_astats_loudnorm",
+        "registered_source_frames"
+      ],
+      "status": "historical_surface_failure_not_active_blocker"
+    }
+  ],
+  "phases": {
+    "data_analysis": {
+      "status": "approved_for_planning",
+      "approved_for_next_phase": true,
+      "checks": {
+        "source_identity_validated": true,
+        "transcript_or_audio_index_validated": true,
+        "scene_evidence_map_validated": true,
+        "audience_interest_evidence_validated": true,
+        "agent_semantic_reviewed": true
+      }
+    },
+    "planning": {
+      "status": "approved_for_calibration",
+      "approved_for_next_phase": true,
+      "candidate": {
+        "version": "integrated-plan-v1",
+        "path": "outputs/05_planning/video_plan_backrooms_integrated_v1_2026-07-15.md",
+        "artifact_role": "calibration_candidate"
+      },
+      "checks": {
+        "viewer_promise_defined": true,
+        "central_thesis_count_is_one": true,
+        "character_arc_defined": true,
+        "spine_linked_to_source_evidence": true,
+        "agent_red_team_reviewed": true
+      }
+    },
+    "edit_calibration": {
+      "status": "working_direction_approved_pending_continuous_av",
+      "approved_for_next_phase": false,
+      "candidate": {
+        "version": "integrated-calibration-v2",
+        "revision": "r2",
+        "memory_revision_id": "integrated-calibration-v2-r2",
+        "parent_memory_revision_id": "integrated-calibration-v2-r1",
+        "artifact_role": "calibration_candidate",
+        "path": "outputs/07_edit_export/integrated_calibration_v2_r2_design_2026-07-16.md",
+        "cutlist": "outputs/07_edit_export/integrated_calibration_v2_r2_cutlist.csv",
+        "quality_audit": "outputs/07_edit_export/integrated_calibration_v2_r2_quality_audit_v2.md",
+        "audio_analysis": "outputs/07_edit_export/integrated_calibration_v2_r2_audio_analysis_2026-07-16.md",
+        "numeric_quality_score": null,
+        "score_scope": "none; signal validation is not a numeric video quality score"
+      },
+      "checks": {
+        "baseline_and_changeset_recorded": true,
+        "automatic_checks_passed": true,
+        "semantic_checks_passed": true,
+        "agent_self_reviewed": true,
+        "user_direction_approved": true,
+        "selected_av_decode_validated": true,
+        "selected_av_decode_count": 3,
+        "user_revision_feedback_recorded": true,
+        "user_revision_feedback_applied": false,
+        "user_rejected": false,
+        "parent_revision_user_rejected": true,
+        "review_page_structure_validated": false,
+        "audio_source_signal_analyzed": true,
+        "speech_boundary_analysis_validated": true,
+        "screen_audio_causality_validated": true,
+        "rhythm_analysis_validated": true,
+        "message_visible_without_review_metadata": true,
+        "loudness_highlight_roles_classified": true,
+        "browser_playback_required_for_audio_analysis": false
+      }
+    },
+    "edit_full": {
+      "status": "design_ready_generation_locked_pending_continuous_av",
+      "approved_for_next_phase": false,
+      "checks": {
+        "full_cutlist_generated": false,
+        "automatic_checks_passed": false,
+        "semantic_checks_passed": false,
+        "regression_checks_passed": false
+      }
+    },
+    "validation": {
+      "status": "blocked_no_full_edit",
+      "approved_for_next_phase": false,
+      "checks": {
+        "full_av_playback_reviewed": false,
+        "audio_listening_validated": false,
+        "app_validated": false,
+        "message_and_viewer_promise_validated": false,
+        "all_active_rules_passed": false,
+        "user_final_direction_approved": false
+      }
+    },
+    "final": {
+      "status": "not_available",
+      "approved_for_next_phase": false,
+      "checks": {}
+    }
+  },
+  "frozen_candidates": [
+    {
+      "version": "v6",
+      "role": "historical_failure_evidence",
+      "reason": "초기 러프컷과 렌더 증거이며 현재 기획·편집 기준본이 아니다."
+    },
+    {
+      "version": "v7",
+      "role": "historical_failure_evidence",
+      "reason": "훅·캐릭터 리듬 참고 요소만 회수하며 전체본은 승인되지 않았다."
+    },
+    {
+      "version": "v8",
+      "role": "historical_failure_evidence",
+      "reason": "후보 승인 전에 전체 편집으로 확장됐고 실제 AV 품질 검증을 통과하지 않았다."
+    },
+    {
+      "version": "v9-r2",
+      "role": "historical_failure_evidence",
+      "reason": "시간 순서 구조 검사는 통과했지만 실제 AV 재생과 사용자 방향 승인을 통과하지 않았다."
+    },
+    {
+      "version": "integrated-calibration-v1-r4",
+      "role": "historical_failure_evidence",
+      "reason": "사용자 실제 A/V 검토에서 대사 절단, 하드컷 단절, 의미 불명확, 제작 의도 불일치로 거절됐다."
+    }
+  ],
+  "salvage_targets": [
+    {
+      "from": "v7",
+      "elements": [
+        "즉각적인 훅",
+        "허세-붕괴-학습의 캐릭터 변화",
+        "공포 직후 코미디 리듬"
+      ]
+    },
+    {
+      "from": "v8",
+      "elements": [
+        "백룸·리미널 스페이스 시청자 관심 관점",
+        "소리·빛·공간 반복에 대한 소재 후보"
+      ]
+    },
+    {
+      "from": "v9-r2",
+      "elements": [
+        "미래 화면 삽입 금지 검사",
+        "시간 순서 회귀검사",
+        "발화 경계 구조 검사"
+      ]
+    }
+  ]
+}

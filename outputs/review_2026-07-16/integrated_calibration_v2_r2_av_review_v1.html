@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>통합 캘리브레이션 v2 r2 A/V 검토</title>
+  <style>
+    :root{--bg:#07111f;--card:#101d31;--line:#2a405f;--txt:#e8f0fb;--muted:#9db0ca;--accent:#38bdf8;--ok:#86efac;--warn:#fde68a}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,"Malgun Gothic",sans-serif;line-height:1.55}
+    main{max-width:1080px;margin:auto;padding:28px 18px 70px}h1{font-size:28px;margin:0 0 8px}h2{font-size:20px}.lede{color:var(--muted);margin:0 0 20px}
+    .notice,.panel,.thesis{border:1px solid var(--line);background:var(--card);padding:14px 16px;border-radius:11px;margin:14px 0}.notice{border-color:#7c3aed;background:#2e1065}.thesis{border-color:#0ea5e9}
+    .segment-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.segment{border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:10px;padding:13px;text-align:left;cursor:pointer}.segment.active{border-color:var(--accent);box-shadow:0 0 0 2px #38bdf833}.segment b,.segment span,.segment small{display:block}.segment span{color:#bae6fd;margin:5px 0}.segment small{color:var(--muted)}
+    .player-card{position:static;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:14px;margin-bottom:18px}.stage{aspect-ratio:16/9;background:#020617;border-radius:9px;overflow:hidden}.stage video{width:100%;height:100%;object-fit:contain;background:#020617}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.control{border:1px solid #496482;background:#203552;color:var(--txt);padding:8px 12px;border-radius:7px;cursor:pointer}.primary{background:#0369a1;border-color:#0ea5e9}.blind{background:#4c1d95;border-color:#8b5cf6}
+    .meta{font-family:ui-monospace,Consolas,monospace;color:#bae6fd;margin-top:9px}.status{color:var(--muted);font-size:13px;margin-top:4px}.blind-label{display:none;color:var(--warn);font-weight:700;margin:10px 0}.blind-active .blind-label{display:block}.blind-active .explain{display:none!important}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.grid section{background:#0b1728;border:1px solid var(--line);border-radius:9px;padding:12px}.grid h3{margin:0 0 7px;font-size:15px;color:#bae6fd}.grid ul{margin:0;padding-left:20px}.recommend{border-color:#22c55e}.recommend b{color:var(--ok)}
+    @media(max-width:820px){.segment-grid,.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <h1>통합 캘리브레이션 v2 r2 A/V 검토</h1>
+  <p class="lede">원본 MP4의 초반·중간·후반 세 연속 구간을 그대로 재생합니다. 별도 MP4나 편집본을 만들지 않았습니다.</p>
+  <div class="notice"><b>검증 범위:</b> 현재 오디오 신호·편집 의미·사용자 방향은 통과했습니다. 이 페이지는 연속 A/V 검토 표면이며, Premiere 앱 검증이나 최종 승인으로 자동 승격하지 않습니다.</div>
+
+  <section class="thesis explain">
+    <h2>제작 의도</h2>
+    <p>영화로 보던 백룸은, 직접 헤매고 규칙을 배우며 익숙해질수록 무서움은 줄어도 끝내 긴장이 남는 체험이었다.</p>
+  </section>
+
+  <div class="segment-grid">
+    <button class="segment active" data-index="0"><b>A · 첫 진입</b><span>322.421–343.438</span><small>동적 진입과 공간 호흡</small></button>
+    <button class="segment" data-index="1"><b>B · 규칙과 허세 붕괴</b><span>2333.217–2351.207</span><small>위협·코미디 감정 피크</small></button>
+    <button class="segment" data-index="2"><b>C · 적응 뒤 공포 잔존</b><span>4342.274–4354.669</span><small>조용한 메시지 결론</small></button>
+  </div>
+
+  <section class="player-card" id="reviewPlayer">
+    <div class="blind-label">블라인드 모드: 설명을 숨긴 채 영상·음성만으로 세 역할이 읽히는지 확인합니다.</div>
+    <div class="stage"><video id="video" preload="metadata" playsinline controls src="../../inputs/2026-06-30%2000-23-03.mp4"></video></div>
+    <div class="controls">
+      <button class="control primary" id="play">선택 구간 처음부터 재생</button>
+      <button class="control" id="stop">정지</button>
+      <button class="control blind" id="blind">블라인드 설명 숨기기</button>
+    </div>
+    <div class="meta" id="meta">A · 322.421–343.438 · 21.017초</div>
+    <div class="status" id="status">원본 메타데이터를 불러오는 중입니다.</div>
+  </section>
+
+  <section class="panel explain">
+    <h2>AI 선검증과 이번 판단</h2>
+    <div class="grid">
+      <section><h3>A</h3><ul><li>로비→백룸 전환→첫 공간 이동이 계속 진행되는가</li><li>21초 호흡이 느린 훅이 아니라 공간 체험으로 기능하는가</li></ul></section>
+      <section><h3>B</h3><ul><li>첫 반응이 잘리지 않고 문맥→허세→붕괴가 자립하는가</li><li>완결 발화와 도주 결과가 한 사건으로 들리는가</li></ul></section>
+      <section><h3>C</h3><ul><li>익숙함과 남은 공포가 설명 없이 함께 읽히는가</li><li>작은 화면 변화에도 결론이 자립하는가</li></ul></section>
+    </div>
+  </section>
+
+  <section class="panel recommend explain">
+    <h2>한 가지 권고</h2>
+    <p><b>세 구간이 각각 자립하면</b> r2를 approved 기준본으로 올리고 S1–S8 전체 microbeat 설계로 확장합니다. 한 구간이라도 문맥·호흡·메시지가 자립하지 않으면 r2를 덮어쓰지 않고 descendant를 만듭니다.</p>
+  </section>
+
+  <script>
+    const segments=[
+      {name:'A · 첫 진입',start:322.421,end:343.438},
+      {name:'B · 규칙과 허세 붕괴',start:2333.217,end:2351.207},
+      {name:'C · 적응 뒤 공포 잔존',start:4342.274,end:4354.669}
+    ];
+    const video=document.getElementById('video');const meta=document.getElementById('meta');const status=document.getElementById('status');let selected=0;let segmentPlaying=false;
+    const fmt=v=>Number(v).toFixed(3);const current=()=>segments[selected];
+    function select(index){segmentPlaying=false;video.pause();selected=index;document.querySelectorAll('.segment').forEach((b,i)=>b.classList.toggle('active',i===index));const s=current();video.currentTime=s.start;meta.textContent=`${s.name} · ${fmt(s.start)}–${fmt(s.end)} · ${fmt(s.end-s.start)}초`;status.textContent='선택 구간 재생 준비됨';}
+    async function play(){const s=current();segmentPlaying=false;video.pause();video.muted=false;video.volume=1;video.currentTime=s.start;await video.play();segmentPlaying=true;status.textContent=`${s.name} 재생 중 · 오디오 활성`;}
+    function stop(){segmentPlaying=false;video.pause();status.textContent='정지됨';}
+    video.addEventListener('timeupdate',()=>{if(segmentPlaying&&video.currentTime>=current().end-.025){stop();video.currentTime=current().end;status.textContent='선택 구간 재생 완료';}});
+    video.addEventListener('loadedmetadata',()=>{status.textContent=`원본 로드 완료 · ${fmt(video.duration)}초 · 오디오 활성`;video.currentTime=current().start;});
+    video.addEventListener('error',()=>status.textContent='원본을 불러오지 못했습니다. 로컬 서버 경로를 확인하세요.');
+    document.querySelectorAll('.segment').forEach((button,index)=>button.addEventListener('click',()=>select(index)));
+    document.getElementById('play').addEventListener('click',()=>play().catch(error=>status.textContent=`재생 실패: ${error.message}`));
+    document.getElementById('stop').addEventListener('click',stop);
+    document.getElementById('blind').addEventListener('click',event=>{document.body.classList.toggle('blind-active');const active=document.body.classList.contains('blind-active');event.target.textContent=active?'블라인드 해제':'블라인드 설명 숨기기';status.textContent=active?'블라인드 재생 준비됨':'설명 표시됨';});
+  </script>
+</main>
+</body>
+</html>

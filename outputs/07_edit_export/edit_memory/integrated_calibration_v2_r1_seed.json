@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "events": [
+    {
+      "event_id": "v2r1-revision-created",
+      "event_type": "revision.created",
+      "aggregate_type": "revision",
+      "aggregate_id": "integrated-calibration-v2-r1",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "source_id": "backrooms_20260630",
+        "parent_revision_id": "integrated-calibration-v1-r4",
+        "hypothesis": "첫 진입, 규칙 실험과 허세 붕괴, 적응 뒤 남은 공포를 각각 한 개의 연속 원본 오디오 사건으로 검증하면 제작 의도와 발화 연속성이 영상 안에서 자립한다",
+        "status": "candidate"
+      },
+      "revision_id": "integrated-calibration-v2-r1"
+    },
+    {
+      "event_id": "v2r1-beat-entry-defined",
+      "event_type": "story_beat.defined",
+      "aggregate_type": "story_beat",
+      "aggregate_id": "v2r1-beat-entry",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "source_id": "backrooms_20260630",
+        "position": 1,
+        "purpose": "영화로 보던 백룸에 직접 들어가는 출발점을 화면 변화로 증명",
+        "viewer_information": "로비에서 백룸으로 전환되고 첫 공간을 직접 걷기 시작함",
+        "character_state_before": "영화와 게임을 관찰하는 거리감",
+        "character_state_after": "백룸 공간 안에 직접 놓임",
+        "status": "candidate_pending_actual_av"
+      }
+    },
+    {
+      "event_id": "v2r1-beat-rule-defined",
+      "event_type": "story_beat.defined",
+      "aggregate_type": "story_beat",
+      "aggregate_id": "v2r1-beat-rule-comedy",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "source_id": "backrooms_20260630",
+        "position": 2,
+        "purpose": "규칙을 확인해 생긴 허세가 위협 앞에서 즉시 무너지는 변화를 증명",
+        "viewer_information": "문 앞 위협, 완결 도발, 허세, 공포 인정, 도주",
+        "character_state_before": "규칙을 알아냈다고 통제감을 과시함",
+        "character_state_after": "여전히 무섭다고 인정하고 도주함",
+        "status": "candidate_pending_actual_av"
+      }
+    },
+    {
+      "event_id": "v2r1-beat-paradox-defined",
+      "event_type": "story_beat.defined",
+      "aggregate_type": "story_beat",
+      "aggregate_id": "v2r1-beat-paradox",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "source_id": "backrooms_20260630",
+        "position": 3,
+        "purpose": "반복해 익숙해져도 처음 상황의 공포는 남는다는 중심 메시지를 회수",
+        "viewer_information": "반복 적응, 처음 상황 반전, 공포 잔존",
+        "character_state_before": "반복으로 적에게 익숙해짐",
+        "character_state_after": "익숙함과 공포가 함께 남음을 인정함",
+        "status": "candidate_pending_actual_av"
+      }
+    },
+    {
+      "event_id": "v2r1-node-entry-continuous",
+      "event_type": "timeline.node_added",
+      "aggregate_type": "timeline_node",
+      "aggregate_id": "V2R1_ENTRY_CONTINUOUS",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "sequence_name": "CAL_A_첫진입_연속",
+        "position": 1,
+        "source_in": 322.421,
+        "source_out": 343.438,
+        "label": "로비에서백룸첫공간까지",
+        "role": "E02_첫진입_연속사건",
+        "video_track": 1,
+        "audio_mode": "linked",
+        "timeline_start": null
+      },
+      "revision_id": "integrated-calibration-v2-r1"
+    },
+    {
+      "event_id": "v2r1-node-rule-comedy-continuous",
+      "event_type": "timeline.node_added",
+      "aggregate_type": "timeline_node",
+      "aggregate_id": "V2R1_RULE_COMEDY_CONTINUOUS",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "sequence_name": "CAL_B_규칙과허세_연속",
+        "position": 1,
+        "source_in": 2333.865,
+        "source_out": 2351.207,
+        "label": "위협접근부터도주까지",
+        "role": "E08_규칙확인_허세_공포반전",
+        "video_track": 1,
+        "audio_mode": "linked",
+        "timeline_start": null
+      },
+      "revision_id": "integrated-calibration-v2-r1"
+    },
+    {
+      "event_id": "v2r1-node-paradox-continuous",
+      "event_type": "timeline.node_added",
+      "aggregate_type": "timeline_node",
+      "aggregate_id": "V2R1_PARADOX_CONTINUOUS",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "sequence_name": "CAL_C_적응과공포잔존_연속",
+        "position": 1,
+        "source_in": 4342.274,
+        "source_out": 4354.669,
+        "label": "반복적응과남은공포",
+        "role": "E11_중심메시지_연속발화",
+        "video_track": 1,
+        "audio_mode": "linked",
+        "timeline_start": null
+      },
+      "revision_id": "integrated-calibration-v2-r1"
+    },
+    {
+      "event_id": "v2r1-op-overall-intent",
+      "event_type": "revision.operation_added",
+      "aggregate_type": "revision_operation",
+      "aggregate_id": "v2r1-op-overall-intent",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "position": 1,
+        "operation_type": "address_feedback_without_superseding",
+        "target_type": "feedback",
+        "target_id": "r4-feedback-overall-rejected",
+        "before": {"revision": "integrated-calibration-v1-r4", "problem": "제작 의도와 인물 변화가 단순 컷 모음 안에서 자립하지 못함"},
+        "after": {"revision": "integrated-calibration-v2-r1", "design": "첫 진입→규칙과 허세 붕괴→적응 뒤 공포 잔존의 세 독립 연속 표본"},
+        "rationale": "모든 표본을 중심 메시지의 시작, 변화, 결론에 직접 연결한다",
+        "preserve": ["integrated-plan-v1 중심 메시지", "초반·중간·후반 대표성", "원본 시간 순서"]
+      },
+      "revision_id": "integrated-calibration-v2-r1"
+    },
+    {
+      "event_id": "v2r1-op-speech-continuity",
+      "event_type": "revision.operation_added",
+      "aggregate_type": "revision_operation",
+      "aggregate_id": "v2r1-op-speech-continuity",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "position": 2,
+        "operation_type": "replace_hard_cut_spine",
+        "target_type": "feedback",
+        "target_id": "r4-feedback-speech-hard-cuts",
+        "before": {"linked_audio_nodes": 20, "unverified_hard_cut_edges": 17},
+        "after": {"continuous_linked_audio_nodes": 3, "internal_edges": 0},
+        "rationale": "대표 표본마다 한 개의 원본 오디오 구간을 사용해 내부 발화 하드컷을 제거한다",
+        "preserve": ["원본 오디오", "문장 사이 호흡", "사건 내부 공간음"]
+      },
+      "revision_id": "integrated-calibration-v2-r1"
+    },
+    {
+      "event_id": "v2r1-op-hook-full-cue",
+      "event_type": "revision.operation_added",
+      "aggregate_type": "revision_operation",
+      "aggregate_id": "v2r1-op-hook-full-cue",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "position": 3,
+        "operation_type": "restore_complete_utterance",
+        "target_type": "feedback",
+        "target_id": "r4-feedback-hook-mid-cue-cut",
+        "before": {"source_range": [2336.323, 2338.837], "sentence_complete_at": 2341.94},
+        "after": {"sequence_range": [2333.865, 2351.207], "preserved_utterance": [2336.323, 2341.94]},
+        "rationale": "잘린 도발을 전체 발화와 같은 사건 안에서 보존한다",
+        "preserve": ["2336.323-2341.940 전체 발화", "위협 접근", "허세 뒤 공포 반전"]
+      },
+      "revision_id": "integrated-calibration-v2-r1"
+    },
+    {
+      "event_id": "v2r1-op-remove-b-stitch",
+      "event_type": "revision.operation_added",
+      "aggregate_type": "revision_operation",
+      "aggregate_id": "v2r1-op-remove-b-stitch",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "position": 4,
+        "operation_type": "replace_remote_semantic_stitch",
+        "target_type": "feedback",
+        "target_id": "r4-feedback-b-semantic-stitch",
+        "before": {"source_points": [3422.89, 3506.54, 3510.34, 3513.94, 3520.54]},
+        "after": {"continuous_source_range": [2333.865, 2351.207], "story_function": "규칙 확인과 허세 붕괴"},
+        "rationale": "80초 떨어진 E10 발화를 조립하지 않고 하나의 E08 사건으로 캐릭터 변화를 보여준다",
+        "preserve": ["규칙 발견", "공포 직후 코미디", "행동 결과"]
+      },
+      "revision_id": "integrated-calibration-v2-r1"
+    },
+    {
+      "event_id": "v2r1-op-remove-c-stitch",
+      "event_type": "revision.operation_added",
+      "aggregate_type": "revision_operation",
+      "aggregate_id": "v2r1-op-remove-c-stitch",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "position": 5,
+        "operation_type": "replace_remote_semantic_stitch",
+        "target_type": "feedback",
+        "target_id": "r4-feedback-c-semantic-stitch",
+        "before": {"source_points": [4342.274, 4790.368, 4914.09, 4920.34]},
+        "after": {"continuous_source_range": [4342.274, 4354.669], "story_function": "적응과 공포 잔존의 중심 문장"},
+        "rationale": "E11과 E14를 원격 접합하지 않고 E11의 완결 논리만 보존한다",
+        "preserve": ["반복 적응", "처음 상황의 반전", "공포 잔존"]
+      },
+      "revision_id": "integrated-calibration-v2-r1"
+    },
+    {
+      "event_id": "v2r1-op-score-scope",
+      "event_type": "revision.operation_added",
+      "aggregate_type": "revision_operation",
+      "aggregate_id": "v2r1-op-score-scope",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "position": 6,
+        "operation_type": "restrict_evaluation_scope",
+        "target_type": "feedback",
+        "target_id": "r4-feedback-score-scope",
+        "before": {"structure_visual_preflight_score": 92, "misread_risk": "영상 성공 점수"},
+        "after": {"numeric_score": null, "scope": "structure_visual_audio_decode_without_actual_listening"},
+        "rationale": "실제 연속 A/V 관찰 전에는 숫자 품질 점수와 성공 판정을 만들지 않는다",
+        "preserve": ["검증 범위 명시", "actual_av_observed=false", "피드백 미해소 상태"]
+      },
+      "revision_id": "integrated-calibration-v2-r1"
+    },
+    {
+      "event_id": "v2r1-eval-structure-visual-decode",
+      "event_type": "evaluation.recorded",
+      "aggregate_type": "evaluation",
+      "aggregate_id": "v2r1-structure-visual-decode-preflight",
+      "occurred_at": "2026-07-15T10:32:36Z",
+      "payload": {
+        "evaluator": "agent",
+        "method": "structure_visual_frame_and_av_decode_preflight",
+        "scope": "three_continuous_source_ranges_without_actual_audio_listening_or_premiere",
+        "verdict": "scoped_pass_pending_actual_av",
+        "dimensions": {
+          "continuous_source_range_per_sample": true,
+          "internal_hard_cut_count": 0,
+          "registered_source_frames_inspected": true,
+          "video_audio_stream_decode_passed": true,
+          "subtitle_and_silence_boundaries_checked": true,
+          "browser_localhost_playback_blocked": true,
+          "numeric_quality_score_created": false
+        },
+        "evidence": "integrated_calibration_v2_r1_design_2026-07-15.md; ffmpeg decode and silencedetect; registered source frames",
+        "actual_av_observed": false
+      },
+      "revision_id": "integrated-calibration-v2-r1"
+    }
+  ]
+}

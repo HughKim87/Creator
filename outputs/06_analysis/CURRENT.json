@@ -1,0 +1,62 @@
+{
+  "source_id": "backrooms_20260630",
+  "stage": "data_analysis",
+  "version": "data-reaudit-v1",
+  "status": "approved_for_planning",
+  "artifact_role": "approved_baseline",
+  "updated_at": "2026-07-15",
+  "source_fingerprint": {
+    "path": "inputs/2026-06-30 00-23-03.mp4",
+    "size": 3799793770,
+    "mtime_ns": 1783226578494110600
+  },
+  "primary_files": {
+    "evidence_map_md": "outputs/06_analysis/backrooms_data_evidence_reaudit_v1_2026-07-15.md",
+    "evidence_map_csv": "outputs/06_analysis/backrooms_data_evidence_reaudit_v1_2026-07-15.csv",
+    "subtitle_validation": "outputs/04_subtitle_check/subtitle_timecheck_report_2026-07-11.md",
+    "subtitle_confidence": "outputs/04_subtitle_check/subtitle_timecheck_2026-07-11.csv",
+    "asset_catalog": "outputs/06_analysis/source_asset_catalog.csv",
+    "asset_manifest": "outputs/06_analysis/source_asset_manifest.csv"
+  },
+  "baseline_version": "v8-frozen-recovery-input",
+  "changed_ranges": [
+    {
+      "scope": "full_source_evidence_model",
+      "action": "replace plan-confirming candidates with source event, screen, subtitle, audience-interest, counterevidence and uncertainty bundles"
+    },
+    {
+      "source_ranges": [
+        "00:34:44.800-00:37:40.000"
+      ],
+      "action": "add targeted chase frames and demote the chase to AV recheck because the entity is not clear in sampled frames"
+    },
+    {
+      "source_ranges": [
+        "00:44:25.140-00:45:20.723",
+        "01:16:21.940-01:16:49.940",
+        "01:18:14.190-01:18:55.940"
+      ],
+      "action": "separate direct audience-interest speech, visual counterevidence and unverified sound causality"
+    }
+  ],
+  "validation": {
+    "source_frame_manifest_rows": 135,
+    "source_identity_validated": true,
+    "transcript_or_audio_index_validated": true,
+    "scene_evidence_map_validated": true,
+    "audience_interest_evidence_validated": true,
+    "agent_semantic_reviewed": true,
+    "actual_audio_listening": false,
+    "continuous_av_playback": false,
+    "structure_validated": true
+  },
+  "approved_for_next_stage": true,
+  "workflow_state_pointer": "outputs/WORKFLOW_STATE.json",
+  "supersedes": [
+    "outputs/06_analysis/backrooms_v8_6step_candidate_map_2026-07-14.md",
+    "outputs/06_analysis/backrooms_v8_6step_candidate_map_2026-07-14.csv",
+    "outputs/06_analysis/backrooms_6단계_화면검증_후보지도_2026-07-11.md",
+    "outputs/06_analysis/backrooms_6단계_후보지도_2026-07-11.csv"
+  ],
+  "next_stage_pointer": "outputs/05_planning/CURRENT.json"
+}

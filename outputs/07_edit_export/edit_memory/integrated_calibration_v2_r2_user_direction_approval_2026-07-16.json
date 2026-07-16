@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "events": [
+    {
+      "event_id": "v2r2-eval-user-direction-approved-20260716",
+      "event_type": "evaluation.recorded",
+      "aggregate_type": "evaluation",
+      "aggregate_id": "v2r2-user-direction-checkpoint",
+      "occurred_at": "2026-07-16T13:37:56+09:00",
+      "payload": {
+        "evaluator": "user",
+        "method": "chat_direction_checkpoint",
+        "scope": "production_intent_and_three_representative_sample_roles_without_continuous_av_playback",
+        "verdict": "direction_approved_for_full_edit_expansion_design",
+        "dimensions": {
+          "production_intent_direction": "approved",
+          "representative_sample_roles": "approved",
+          "continuous_av_observed": false,
+          "premiere_app_validated": false,
+          "mp4_generation_authorized": false,
+          "working_baseline_selection_allowed": true,
+          "approved_baseline_selection_allowed": false,
+          "generation_lock_release_allowed": false
+        },
+        "evidence": "2026-07-16 사용자 대화: r2 방향으로 전체 편집을 진행할지 묻는 질문에 '진행해'로 승인",
+        "actual_av_observed": false
+      },
+      "revision_id": "integrated-calibration-v2-r2"
+    },
+    {
+      "event_id": "v2r2-status-working-after-direction",
+      "event_type": "revision.status_changed",
+      "aggregate_type": "revision",
+      "aggregate_id": "integrated-calibration-v2-r2",
+      "occurred_at": "2026-07-16T13:37:56+09:00",
+      "payload": {
+        "status": "working"
+      },
+      "revision_id": "integrated-calibration-v2-r2"
+    },
+    {
+      "event_id": "v2r2-baseline-working-after-direction",
+      "event_type": "baseline.set",
+      "aggregate_type": "baseline",
+      "aggregate_id": "working",
+      "occurred_at": "2026-07-16T13:37:56+09:00",
+      "payload": {
+        "name": "working",
+        "revision_id": "integrated-calibration-v2-r2",
+        "note": "사용자가 제작 의도와 세 대표 표본 방향을 승인했다. 실제 연속 A/V·Premiere 검증 전이므로 approved 기준본은 아니다."
+      }
+    }
+  ]
+}

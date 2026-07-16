@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "events": [
+    {
+      "event_id": "v2r2-revision-created",
+      "event_type": "revision.created",
+      "aggregate_type": "revision",
+      "aggregate_id": "integrated-calibration-v2-r2",
+      "occurred_at": "2026-07-16T00:30:00Z",
+      "payload": {
+        "source_id": "backrooms_20260630",
+        "parent_revision_id": "integrated-calibration-v2-r1",
+        "hypothesis": "원본 오디오 VAD와 데시벨 경계 분석으로 첫 반응 절단을 교정하면 세 연속 표본의 발화 경계와 하이라이트 역할이 자립한다",
+        "status": "candidate"
+      },
+      "revision_id": "integrated-calibration-v2-r2"
+    },
+    {
+      "event_id": "v2r2-node-entry-continuous",
+      "event_type": "timeline.node_added",
+      "aggregate_type": "timeline_node",
+      "aggregate_id": "V2R2_ENTRY_CONTINUOUS",
+      "occurred_at": "2026-07-16T00:30:00Z",
+      "payload": {
+        "sequence_name": "CAL_A_첫진입_연속",
+        "position": 1,
+        "source_in": 322.421,
+        "source_out": 343.438,
+        "label": "로비에서백룸첫공간까지",
+        "role": "E02_첫진입_연속사건",
+        "video_track": 1,
+        "audio_mode": "linked",
+        "timeline_start": null
+      },
+      "revision_id": "integrated-calibration-v2-r2"
+    },
+    {
+      "event_id": "v2r2-node-rule-comedy-continuous",
+      "event_type": "timeline.node_added",
+      "aggregate_type": "timeline_node",
+      "aggregate_id": "V2R2_RULE_COMEDY_CONTINUOUS",
+      "occurred_at": "2026-07-16T00:30:00Z",
+      "payload": {
+        "sequence_name": "CAL_B_규칙과허세_연속",
+        "position": 1,
+        "source_in": 2333.217,
+        "source_out": 2351.207,
+        "label": "위협접근부터도주까지",
+        "role": "E08_규칙확인_허세_공포반전",
+        "video_track": 1,
+        "audio_mode": "linked",
+        "timeline_start": null
+      },
+      "revision_id": "integrated-calibration-v2-r2"
+    },
+    {
+      "event_id": "v2r2-node-paradox-continuous",
+      "event_type": "timeline.node_added",
+      "aggregate_type": "timeline_node",
+      "aggregate_id": "V2R2_PARADOX_CONTINUOUS",
+      "occurred_at": "2026-07-16T00:30:00Z",
+      "payload": {
+        "sequence_name": "CAL_C_적응과공포잔존_연속",
+        "position": 1,
+        "source_in": 4342.274,
+        "source_out": 4354.669,
+        "label": "반복적응과남은공포",
+        "role": "E11_중심메시지_연속발화",
+        "video_track": 1,
+        "audio_mode": "linked",
+        "timeline_start": null
+      },
+      "revision_id": "integrated-calibration-v2-r2"
+    },
+    {
+      "event_id": "v2r2-op-repair-b-start-boundary",
+      "event_type": "revision.operation_added",
+      "aggregate_type": "revision_operation",
+      "aggregate_id": "v2r2-op-repair-b-start-boundary",
+      "occurred_at": "2026-07-16T00:30:00Z",
+      "payload": {
+        "position": 1,
+        "operation_type": "repair_speech_onset_boundary",
+        "target_type": "timeline_node",
+        "target_id": "V2R1_RULE_COMEDY_CONTINUOUS",
+        "before": {"source_in": 2333.865, "vad_segment": [2333.28, 2334.75], "problem": "cut_inside_detected_speech"},
+        "after": {"source_in": 2333.217, "speech_preroll_seconds": 0.063, "frame_aligned_60fps": true},
+        "rationale": "직전 무음 종료 다음 60fps 프레임에서 시작해 첫 반응 0.648초를 복원한다",
+        "preserve": ["2351.207 끝점", "2336.323-2341.940 완결 도발", "허세-공포-도주 연속성"]
+      },
+      "revision_id": "integrated-calibration-v2-r2"
+    },
+    {
+      "event_id": "v2r2-eval-audio-signal-boundaries",
+      "event_type": "evaluation.recorded",
+      "aggregate_type": "evaluation",
+      "aggregate_id": "v2r2-audio-signal-boundary-analysis",
+      "occurred_at": "2026-07-16T00:30:00Z",
+      "payload": {
+        "evaluator": "agent",
+        "method": "source_audio_vad_silencedetect_astats_loudness_analysis",
+        "scope": "three_continuous_source_ranges_and_all_six_boundaries",
+        "verdict": "audio_signal_boundaries_pass_after_b_start_repair",
+        "dimensions": {
+          "audio_source_analyzed_directly": true,
+          "vad_report_segments_used": true,
+          "silencedetect_threshold_db": -35,
+          "boundary_window_seconds": 0.5,
+          "r1_b_start_split_speech": true,
+          "r2_all_six_boundaries_safe": true,
+          "internal_hard_cut_count": 0,
+          "primary_peak_sequence": "CAL_B_규칙과허세_연속",
+          "quiet_payoff_sequence": "CAL_C_적응과공포잔존_연속",
+          "browser_playback_required_for_audio_boundary_analysis": false,
+          "numeric_video_quality_score_created": false
+        },
+        "evidence": "integrated_calibration_v2_r2_audio_analysis_2026-07-16.md; integrated_calibration_v2_r2_audio_boundary_metrics.csv; vad_report_2026-07-11.json",
+        "actual_av_observed": false
+      },
+      "revision_id": "integrated-calibration-v2-r2"
+    }
+  ]
+}

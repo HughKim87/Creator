@@ -1,0 +1,34 @@
+{
+  "source_id": "backrooms_20260630",
+  "stage": "05_planning",
+  "version": "v8",
+  "status": "frozen_recovery_input_with_pending_candidate",
+  "artifact_role": "historical_failure_evidence",
+  "updated_at": "2026-07-15",
+  "pending_candidate": {
+    "version": "integrated-plan-v1",
+    "status": "approved_for_calibration",
+    "artifact_role": "calibration_candidate",
+    "primary_file": "outputs/05_planning/video_plan_backrooms_integrated_v1_2026-07-15.md",
+    "data_baseline": "outputs/06_analysis/backrooms_data_evidence_reaudit_v1_2026-07-15.md",
+    "viewer_promise_defined": true,
+    "central_thesis_count_is_one": true,
+    "character_arc_defined": true,
+    "spine_linked_to_source_evidence": true,
+    "agent_red_team_reviewed": true,
+    "approval_checkpoint": "after_ai_self_reviewed_calibration",
+    "approved_for_next_stage": true
+  },
+  "primary_file": "outputs/05_planning/video_plan_backrooms_v8_2026-07-14.md",
+  "baseline_file": "outputs/05_planning/video_plan_backrooms_2026-07-11.md",
+  "change_scope": "기존 공포·적응 중심 스파인을 백룸·리미널 공간·광원·소리 체험 중심으로 전면 재구성",
+  "historical_v8_direction_user_approved": true,
+  "exact_cut_flow_user_approved": false,
+  "approved_for_next_stage": false,
+  "workflow_state_pointer": "outputs/WORKFLOW_STATE.json",
+  "freeze_reason": "v8은 역사적 실패 증거로 동결됐다. integrated-plan-v1은 제한 대표 캘리브레이션 입력이며, 실제 AV 자체 검증과 사용자 방향 승인 전에는 전체 편집 기준본으로 승격하지 않는다.",
+  "next_stage_pointer": "outputs/07_edit_export/CURRENT.json",
+  "supersedes": [
+    "outputs/05_planning/video_plan_backrooms_2026-07-11.md"
+  ]
+}
