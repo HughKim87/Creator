@@ -1,0 +1,35 @@
+### 대용량 입력 파일 — 커밋 금지 (산출물 outputs/는 추적)
+inputs/
+
+### 대용량 미디어 원본 — 커밋 금지 (영상/음성 원본은 git 밖에서 관리)
+*.mkv
+*.mp4
+*.mov
+*.avi
+*.wav
+*.mp3
+
+### 임시/백업
+*.tmp
+__pycache__/
+*.pyc
+
+### 프로젝트 내부 휴대용 도구 — 대용량 바이너리 커밋 금지
+tools/ffmpeg/
+
+### Local agent runtime state — do not commit
+outputs/AGENT_CONTROL.json
+
+### Windows
+# Windows thumbnail cache files
+Thumbs.db
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows shortcuts
+*.lnk
+.pytest_cache
