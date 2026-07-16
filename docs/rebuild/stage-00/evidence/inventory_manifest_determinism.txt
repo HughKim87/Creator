@@ -1,0 +1,7 @@
+scope=git_tracked_framework_only
+pass1_seconds=0.159
+pass2_seconds=0.09
+full_json_sha256_pass1=87d9bfe3938c42b04bcf1234bc48dce4c0823f44277ed74e7938b6d2546c4f54
+full_json_sha256_pass2=87d9bfe3938c42b04bcf1234bc48dce4c0823f44277ed74e7938b6d2546c4f54
+deterministic_fields_match=True
+framework_files=86

@@ -1,6 +1,6 @@
 # 멀티에이전트 프로젝트 재구축 실행 계획
 
-상태: 실행 전 계획
+상태: Stage 00 완료·검증 PASS, Stage 01 로컬 독립 QA 완료, Stage 02 미착수
 
 작성 기준일: 2026-07-16
 
@@ -9,7 +9,7 @@
 각 단계의 구현을 자동으로 승인하지 않는다. 쓰기, 외부 설치, Git 태그·커밋·푸시는
 해당 단계 착수 전에 사용자의 명시적 승인을 받아야 한다.
 
-기존 `PROJECT_STRUCTURE_RESEARCH.md`가 말하는 “0단계 최소 골격”은 이 계획의 Stage 01에
+기존 `research/PROJECT_STRUCTURE_RESEARCH.md`가 말하는 “0단계 최소 골격”은 이 계획의 Stage 01에
 해당한다. 이 계획의 Stage 00은 그 골격을 만들기 전에 구체계 기준선을 동결하기 위해
 추가한 안전 단계다. 기존 리서치와 핸드오프의 실측 사실은 보존하되, 이후 실행 순서와
 게이트가 충돌하면 이 계획과 해당 단계 지시서를 따른다.
@@ -26,7 +26,8 @@
 ## 2. 모든 에이전트가 지켜야 할 불변 조건
 
 - `backup/`은 읽기 전용이다. 그 안의 파일을 수정·삭제·이름 변경·정리하지 않는다.
-- `inputs/` 또는 외부 작업 공간의 원본 미디어를 덮어쓰지 않는다.
+- 사용자 데이터 경계는 `PROJECT_RULES.md`의 `User Data Boundary`가 단일 정본이다. 어떤
+  단계 지시서나 작업 패킷도 그 범위를 넓힐 수 없다.
 - 기존 정상 기능은 특성 테스트와 비교 기준 없이 재작성하지 않는다.
 - 검사 도구, Python, FFmpeg, Git 상태가 없거나 해석되지 않으면 성공으로 건너뛰지 않는다.
 - 상태 원본은 하나만 둔다. 핸드오프와 상태 문서는 원본 상태에서 생성한다.
@@ -41,17 +42,11 @@
 
 ## 3. 필수 문서 읽기 순서
 
-단계 담당 에이전트는 작업 시작 전에 다음 순서로 읽는다.
-
-1. 현재 루트의 `PROJECT_RULES.md`가 존재하면 전체 내용
-2. `AGENT_EXECUTION_PLAN.md`
-3. 자신이 담당한 `AGENT_STAGE_XX_*.md`
-4. 직전 단계의 `reports/rebuild/stage-XX/STAGE_REPORT.md`
-5. 현재 `SESSION_HANDOFF.md`
-6. 조정 에이전트와 Stage 00~01 담당자는 `PROJECT_STRUCTURE_RESEARCH.md`
-7. 이식 대상이 있을 때만 `backup/`의 해당 코드·테스트·계약
-
-관련 없는 구체계 문서를 모두 읽어 컨텍스트를 팽창시키지 않는다.
+시작 순서는 `PROJECT_RULES.md`의 `Document Read/Write`가 단일 정본이다. 그 순서로
+`SESSION_HANDOFF.md`, 이 계획, 현재 단계 문서, 현재 단계 보고서까지만 읽는다.
+Stage 00~01 조정 시에만 `research/PROJECT_STRUCTURE_RESEARCH.md`를 추가하고, 이식 대상이 있을
+때만 `backup/`의 해당 코드·테스트·계약을 선택해 읽는다. 관련 없는 과거 문서와 다른
+단계 문서는 읽지 않는다.
 
 ## 4. 역할 모델
 
@@ -107,18 +102,22 @@ Git worktree를 사용할 경우에도 공용 외부 미디어에 대한 쓰기�
 
 | 단계 | 문서 | 핵심 결과 | 다음 단계 승인 조건 |
 |---|---|---|---|
-| 00 | `AGENT_STAGE_00_BASELINE_FREEZE.md` | 구체계 기준선·보존 목록·골든 기준 | `backup/` 변경 0건, 기준선 증거 완성 |
-| 01 | `AGENT_STAGE_01_TRUSTED_FOUNDATION.md` | 잠금 환경·단일 CLI·fail-closed 훅/CI | 거짓 성공 0건, clean-clone 검사 통과 |
-| 02 | `AGENT_STAGE_02_DOMAIN_CONTRACTS.md` | 순수 도메인 계약·상태 의미 | 불법 전이·승인 우회 0건, 사용자 의미 승인 |
-| 03 | `AGENT_STAGE_03_SINGLE_STATE_MODEL.md` | SQLite 단일 상태·생성 뷰 | 부분 저장·동시 writer·상태 불일치 0건 |
-| 04 | `AGENT_STAGE_04_VERTICAL_SLICE_MIGRATION.md` | 첫 편집 수직 흐름 선별 이식 | 구/신 결과 비교 통과, 입력 변경 0건 |
-| 05 | `AGENT_STAGE_05_SHADOW_PILOT.md` | 실제 영상 병행·리뷰 렌더·최소 복구 파일럿 | 골든 3회, 신규 실제 1회와 legacy 직접 1회 또는 승인된 동결 기준, A/V 승인·빈 경로 복구 통과 |
-| 06 | `AGENT_STAGE_06_CUTOVER.md` | 전환 후보·가역적 임시 전환 | clean-clone·복구 훈련과 원격 CI 또는 명시적 로컬 전용 위험 승인 |
-| 07 | `AGENT_STAGE_07_OPERATIONS_DOCUMENTATION.md` | 정기 백업·지표·MkDocs·안정화 | 실제 작업 10건과 30일, 복구·엄격 문서 빌드·자동 지표 통과 |
-| 08 | `AGENT_STAGE_08_KNOWLEDGE_TOOLS_PILOT.md` | 선택적 Obsidian·Graphify | 측정 기준을 충족한 도구만 유지 |
+| 00 | `stage-00/AGENT_STAGE_00_BASELINE_FREEZE.md` | 구체계 기준선·보존 목록·골든 기준 | `backup/` 변경 0건, 기준선 증거 완성 |
+| 01 | `stage-01/AGENT_STAGE_01_TRUSTED_FOUNDATION.md` | 잠금 환경·단일 CLI·fail-closed 훅/CI | 실제 훅·full·필수 부정 테스트와 독립 QA 통과 |
+| 02 | `stage-02/AGENT_STAGE_02_DOMAIN_CONTRACTS.md` | 순수 도메인 계약·상태 의미 | 불법 전이·승인 우회 0건, 사용자 의미 승인 |
+| 03 | `stage-03/AGENT_STAGE_03_SINGLE_STATE_MODEL.md` | SQLite 단일 상태·생성 뷰 | 부분 저장·동시 writer·상태 불일치 0건 |
+| 04 | `stage-04/AGENT_STAGE_04_VERTICAL_SLICE_MIGRATION.md` | 첫 편집 수직 흐름 선별 이식 | 구/신 결과 비교 통과, 입력 변경 0건 |
+| 05 | `stage-05/AGENT_STAGE_05_SHADOW_PILOT.md` | 실제 영상 병행·리뷰 렌더·최소 복구 파일럿 | 골든 3회, 신규 실제 1회와 legacy 직접 1회 또는 승인된 동결 기준, A/V 승인·빈 경로 복구 통과 |
+| 06 | `stage-06/AGENT_STAGE_06_CUTOVER.md` | 전환 후보·가역적 임시 전환 | clean-clone·복구 훈련과 원격 CI 또는 명시적 로컬 전용 위험 승인 |
+| 07 | `stage-07/AGENT_STAGE_07_OPERATIONS_DOCUMENTATION.md` | 정기 백업·지표·MkDocs·안정화 | 실제 작업 10건과 30일, 복구·엄격 문서 빌드·자동 지표 통과 |
+| 08 | `stage-08/AGENT_STAGE_08_KNOWLEDGE_TOOLS_PILOT.md` | 선택적 Obsidian·Graphify | 측정 기준을 충족한 도구만 유지 |
 
 단계는 건너뛰지 않는다. 한 단계가 실패하면 같은 단계에서 수정·재검증하거나 마지막
 통과 단계로 롤백한다.
+
+2026-07-17 사용자 결정에 따라 clean-clone과 원격 CI 실행 이력은 초기 Stage 01 완료
+조건이 아니라 후속 통합 게이트다. 첫 수직 기능 이식 전 또는 기본 브랜치 통합 전 중
+먼저 도래하는 시점에 실행한다.
 
 ### 예상 작업량과 병렬 일정
 
@@ -171,7 +170,7 @@ user_approval_id_or_message:
 각 단계는 구현 시 다음 경로에 증거를 생성한다.
 
 ```text
-reports/rebuild/stage-XX/
+docs/rebuild/stage-XX/
 ├─ STAGE_REPORT.md
 ├─ COMMAND_RESULTS.md
 ├─ FILE_CHANGES.md
@@ -187,7 +186,7 @@ reports/rebuild/stage-XX/
 - 변경한 파일과 의도
 - 실행한 검증과 실제 종료 코드
 - 실패한 검증과 해결 여부
-- `backup/` 및 원본 입력 무변경 증거
+- `backup/`의 Git 추적 프레임워크 파일 무변경 증거와 사용자 데이터 비수집 검사 결과
 - 단계 지표의 기준값과 결과
 - 다음 단계에서 금지할 행동
 - 정확한 롤백 지점과 복구 절차
@@ -196,6 +195,10 @@ reports/rebuild/stage-XX/
 
 로그가 길면 전체 로그를 그대로 문서에 붙이지 말고 핵심 결과와 원본 증거 경로를
 기록한다.
+
+`docs/rebuild/stage-XX/`의 검증된 보고서와 재현 가능한 작은 증거는 프로젝트의 순차
+구축 기록으로 Git 추적한다. 실제 구현은 저장소 루트의 패키지·테스트 구조에만 누적한다.
+검증용 전체 worktree와 runtime 임시 폴더는 저장소 밖에서 만들고 단계 종료 후 정리한다.
 
 ## 10. 공통 중단 조건
 
@@ -216,7 +219,7 @@ reports/rebuild/stage-XX/
 최초 10개 실제 제작 작업과 전환 후 30일 관찰 기간 동안 다음을 추적한다.
 
 - 실패가 성공으로 보고된 횟수: 0
-- 원본 입력 해시 변경: 0
+- 프레임워크 저장소에 저장된 사용자 데이터 또는 그 파일별 메타데이터: 0
 - 승인 없는 단계 전이: 0
 - 미등록 산출물: 0
 - 상태 DB와 생성 뷰 불일치: 0
@@ -234,7 +237,8 @@ reports/rebuild/stage-XX/
 - 구현, 독립 QA, 레드팀 역할이 같은 사람 또는 에이전트의 자기 승인으로 합쳐지지 않음
 - 각 단계 보고서에 실제 종료 코드, 보호 범위, 롤백 지점이 기록됨
 - 다음 단계 착수 전 사용자 승인 필요 여부가 확인됨
-- 단계 08까지 완료해도 `backup/`과 원본 입력 변경이 0건임
+- 단계 08까지 `backup/` 변경이 0건이고 프레임워크 저장소의 사용자 데이터·파일별
+  메타데이터 저장이 0건임
 
 ## 13. 현재 범위 밖의 항목
 

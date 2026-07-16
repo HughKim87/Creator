@@ -56,9 +56,9 @@ JSON·Markdown 상태 문서는 DB에서 생성되는 읽기 전용 보기로 �
 ## 5. 작업 공간 경계
 
 ```text
-<workspace>/projects/<project_id>/
+<external-workspace>/projects/<project_id>/
 ├─ workflow.sqlite
-├─ inputs/
+├─ source_refs/
 ├─ artifacts/
 ├─ approvals/
 └─ generated/
@@ -68,6 +68,8 @@ JSON·Markdown 상태 문서는 DB에서 생성되는 읽기 전용 보기로 �
 
 - 저장소에는 코드, 테스트, 스키마, 문서만 둔다.
 - 실제 작업 공간에는 DB, 원본 참조, 산출물, 생성 상태 보기를 둔다.
+- 외부 작업 공간의 실제 경로·이름·파일별 메타데이터를 프레임워크 저장소나 Stage
+  보고서에 복사하지 않는다.
 - 초기 명령은 `--workspace`를 명시적으로 받는다.
 - 불명확한 기본 경로에 자동 생성하지 않는다.
 - 원본은 읽기 전용으로 열고 DB에는 지문과 프로젝트 기준 locator를 저장한다.

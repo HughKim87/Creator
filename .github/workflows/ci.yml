@@ -5,21 +5,42 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
-  checks:
+  full-checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
-          python-version: "3.11"
+          version: "0.11.28"
+          enable-cache: false
+      - name: Sync locked environment
+        run: uv sync --locked --dev
+      - name: Run full fail-closed check
+        run: VIDEO_WORKFLOW_UV="$(command -v uv)" uv run --locked workflow check --scope full
 
-      - name: Install test dependencies
-        run: pip install pytest
-
-      - name: Doc structure check (doccheck)
-        run: python tools/doccheck/check_docs.py
-
-      - name: Run tests
-        run: python -m pytest tests/ -q
+  windows-path-smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: "한글 경로"
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.28"
+          enable-cache: false
+      - name: Sync locked environment
+        working-directory: "한글 경로"
+        run: uv sync --locked --dev
+      - name: Run doctor and smoke tests
+        working-directory: "한글 경로"
+        shell: pwsh
+        run: |
+          $env:VIDEO_WORKFLOW_UV = (Get-Command uv).Source
+          uv run --locked workflow doctor --json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          uv run --locked python -m pytest -q --strict-config tests/smoke
+          exit $LASTEXITCODE
