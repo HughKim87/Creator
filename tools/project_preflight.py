@@ -48,9 +48,8 @@ def run_capture(cmd: list[str]) -> tuple[int, str]:
 
 def git_root() -> str:
     if os.name == "nt":
-        wrapper = ROOT / "tools" / "git_project.bat"
         code, out = run_capture(
-            ["cmd.exe", "/d", "/s", "/c", f'call "{wrapper}" rev-parse --show-toplevel']
+            ["cmd.exe", "/d", "/s", "/c", "call tools\\git_project.bat rev-parse --show-toplevel"]
         )
         if code == 0:
             return out
