@@ -119,6 +119,13 @@ class FolderOwnershipTests(unittest.TestCase):
             findings = self.findings_for(root)
             self.assertTrue(any(item.level == "ERROR" and item.path == "runs" for item in findings))
 
+    def test_allows_user_requested_cross_validation_folder(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "gpt").mkdir()
+            findings = self.findings_for(root)
+            self.assertFalse(any(item.level == "ERROR" and item.path == "gpt" for item in findings))
+
     def test_root_handoff_must_not_contain_video_state(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
