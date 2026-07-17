@@ -48,6 +48,15 @@
   procedures or historical narrative.
 - New operational text must either prevent a repeated failure or reduce future reading/writing work.
 
+## Test Execution Policy (user directive, 2026-07-17)
+
+- Run the test suite once per stage as a single consolidated pass at the stage
+  verification step, not repeatedly during development. Quick compile/import sanity
+  checks while writing code are allowed; full `workflow check` runs are per-stage.
+- Prioritize rebuild implementation speed over intermediate re-verification.
+- Stage completion still requires that single consolidated run to pass; failures are
+  fixed and the consolidated run is repeated, and never reported as success.
+
 ## Verification And Reporting
 
 - After every write, re-read the changed file, verify UTF-8, NUL bytes, expected content, and links.

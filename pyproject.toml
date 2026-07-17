@@ -23,6 +23,9 @@ workflow = "video_workflow.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"video_workflow.storage.migrations" = ["*.sql"]
+
 [tool.ruff]
 target-version = "py312"
 line-length = 100
