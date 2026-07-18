@@ -20,35 +20,36 @@ def profile_cells(profile: str) -> list[str]:
 class DocumentRoutingTests(unittest.TestCase):
     def test_resume_profile_reads_only_global_rules_and_current_state(self) -> None:
         cells = profile_cells("resume_current_work")
-        read_set = cells[2]
-        exclusions = cells[4]
+        read_set = cells[1]
+        exclusions = cells[3]
         self.assertIn("`AGENTS.md`", read_set)
         self.assertIn("`PROJECT_RULES.md`", read_set)
         self.assertIn("`SESSION_HANDOFF.md`", read_set)
         self.assertNotIn("REBUILD_PLAN", read_set)
         self.assertIn("Plans", exclusions)
-        self.assertIn("Korean reports", exclusions)
+        self.assertIn("reports", exclusions)
 
     def test_document_route_profile_is_affected_file_only(self) -> None:
         cells = profile_cells("change_document_route")
-        read_set = cells[2]
-        write_set = cells[3]
-        exclusions = cells[4]
-        self.assertIn("only the affected active documents", read_set)
-        self.assertIn("only affected authority documents", write_set)
-        self.assertIn("unrelated active documents", exclusions)
+        read_set = cells[1]
+        write_set = cells[2]
+        exclusions = cells[3]
+        self.assertIn("`docs/agent/DOCUMENT_REGISTRY.md`", read_set)
+        self.assertIn("affected active documents", read_set)
+        self.assertIn("affected authorities only", write_set)
+        self.assertIn("Unrelated documents", exclusions)
         self.assertIn("user data", exclusions)
 
     def test_video_state_profile_is_exact_task_only(self) -> None:
         cells = profile_cells("handle_video_task_state")
-        read_set = cells[2]
-        write_set = cells[3]
-        exclusions = cells[4]
-        self.assertIn("`docs/FILE_DATA_CONTRACT.md`", read_set)
+        read_set = cells[1]
+        write_set = cells[2]
+        exclusions = cells[3]
+        self.assertIn("`docs/agent/FILE_DATA_CONTRACT.md`", read_set)
         self.assertIn("exact designated `state.json`", read_set)
-        self.assertIn("designated task state", write_set)
-        self.assertIn("Other task directories", exclusions)
-        self.assertIn("rebuild plans", exclusions)
+        self.assertIn("Designated state", write_set)
+        self.assertIn("Other tasks", exclusions)
+        self.assertIn("rebuild documents", exclusions)
 
 
 if __name__ == "__main__":

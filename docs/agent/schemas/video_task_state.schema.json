@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kimsilver:video-task-state:v3",
+  "$comment": "Purpose: declare the machine-readable structural shape of video-task state. Scope: schema version 3 fields, types, and local value constraints only; cross-record lineage, workspace boundaries, fingerprints, and promotion file checks remain authoritative in tools/state_io.py.",
+  "title": "Video Task State v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_id",
+    "current_stage",
+    "reference_input",
+    "outputs",
+    "next_action",
+    "blocker",
+    "user_decision",
+    "validation_level"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 3
+    },
+    "project_id": {
+      "$ref": "#/$defs/portable_id"
+    },
+    "current_stage": {
+      "$ref": "#/$defs/portable_id"
+    },
+    "reference_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "path", "fingerprint"],
+      "properties": {
+        "source_id": {
+          "$ref": "#/$defs/portable_id"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^inputs/[^\\\\]+(?:/[^\\\\]+)*$"
+        },
+        "fingerprint": {
+          "$ref": "#/$defs/integrity"
+        }
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/output"
+      }
+    },
+    "next_action": {
+      "$ref": "#/$defs/portable_id"
+    },
+    "blocker": {
+      "$ref": "#/$defs/optional_non_empty_string"
+    },
+    "user_decision": {
+      "$ref": "#/$defs/optional_non_empty_string"
+    },
+    "validation_level": {
+      "$ref": "#/$defs/validation_level"
+    }
+  },
+  "$defs": {
+    "portable_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
+    },
+    "optional_non_empty_string": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "validation_level": {
+      "type": "string",
+      "enum": [
+        "generated",
+        "parsed",
+        "structure_validated",
+        "tool_validated",
+        "app_validated",
+        "user_validated"
+      ]
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "digest", "size_bytes"],
+      "properties": {
+        "algorithm": {
+          "const": "sha256"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "version",
+        "path",
+        "source_id",
+        "status",
+        "supersedes",
+        "integrity",
+        "validation_level",
+        "approval_state",
+        "approval_scope",
+        "next_use"
+      ],
+      "properties": {
+        "role": {
+          "$ref": "#/$defs/portable_id"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^outputs/[^\\\\]+(?:/[^\\\\]+)*$"
+        },
+        "source_id": {
+          "$ref": "#/$defs/portable_id"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["current", "superseded", "failed"]
+        },
+        "supersedes": {
+          "type": ["string", "null"]
+        },
+        "integrity": {
+          "$ref": "#/$defs/integrity"
+        },
+        "validation_level": {
+          "$ref": "#/$defs/validation_level"
+        },
+        "approval_state": {
+          "type": "string",
+          "enum": ["not_required", "pending", "approved", "revision_requested"]
+        },
+        "approval_scope": {
+          "type": "string",
+          "enum": ["none", "calibration", "next_stage", "final_release"]
+        },
+        "next_use": {
+          "type": "string",
+          "enum": ["eligible", "ineligible"]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "approval_state": {
+                "const": "not_required"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "approval_scope": {
+                "const": "none"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "approval_scope": {
+                "enum": ["calibration", "next_stage", "final_release"]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "next_use": {
+                "const": "eligible"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "const": "current"
+              },
+              "approval_state": {
+                "enum": ["not_required", "approved"]
+              },
+              "validation_level": {
+                "enum": [
+                  "structure_validated",
+                  "tool_validated",
+                  "app_validated",
+                  "user_validated"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "failed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "supersedes": {
+                "const": null
+              },
+              "next_use": {
+                "const": "ineligible"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

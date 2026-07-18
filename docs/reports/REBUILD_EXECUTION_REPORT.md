@@ -5,9 +5,10 @@
 - 독자·언어: 사용자, 한글.
 - 읽는 시점: 사용자가 폐기된 첫 구현안이나 당시 교차검증 근거를 확인해 달라고 요청할 때만 읽는다.
 - 수정하는 시점: 역사 보고서이므로 원칙적으로 수정하지 않으며, 사실 오류·링크·상태 표시만 바로잡는다.
-- 정본 여부: 정본이 아니다. 현재 계획은 [`REBUILD_PLAN.md`](REBUILD_PLAN.md), 현재 상태는
-  [`SESSION_HANDOFF.md`](../SESSION_HANDOFF.md), 승계 판단은 [`INHERITANCE_MAP.md`](INHERITANCE_MAP.md)다.
+- 정본 여부: 정본이 아니다. 현재 계획은 [`REBUILD_PLAN.md`](../agent/REBUILD_PLAN.md), 현재 상태는
+  [`SESSION_HANDOFF.md`](../../SESSION_HANDOFF.md), 재구축 판단은 [`RECONSTRUCTION_MAP.md`](../agent/RECONSTRUCTION_MAP.md)이다.
 - 상태: historical / superseded (2026-07-18). 현재 실행 근거로 사용하지 않는다.
+- 이관 상태: 본문의 백업 경로는 당시 조사 기록일 뿐 현재 작업 경로가 아니다. 필요한 요구사항은 `docs/agent/RECONSTRUCTION_MAP.md`의 활성 정본으로 재구축됐다.
 - 데이터 확인 경계: 당시에도 `inputs/`·`outputs/` 내부 파일과 내용은 열거하거나 읽지 않았다.
 
 ## 1. 최종 결론

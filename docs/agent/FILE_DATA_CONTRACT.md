@@ -5,7 +5,7 @@
 - Audience and language: Agents and implementation tools; English.
 - Read when: Creating, reading, validating, migrating, or changing file-based video-task state.
 - Write when: A verified consumer requires a schema field or the state I/O contract changes.
-- Authority: This is the sole L2-L4 state and output-lifecycle contract. Project-wide rules remain in `../PROJECT_RULES.md`; current progress remains in `../SESSION_HANDOFF.md`.
+- Authority: This is the sole L2-L4 state and output-lifecycle contract. Project-wide rules remain in `PROJECT_RULES.md`; current progress remains in `SESSION_HANDOFF.md`; JSON shape is declared in `docs/agent/schemas/video_task_state.schema.json`.
 
 ## Contract goals
 
@@ -28,11 +28,14 @@
 - `reference_input.path` must be below `inputs/`.
 - Every `outputs[].path` and non-null `outputs[].supersedes` must be below `outputs/<project_id>/`.
 
-## Version 2 schema
+## Version 3 schema
+
+The formal structural schema is `docs/agent/schemas/video_task_state.schema.json`. The runtime validator
+remains authoritative for cross-record lineage, project-path binding, real-file integrity, and promotion.
 
 ```json
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "project_id": "sample_project",
   "current_stage": "analysis",
   "reference_input": {
@@ -59,6 +62,7 @@
       },
       "validation_level": "structure_validated",
       "approval_state": "approved",
+      "approval_scope": "next_stage",
       "next_use": "ineligible"
     },
     {
@@ -75,6 +79,7 @@
       },
       "validation_level": "tool_validated",
       "approval_state": "approved",
+      "approval_scope": "next_stage",
       "next_use": "eligible"
     }
   ],
@@ -85,14 +90,14 @@
 }
 ```
 
-All listed fields are required. Unknown fields are rejected at every object level. Version 1 payloads are
-rejected rather than guessed; no real version 1 user state was mapped before version 2 was activated.
+All listed fields are required. Unknown fields are rejected at every object level. Version 1 and version 2
+payloads are rejected rather than guessed; no real user state was mapped before version 3 was activated.
 
 ## Field rules
 
 | Field | Rule |
 |---|---|
-| `schema_version` | Integer `2`; booleans are not integers. |
+| `schema_version` | Integer `3`; booleans are not integers. |
 | `project_id` | Portable identifier and identical to the containing directory name. |
 | `current_stage` | Non-empty portable identifier for the active stage. |
 | `reference_input.source_id` | Stable portable identifier for the exact source fingerprint. A changed fingerprint requires a new source ID. |
@@ -107,6 +112,7 @@ rejected rather than guessed; no real version 1 user state was mapped before ver
 | `outputs[].integrity` | Exact `sha256` digest and non-negative byte size for the recorded output file. |
 | `outputs[].validation_level` | One value from the validation-level list below. |
 | `outputs[].approval_state` | `not_required`, `pending`, `approved`, or `revision_requested`. |
+| `outputs[].approval_scope` | `none`, `calibration`, `next_stage`, or `final_release`; it states what the decision authorizes. |
 | `outputs[].next_use` | `eligible` or `ineligible`; this is the explicit next-operation gate. |
 | `next_action` | Non-empty portable identifier for the single next operation. |
 | `blocker` | `null` or a non-empty string describing the active blocker. |
@@ -139,7 +145,7 @@ These labels must not be promoted without the matching evidence.
 - A role has at most one `current` record. Multiple current records are a validation failure.
 - Promoting a new current version changes the prior record to `superseded` and sets the newer record's
   `supersedes` field to the prior path.
-- Every superseded record is referenced by exactly one newer retained record. The relation must keep the
+- Every superseded record is referenced by at least one newer retained record. The relation must keep the
   same role and source ID and move to a higher integer version.
 - A `failed` record never supersedes another file and is always ineligible. Record it only when a file exists;
   failures without a file belong in task state or the project failure ledger.
@@ -152,6 +158,8 @@ These labels must not be promoted without the matching evidence.
 - `pending`: the required decision has not been made.
 - `approved`: the required user decision is recorded.
 - `revision_requested`: the output must be revised before the next consumer uses it.
+- `approval_scope` records the purpose of a required decision. `not_required` must use `none`; every other
+  approval state must name `calibration`, `next_stage`, or `final_release`.
 - `eligible` requires `current` status, at least `structure_validated`, and approval state `not_required` or
   `approved`. A consumer may still mark an otherwise valid current output `ineligible` for a task-specific
   reason recorded in `blocker` or `user_decision`.
@@ -160,20 +168,34 @@ These labels must not be promoted without the matching evidence.
 ## Read and write behavior
 
 1. Validate the requested project ID and the complete in-memory payload before filesystem writes.
-2. Resolve the project directory below the caller-provided outputs root and reject boundary escapes,
+2. `save_state(outputs_root, project_id, state)` accepts draft state only. It rejects any `eligible` output,
+   so callers cannot persist a promotion without file validation.
+3. `save_promoted_state(workspace_root, outputs_root, project_id, state)` requires at least one eligible
+   output, binds `outputs_root` to `<workspace_root>/outputs`, validates the designated reference input,
+   validates promotion-scope output files, and only then writes the state.
+4. Resolve the project directory below the caller-provided outputs root and reject boundary escapes,
    including existing symlinks that resolve outside that root.
-3. Write UTF-8 JSON to a temporary file in the same project directory, flush it, and sync it.
-4. Atomically replace `state.json` with the temporary file.
-5. Delete the temporary file if writing or replacement fails. The previous `state.json` must remain unchanged.
-6. On read, reject invalid UTF-8, invalid JSON, unknown versions or fields, bad types, invalid identifiers,
+5. Write UTF-8 JSON to a temporary file in the same project directory, flush it, and sync it.
+6. Atomically replace `state.json` with the temporary file.
+7. Delete the temporary file if writing or replacement fails. The previous `state.json` must remain unchanged.
+8. On read, reject invalid UTF-8, invalid JSON, unknown versions or fields, bad types, invalid identifiers,
    unsafe paths, source mismatches, duplicate paths or versions, current conflicts, invalid lineage, and
    inconsistent eligibility.
-7. Before promoting or consuming an eligible output, call `validate_output_files(workspace_root, state)`.
-   It checks only the paths named by the state, rejects missing/out-of-boundary files, and verifies SHA-256
-   and byte size without enumerating sibling task directories.
+9. Before consuming an eligible output, call `validate_reference_input(workspace_root, state)` and
+   `validate_output_files(workspace_root, state, scope="eligible")`.
 
-`../tools/state_io.py` is the reference implementation. It does not enumerate user data, infer a project, or
-create a real sample. Its caller must still follow `../PROJECT_RULES.md` authorization and user-data boundaries.
+Output validation never enumerates sibling task directories and supports three bounded scopes:
+
+- `eligible` (default): verify only outputs marked eligible for the next consumer.
+- `promotion`: verify eligible outputs and their directly superseded predecessors.
+- `all`: verify every retained output for an explicit full audit.
+
+Every selected file must exist inside the workspace and match its SHA-256 digest and byte size. Reference
+input validation applies the same checks to the exact declared `reference_input.path`; it does not discover
+or infer an input.
+
+`tools/state_io.py` is the reference implementation. It does not enumerate user data, infer a project, or
+create a real sample. Its caller must still follow `PROJECT_RULES.md` authorization and user-data boundaries.
 
 ## Evolution boundary
 

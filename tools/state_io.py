@@ -11,7 +11,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 STATE_FILENAME = "state.json"
 PORTABLE_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:[._-][a-z0-9]+)*$")
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
@@ -37,7 +37,11 @@ OUTPUT_STATUSES = frozenset({"current", "superseded", "failed"})
 APPROVAL_STATES = frozenset(
     {"not_required", "pending", "approved", "revision_requested"}
 )
+APPROVAL_SCOPES = frozenset(
+    {"none", "calibration", "next_stage", "final_release"}
+)
 NEXT_USE_STATES = frozenset({"eligible", "ineligible"})
+OUTPUT_VALIDATION_SCOPES = frozenset({"eligible", "promotion", "all"})
 
 _STATE_KEYS = frozenset(
     {
@@ -65,6 +69,7 @@ _OUTPUT_KEYS = frozenset(
         "integrity",
         "validation_level",
         "approval_state",
+        "approval_scope",
         "next_use",
     }
 )
@@ -161,7 +166,7 @@ def _require_integrity(value: object, field: str) -> tuple[str, int]:
 
 
 def validate_state(payload: object, expected_project_id: str | None = None) -> None:
-    """Validate one complete schema-v2 state payload without mutating it."""
+    """Validate one complete schema-v3 state payload without mutating it."""
 
     data = _expect_object(payload, "state")
     _expect_exact_keys(data, _STATE_KEYS, "state")
@@ -251,6 +256,17 @@ def validate_state(payload: object, expected_project_id: str | None = None) -> N
         approval_state = _require_choice(
             output["approval_state"], f"{field}.approval_state", APPROVAL_STATES
         )
+        approval_scope = _require_choice(
+            output["approval_scope"], f"{field}.approval_scope", APPROVAL_SCOPES
+        )
+        if approval_state == "not_required" and approval_scope != "none":
+            raise StateValidationError(
+                f"{field}.approval_scope must be 'none' when approval is not required"
+            )
+        if approval_state != "not_required" and approval_scope == "none":
+            raise StateValidationError(
+                f"{field}.approval_scope must name the purpose of the approval"
+            )
         next_use = _require_choice(
             output["next_use"], f"{field}.next_use", NEXT_USE_STATES
         )
@@ -290,8 +306,6 @@ def validate_state(payload: object, expected_project_id: str | None = None) -> N
             raise StateValidationError(
                 f"{record['field']}.supersedes references an unrecorded output"
             )
-        if supersedes in superseded_targets:
-            raise StateValidationError(f"output {supersedes!r} is superseded more than once")
         superseded_targets.add(supersedes)
         if target["status"] != "superseded":
             raise StateValidationError(
@@ -313,44 +327,91 @@ def validate_state(payload: object, expected_project_id: str | None = None) -> N
             )
 
 
-def validate_output_files(
-    workspace_root: str | os.PathLike[str], payload: object
-) -> None:
-    """Verify every recorded output exists inside the workspace and matches integrity."""
-
-    validate_state(payload)
+def _resolved_workspace_root(workspace_root: str | os.PathLike[str]) -> Path:
     try:
-        root = Path(workspace_root).resolve(strict=True)
+        return Path(workspace_root).resolve(strict=True)
     except OSError as exc:
         raise StateIOError("workspace root does not exist") from exc
+
+
+def _verify_recorded_file(
+    root: Path,
+    path_value: str,
+    integrity_value: object,
+    field: str,
+    integrity_field: str = "integrity",
+) -> None:
+    relative_path = PurePosixPath(path_value)
+    candidate = root.joinpath(*relative_path.parts)
+    try:
+        resolved = candidate.resolve(strict=True)
+        resolved.relative_to(root)
+    except (OSError, ValueError) as exc:
+        raise StateIOError(f"{field}.path is missing or outside the workspace") from exc
+    if not resolved.is_file():
+        raise StateIOError(f"{field}.path is not a file")
+    digest = hashlib.sha256()
+    size_bytes = 0
+    try:
+        with resolved.open("rb") as recorded_file:
+            for chunk in iter(lambda: recorded_file.read(1024 * 1024), b""):
+                digest.update(chunk)
+                size_bytes += len(chunk)
+    except OSError as exc:
+        raise StateIOError(f"cannot read {field}.path for integrity validation") from exc
+    expected_digest, expected_size = _require_integrity(
+        integrity_value, f"{field}.{integrity_field}"
+    )
+    if digest.hexdigest() != expected_digest or size_bytes != expected_size:
+        raise StateIOError(
+            f"{field}.{integrity_field} does not match the recorded file"
+        )
+
+
+def validate_reference_input(
+    workspace_root: str | os.PathLike[str], payload: object
+) -> None:
+    """Verify the designated reference input matches its recorded fingerprint."""
+
+    validate_state(payload)
+    root = _resolved_workspace_root(workspace_root)
+    data = _expect_object(payload, "state")
+    reference = _expect_object(data["reference_input"], "state.reference_input")
+    _verify_recorded_file(
+        root,
+        reference["path"],
+        reference["fingerprint"],
+        "state.reference_input",
+        "fingerprint",
+    )
+
+
+def validate_output_files(
+    workspace_root: str | os.PathLike[str],
+    payload: object,
+    scope: str = "eligible",
+) -> None:
+    """Verify the recorded output files selected by the bounded validation scope."""
+
+    validate_state(payload)
+    if scope not in OUTPUT_VALIDATION_SCOPES:
+        raise StateValidationError(f"unknown output validation scope {scope!r}")
+    root = _resolved_workspace_root(workspace_root)
     data = _expect_object(payload, "state")
     outputs = data["outputs"]
+    promotion_targets = {
+        output["supersedes"]
+        for output in outputs
+        if output["next_use"] == "eligible" and output["supersedes"] is not None
+    }
     for index, value in enumerate(outputs):
         field = f"state.outputs[{index}]"
         output = _expect_object(value, field)
-        relative_path = PurePosixPath(output["path"])
-        candidate = root.joinpath(*relative_path.parts)
-        try:
-            resolved = candidate.resolve(strict=True)
-            resolved.relative_to(root)
-        except (OSError, ValueError) as exc:
-            raise StateIOError(f"{field}.path is missing or outside the workspace") from exc
-        if not resolved.is_file():
-            raise StateIOError(f"{field}.path is not a file")
-        digest = hashlib.sha256()
-        size_bytes = 0
-        try:
-            with resolved.open("rb") as output_file:
-                for chunk in iter(lambda: output_file.read(1024 * 1024), b""):
-                    digest.update(chunk)
-                    size_bytes += len(chunk)
-        except OSError as exc:
-            raise StateIOError(f"cannot read {field}.path for integrity validation") from exc
-        expected_digest, expected_size = _require_integrity(
-            output["integrity"], f"{field}.integrity"
-        )
-        if digest.hexdigest() != expected_digest or size_bytes != expected_size:
-            raise StateIOError(f"{field}.integrity does not match the recorded file")
+        selected = scope == "all" or output["next_use"] == "eligible"
+        if scope == "promotion" and output["path"] in promotion_targets:
+            selected = True
+        if selected:
+            _verify_recorded_file(root, output["path"], output["integrity"], field)
 
 
 def _project_directory(outputs_root: str | os.PathLike[str], project_id: str) -> Path:
@@ -370,12 +431,9 @@ def state_path(outputs_root: str | os.PathLike[str], project_id: str) -> Path:
     return _project_directory(outputs_root, project_id) / STATE_FILENAME
 
 
-def save_state(
+def _write_state(
     outputs_root: str | os.PathLike[str], project_id: str, payload: object
 ) -> Path:
-    """Validate and atomically replace one project's state file."""
-
-    validate_state(payload, expected_project_id=project_id)
     project_directory = _project_directory(outputs_root, project_id)
     try:
         project_directory.mkdir(parents=True, exist_ok=True)
@@ -415,6 +473,42 @@ def save_state(
             except OSError:
                 pass
     return target
+
+
+def save_state(
+    outputs_root: str | os.PathLike[str], project_id: str, payload: object
+) -> Path:
+    """Atomically save a valid draft state that has no eligible output."""
+
+    validate_state(payload, expected_project_id=project_id)
+    data = _expect_object(payload, "state")
+    if any(output["next_use"] == "eligible" for output in data["outputs"]):
+        raise StateValidationError(
+            "eligible outputs require save_promoted_state() and file validation"
+        )
+    return _write_state(outputs_root, project_id, payload)
+
+
+def save_promoted_state(
+    workspace_root: str | os.PathLike[str],
+    outputs_root: str | os.PathLike[str],
+    project_id: str,
+    payload: object,
+) -> Path:
+    """Verify reference and promotion files, then atomically save eligible state."""
+
+    validate_state(payload, expected_project_id=project_id)
+    data = _expect_object(payload, "state")
+    if not any(output["next_use"] == "eligible" for output in data["outputs"]):
+        raise StateValidationError("promoted state requires at least one eligible output")
+    workspace = _resolved_workspace_root(workspace_root)
+    expected_outputs_root = (workspace / "outputs").resolve(strict=False)
+    actual_outputs_root = Path(outputs_root).resolve(strict=False)
+    if actual_outputs_root != expected_outputs_root:
+        raise StateValidationError("outputs_root must be the workspace outputs directory")
+    validate_reference_input(workspace, payload)
+    validate_output_files(workspace, payload, scope="promotion")
+    return _write_state(actual_outputs_root, project_id, payload)
 
 
 def load_state(outputs_root: str | os.PathLike[str], project_id: str) -> dict[str, Any]:

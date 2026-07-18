@@ -26,7 +26,8 @@ def synthetic_output(
     status: str = "current",
     supersedes: str | None = None,
     approval_state: str = "approved",
-    next_use: str = "eligible",
+    approval_scope: str = "next_stage",
+    next_use: str = "ineligible",
 ) -> dict[str, Any]:
     return {
         "role": "analysis",
@@ -42,13 +43,14 @@ def synthetic_output(
         },
         "validation_level": "structure_validated",
         "approval_state": approval_state,
+        "approval_scope": approval_scope,
         "next_use": next_use,
     }
 
 
 def synthetic_state() -> dict[str, Any]:
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "project_id": "sample_project",
         "current_stage": "analysis",
         "reference_input": {
@@ -68,18 +70,39 @@ def synthetic_state() -> dict[str, Any]:
     }
 
 
-def write_recorded_output(
-    workspace: Path, output: dict[str, Any], content: bytes
+def write_recorded_file(
+    workspace: Path,
+    relative_path: str,
+    record: dict[str, Any],
+    integrity_key: str,
+    content: bytes,
 ) -> Path:
-    target = workspace.joinpath(*output["path"].split("/"))
+    target = workspace.joinpath(*relative_path.split("/"))
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_bytes(content)
-    output["integrity"] = {
+    record[integrity_key] = {
         "algorithm": "sha256",
         "digest": hashlib.sha256(content).hexdigest(),
         "size_bytes": len(content),
     }
     return target
+
+
+def write_recorded_output(
+    workspace: Path, output: dict[str, Any], content: bytes
+) -> Path:
+    return write_recorded_file(
+        workspace, output["path"], output, "integrity", content
+    )
+
+
+def write_reference(
+    workspace: Path, payload: dict[str, Any], content: bytes = b"synthetic video"
+) -> Path:
+    reference = payload["reference_input"]
+    return write_recorded_file(
+        workspace, reference["path"], reference, "fingerprint", content
+    )
 
 
 class StateIOTests(unittest.TestCase):
@@ -120,12 +143,12 @@ class StateIOTests(unittest.TestCase):
             state_io.state_path("outputs", "../escape")
 
         absolute_input = synthetic_state()
-        absolute_input["reference_input"]["path"] = "C:/outside/video.mp4"  # type: ignore[index]
+        absolute_input["reference_input"]["path"] = "C:/outside/video.mp4"
         with self.assertRaises(state_io.StateValidationError):
             state_io.validate_state(absolute_input)
 
         dotted_input = synthetic_state()
-        dotted_input["reference_input"]["path"] = "inputs/./video.mp4"  # type: ignore[index]
+        dotted_input["reference_input"]["path"] = "inputs/./video.mp4"
         with self.assertRaises(state_io.StateValidationError):
             state_io.validate_state(dotted_input)
 
@@ -196,19 +219,51 @@ class StateIOTests(unittest.TestCase):
 
     def test_next_use_requires_current_validated_and_resolved_approval(self) -> None:
         pending = synthetic_state()
+        pending["outputs"][0]["next_use"] = "eligible"
         pending["outputs"][0]["approval_state"] = "pending"
         with self.assertRaises(state_io.StateValidationError):
             state_io.validate_state(pending)
 
         unvalidated = synthetic_state()
+        unvalidated["outputs"][0]["next_use"] = "eligible"
         unvalidated["outputs"][0]["validation_level"] = "parsed"
         with self.assertRaises(state_io.StateValidationError):
             state_io.validate_state(unvalidated)
 
-    def test_missing_output_and_integrity_mismatch_are_rejected(self) -> None:
+    def test_approval_scope_must_match_approval_state(self) -> None:
+        unnecessary_scope = synthetic_state()
+        output = unnecessary_scope["outputs"][0]
+        output["approval_state"] = "not_required"
+        output["approval_scope"] = "next_stage"
+        with self.assertRaises(state_io.StateValidationError):
+            state_io.validate_state(unnecessary_scope)
+
+        missing_scope = synthetic_state()
+        missing_scope["outputs"][0]["approval_scope"] = "none"
+        with self.assertRaises(state_io.StateValidationError):
+            state_io.validate_state(missing_scope)
+
+    def test_reference_input_must_exist_and_match_fingerprint(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             workspace = Path(temporary_directory)
             payload = synthetic_state()
+            with self.assertRaises(state_io.StateIOError):
+                state_io.validate_reference_input(workspace, payload)
+
+            target = workspace.joinpath(*payload["reference_input"]["path"].split("/"))
+            target.parent.mkdir(parents=True)
+            target.write_bytes(b"wrong input")
+            with self.assertRaises(state_io.StateIOError):
+                state_io.validate_reference_input(workspace, payload)
+
+            write_reference(workspace, payload)
+            state_io.validate_reference_input(workspace, payload)
+
+    def test_missing_eligible_output_and_integrity_mismatch_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            workspace = Path(temporary_directory)
+            payload = synthetic_state()
+            payload["outputs"][0]["next_use"] = "eligible"
             with self.assertRaises(state_io.StateIOError):
                 state_io.validate_output_files(workspace, payload)
 
@@ -218,6 +273,64 @@ class StateIOTests(unittest.TestCase):
             with self.assertRaises(state_io.StateIOError):
                 state_io.validate_output_files(workspace, payload)
 
+    def test_validation_scopes_avoid_unrelated_history(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            workspace = Path(temporary_directory)
+            payload = synthetic_state()
+            prior = payload["outputs"][0]
+            prior["path"] = "outputs/sample_project/analysis__v001.json"
+            prior["status"] = "superseded"
+            current = synthetic_output(
+                version=2,
+                path="outputs/sample_project/analysis__v002.json",
+                supersedes=prior["path"],
+                next_use="eligible",
+            )
+            failed = synthetic_output(
+                version=3,
+                path="outputs/sample_project/analysis__v003_failed.json",
+                status="failed",
+                approval_state="revision_requested",
+            )
+            payload["outputs"].extend([current, failed])
+            write_recorded_output(workspace, prior, b"prior")
+            write_recorded_output(workspace, current, b"current")
+
+            state_io.validate_output_files(workspace, payload, scope="eligible")
+            state_io.validate_output_files(workspace, payload, scope="promotion")
+            with self.assertRaises(state_io.StateIOError):
+                state_io.validate_output_files(workspace, payload, scope="all")
+            with self.assertRaises(state_io.StateValidationError):
+                state_io.validate_output_files(workspace, payload, scope="unknown")
+
+    def test_eligible_state_requires_verified_promotion_save(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            workspace = Path(temporary_directory)
+            payload = synthetic_state()
+            payload["outputs"][0]["next_use"] = "eligible"
+
+            with self.assertRaises(state_io.StateValidationError):
+                state_io.save_state(workspace / "outputs", "sample_project", payload)
+            with self.assertRaises(state_io.StateIOError):
+                state_io.save_promoted_state(
+                    workspace, workspace / "outputs", "sample_project", payload
+                )
+
+            write_reference(workspace, payload)
+            write_recorded_output(workspace, payload["outputs"][0], b"current")
+            target = state_io.save_promoted_state(
+                workspace, workspace / "outputs", "sample_project", payload
+            )
+            self.assertEqual(target, workspace / "outputs/sample_project/state.json")
+            self.assertEqual(
+                state_io.load_state(workspace / "outputs", "sample_project"), payload
+            )
+
+            with self.assertRaises(state_io.StateValidationError):
+                state_io.save_promoted_state(
+                    workspace, workspace / "elsewhere", "sample_project", payload
+                )
+
     def test_superseded_and_failed_files_are_preserved_with_current_lineage(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             workspace = Path(temporary_directory)
@@ -225,26 +338,28 @@ class StateIOTests(unittest.TestCase):
             prior = payload["outputs"][0]
             prior["path"] = "outputs/sample_project/analysis__v001.json"
             prior["status"] = "superseded"
-            prior["next_use"] = "ineligible"
             current = synthetic_output(
                 version=2,
                 path="outputs/sample_project/analysis__v002.json",
                 supersedes=prior["path"],
+                next_use="eligible",
             )
             failed = synthetic_output(
                 version=3,
                 path="outputs/sample_project/analysis__v003_failed.json",
                 status="failed",
                 approval_state="revision_requested",
-                next_use="ineligible",
             )
             payload["outputs"].extend([current, failed])
             prior_path = write_recorded_output(workspace, prior, b"prior")
             current_path = write_recorded_output(workspace, current, b"current")
             failed_path = write_recorded_output(workspace, failed, b"failed")
+            write_reference(workspace, payload)
 
-            state_io.validate_output_files(workspace, payload)
-            state_io.save_state(workspace / "outputs", "sample_project", payload)
+            state_io.validate_output_files(workspace, payload, scope="all")
+            state_io.save_promoted_state(
+                workspace, workspace / "outputs", "sample_project", payload
+            )
             loaded = state_io.load_state(workspace / "outputs", "sample_project")
 
             self.assertEqual(len(loaded["outputs"]), 3)
