@@ -40,6 +40,7 @@ Each document has independent classifications. Folder location is a quick audien
 | `doc.structure_report` | `docs/reports/PROJECT_STRUCTURE_ANALYSIS.md` | report | historical | evidence | user / Korean | structure_validated | Explicit historical structure review | Snapshot dated 2026-07-18 |
 | `doc.rebuild_report` | `docs/reports/REBUILD_EXECUTION_REPORT.md` | report | superseded | evidence | user / Korean | structure_validated | Explicit review of the discarded first rebuild | Superseded by `doc.rebuild_plan` and `doc.reconstruction` |
 | `doc.document_node_analysis` | `docs/reports/2026-07-19_문서_노드_구조_개선_분석.md` | report | historical | evidence | user / Korean | structure_validated | Document-node architecture review or implementation approval | Proposed L3 routing and context-budget refinement; not an execution authority |
+| `doc.obsidian_adoption_analysis` | `docs/reports/2026-07-19_옵시디언_도입_타당성_분석.md` | report | historical | evidence | user / Korean | structure_validated | Obsidian adoption decision or pilot approval | Evidence-based assessment; recommends a bounded L3 pilot, not full migration |
 
 Temporary migration-source documents are not registered as active and cannot override this registry.
 
