@@ -334,6 +334,11 @@ def build_parser() -> argparse.ArgumentParser:
     verify_approval = approval_commands.add_parser("verify")
     _add_workspace_arguments(verify_approval)
     verify_approval.add_argument("--approval-id", type=str, required=True)
+
+    artifact = commands.add_parser("artifact", help="artifact lifecycle commands")
+    artifact_commands = artifact.add_subparsers(dest="artifact_command", required=True)
+    reconcile = artifact_commands.add_parser("reconcile")
+    _add_workspace_arguments(reconcile)
     return parser
 
 
@@ -380,6 +385,32 @@ def _state_main(args: argparse.Namespace) -> int:
 
         if args.command == "approval":
             return _approval_main(args, store, service)
+
+        if args.command == "artifact":
+            from video_workflow.services.artifact_service import ArtifactService
+
+            reconcile_report = ArtifactService(store, service).reconcile()
+            print(
+                json.dumps(
+                    {
+                        "clean": reconcile_report.clean,
+                        "auto_fixed": list(reconcile_report.auto_fixed),
+                        "findings": [
+                            {
+                                "code": finding.code,
+                                "artifact_id": finding.artifact_id,
+                                "path": finding.path,
+                                "detail": finding.detail,
+                                "resolution": finding.resolution,
+                            }
+                            for finding in reconcile_report.findings
+                        ],
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
+            return 0 if reconcile_report.clean else 1
 
         state_command: str = args.state_command
         if state_command == "status":
@@ -590,7 +621,7 @@ def _approval_main(
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     root = args.root.resolve()
-    if args.command in ("state", "approval"):
+    if args.command in ("state", "approval", "artifact"):
         return _state_main(args)
     if args.command == "doctor":
         report = run_doctor(root)

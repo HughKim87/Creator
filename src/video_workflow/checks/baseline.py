@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 
@@ -11,6 +12,7 @@ from video_workflow.checks.repository import git_tracked_paths, has_forbidden_se
 
 ALLOWED_ROLES = frozenset({"code", "test", "contract", "doc"})
 MANIFEST_PATH = Path("docs/rebuild/stage-00/BACKUP_MANIFEST.json")
+MANIFEST_SCHEMA_VERSION = 3
 
 
 @dataclass(frozen=True)
@@ -36,8 +38,12 @@ def _load_manifest(root: Path) -> tuple[list[dict[str, object]], BaselineCheck]:
         payload = json.loads(path.read_text(encoding="utf-8-sig"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         return [], BaselineCheck("manifest_parse", False, type(exc).__name__)
-    if not isinstance(payload, dict) or payload.get("schema_version") != 2:
-        return [], BaselineCheck("manifest_parse", False, "schema_version must be 2")
+    if not isinstance(payload, dict) or payload.get("schema_version") != MANIFEST_SCHEMA_VERSION:
+        return [], BaselineCheck(
+            "manifest_parse",
+            False,
+            f"schema_version must be {MANIFEST_SCHEMA_VERSION}",
+        )
     files = payload.get("files")
     if not isinstance(files, list) or not files:
         return [], BaselineCheck("manifest_parse", False, "files must be a non-empty list")
@@ -83,19 +89,40 @@ def _tracked_manifest_check(root: Path, entries: list[dict[str, object]]) -> Bas
     return BaselineCheck("manifest_tracked_set", True, f"matched: {len(expected)}")
 
 
+def _git_blob_bytes(root: Path, relative: str) -> bytes | None:
+    """Read `HEAD:backup/<relative>` blob bytes (portable across checkouts).
+
+    Hashing git blob content instead of working-tree bytes keeps the baseline
+    independent of platform line-ending checkout; worktree drift is still
+    caught separately by the `backup_git_unchanged` diff check.
+    """
+    completed = subprocess.run(
+        [
+            "git",
+            "-c",
+            f"safe.directory={root.as_posix()}",
+            "cat-file",
+            "blob",
+            f"HEAD:backup/{relative}",
+        ],
+        cwd=root,
+        capture_output=True,
+        timeout=120,
+        check=False,
+    )
+    if completed.returncode != 0:
+        return None
+    return completed.stdout
+
+
 def _hash_check(root: Path, entries: list[dict[str, object]]) -> BaselineCheck:
-    backup_root = (root / "backup").resolve()
     mismatches = 0
     for entry in entries:
-        candidate = (backup_root / str(entry["path"])).resolve()
-        if backup_root != candidate and backup_root not in candidate.parents:
-            return BaselineCheck("manifest_hashes", False, "path escaped backup root")
-        try:
-            digest = hashlib.sha256(candidate.read_bytes()).hexdigest()
-        except OSError:
+        blob = _git_blob_bytes(root, str(entry["path"]))
+        if blob is None:
             mismatches += 1
             continue
-        if digest != entry["sha256"]:
+        if hashlib.sha256(blob).hexdigest() != entry["sha256"]:
             mismatches += 1
     if mismatches:
         return BaselineCheck("manifest_hashes", False, f"mismatches: {mismatches}")

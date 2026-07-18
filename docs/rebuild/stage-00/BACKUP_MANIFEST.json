@@ -1,634 +1,464 @@
 {
-    "schema_version":  2,
-    "root":  "backup/",
-    "selection":  {
-                      "source":  "git ls-files -- backup",
-                      "allowed_roles":  [
-                                            "code",
-                                            "test",
-                                            "contract",
-                                            "doc"
-                                        ],
-                      "forbidden_path_segments":  [
-                                                      "inputs",
-                                                      "outputs"
-                                                  ],
-                      "recursive_filesystem_discovery":  false,
-                      "ignored_and_untracked_files_collected":  false
-                  },
-    "hash_algorithm":  "SHA-256",
-    "summary":  {
-                    "total_framework_files":  86,
-                    "hashed_framework_files":  86,
-                    "role_counts":  {
-                                        "code":  30,
-                                        "test":  10,
-                                        "contract":  22,
-                                        "doc":  24
-                                    }
-                },
-    "files":  [
-                  {
-                      "path":  ".claude/settings.json",
-                      "file_type":  "json",
-                      "bytes":  528,
-                      "sha256":  "62bd97208c7a9848bb85865b246a9889107ea2e4ad7882ad9f8abcea79c26fc2",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  ".geminiignore",
-                      "file_type":  "geminiignore",
-                      "bytes":  116,
-                      "sha256":  "4ba54cf30a9af9216e016811f5e2f65b232853ea0286a1fef4e9481c3542504b",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  ".gitignore",
-                      "file_type":  "gitignore",
-                      "bytes":  617,
-                      "sha256":  "ba2c7f6a1c52cae8fa22805d9ef8edc7f19bb9f3307e091f5c19aa86a420c063",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "01_youtube_production_workflow.md",
-                      "file_type":  "md",
-                      "bytes":  11672,
-                      "sha256":  "9503d5c31e51602fb512f9dad5dae3f070d1f9ef116aa5f968a4b64ba6e64320",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "AGENTS.md",
-                      "file_type":  "md",
-                      "bytes":  195,
-                      "sha256":  "63c2a0f83195b601f98455d1d36daea29ee3403c759aa43acad2cf4a1dfd95ab",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "CLAUDE.md",
-                      "file_type":  "md",
-                      "bytes":  249,
-                      "sha256":  "0cac2ab488cc04286cd96cd4bfc578b398c53b4af6b77168261dc29ca6de9dd6",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "claude/cross_verification_guide_2026-07-16.md",
-                      "file_type":  "md",
-                      "bytes":  6046,
-                      "sha256":  "12d05639ecc172c70d5311e7261605d25f9aaa0d0358e26794e3c713ce47705e",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "claude/project_improvement_blueprint_2026-07-16.md",
-                      "file_type":  "md",
-                      "bytes":  10242,
-                      "sha256":  "c3e07fe7de7e00cf052fd6b13e9f707b911c3bf7c7d5b738f1466fcc58727229",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "docs/AGENT_MAINTENANCE.md",
-                      "file_type":  "md",
-                      "bytes":  2439,
-                      "sha256":  "66b1b5e13eda3d7e2605ef9a21ac452bb6f419e358be3ad93cb63dcbd9a862e2",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "docs/changes/0001-governed-context-efficient-resume.md",
-                      "file_type":  "md",
-                      "bytes":  15899,
-                      "sha256":  "c38ed3366ef4e523ebfe78c35d594c454b8bc998ba40bf930b1996f8b5764641",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "docs/changes/0002-tool-first-framework-restructure-with-efficient-document-io.md",
-                      "file_type":  "md",
-                      "bytes":  10747,
-                      "sha256":  "2614ff2649eb68dfec0e574cad58fe58d466c25c0e570b115601a30695ca0808",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "docs/DESIGN_PRINCIPLES.md",
-                      "file_type":  "md",
-                      "bytes":  2884,
-                      "sha256":  "493286f85c194e2cfec9556163638911b8167d3312f134fa71e0c5b9af4369b7",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "docs/EDIT_MEMORY_KERNEL.md",
-                      "file_type":  "md",
-                      "bytes":  2530,
-                      "sha256":  "f2eb477f999d79a440e7adce7e3d545f1c8710ba2aa16bbe191f829a35e31e6b",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "docs/EDITING_QUALITY_STANDARD.md",
-                      "file_type":  "md",
-                      "bytes":  12905,
-                      "sha256":  "dcd2786e937ff8ea7b641eb4b79db5d645d5dbda19d159a9d414441232689578",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "docs/INDEX.md",
-                      "file_type":  "md",
-                      "bytes":  2724,
-                      "sha256":  "66df04bfe797de2fbe5e48951e4d2bc673839aa0a3ed8b52c8acc9992495a2f0",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "docs/WORKFLOW_CONTRACT.json",
-                      "file_type":  "json",
-                      "bytes":  7672,
-                      "sha256":  "27950da9a8f0068ab964d6742e8d75a90bc086ab33e30af2eab6b4b01e073a7f",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "GEMINI.md",
-                      "file_type":  "md",
-                      "bytes":  129,
-                      "sha256":  "d96d8822cdcb715c35fc65e94fd6a8fc68190e13599752b9a2053a393954249b",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "gemini/blueprint_report.md",
-                      "file_type":  "md",
-                      "bytes":  10983,
-                      "sha256":  "4b72c88ab6fee23ae93bc50286d997fcff7e6dbcf98e10eb9cc43cfa253ed09d",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "gemini/cross_verification_guide_2026-07-16.md",
-                      "file_type":  "md",
-                      "bytes":  5570,
-                      "sha256":  "3ff1a09470ee4d4293b828b533e0fbb707e1217ab369749b0e3a3475e8487e38",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "gpt/CROSS_VALIDATION.md",
-                      "file_type":  "md",
-                      "bytes":  11988,
-                      "sha256":  "6026f0adca7a84c1717036a4f9f69f74272a092bee988ce493bd670166eaf0fc",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "gpt/project_blueprint_report_2026-07-16.md",
-                      "file_type":  "md",
-                      "bytes":  18937,
-                      "sha256":  "e794a9419ad8ee9ea2786f273724fd09e0191355380eab5047ffcbea7c82807b",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "planning_research/multi_agent_file_workflow_solution_research_2026-07-14.md",
-                      "file_type":  "md",
-                      "bytes":  11628,
-                      "sha256":  "112d9d7cdbacfe3c744d8b8921c447b0ffb6a298bf2ac33adbc7b722b06ad279",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "planning_research/planning_stage_spec_2026-07-06.md",
-                      "file_type":  "md",
-                      "bytes":  9719,
-                      "sha256":  "9ab2d8c8bacc1a8ce00b7080a54b43fae96c8b28ed0a6d437d9b0b823a63748d",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "planning_research/project_ops_diagnosis_and_improvements_2026-07-07.md",
-                      "file_type":  "md",
-                      "bytes":  3898,
-                      "sha256":  "251ede061200f967936a4200753778cc38acfa32ed7ab90f60f9d7685324179f",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "PROJECT_BOOTSTRAP.md",
-                      "file_type":  "md",
-                      "bytes":  2781,
-                      "sha256":  "f7bbd41bb1acd98923831a59d973b6026e2343909c27d9609c05f735ddd2dbb5",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "PROJECT_RULES.md",
-                      "file_type":  "md",
-                      "bytes":  9537,
-                      "sha256":  "a8b4aec320428481bbc0df84352de74dfed39e837654d404b3bf693830467d77",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "README.md",
-                      "file_type":  "md",
-                      "bytes":  1950,
-                      "sha256":  "44e3743701211c2a7367a5a1651dbdcc0e152b7c9e708ceb6e858498ec84d321",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "SESSION_HANDOFF.md",
-                      "file_type":  "md",
-                      "bytes":  410,
-                      "sha256":  "61c3e154c79184373d9ca5dabc549b526900598a927d9e6fcd8c41471887dcc8",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "skills/dialogue-based-planning/SKILL.md",
-                      "file_type":  "md",
-                      "bytes":  5058,
-                      "sha256":  "d9471128795901f9e9d10b33c561324d1da39ee768dfe949f7a875ecbe45297f",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "skills/final-video-review/SKILL.md",
-                      "file_type":  "md",
-                      "bytes":  5891,
-                      "sha256":  "035d2f7b68ce4303a67d74c5432a5e81c71e0424be2529a1d618a546ba32688f",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "skills/gameplay-video-analysis/SKILL.md",
-                      "file_type":  "md",
-                      "bytes":  18379,
-                      "sha256":  "62bbe4933c5ecae5c091055468bdee6c0d6225b2c43c037d4a26e5fe313900d8",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "skills/game-trend-research/SKILL.md",
-                      "file_type":  "md",
-                      "bytes":  6502,
-                      "sha256":  "471836ee0a0fc3eac5a475209364fe604ec2cdd29bd75ab5c6ca61ce7565e7d9",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "skills/korean-game-research/SKILL.md",
-                      "file_type":  "md",
-                      "bytes":  9928,
-                      "sha256":  "bdfd4f27c8ce039e8bcbb5f33485224ac0038a71dce475805ac08f49e30e206d",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "skills/premiere-editing-export/scripts/make_premiere_xml.py",
-                      "file_type":  "py",
-                      "bytes":  35043,
-                      "sha256":  "abd4ea4ea111f67b93be947971af9f09fcda978b5e8bf5f5488162786cb0adbe",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "skills/premiere-editing-export/scripts/make_roughcut.py",
-                      "file_type":  "py",
-                      "bytes":  4272,
-                      "sha256":  "676ac3e7c183f837fc5257b1ad1848ae78a93505c500c73737e954555b54531b",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "skills/premiere-editing-export/SKILL.md",
-                      "file_type":  "md",
-                      "bytes":  15137,
-                      "sha256":  "8824b5cbf42c0972d4d59a461290957a9add11763c07377dd8d66bcb176927c4",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "skills/README.md",
-                      "file_type":  "md",
-                      "bytes":  2328,
-                      "sha256":  "7a605a0a3d190b6382ec0a5181fe602c19de9f7b51fe011abb5ad8e79200ed06",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "skills/SKILL_CONTRACT.md",
-                      "file_type":  "md",
-                      "bytes":  3370,
-                      "sha256":  "0b279fd1287ee93f7f8c87b5c9d91efa66c46eff635b30c5b6faf20e1ab7c4ae",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "skills/subtitle-cleanup/SKILL.md",
-                      "file_type":  "md",
-                      "bytes":  5881,
-                      "sha256":  "352204b67a507fe8c71a75e5ebff36e2d5ddd68c1a788a19cdd1e2ac9fc8221c",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "skills/video-watch/LICENSE",
-                      "file_type":  "license",
-                      "bytes":  1072,
-                      "sha256":  "add78957ea8124a8ae6eccd7a55c948543a9f32ea26917bf562b8cafacb01d3e",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "skills/video-watch/scripts/config.py",
-                      "file_type":  "py",
-                      "bytes":  2108,
-                      "sha256":  "a672f1b3b888ee90b696a2acd7ccba46556eeb7978be4a0cf205e0a7963e5140",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "skills/video-watch/scripts/download.py",
-                      "file_type":  "py",
-                      "bytes":  5454,
-                      "sha256":  "e3db8c8418a0372a533fedaf6c4481c5859849c81279e0f6cb139e4055081f91",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "skills/video-watch/scripts/frames.py",
-                      "file_type":  "py",
-                      "bytes":  28219,
-                      "sha256":  "a0a35e096d89b15be09b8ba96206f450c0e7564c8f208b7f7b110736700d368c",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "skills/video-watch/scripts/setup.py",
-                      "file_type":  "py",
-                      "bytes":  12080,
-                      "sha256":  "c8d2906fc4e8047c9d4006ac37572be5cbd0ae6ed11380743283e877564406b1",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "skills/video-watch/scripts/transcribe.py",
-                      "file_type":  "py",
-                      "bytes":  2897,
-                      "sha256":  "f9736e126d3f3c41d72cceed75e50b7bdeb0f8a9bdafe5bdbdd8592ea8af7ab6",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "skills/video-watch/scripts/watch.py",
-                      "file_type":  "py",
-                      "bytes":  17166,
-                      "sha256":  "a1e5335c0b757ddcab6ad17586a94d99e42e75dea0210a65cf9a825c6e7fbd6b",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "skills/video-watch/scripts/whisper.py",
-                      "file_type":  "py",
-                      "bytes":  17046,
-                      "sha256":  "4845e95d7467b1d4d393275a9d8fadda07d34c9822d6cee0b7ebebcfd70e1462",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "skills/video-watch/SKILL.md",
-                      "file_type":  "md",
-                      "bytes":  8494,
-                      "sha256":  "b893a687ae0d820caa0026c182f571fbd29a2d7f14b2059ce6229454389a8e85",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "skills/youtube-channel-planning/SKILL.md",
-                      "file_type":  "md",
-                      "bytes":  5663,
-                      "sha256":  "761eff9cc7680518e78c90742b263cc426f4c5484d7ec56b18626f34ce3393df",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "skills/youtube-script-planning/SKILL.md",
-                      "file_type":  "md",
-                      "bytes":  5193,
-                      "sha256":  "0cd422b7d4fe8ce3a6a4f827cdd244c6cec06f0ac243aeaf92946361984206f1",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "skills/youtube-timestamp-hashtag/SKILL.md",
-                      "file_type":  "md",
-                      "bytes":  11207,
-                      "sha256":  "5d3bbaca83ea2b1a1e2c358f7ecb3d342b06c106d482b2de7277e4df615b372c",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "tests/test_agent_guard.py",
-                      "file_type":  "py",
-                      "bytes":  1684,
-                      "sha256":  "c1516efde26b50c7c79228d8172cab09f2a24f502e5ad7dc3ce427d5be15e13e",
-                      "role":  "test"
-                  },
-                  {
-                      "path":  "tests/test_edit_memory.py",
-                      "file_type":  "py",
-                      "bytes":  7709,
-                      "sha256":  "9368ba8d2c7ef6ce85d3c6499a55ba28686d883928bac0b381b3a2f442a686a7",
-                      "role":  "test"
-                  },
-                  {
-                      "path":  "tests/test_edit_quality_audit.py",
-                      "file_type":  "py",
-                      "bytes":  3332,
-                      "sha256":  "e734e570e889a533a2749965a6e0359964b40893c739fd18bbe14d2c09b2a294",
-                      "role":  "test"
-                  },
-                  {
-                      "path":  "tests/test_make_premiere_xml.py",
-                      "file_type":  "py",
-                      "bytes":  8893,
-                      "sha256":  "bbb314d4ab275da53ddfa264f2b8a883161b2026fbc214df5a7b982cb6fa8c95",
-                      "role":  "test"
-                  },
-                  {
-                      "path":  "tests/test_projectctl.py",
-                      "file_type":  "py",
-                      "bytes":  5536,
-                      "sha256":  "4cb7fbb3432f94ef6edf24cab95aee65e87d320e5f235d8ee4977989fc148a2b",
-                      "role":  "test"
-                  },
-                  {
-                      "path":  "tests/test_register_source_assets.py",
-                      "file_type":  "py",
-                      "bytes":  1018,
-                      "sha256":  "e06efec3a23760f6516cd2b2683e45b90178003b3eb88b984979ba0fc76f1887",
-                      "role":  "test"
-                  },
-                  {
-                      "path":  "tests/test_skill_asset_lifecycle.py",
-                      "file_type":  "py",
-                      "bytes":  6942,
-                      "sha256":  "d91624715c0985854f90bd3d6e5ed182dded9644294e702d17cd301e766f2ca5",
-                      "role":  "test"
-                  },
-                  {
-                      "path":  "tests/test_source_frame_assets.py",
-                      "file_type":  "py",
-                      "bytes":  4604,
-                      "sha256":  "289d629fde378e754f91218b605ea38f09c4bfb6a706847083d2fb866754d78c",
-                      "role":  "test"
-                  },
-                  {
-                      "path":  "tests/test_tool_wrappers.py",
-                      "file_type":  "py",
-                      "bytes":  2111,
-                      "sha256":  "de4cc73d5ca75ce5520bd9276412df87242f8e62b9df40a6fab562438480008b",
-                      "role":  "test"
-                  },
-                  {
-                      "path":  "tests/test_workflow_gate.py",
-                      "file_type":  "py",
-                      "bytes":  21773,
-                      "sha256":  "9bcf6160e5f066733487327cc8133006c69beb160f5cbfa5ad62d62cffad5ac7",
-                      "role":  "test"
-                  },
-                  {
-                      "path":  "tools/doccheck/check_docs.py",
-                      "file_type":  "py",
-                      "bytes":  19677,
-                      "sha256":  "4564b2c988c3717b0a537c08f72f9a96f207c4e79f6375a9f6a1f02949a3d6b9",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/edit_memory.py",
-                      "file_type":  "py",
-                      "bytes":  32229,
-                      "sha256":  "f9514cd05123b5b31e3c6127c1a4f004b892b9394df241017652045c2b8c31ad",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/edit_quality_audit.py",
-                      "file_type":  "py",
-                      "bytes":  11810,
-                      "sha256":  "8bcf96e9c59f25f8c724ae6e8ed90afda39932e12063f38bff2bffcc8aeccb22",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/git_project.bat",
-                      "file_type":  "bat",
-                      "bytes":  159,
-                      "sha256":  "ddd48956d2df78185221247f11934fdad5834956f6742b172b9dd7f59596502a",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/guard/agent_guard.py",
-                      "file_type":  "py",
-                      "bytes":  5729,
-                      "sha256":  "e02282932ab1329695324e3ed5390d82cfe397548e98cf5edfe2dbf858e3282b",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/guard/codex_config.template.toml",
-                      "file_type":  "toml",
-                      "bytes":  554,
-                      "sha256":  "0132967d2a9c9c9b2205fa855dbb589800c708dc58dcbd7233c17844423d1d20",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "tools/guard/gemini_settings.template.json",
-                      "file_type":  "json",
-                      "bytes":  331,
-                      "sha256":  "b7b097857e4861e8a9cfb25593f34bad0c2272113776cef4eac55277005512ac",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "tools/project_preflight.bat",
-                      "file_type":  "bat",
-                      "bytes":  163,
-                      "sha256":  "2d68ad216e727fd885a2181aa0d56e8139266621325dceff62ecc5b36f7ea157",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/project_preflight.py",
-                      "file_type":  "py",
-                      "bytes":  3270,
-                      "sha256":  "09d37a05a8b9d05c4b73da005fe5e4149d65e2e8e73244a69a1101f7c304de0f",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/projectctl.bat",
-                      "file_type":  "bat",
-                      "bytes":  156,
-                      "sha256":  "ef92f9ca7d5d7133a5ef86362feecc010e82580c9d209dd595cf46a9b388726b",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/projectctl.py",
-                      "file_type":  "py",
-                      "bytes":  15735,
-                      "sha256":  "0be1c5d802a56265c7ce17561df34246936ba3779e46b982208debcf3ecd2e96",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/projectctl.schema.json",
-                      "file_type":  "json",
-                      "bytes":  3530,
-                      "sha256":  "df7a4b94e172348dd8c07a994bba9d26dd0c2f01952552ef2b94879e2c49dabd",
-                      "role":  "contract"
-                  },
-                  {
-                      "path":  "tools/README.md",
-                      "file_type":  "md",
-                      "bytes":  14725,
-                      "sha256":  "29703a5e8b5ff1bfb724287a66fb52e2c5aed101dc3af3e3b1f85e6a6cd3c2be",
-                      "role":  "doc"
-                  },
-                  {
-                      "path":  "tools/register_source_assets.py",
-                      "file_type":  "py",
-                      "bytes":  6494,
-                      "sha256":  "8bedf679299c9c96dd8669cd8222b57bb4b44d7a1cef61478cc71b2d47fbfd3e",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/remux_mkv_to_mp4.bat",
-                      "file_type":  "bat",
-                      "bytes":  975,
-                      "sha256":  "29d32cc4677152a383d90afab9c13f050e695474973f25d03bbb4c8d61d93e70",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/run_doccheck.bat",
-                      "file_type":  "bat",
-                      "bytes":  165,
-                      "sha256":  "c2816706120b96b7d819e516caca5729c98168fdc6845894578f8e5cb39ce3b1",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/run_python.bat",
-                      "file_type":  "bat",
-                      "bytes":  576,
-                      "sha256":  "fd22011a92998579000568419e8c5d3b40822908bddcf1b2d068784180b5d42a",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/source_frame_assets.py",
-                      "file_type":  "py",
-                      "bytes":  15266,
-                      "sha256":  "d968deabb3493db41bbb668442397f0dd048087d13dacb06cfb1596599ced1f0",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/synccheck/align.py",
-                      "file_type":  "py",
-                      "bytes":  3746,
-                      "sha256":  "0a8ea5c2642f1f1d630816f91ebdae20633ba9cf250ff608a1562fbbf04b8bcd",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/synccheck/build_v9.py",
-                      "file_type":  "py",
-                      "bytes":  3898,
-                      "sha256":  "2c89551be9ef7a2924146b3ca449758802456e379f10c13cbd9588234c4c08a6",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/synccheck/full_scan.py",
-                      "file_type":  "py",
-                      "bytes":  6432,
-                      "sha256":  "5372df945881d223580321728b0f79c7647c573e94a75b96ca252f2254aa5821",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/synccheck/pause_scan.py",
-                      "file_type":  "py",
-                      "bytes":  2019,
-                      "sha256":  "96913d4da5e47d4926c00eb75ec1c386d30c92184d9efb15f695eda68a64b308",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/synccheck/srt_slice.py",
-                      "file_type":  "py",
-                      "bytes":  689,
-                      "sha256":  "0b364624d9603a64e7cfcb2218e4bb86022be1c7a078be9d7de14dcadc1ffdcd",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/synccheck/vadcheck.py",
-                      "file_type":  "py",
-                      "bytes":  3958,
-                      "sha256":  "5ac7830e7a3440682e633da55b0a9519be912d177499c34c568826fbad3c6007",
-                      "role":  "code"
-                  },
-                  {
-                      "path":  "tools/workflow_gate.py",
-                      "file_type":  "py",
-                      "bytes":  28454,
-                      "sha256":  "061f6b06fa09e03c5af3e20af1fc7fbb23f3c9ccfb896cc01454d53885cae1dd",
-                      "role":  "code"
-                  }
-              ]
+  "schema_version": 3,
+  "root": "backup/",
+  "hash_basis": "sha256 of git blob content at HEAD (checkout/eol independent); worktree drift is covered by backup_git_unchanged",
+  "rewritten": "2026-07-17 user-approved portability rewrite (see docs/rebuild/stage-02..03 reports)",
+  "selection": {
+    "source": "git ls-files -- backup",
+    "allowed_roles": [
+      "code",
+      "test",
+      "contract",
+      "doc"
+    ],
+    "forbidden_path_segments": [
+      "inputs",
+      "outputs"
+    ],
+    "recursive_filesystem_discovery": false,
+    "ignored_and_untracked_files_collected": false
+  },
+  "hash_algorithm": "SHA-256",
+  "summary": {
+    "total_framework_files": 86,
+    "hashed_framework_files": 86,
+    "role_counts": {
+      "code": 30,
+      "test": 10,
+      "contract": 22,
+      "doc": 24
+    }
+  },
+  "files": [
+    {
+      "path": ".claude/settings.json",
+      "role": "contract",
+      "sha256": "0daa15740f71012e0c0576f1f96c0f576ada5629f7a8ea5ed0ab24350e153aca"
+    },
+    {
+      "path": ".geminiignore",
+      "role": "contract",
+      "sha256": "eec84eb2f624de40113aa63c1828d1704966225db919def904ebadb87642ce3f"
+    },
+    {
+      "path": ".gitignore",
+      "role": "contract",
+      "sha256": "ba2c7f6a1c52cae8fa22805d9ef8edc7f19bb9f3307e091f5c19aa86a420c063"
+    },
+    {
+      "path": "01_youtube_production_workflow.md",
+      "role": "doc",
+      "sha256": "f4faeeafe822ad691c503f131bff948475f69e03dd9d748fad783b6310e9b794"
+    },
+    {
+      "path": "AGENTS.md",
+      "role": "contract",
+      "sha256": "535f25ff85ba77bad35c351e517ea452cd3bcdff53c4cd059675a21f0c8930c5"
+    },
+    {
+      "path": "CLAUDE.md",
+      "role": "doc",
+      "sha256": "c89dd743fa8631684c3b57677b16a542d2cd146046c6cff65a0229ad78fd3973"
+    },
+    {
+      "path": "GEMINI.md",
+      "role": "doc",
+      "sha256": "2e6f17a869ba3942e0d1b06792e29752db26f069ee2951f9bfc2f8e41ae098f0"
+    },
+    {
+      "path": "PROJECT_BOOTSTRAP.md",
+      "role": "contract",
+      "sha256": "aa1151a8580e93b47fce40b07d1ae990d7c71e046b919f6f9dde33576ec024f1"
+    },
+    {
+      "path": "PROJECT_RULES.md",
+      "role": "contract",
+      "sha256": "0b09546e541b484d4b7da35b45209a09281ea5c6f3377466c1f1bac0583d9d0c"
+    },
+    {
+      "path": "README.md",
+      "role": "doc",
+      "sha256": "d96f050177b80424991a7e846b9e1c517c15fe7a98720311d316b974ce7de864"
+    },
+    {
+      "path": "SESSION_HANDOFF.md",
+      "role": "doc",
+      "sha256": "ed34dc40ebc42c21998bca037d4d8fed921a0e60907fe9b20cbe0ddf802b69c4"
+    },
+    {
+      "path": "claude/cross_verification_guide_2026-07-16.md",
+      "role": "doc",
+      "sha256": "21dd1ef785ea3df85656f691319830a5835c235becd78e482c5273fb37cd8923"
+    },
+    {
+      "path": "claude/project_improvement_blueprint_2026-07-16.md",
+      "role": "doc",
+      "sha256": "53692cb88f7f851e6467308c0a351577b31bda1a71d17441a21c92f7aceab88e"
+    },
+    {
+      "path": "docs/AGENT_MAINTENANCE.md",
+      "role": "doc",
+      "sha256": "976a6857058a9e4c560bca570ae736630326ea20c9276a31e32a20571fea1a91"
+    },
+    {
+      "path": "docs/DESIGN_PRINCIPLES.md",
+      "role": "doc",
+      "sha256": "55fbc48c870fcd2f44da953281e9060f3fbc5f21f50050d640124dc0841b8aa4"
+    },
+    {
+      "path": "docs/EDITING_QUALITY_STANDARD.md",
+      "role": "doc",
+      "sha256": "37438913c7a51efc3c3847f239ff52bf95555ccdd7e12ee950fc4e07798f9494"
+    },
+    {
+      "path": "docs/EDIT_MEMORY_KERNEL.md",
+      "role": "doc",
+      "sha256": "2aebe3baa455e2d424aaf1972f72200aefbbfc5670d37d86185f5633da4408ce"
+    },
+    {
+      "path": "docs/INDEX.md",
+      "role": "doc",
+      "sha256": "c73f2d5603c591f3e5dc580d7b70b784142c2f0c9e8129c356bafc4d63e90c72"
+    },
+    {
+      "path": "docs/WORKFLOW_CONTRACT.json",
+      "role": "contract",
+      "sha256": "d9890b9befced3c906b43e4604120dad279b520cea8dc06576ceffdc26eb37a7"
+    },
+    {
+      "path": "docs/changes/0001-governed-context-efficient-resume.md",
+      "role": "doc",
+      "sha256": "7e98d3b7b7f63a9858f4604b9eaf5353530beac5e17579b4f676c1c6b02f145c"
+    },
+    {
+      "path": "docs/changes/0002-tool-first-framework-restructure-with-efficient-document-io.md",
+      "role": "doc",
+      "sha256": "aed177be97935444295d276e653a799cc5fc8c490cd568af8f940b048ec8b62f"
+    },
+    {
+      "path": "gemini/blueprint_report.md",
+      "role": "doc",
+      "sha256": "4e0271ab23e0fabf0c41a4c6cd02611deaf8d6532d57e5207d52ffc6dd61e89b"
+    },
+    {
+      "path": "gemini/cross_verification_guide_2026-07-16.md",
+      "role": "doc",
+      "sha256": "5c6514edc23326d51d9e2815ceda74a9def3407576c27cdf2be65f9eab5a94c0"
+    },
+    {
+      "path": "gpt/CROSS_VALIDATION.md",
+      "role": "doc",
+      "sha256": "92e2f7bfe62cf726487fef44d26c423304964fbbaf27bc02a08d054ffbbe5338"
+    },
+    {
+      "path": "gpt/project_blueprint_report_2026-07-16.md",
+      "role": "doc",
+      "sha256": "f8ce4e6ae8a49511447cea88e1883227bfe1860c1681bfde7a4e3a6548d27258"
+    },
+    {
+      "path": "planning_research/multi_agent_file_workflow_solution_research_2026-07-14.md",
+      "role": "doc",
+      "sha256": "8c4196b5aa51f66d66fad8a69de521eb3e9483d53adb534d3a73b9b0d8a8e448"
+    },
+    {
+      "path": "planning_research/planning_stage_spec_2026-07-06.md",
+      "role": "doc",
+      "sha256": "df16865341a45549382d4caa3ff2341f53e34de674afdbf707974005219d4931"
+    },
+    {
+      "path": "planning_research/project_ops_diagnosis_and_improvements_2026-07-07.md",
+      "role": "doc",
+      "sha256": "75705df91d819904c4a3417d92583439290c28a17f80a60532ac4fa041a078e8"
+    },
+    {
+      "path": "skills/README.md",
+      "role": "doc",
+      "sha256": "1527f96f8805ce42b039deae866e64e7d7dbf41202fdb454893ebc302881ca47"
+    },
+    {
+      "path": "skills/SKILL_CONTRACT.md",
+      "role": "contract",
+      "sha256": "121ebb22f995f93f7426188975ed61fcda4b393e2c8e8bd3859c05ba225a4c33"
+    },
+    {
+      "path": "skills/dialogue-based-planning/SKILL.md",
+      "role": "contract",
+      "sha256": "2f2ea5933734b904c414e31aec8118ce5eebb90132a15cfd9d6d08048957e3a6"
+    },
+    {
+      "path": "skills/final-video-review/SKILL.md",
+      "role": "contract",
+      "sha256": "c5b1365509fd634bcb06fe6c35c2d80ecf818c87cd537f3c4a47f181e94585e0"
+    },
+    {
+      "path": "skills/game-trend-research/SKILL.md",
+      "role": "contract",
+      "sha256": "ac861cc2bde004eadf74b6a326759f3bc0f93cd78c61d5f3ad372d1a7c3f8daa"
+    },
+    {
+      "path": "skills/gameplay-video-analysis/SKILL.md",
+      "role": "contract",
+      "sha256": "0ea94908a7b53fe2af499b157df757351ff3d63c34cb5dd58258f523585435b3"
+    },
+    {
+      "path": "skills/korean-game-research/SKILL.md",
+      "role": "contract",
+      "sha256": "85761ed87693b1f5177ac0ec68de0ea71962728ecff975b7a2a202d4283a3449"
+    },
+    {
+      "path": "skills/premiere-editing-export/SKILL.md",
+      "role": "contract",
+      "sha256": "e3cbc6f625f4e0f37f9a3fc34a7942bf6e71eb8184f032ad07a19ef055e7bfb2"
+    },
+    {
+      "path": "skills/premiere-editing-export/scripts/make_premiere_xml.py",
+      "role": "code",
+      "sha256": "c9a78dd8c514a17d46e8b7fad18c600db45a1a91d8327d11cc6a8c9bb7101cad"
+    },
+    {
+      "path": "skills/premiere-editing-export/scripts/make_roughcut.py",
+      "role": "code",
+      "sha256": "676ac3e7c183f837fc5257b1ad1848ae78a93505c500c73737e954555b54531b"
+    },
+    {
+      "path": "skills/subtitle-cleanup/SKILL.md",
+      "role": "contract",
+      "sha256": "20ccd0f5fbb24caacd61c555859c400f27cef7d65bbc1efde790ccd916641bf4"
+    },
+    {
+      "path": "skills/video-watch/LICENSE",
+      "role": "doc",
+      "sha256": "add78957ea8124a8ae6eccd7a55c948543a9f32ea26917bf562b8cafacb01d3e"
+    },
+    {
+      "path": "skills/video-watch/SKILL.md",
+      "role": "contract",
+      "sha256": "a72af06a8c372b14e83ddcaf76f4001c04058f7d5d4520040d482208e77cd269"
+    },
+    {
+      "path": "skills/video-watch/scripts/config.py",
+      "role": "code",
+      "sha256": "a672f1b3b888ee90b696a2acd7ccba46556eeb7978be4a0cf205e0a7963e5140"
+    },
+    {
+      "path": "skills/video-watch/scripts/download.py",
+      "role": "code",
+      "sha256": "e3db8c8418a0372a533fedaf6c4481c5859849c81279e0f6cb139e4055081f91"
+    },
+    {
+      "path": "skills/video-watch/scripts/frames.py",
+      "role": "code",
+      "sha256": "59748add0b003ae5db7cbbf7bf0c079dc414300a1fe6aca62b65b4a35cf51a86"
+    },
+    {
+      "path": "skills/video-watch/scripts/setup.py",
+      "role": "code",
+      "sha256": "c8d2906fc4e8047c9d4006ac37572be5cbd0ae6ed11380743283e877564406b1"
+    },
+    {
+      "path": "skills/video-watch/scripts/transcribe.py",
+      "role": "code",
+      "sha256": "f9736e126d3f3c41d72cceed75e50b7bdeb0f8a9bdafe5bdbdd8592ea8af7ab6"
+    },
+    {
+      "path": "skills/video-watch/scripts/watch.py",
+      "role": "code",
+      "sha256": "cbbb59c1957134dbfea9d59417892fd69ec17c436939721f50640e164c4074ff"
+    },
+    {
+      "path": "skills/video-watch/scripts/whisper.py",
+      "role": "code",
+      "sha256": "4845e95d7467b1d4d393275a9d8fadda07d34c9822d6cee0b7ebebcfd70e1462"
+    },
+    {
+      "path": "skills/youtube-channel-planning/SKILL.md",
+      "role": "contract",
+      "sha256": "365cefc0a8cc75d9ef30658d11ce0c26cf5f0fbcbde7694f2b304070927f6d86"
+    },
+    {
+      "path": "skills/youtube-script-planning/SKILL.md",
+      "role": "contract",
+      "sha256": "1798da8caf3b8380732680bab159816e62753266cb5331db7f2e6cefca2e5995"
+    },
+    {
+      "path": "skills/youtube-timestamp-hashtag/SKILL.md",
+      "role": "contract",
+      "sha256": "48af1c8d98afcd96e2994f9ccfa24bee550f52129355b327c61f12c8ce30489f"
+    },
+    {
+      "path": "tests/test_agent_guard.py",
+      "role": "test",
+      "sha256": "a6bee8f8df01152df238974a6cc7b54f7f8222278fa14e7966ec2222ac072964"
+    },
+    {
+      "path": "tests/test_edit_memory.py",
+      "role": "test",
+      "sha256": "7456d4cf20c4b49804c68dc5cc95bc740107f473806f3548be69c643bf514182"
+    },
+    {
+      "path": "tests/test_edit_quality_audit.py",
+      "role": "test",
+      "sha256": "f20f56dbc84ecc5fb2eacab2b33aa09c71731d3719c4f6c1457fa75bd0df5900"
+    },
+    {
+      "path": "tests/test_make_premiere_xml.py",
+      "role": "test",
+      "sha256": "b9bf0004e902e44a4d3e97501e0a86a349693f23973e8d4d2b884460bee59a43"
+    },
+    {
+      "path": "tests/test_projectctl.py",
+      "role": "test",
+      "sha256": "c159a5b85639822789d5e3d3a1005f71c25763889146e813d372e447b95ba507"
+    },
+    {
+      "path": "tests/test_register_source_assets.py",
+      "role": "test",
+      "sha256": "7001d82f297e613137035bd9c7739698faedfc1ee3b01a56f27c0f914a96c740"
+    },
+    {
+      "path": "tests/test_skill_asset_lifecycle.py",
+      "role": "test",
+      "sha256": "96655b0780be9757d44058085aea4f444c88008090c09070abf700b44ea2e13d"
+    },
+    {
+      "path": "tests/test_source_frame_assets.py",
+      "role": "test",
+      "sha256": "92a805a0a4e40c4f760b45b282482a9f089174de018df63fbcc9a4902a759737"
+    },
+    {
+      "path": "tests/test_tool_wrappers.py",
+      "role": "test",
+      "sha256": "7e58dca41fb86d903d0a46400c8bc1dccb07561833892d382bd1024b190a2bb5"
+    },
+    {
+      "path": "tests/test_workflow_gate.py",
+      "role": "test",
+      "sha256": "322bec410ae146c9f411ab6e0deaaf9e71e5e04a2c069ea834ada4059f91b9df"
+    },
+    {
+      "path": "tools/README.md",
+      "role": "doc",
+      "sha256": "295cd3b7c1d475d5e45aabba14b4db495df991e6f2b544e939865563fcc8d919"
+    },
+    {
+      "path": "tools/doccheck/check_docs.py",
+      "role": "code",
+      "sha256": "841f6ceb8f2c5f67dcd9a6202e76e9bd3d4bc211b62da93c584af66b2f7a4ffb"
+    },
+    {
+      "path": "tools/edit_memory.py",
+      "role": "code",
+      "sha256": "e56a51aad4e977e2c4f962aaa8e898cda66d78252368de210ad72aa780b565aa"
+    },
+    {
+      "path": "tools/edit_quality_audit.py",
+      "role": "code",
+      "sha256": "31d88195c125fa6ed450bdd379e31a2112cd7e913964a6b821f72352a09fb6d6"
+    },
+    {
+      "path": "tools/git_project.bat",
+      "role": "code",
+      "sha256": "b9d18cf4a49baaaab030dcd37890ee015f7805cad18a735e4b3709c396b41484"
+    },
+    {
+      "path": "tools/guard/agent_guard.py",
+      "role": "code",
+      "sha256": "c8c1b29bd37c428b7ef8d8203b9c0cbf3a96521538b4cae6650f779627c39f29"
+    },
+    {
+      "path": "tools/guard/codex_config.template.toml",
+      "role": "contract",
+      "sha256": "13e365fcd15341ce42e37b462d64f0c174e45b65cee756f9621bb2311fec43aa"
+    },
+    {
+      "path": "tools/guard/gemini_settings.template.json",
+      "role": "contract",
+      "sha256": "66950022e3f3522c89eb1bd505f5a63157c87f766674516cfabdd2215a3f4201"
+    },
+    {
+      "path": "tools/project_preflight.bat",
+      "role": "code",
+      "sha256": "ea229b6686838cadffe20fae338093a3ab604465da70422d55220872d25be4ba"
+    },
+    {
+      "path": "tools/project_preflight.py",
+      "role": "code",
+      "sha256": "f486ae8e044425cfb2b5379e5eb8b823027568ff7588788b5274bb137ce80aa5"
+    },
+    {
+      "path": "tools/projectctl.bat",
+      "role": "code",
+      "sha256": "9bb082746aad7fe74677825758974ad86b4f91c5e58736a5948c4ba64f7c3417"
+    },
+    {
+      "path": "tools/projectctl.py",
+      "role": "code",
+      "sha256": "dd72e536a82b8d457beb8e78ef3f0ddeadc009d6359e9173293171cd0adffb2d"
+    },
+    {
+      "path": "tools/projectctl.schema.json",
+      "role": "contract",
+      "sha256": "60e6e073b19e5aa57949b4f1bd772a3890ac477ef9adb12247f44f626d115db7"
+    },
+    {
+      "path": "tools/register_source_assets.py",
+      "role": "code",
+      "sha256": "7f7540c5f5699ceb56755bcff07c27b4f41884eb878cf85131e81023866b4e59"
+    },
+    {
+      "path": "tools/remux_mkv_to_mp4.bat",
+      "role": "code",
+      "sha256": "29d32cc4677152a383d90afab9c13f050e695474973f25d03bbb4c8d61d93e70"
+    },
+    {
+      "path": "tools/run_doccheck.bat",
+      "role": "code",
+      "sha256": "85d4feaa9b8312d8bf8e97272b248609efac5f5d6d59ad5c47950e77742a22a3"
+    },
+    {
+      "path": "tools/run_python.bat",
+      "role": "code",
+      "sha256": "0b931778257cef3515233ce7140fed4ed26fe7570a608c1e8bd81790ea432608"
+    },
+    {
+      "path": "tools/source_frame_assets.py",
+      "role": "code",
+      "sha256": "a33abec01f4aba7b06d23c225ece945622035e3f5189b7544184c47236989183"
+    },
+    {
+      "path": "tools/synccheck/align.py",
+      "role": "code",
+      "sha256": "f4e8bc883fb4a43981480b522adfc75b067b45622d37ece18ebebad16eebefc7"
+    },
+    {
+      "path": "tools/synccheck/build_v9.py",
+      "role": "code",
+      "sha256": "2bd70cb0994d6d3f4d49cf14905e3b56befe74892d02d4d424909ca12529842b"
+    },
+    {
+      "path": "tools/synccheck/full_scan.py",
+      "role": "code",
+      "sha256": "f5bfd515e4057b6f1c44bf4e440ab2d62747cfbcf729e24bdddc7028d5dfc09b"
+    },
+    {
+      "path": "tools/synccheck/pause_scan.py",
+      "role": "code",
+      "sha256": "96913d4da5e47d4926c00eb75ec1c386d30c92184d9efb15f695eda68a64b308"
+    },
+    {
+      "path": "tools/synccheck/srt_slice.py",
+      "role": "code",
+      "sha256": "0b364624d9603a64e7cfcb2218e4bb86022be1c7a078be9d7de14dcadc1ffdcd"
+    },
+    {
+      "path": "tools/synccheck/vadcheck.py",
+      "role": "code",
+      "sha256": "1f266a2f034f4244c168ffca9e7f9d9c73d9a66c5bbf38f59afc4d5e50070653"
+    },
+    {
+      "path": "tools/workflow_gate.py",
+      "role": "code",
+      "sha256": "40548ab6150208a0d552e369bd90968433ab2ff0937d0867a1c268734495c0cb"
+    }
+  ]
 }

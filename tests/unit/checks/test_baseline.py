@@ -25,7 +25,7 @@ def test_corrupt_manifest_fails_closed():
 
 def test_manifest_with_forbidden_entry_fails_closed():
     payload = {
-        "schema_version": 2,
+        "schema_version": 3,
         "files": [
             {
                 "path": "nested/outputs/result.json",

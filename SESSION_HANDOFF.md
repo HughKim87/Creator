@@ -7,32 +7,34 @@
 
 ## 현재 상태
 
-- Stage 00·01: 완료. Stage 02: 완료(의미 승인 포함,
-  `docs/rebuild/stage-02/STAGE_REPORT.md`). Stage 03: **구현·통합 검증 완료,
-  미커밋** (`docs/rebuild/stage-03/STAGE_REPORT.md`).
+- Stage 00·01·02·03·04 구현 완료(전부 2026-07-17, 미커밋). 각
+  `docs/rebuild/stage-0X/STAGE_REPORT.md` 참조. Stage 05(실제 영상 파일럿) 미착수.
 - 구현 위치: 도메인 `src/video_workflow/domain/`(순수), 저장
-  `src/video_workflow/storage/`(SQLite 단일 정본, append-only 이벤트, 낙관적
-  동시성), 서비스 `src/video_workflow/services/`, CLI `workflow state/approval`.
-- 통합 검증(2026-07-17, Linux clone, Python 3.12.3): full check에서
-  lock/format/lint/type/tests 전부 0 — **135 passed, 1 skipped**(설계된 가드).
-  유일 실패 `backup_baseline`은 매니페스트의 clean-clone 줄바꿈 휴대성
-  결함(콘텐츠는 blob 동일; 아래 결정 대기).
-- 보호 상태: `backup/` 변경 0, 금지 경로 접근 0, 커밋·푸시 0, 실제 사용자 작업
-  공간 생성 0.
+  `src/video_workflow/storage/`(SQLite 단일 정본), 서비스
+  `src/video_workflow/services/`(state/source_registration/artifact/views),
+  어댑터 `src/video_workflow/adapters/`(media_probe/sync_check/premiere_xml),
+  CLI `workflow state|approval|artifact`.
+- `BACKUP_MANIFEST.json`은 사용자 승인으로 schema v3(git blob 콘텐츠 sha256)
+  재작성 → clean-clone에서 full check **완전 rc=0**.
+- 최종 통합 검증(Stage 04 말, Linux clean clone, Python 3.12.3): **전 항목 0**
+  — tests 159 passed·1 skipped, mypy strict 33파일, baseline 86/86
+  (`docs/rebuild/stage-04/evidence/`).
+- 보호 상태: `backup/` 변경 0, 금지 경로 접근 0, 커밋·푸시 0, 실제 미디어·실제
+  사용자 작업 공간 사용 0.
 - 테스트 정책(사용자 지시): 스테이지당 통합 테스트 1회, 재구축 우선.
   `PROJECT_RULES.md`의 `Test Execution Policy` 참조.
 
 ## 사용자 결정 기록과 대기
 
-- 승인됨(2026-07-17 "진행해"): Stage 02 의미 승인(현 구현 채택 — 단일 editing,
-  승인 무효화 전면, completed 재진입 금지, 실패 증거 무기한) 및 Stage 03 착수.
-  상세는 `docs/rebuild/stage-02/STAGE_REPORT.md`의 승인 결과 절.
-- 대기 1: **BACKUP_MANIFEST.json 휴대성 결함 처리**(fresh clone에서
-  `backup_baseline` 실패; blob OID 기준 재작성 등 정책 결정).
-- 대기 2: **Git 커밋 승인**(Stage 02+03 산출물). 현재 `.git/index.lock` 잔존으로
-  샌드박스 커밋 불가 — Windows에서 삭제 필요(아래 주의 참조).
-- 대기 3: 독립 QA/레드팀 재실행 여부(계획 4절, 미실행=pending).
-- 대기 4: clean-clone·원격 CI 통합 게이트(기존 결정 유지).
+- 승인됨(2026-07-17): ① "진행해" — Stage 02 의미 승인(현 구현 채택)+Stage 03
+  착수. ② "매니페스트 재작성하고 Stage 04 진행해" — BACKUP_MANIFEST v3 재작성
+  +Stage 04 착수. clean-clone 게이트는 통과 완료.
+- 대기 1: **Git 커밋 승인**(Stage 02+03+04 산출물 일괄). `.git/index.lock`
+  잔존으로 샌드박스 커밋 불가 — Windows에서 삭제 필요(아래 주의).
+- 대기 2: **원격 CI 실행**(커밋·푸시 승인에 종속).
+- 대기 3: 독립 QA/레드팀 재실행 여부(계획 4절, Stage 02~04 공통 pending).
+- 대기 4: Stage 05 착수 승인 — **실제 영상 파일럿**이므로 실제 미디어 사용·
+  Premiere 수동 확인·사람 A/V 승인이 필요(자동으로 대체 불가).
 
 ## 해결된 실패 원장
 
@@ -46,14 +48,15 @@
 
 ## 다음 행동
 
-1. Stage 04 착수 승인 시
-   `docs/rebuild/stage-04/AGENT_STAGE_04_VERTICAL_SLICE_MIGRATION.md`를 읽고
-   첫 편집 수직 흐름 이식을 시작한다(테스트는 스테이지 말 통합 1회).
-   주의: 계획 6절상 첫 수직 이식 전 clean-clone·원격 CI 통합 게이트가 도래하며,
-   이는 BACKUP_MANIFEST 결함 처리(결정 대기 1)를 선행 요구한다.
-2. Windows 세션이면 실제 환경에서 `workflow check --scope full` 1회를 다음
-   스테이지 통합 테스트에 겸해 재확인한다.
-3. 커밋 승인이 나면 `.git/index.lock` 제거 후 Stage 02+03 산출물을 커밋한다.
+1. 커밋 승인이 나면 `.git/index.lock` 제거 후 Stage 02+03+04 산출물을 커밋하고,
+   푸시 승인 시 원격 CI 결과를 기록한다.
+2. Stage 05 착수 승인 시
+   `docs/rebuild/stage-05/AGENT_STAGE_05_SHADOW_PILOT.md`를 읽는다. 실제 영상
+   병행 파일럿이므로 사용자의 실제 미디어 제공·MP4 생성 승인·사람 A/V 승인이
+   필수다. 테스트는 스테이지 말 통합 1회.
+3. Windows 세션이면 실제 환경에서 `workflow check --scope full` 1회를 다음
+   스테이지 통합 테스트에 겸해 재확인한다(특히 os.replace·한글 경로·
+   git cat-file 동작).
 
 ## 주의
 

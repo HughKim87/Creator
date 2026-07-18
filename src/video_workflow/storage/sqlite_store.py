@@ -626,6 +626,82 @@ class SqliteStateStore:
                 ),
             )
 
+    # -- artifact lifecycle (stage 04 promotion protocol) --------------------
+
+    def artifact_row(self, artifact_id: str) -> sqlite3.Row | None:
+        connection = self._connect()
+        try:
+            row = connection.execute(
+                "SELECT * FROM artifacts WHERE artifact_id = ? AND project_id = ?",
+                (artifact_id, self.project_id.value),
+            ).fetchone()
+            return cast(sqlite3.Row | None, row)
+        finally:
+            connection.close()
+
+    def list_artifact_rows(self) -> list[sqlite3.Row]:
+        connection = self._connect()
+        try:
+            rows = connection.execute(
+                "SELECT * FROM artifacts WHERE project_id = ? ORDER BY rowid",
+                (self.project_id.value,),
+            ).fetchall()
+            return cast(list[sqlite3.Row], rows)
+        finally:
+            connection.close()
+
+    def set_artifact_lifecycle(
+        self,
+        artifact_id: str,
+        lifecycle: str,
+        *,
+        expected_current: str,
+        relative_path: str | None = None,
+    ) -> None:
+        """Guarded lifecycle move (e.g. staging -> ready/failed/quarantined)."""
+        if lifecycle not in ("staging", "ready", "failed", "quarantined"):
+            raise CorruptionError(f"invalid artifact lifecycle {lifecycle!r}")
+        connection = self._connect()
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            try:
+                if relative_path is not None:
+                    updated = connection.execute(
+                        "UPDATE artifacts SET artifact_lifecycle = ?, "
+                        "relative_path = ? WHERE artifact_id = ? AND "
+                        "project_id = ? AND artifact_lifecycle = ?",
+                        (
+                            lifecycle,
+                            relative_path,
+                            artifact_id,
+                            self.project_id.value,
+                            expected_current,
+                        ),
+                    ).rowcount
+                else:
+                    updated = connection.execute(
+                        "UPDATE artifacts SET artifact_lifecycle = ? "
+                        "WHERE artifact_id = ? AND project_id = ? AND "
+                        "artifact_lifecycle = ?",
+                        (
+                            lifecycle,
+                            artifact_id,
+                            self.project_id.value,
+                            expected_current,
+                        ),
+                    ).rowcount
+                if updated != 1:
+                    raise ConcurrencyConflictError(
+                        f"artifact {artifact_id} is not in state "
+                        f"{expected_current!r}; lifecycle not changed"
+                    )
+                connection.execute("COMMIT")
+            except BaseException:
+                connection.execute("ROLLBACK")
+                raise
+        finally:
+            connection.close()
+
     # -- approval requests (trust boundary bookkeeping) ---------------------
 
     def create_approval_request(
