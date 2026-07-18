@@ -1,5 +1,6 @@
 # AGENTS.md
 
+- 상태: active — 프로젝트 시작 라우터.
 - 먼저 `PROJECT_RULES.md`를 끝까지 읽는다.
 - 다음으로 `SESSION_HANDOFF.md`에서 현재 단계와 첫 다음 행동을 확인한다.
 - 실행이 필요할 때만 `docs/REBUILD_PLAN.md`의 현재 단계 절을 읽는다.

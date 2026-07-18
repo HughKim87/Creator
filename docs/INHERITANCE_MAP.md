@@ -1,5 +1,6 @@
 # 기존 자산 승계 지도
 
+- 상태: active — 기존 자산 승계 판단 단일 정본.
 - 역할: 재구축 중 기존 규칙·구조·데이터 계약·도구를 잃거나 무조건 다시 만드는 일을 막는다.
 - 읽을 때: 기존 기능을 추가·교체·제거하거나 각 단계의 구현 범위를 정할 때.
 - 보존 기간: 재구축이 끝나고 실제 운영 구조에 승계 결정이 모두 반영될 때까지.
@@ -30,16 +31,16 @@
 
 | 자산 | 기존 근거 | 반드시 이어갈 핵심 | 활성 단계 |
 |---|---|---|---|
-| 원본 식별 | `backup/01_youtube_production_workflow.md`, `backup/tools/source_frame_assets.py` | 같은 원본은 같은 `source_id`; 다른 원본 지문을 같은 ID에 섞지 않기 | 1단계 첫 미디어 작업 |
-| 원본 근거 좌표 | `backup/tools/source_frame_assets.py`, `backup/tools/register_source_assets.py` | 화면·음성 근거를 원본 시간·프레임과 연결하고, 이미 만든 자산은 재사용 | 1단계 첫 미디어 작업 |
-| 제작 경로 | `backup/01_youtube_production_workflow.md` | 촬영 전 1→2→3→4→6→5→7→8, 촬영 완료본은 자막 신뢰 확인 뒤 6→5→7→8 | 2단계 |
-| 사용자 판단 지점 | 같은 문서 | 소재·콘셉트·대표 편집 방향·업로드는 사용자가 결정 | 2단계 |
-| 기획과 편집 관계 | 같은 문서 | 데이터 분석 없이 기획하지 않고, 기획 없이 전체 편집하지 않기 | 2단계 |
-| 현재본과 버전 | 같은 문서, `backup/skills/SKILL_CONTRACT.md` | 입력·판단이 같으면 결과 재사용, 바뀔 때만 버전 생성, 이전본 자동 삭제 금지 | 2단계 |
-| 편집 품질 원칙 | `backup/docs/EDITING_QUALITY_STANDARD.md` | 후보 범위와 실제 컷 구분, microbeat 판단, 긴 컷의 근거, 초·중·후반 품질 표본 | 3단계 편집 작업 |
-| 근거 종류 구분 | 같은 문서와 스킬 계약 | 원본 근거와 편집본 렌더 근거를 섞지 않기, 실제 A/V와 앱 확인을 별도 표시 | 3단계 |
-| 검증된 기존 도구 | `backup/tools/README.md`, 관련 `backup/tests/` | FFmpeg·ffprobe, remux, 원본 프레임 자산, 동기 검사, Premiere XML, 편집 품질 감사 | 사용하는 단계에서 하나씩 |
-| 단계별 스킬 | `backup/skills/README.md`, `backup/skills/*/SKILL.md` | 기존 1~8단계 판단 지식과 입출력 계약을 보존하고 실제 사용하는 스킬부터 활성화 | 2~3단계 |
+| 원본 식별 | `backup/01_youtube_production_workflow.md`, `backup/tools/source_frame_assets.py` | 같은 원본은 같은 `source_id`; 다른 원본 지문을 같은 ID에 섞지 않기 | L2 상태·데이터 구조 |
+| 원본 근거 좌표 | `backup/tools/source_frame_assets.py`, `backup/tools/register_source_assets.py` | 화면·음성 근거를 원본 시간·프레임과 연결하고, 이미 만든 자산은 재사용 | L2 계약, 실제 도구는 L7 |
+| 제작 경로 | `backup/01_youtube_production_workflow.md` | 촬영 전 1→2→3→4→6→5→7→8, 촬영 완료본은 자막 신뢰 확인 뒤 6→5→7→8 | L5 워크플로 규칙 |
+| 사용자 판단 지점 | 같은 문서 | 소재·콘셉트·대표 편집 방향·업로드는 사용자가 결정 | L5 워크플로 규칙 |
+| 기획과 편집 관계 | 같은 문서 | 데이터 분석 없이 기획하지 않고, 기획 없이 전체 편집하지 않기 | L5 워크플로 규칙 |
+| 현재본과 버전 | 같은 문서, `backup/skills/SKILL_CONTRACT.md` | 입력·판단이 같으면 결과 재사용, 바뀔 때만 버전 생성, 이전본 자동 삭제 금지 | L4 파일 관리 규칙 |
+| 편집 품질 원칙 | `backup/docs/EDITING_QUALITY_STANDARD.md` | 후보 범위와 실제 컷 구분, microbeat 판단, 긴 컷의 근거, 초·중·후반 품질 표본 | L5 규칙, L8 편집 스킬 |
+| 근거 종류 구분 | 같은 문서와 스킬 계약 | 원본 근거와 편집본 렌더 근거를 섞지 않기, 실제 A/V와 앱 확인을 별도 표시 | L5·L7·L8 |
+| 검증된 기존 도구 | `backup/tools/README.md`, 관련 `backup/tests/` | FFmpeg·ffprobe, remux, 원본 프레임 자산, 동기 검사, Premiere XML, 편집 품질 감사 | L3 또는 L7에서 선택된 것만 |
+| 단계별 스킬 | `backup/skills/README.md`, `backup/skills/*/SKILL.md` | 기존 1~8단계 판단 지식과 입출력 계약을 보존하고 실제 사용하는 스킬부터 활성화 | L8 스킬 정비 |
 
 ## 개선 후 승계
 
