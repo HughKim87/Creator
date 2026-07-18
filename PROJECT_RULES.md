@@ -1,67 +1,51 @@
 # PROJECT_RULES.md
 
-- Role: current project operating rules and single source of truth.
-- Read when: every session, immediately after `AGENTS.md`.
-- Retention: permanent; change only when the user changes project policy.
-- Priority: security > user data boundaries > accuracy > efficiency.
+- 역할: 현재 프로젝트 운영 규칙의 단일 정본.
+- 우선순위: 사용자 데이터 보호 > 정확성 > 단순성 > 속도.
 
-## Scope
+## 재구축 원칙
 
-- This Git repository stores reusable framework rules, code, contracts, tests, documentation, and
-  verified rebuild stage records under `docs/rebuild/`.
-- `backup/` is historical and read-only. Inspect only the routed framework file needed for the task.
-- Do not create a second rule source. Stage documents link here and contain only stage-specific deltas.
+1. 새로 만들기 전에 기존 규칙·구조·데이터 계약·도구를 먼저 분류한다.
+2. 기존 자산은 `그대로 승계 / 개선 후 승계 / 보류 / 제외` 중 하나로 근거와 함께 결정한다.
+3. 실제로 확인된 문제 하나를 해결하는 최소 변경만 도입한다.
+4. 품질과 생산성이 함께 좋아지는 변경만 유지한다.
+5. 유지·학습·실행 비용이 효과보다 크면 도입하지 않는다.
+6. 필요성이 입증되지 않은 미래 대비 구조는 만들지 않는다.
+7. 현재 단계가 안정적으로 작동한 뒤에만 다음 단계로 넘어간다.
+8. 승계 결정 없이 기존 기능의 대체 구현을 먼저 만들지 않는다.
 
-## User Data Boundary
+## 파일과 데이터 경계
 
-- Any path segment named `inputs` or `outputs` is user/task data, not framework material.
-- Never enumerate, open, hash, copy, summarize, index, report, store, stage, or commit those trees or
-  their per-file metadata. This includes paths, names, counts, sizes, hashes, previews, transcripts,
-  and derived inventories under `backup/inputs` or `backup/outputs`.
-- Framework inventory starts from `git ls-files`, then excludes forbidden path segments before any
-  filesystem access. It never starts with recursive filesystem discovery.
-- Per-video artifacts and reports remain outside framework version control. Verified framework rebuild
-  reports are different: keep them under `docs/rebuild/stage-XX/` as tracked project history.
-- Do not promote user artifacts by renaming or copying; extract only input-independent reusable logic
-  into framework paths.
-- An exception requires a new, explicit user request naming the exact material and purpose. General
-  permission to proceed, diagnose, test, or rebuild is not an exception.
+- `inputs/`와 `outputs/`는 사용자 작업 데이터다. 명시적으로 지정된 작업 없이는 내부를
+  열거·열기·복사·요약·해시·인덱싱·보고하지 않는다.
+- 사용자 원본은 덮어쓰지 않는다. 파생 결과는 원본과 분리한다.
+- 같은 원본은 안정된 `source_id`로 식별하고, 원본이 바뀌지 않았으면 기존 결과를 재사용한다.
+- 영상·음성 근거는 가능한 한 편집본 시간이 아니라 원본 시간 또는 원본 프레임에 연결한다.
+- `backup/`은 보존 영역이다. 수정하지 않고, 계획이 지정한 파일만 선별해서 읽는다.
+- 재사용 가능한 규칙·코드·테스트·문서만 프로젝트 루트에 둔다.
+- 임시 파일과 실행 캐시는 저장소에 기록하지 않는다.
 
-## Safety And Git
+## 작업과 품질의 경계
 
-- Never read or expose secrets, credentials, tokens, cookies, browser profiles, or private keys.
-- Do not modify `backup/` or original user material.
-- Ask before delete, move, external write, upload, publish, install, permission change, commit, tag,
-  push, worktree creation, or paid action unless the user explicitly authorized that exact action.
-- Preserve unrelated user changes. Track verified `docs/rebuild/` stage records. Create validation
-  worktrees and runtime temporary directories outside the repository and remove them after use.
-- Build the actual project from the repository root (`pyproject.toml`, `src/`, `tests/`, hooks, CI),
-  never inside a stage-document or ignored directory. Do not commit without explicit user approval.
+- 반복 가능한 추출·변환·검사는 결정적 도구로 처리하고, AI는 후보·해석·설명을 맡는다.
+- 도구가 성공했다는 사실은 콘텐츠 품질이나 사용자 승인과 같지 않다.
+- 영상의 메시지와 편집 판단은 원본 대사·화면·음성 근거로 추적할 수 있어야 한다.
+- AI는 후보와 근거를 제시한다. 사용자가 소재, 메시지, 편집 감각, 업로드를 최종 결정한다.
+- 검증 상태는 `생성`, `파싱`, `구조 확인`, `도구 확인`, `앱 확인`, `사용자 확인`을 구분한다.
+- 변경되지 않은 결과는 재사용하고, 기준 입력이나 판단이 바뀔 때만 새 버전을 만든다.
+- 이전 결과는 자동 삭제하지 않고 현재본과 대체본 관계를 남긴다.
 
-## Document Read/Write
+## 변경과 검증
 
-- Startup order: `AGENTS.md` -> `PROJECT_RULES.md` -> `SESSION_HANDOFF.md` -> master plan -> current
-  stage document -> current stage report when present.
-- Read only the routed documents. Do not bulk-read `backup/`, old reports, or unrelated stages.
-- Keep one rule in one source; other documents link to it instead of copying it.
-- Root handoff records only current state, first next action, blockers, and links. It does not duplicate
-  procedures or historical narrative.
-- New operational text must either prevent a repeated failure or reduce future reading/writing work.
+- 삭제·추가 이동·설치·커밋·푸시·외부 전송은 사용자가 해당 작업을 요청한 범위에서만 한다.
+- 관련 없는 사용자 변경은 보존한다.
+- 한 규칙은 한 문서에만 둔다. 다른 문서는 링크만 한다.
+- 새 문서나 절차는 반복 실패를 막거나 반복 작업을 줄일 때만 추가한다.
+- 개발 중에는 필요한 빠른 확인만 하고, 단계 완료 시 통합 검증을 한 번 실행한다.
+- 쓰기 후 변경 파일의 UTF-8, NUL 바이트, 핵심 내용, 내부 링크를 확인한다.
+- 같은 목표가 세 번 연속 실패하면 중단하고 원인과 최소 선택지를 보고한다.
 
-## Test Execution Policy (user directive, 2026-07-17)
+## 시작 순서
 
-- Run the test suite once per stage as a single consolidated pass at the stage
-  verification step, not repeatedly during development. Quick compile/import sanity
-  checks while writing code are allowed; full `workflow check` runs are per-stage.
-- Prioritize rebuild implementation speed over intermediate re-verification.
-- Stage completion still requires that single consolidated run to pass; failures are
-  fixed and the consolidated run is repeated, and never reported as success.
-
-## Verification And Reporting
-
-- After every write, re-read the changed file, verify UTF-8, NUL bytes, expected content, and links.
-- For policy changes, search all active documents and generated evidence for stale conflicting text.
-- Report generated, parsed, structure-validated, tool-validated, app-validated, and user-approved
-  states separately. Unrun work is pending, not failed; pending work is not a blocker unless required.
-- Stop after three consecutive failures of the same objective within one user execution request.
-- Korean is the default user-facing language. Framework entry documents may use concise English.
+`AGENTS.md` → `PROJECT_RULES.md` → `SESSION_HANDOFF.md` →
+`docs/REBUILD_PLAN.md`의 현재 단계 절.
