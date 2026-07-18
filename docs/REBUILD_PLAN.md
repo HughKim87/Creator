@@ -1,500 +1,183 @@
-# 프로젝트 재구축 통합 계획
+# Incremental Rebuild Plan
 
-- 기준일: 2026-07-18
-- 상태: **active — 통합 계획 승인 완료, L0 완료, L1 승인 대기**
-- 문서 역할: 기존 프로젝트·재구축 스냅샷·Codex/Claude/GPT/Gemini 분석을 교차검증해 만든 유일한 실행 계획 정본
-- 현재 실행 범위: 2026-07-18 사용자 승인으로 L0까지만 완료했다. L1 이후는 각 레이어의 다음 게이트에서 다시 승인받는다.
-- 승계 정본: 자산별 결정은 `INHERITANCE_MAP.md`, 현재 진행 상태는 루트 `SESSION_HANDOFF.md`, 운영 규칙은 루트 `PROJECT_RULES.md`가 각각 단일 정본이다.
-- 데이터 경계: `inputs/`·`outputs/` 내부 파일은 이번 조사에서 열거·열기·해시·내용 검증하지 않았다. 사용자 데이터 이행은 해당 자료와 목적을 사용자가 지정한 뒤 별도 게이트에서 수행한다.
+- Purpose: Define the ordered rebuild layers, each layer's deliverables, verification, rollback, and user gate.
+- Scope: Work plan only; global rules, rebuild principles, current state, asset decisions, and user reports live in their own documents.
+- Audience and language: Agents; English.
+- Read when: Rebuild work is approved. Read only the current layer section unless the user requests a plan review.
+- Write when: A layer scope, dependency, deliverable, verification, rollback, or gate changes.
+- Authority: This is the sole rebuild work-plan source. Use `REBUILD_PRINCIPLES.md` for decisions, `INHERITANCE_MAP.md` for legacy assets, and `../SESSION_HANDOFF.md` for current state.
 
-## 1. 복구한 사용자 의도
+## Current plan state
 
-현재 3단계 계획에서 사라졌던 기준은 보존 스냅샷의
-`docs/improvement/LAYER_PLAN.md`와 당시 `SESSION_HANDOFF.md`에서 확인했다.
-사용자가 원한 순서는 다음과 같다.
+- Approved sequence: L0 through L8, with a user gate after every layer.
+- Completed: L0 through L4.
+- Current gate: L5 has not been approved.
+- First unstarted layer: L5 — Human-Readable Workflow Rules.
+- User-directed document reorganization after L1 supplied the initial L3 routing structure; L3 then measured and regression-tested three representative profiles.
+- L2 through L4 used synthetic data only. No real user-data mapping, plugin installation, tool recovery, or L5 implementation is authorized yet.
 
-| 레이어 | 사용자가 지정한 작업 순서 | 층 |
-|---:|---|---|
-| L0 | 자료·정본·기준선 정리 | 사전 정리 |
-| L1 | 기본 프로젝트 룰 적용 — 파일 입출력, 폴더 구분, 원본 보호 | 기반층 |
-| L2 | 기본 프로젝트 구조 — 파일 기반 데이터 처리 구조 | 기반층 |
-| L3 | 문서·파일을 빠르게 읽고 쓰기 위한 방식과 필요한 도구 | 기반층 |
-| L4 | 파일 사용·버전·승인·보관 관리 룰 | 기반층 |
-| L5 | 프로젝트 워크플로우 룰 | 목적층 |
-| L6 | 프로젝트 워크플로우 구조 | 목적층 |
-| L7 | 프로젝트 워크플로우 프레임워크와 필요한 도구·플러그인 | 목적층 |
-| L8 | 실제 사용하는 워크플로우 스킬 정비 | 목적층 |
+## Sources and dependencies
 
-이 순서는 두 층으로 해석한다.
-
-1. L1~L4에서 프로젝트 일반의 파일·데이터·문서 기반을 먼저 안정화한다.
-2. 검증된 기반 위에만 L5~L8의 유튜브 영상 제작 규칙·구조·도구·스킬을 올린다.
-
-### 1.1 변경할 수 없는 실행 원칙
-
-1. **교체보다 보강을 우선한다.** `backup/`은 폐기물이 아니라 기존 기능과 실패를 확인하는 읽기 전용 자산이다.
-2. **문서는 상세하게, 작업은 작게 한다.** 세션이 바뀌어도 설계를 재해석하지 않도록 계획은 충분히 기록하되 한 번의 구현 범위는 작게 제한한다.
-3. **품질과 생산성을 함께 개선한다.** 안전성만 높이고 실제 제작이 느려지면 실패다.
-4. **한 레이어는 독립적으로 검증한다.** 완료 조건을 통과하지 못하면 다음 레이어로 넘어가지 않는다.
-5. **각 레이어 뒤에 사용자 선택 게이트를 둔다.** 다음 레이어 진행, 현재 상태에서 실제 작업, 계획 수정, 중단 중 하나를 사용자가 선택한다.
-6. **필요가 증명되지 않은 미래 구조는 만들지 않는다.** 데이터베이스·상태 머신·지식 그래프·다중 에이전트 격리·강제 승인 시스템은 실제 반복 문제가 생길 때만 재평가한다.
-7. **원본과 과거 결과는 비파괴로 보존한다.** 자동 삭제·일괄 이동·일괄 개명·무승인 데이터 이행은 하지 않는다.
-8. **한 레이어는 원칙적으로 2~4시간 범위다.** 범위를 넘으면 기능을 더 넣지 말고 레이어를 나누거나 보류한다.
-
-## 2. 조사 범위와 자료 목록
-
-### 2.1 현재 활성 프로젝트
-
-| 자료 | 시점·역할 | 확인 결과 |
-|---|---|---|
-| `PROJECT_RULES.md` | 현재 운영 규칙 정본 | 원본 보호, 사용자 데이터 경계, 최소 변경, 검증 수준, 3회 실패 중단이 반영돼 있다. 세부 파일 소유권과 문서 I/O 라우팅은 L1·L3에서 보완 대상이다. |
-| `SESSION_HANDOFF.md` | 현재 상태 정본 | 기존의 “첫 대표 파일 작업 선택”을 제거하고, 현재는 L0 완료와 L1 승인 대기를 기록한다. |
-| `docs/REBUILD_PLAN.md` | 기존 3단계 실행 계획 | 보강·단순화 방향은 맞지만 사용자의 정확한 L1~L8 순서와 단계별 검증 항목이 축약돼 있었다. 이 문서로 교체한다. |
-| `docs/INHERITANCE_MAP.md` | 자산 승계 판단 정본 | 핵심 분류는 유효하다. 활성 시점을 L1~L8 기준으로 동기화한다. |
-| `PROJECT_STRUCTURE_ANALYSIS.md` | Codex 구조 분석 | legacy·스냅샷·현재 루트를 비교한 유효한 분석 자료다. 실행 정본은 아니다. |
-| `docs/REBUILD_EXECUTION_REPORT.md` | Codex/Claude 교차검증 보고 | 첫 미디어 구현 후보를 제안했지만 이번 사용자 지정 순서보다 먼저 구현을 택했다. 역사 자료로 강등한다. |
-| `.gitignore`, `.gitattributes`, Git 이력 | 실제 저장소 경계·변경 이력 | `inputs/`·`outputs/`와 재구축 스냅샷은 비추적이며, 현재 활성 루트에는 실행 코드가 없다. |
-
-### 2.2 개선 이전의 기존 프로젝트 — `backup/`
-
-Git 추적 기준 프레임워크 파일은 86개다. 사용자 작업 데이터 영역은 제외했다.
-
-| 자료군 | 역할 | 확인한 핵심 |
-|---|---|---|
-| `PROJECT_RULES.md`, `PROJECT_BOOTSTRAP.md`, `docs/INDEX.md` | 규칙·시작·선택적 문서 읽기 | 파일 경계, 작은 시작 문맥, 필요한 문서만 읽는 라우팅이 이미 존재했다. |
-| `01_youtube_production_workflow.md` | 1~8단계 제작 흐름 | 촬영 전 1→2→3→4→6→5→7→8, 촬영 완료본은 자막 신뢰 확인 뒤 6→5→7→8이다. |
-| `docs/DESIGN_PRINCIPLES.md` | 사용자 확정 설계 원칙 | 프레임워크 재사용, 결정적 검증, 에이전트 교체 가능성, 컨텍스트 예산, 사용자 창작 권한을 정했다. |
-| `docs/EDITING_QUALITY_STANDARD.md` | 편집 품질 기준 | 원본 근거와 렌더 근거 구분, microbeat, 긴 컷 근거, 초·중·후반 표본 검증을 정의한다. |
-| `docs/EDIT_MEMORY_KERNEL.md` | 편집 판단 기억 | 반복 피드백 보존 가치는 있으나 SQLite/event 기반 입력 비용이 크다. 조건부 보류한다. |
-| `docs/WORKFLOW_CONTRACT.json` | 기계 판독형 전체 계약 | 상세하지만 현재 규모에는 과도하다. 순서와 필수 조건만 사람용 규칙으로 승계한다. |
-| `tools/` | 파일·미디어·상태·검사 도구 | 원본 자산 등록, FFmpeg/ffprobe, 동기 검사, Premiere XML, 품질 감사, 문서 검사 등이 실제 코드로 존재한다. |
-| `skills/` | 1~8단계와 보조 스킬 11개 | 판단 지식과 입출력 계약은 유효하지만 실제 사용 여부 확인 없이 전부 활성화하면 안 된다. |
-| `tests/` | 기존 도구 계약 테스트 10개 파일 | 현재 환경에서 74개 중 72개가 통과했고 2개는 Git safe-directory 환경 문제로 실패했다. 콘텐츠·앱 품질 검증은 아니다. |
-| `planning_research/` | 과거 운영·기획 연구 | 상태 분산, 컨텍스트 재탐색, 다중 에이전트 충돌, 외부 도구 도입 조건을 기록한다. |
-| `claude/`, `gpt/`, `gemini/` | 모델별 진단·청사진·검증 계약 | 공통 주장과 과도한 제안을 분리하는 교차검증 자료다. 운영 정본은 아니다. |
-
-### 2.3 개선 중 스냅샷 — `backup/root_snapshot_2026-07-18/`
-
-사용자 작업 데이터를 제외한 프레임워크 파일은 약 130개다.
-
-| 자료군 | 목적 | 실제 상태 |
-|---|---|---|
-| `src/video_workflow/` | Python 패키지 기반 전면 재구축 | CLI, doctor/check, domain, service, SQLite storage, media/Premiere adapter까지 구현됐다. 현재 활성 루트에서는 제거되고 스냅샷에만 보존된다. |
-| `tests/` | unit/contract/integration/property/smoke 검증 | 당시 Stage 04 보고는 159 passed, 1 skipped다. 현재 샌드박스 재검증은 환경 제약 속에서 113 passed, 14 failed, 33 errors였고 완전 통과를 재현하지 못했다. |
-| `docs/rebuild/stage-00~04/` | 단계별 명세·결과·증거 패키지 | 구현 근거와 실패 기록은 가치가 있으나 문서·관리 비용이 실제 제작 이득보다 컸다. |
-| `docs/rebuild/stage-05~08/` | 이후 전환 계획 | 실제 실행 전 폐기된 전면 재작성 계획이다. |
-| `docs/improvement/LAYER_PLAN.md` | 사용자 피드백을 반영한 L0~L8 계획 | 사용자의 정확한 단계와 비용 상한을 보존한 핵심 복구 근거다. 현재 Git 활성 경로에는 남아 있지 않았다. |
-| 스냅샷 `SESSION_HANDOFF.md` | 당시 상태와 다음 행동 | LAYER_PLAN 승인 대기였으며 코드는 더 바꾸지 않았다고 기록한다. |
-
-### 2.4 분석·개선·실패 문서
-
-| 자료 | 판정 |
+| Need | Source |
 |---|---|
-| Claude `project_improvement_blueprint_2026-07-16.md` | 문서 계층·선택적 읽기·write-back 아이디어는 승계한다. 2개 저장소·범용 CLI·상태 계층은 현재 보류한다. |
-| GPT `project_blueprint_report_2026-07-16.md` | Git 경계·컨텍스트 예산·사용자 A/V 게이트 진단은 당시 프로젝트에는 유효했다. 당시 영상별 상태 수치는 현재 정본으로 사용할 수 없다. |
-| Gemini `blueprint_report.md` | 규칙 이탈·재탐색·병렬 충돌·품질 승인 혼선 진단은 유효하다. Graphify·Worktree·강제 lock은 조건부다. |
-| 각 모델의 교차검증 가이드 | 주장 재현, 반증, 사실·해석·권고 분리 방법을 이번 조사 방식에 반영했다. |
-| `docs/changes/0001` | 변경 승인과 빠른 재개를 통합한 제안이다. 당시 제안/구현 상태가 문서마다 다르게 전제됐다. 전체 게이트는 보류하고 문서 예산·읽기 전용 계약만 참고한다. |
-| `docs/changes/0002` | 파일 기반 지식/상태 분리와 문서 I/O 최적화 방향은 가치가 있다. studio/studio-work·범용 `vid` CLI는 비용이 커서 채택하지 않는다. |
-| `KNOWN_FAILURES.md` | wrapper exit code, fail-open, 기본 미디어값, 약한 fingerprint, 비원자적 자산 생성, 승인 신뢰, 품질 감사 오판 등을 실제 실패 원장으로 사용한다. |
-| Stage 00~04 보고서 | 구현·테스트 결과와 한계를 확인했다. “테스트 통과”를 “실제 영상 제작 성공”으로 확대하지 않는다. |
-
-### 2.5 파일명과 Git 이력 확인
-
-- 현재 파일시스템과 전체 Git 이름 이력에서 `CODEX_`로 시작하는 분석 문서는 발견되지 않았다.
-- `CODEX_` 접두어를 붙였다는 사용자 기억과 현재 보존 상태가 일치하지 않는다. 파일명 대신 내용·작성 시점·Git 커밋·스냅샷 경로를 기준으로 자료를 복구했다.
-- `docs/improvement/LAYER_PLAN.md` 역시 활성 Git 이력에는 없고, `.gitignore`된 2026-07-18 스냅샷에만 보존돼 있었다.
-- 2026-07-18의 `feature/refactoring_simple` 커밋은 대규모 재구축 파일 131개를 활성 루트에서 제거하고 최소 문서 구조를 만들었다. 이후 구조 분석 보고서가 추가됐다.
-
-## 3. 시점별 상태와 차이
-
-| 구분 | 기존 프로젝트 | 개선 중 스냅샷 | 현재 활성 루트 | 최종 판단 |
-|---|---|---|---|---|
-| 목적 | 실제 영상 제작 1~8단계 프레임워크 | 모든 계약을 코드·DB·CLI로 재구축 | 최소 문서만 남기고 선택적 재구축 준비 | 기존 기능을 기준으로 필요한 층만 점진적으로 보강한다. |
-| 규모 | 규칙·도구·스킬·테스트 86개 | 패키지·테스트·증거 문서 약 130개 | 운영 문서 중심 9개 | 활성 구조는 작게 유지하되 필요한 기능은 검증 후 회수한다. |
-| 상태 저장 | 여러 JSON·핸드오프·메타데이터에 분산 | SQLite 단일 상태와 서비스 계층 | 영상별 상태 구현 없음 | L2에서 영상 작업별 JSON 한 개를 설계한다. |
-| 문서 읽기 | bootstrap→index→필요 문서 | 단계 문서·증거 패키지가 급증 | AGENTS→rules→handoff→3단계 plan | 선택적 읽기 장점은 살리고 현재 레이어만 읽도록 복원한다. |
-| 규칙 강제 | doccheck·guard·hook 일부, fail-open 존재 | doctor/check·CI·negative tests 강화 | 실행 검사 없음 | L1부터 실제 반복 위반만 최소 검사한다. |
-| 워크플로 | 8단계와 7A~7D, 품질 기준 | 상태 전이와 승인 프로토콜 코드화 | 구현 없음 | 순서는 보존하고 사람용 최소 완료 조건부터 복원한다. |
-| 실제 제작 검증 | 과거 도구 계약 테스트 존재 | 제작 영상 0, 실제 Premiere/사용자 검증 없음 | 불가 | 테스트 수보다 실제 대표 작업 1건의 시간·오류·품질을 게이트로 사용한다. |
-| 사용자 의도 반영 | 기능은 풍부하나 관리 복잡성 존재 | 과도한 전면 재작성 | 단순화했지만 L1~L8 순서가 소실 | 복구된 L0~L8을 정본 실행 순서로 고정한다. |
-
-## 4. 반드시 유지해야 할 기능과 데이터 계약
-
-### 4.1 기능
-
-1. 촬영 전 경로 `1→2→3→4→6→5→7→8`과 촬영 완료본 경로 `자막 신뢰 확인→6→5→7→8`.
-2. 1단계 소재 조사, 2단계 채널·콘셉트, 3단계 대본, 4단계 자막, 6단계 원본 근거 분석, 5단계 메시지·구조 기획, 7단계 편집 자료, 8단계 실제 편집본 검수.
-3. 7단계의 후보 해석→microbeat·경계→초·중·후반 대표 캘리브레이션→사용자 방향 확인→전체 확장 원칙.
-4. 원본 자산 등록·원본 시간/프레임 좌표, FFmpeg/ffprobe, 자막·오디오 동기 보조, Premiere XML/CSV/EDL, 편집 품질 경고 기능.
-5. 실제 사용하는 단계 스킬의 입력·출력·중단 조건과 사용자 판단 전달.
-
-### 4.2 데이터와 판단 계약
-
-| 보존 대상 | 이유 | 보존 방식 |
-|---|---|---|
-| 사용자 원본과 기존 결과 | 재생성 불가·비용이 큰 자산 | 읽기 전용 원본, 파생물 별도 저장, 자동 삭제 금지 |
-| 안정된 `source_id` | 모든 분석·편집 결과의 원본 연결 | 같은 원본은 같은 ID, 다른 원본은 섞지 않음 |
-| 원본 시간·프레임 근거 | 편집본 변경에도 근거 재사용 | 분석·후보·컷을 원본 좌표에 연결 |
-| 현재본·대체본 관계 | 과거 판단과 실패 복구 | 입력/판단 변경 시에만 새 버전, 이전본은 `superseded` |
-| 검증 수준 | 자동 성공과 실제 품질 혼선 방지 | 생성·파싱·구조·도구·앱·사용자 확인을 분리 |
-| 사용자 결정 | 창작 권한 보존 | 소재, 콘셉트/메시지, 대표 편집 방향, 업로드는 사용자 확정 |
-| 실패 기록 | 같은 오류 재발 방지 | 실제 실패·원인·재시도 결과를 정본 계획 또는 핸드오프에 기록 |
-
-`inputs/`·`outputs/` 내부의 구체적인 현재 데이터, 용량, 최신본, 승인 상태는 확인하지 않았다.
-따라서 “무엇을 이행할지”는 보존 계약만 확정됐고 실제 데이터 목록은 미확정이다.
-
-## 5. 문제 원장과 문서·구현 불일치
-
-| ID | 상태 | 문제와 원인 | 영향 | 처리 방향 |
-|---|---|---|---|---|
-| P-01 | 미해결 | 사용자의 L1~L8 계획이 현재 3단계 문서로 축약됐다. 활성 경로에서 LAYER_PLAN이 사라진 것이 원인이다. | 첫 미디어 구현부터 시작해 기반 순서를 다시 건너뛸 수 있다. | 이 문서에 L0~L8과 게이트를 복원한다. |
-| P-02 | 미해결 | 작업 상태가 과거 여러 JSON·핸드오프·산출물 메타데이터에 분산됐다. | 세션 재개 때 같은 파일을 반복 탐색한다. | L2에서 영상 작업별 `state.json` 한 개로 통합한다. |
-| P-03 | 부분 해결·현재 비활성 | 규칙·검사가 fail-open이거나 성공을 과장했다. wrapper, guard, remux, 품질 감사에서 확인됐다. | 실패가 성공처럼 전달될 수 있다. | 사용하는 실행 경로만 fail-closed로 고치고 음성/영상/사용자 검증을 별도 유지한다. |
-| P-04 | 미해결 | 도구가 많고 호출 방식·사용 시점이 분산됐다. | 매 세션 재탐색과 잘못된 도구 선택이 발생한다. | L3·L7에서 실제 빈도가 높은 도구만 한 표와 얇은 진입점으로 연결한다. |
-| P-05 | 미해결 | 원본 fingerprint가 크기+mtime 중심이고 자산 생성이 원자적이지 않았다. | 충돌 가능성과 고아 파생물이 남을 수 있다. | L2·L4에서 목적별 fingerprint와 원자적 쓰기·등록 순서를 정한다. |
-| P-06 | 보류 | 승인 provenance·동시성·전체 상태 전이를 해결하려다 SQLite와 다층 구조가 도입됐다. | 제작 0건인데 코드·테스트·문서 비용만 증가했다. | 파일 기반 구조로 시작하고 실제 충돌이 반복될 때만 재평가한다. |
-| P-07 | 미해결 | 자동 테스트 통과를 실제 Premiere 가져오기·연속 A/V·콘텐츠 품질로 확대할 위험이 있다. | 기술 성공이 품질 승인으로 오해된다. | 검증 등급과 단계별 실제 샘플 확인을 고정한다. |
-| P-08 | 현재 상태 | 활성 루트에는 실행 코드·도구·테스트가 없다. | 지금 바로 기존 기능을 사용할 수 없다. | 레이어에서 필요한 기능만 기존 코드와 테스트로 회수한다. |
-| P-09 | 미확인 | 활성 루트에 `inputs/`·`outputs/`가 없고 과거 데이터는 backup 아래 존재할 수 있다. | 잘못 옮기면 사용자 데이터·최신본을 훼손할 수 있다. | 사용자 지정 전에는 열거·이동하지 않고 L2 이후 1건을 수동 이행한다. |
-| P-10 | 기록 필요 | Stage 00 초기 인벤토리가 백업 내부 사용자 데이터 메타데이터를 수집했다가 schema v2에서 제거됐다. | 데이터 경계 위반이 재발할 수 있다. | 인벤토리·검사는 Git 추적 프레임워크만 대상으로 한다. |
-| P-11 | 불일치 | 과거 README의 촬영 완료본 시작 순서와 현재 계약이 달랐다. | 5단계 기획이 6단계 근거 분석보다 먼저 실행될 수 있다. | 촬영 완료본은 자막 확인 후 6→5를 정본으로 한다. |
-| P-12 | 불일치 | `docs/changes/0001`은 제안 상태였지만 일부 검증 문서는 구현 완료를 전제로 했다. | 문서 주장을 실제 구현으로 오해할 수 있다. | 변경 제안·실제 코드·Git 이력을 별도 증거로 취급한다. |
-| P-13 | 환경 한계 | 현재 샌드박스에서 Git safe-directory·pytest temp 권한 때문에 일부 테스트가 실패했다. | 현재 환경의 전체 통과를 주장할 수 없다. | 과거 clean-clone 결과와 현재 부분 결과를 분리 기록하고 같은 재시도를 중단한다. |
-
-### 5.1 확인된 과거 실패
-
-- `run_python.bat`가 하위 종료 코드 7을 0으로 바꾼 사례가 재현됐다.
-- remux가 하위 probe 실패 뒤에도 성공처럼 보일 수 있었다.
-- ffprobe 부재·실패 시 Premiere XML이 30fps·1920×1080·48kHz·2ch를 임의 기본값으로 사용했다.
-- `source_id` 지문이 파일 크기·수정 시각 중심이고 전체 내용 충돌 방어가 약했다.
-- 프레임 자산 생성과 등록이 원자적이지 않아 미등록 파일이 남을 수 있었다.
-- 승인 값이 단순 문자열·불리언이라 작성 주체를 강하게 보장하지 못했다.
-- `default_deny`가 문서에 있지만 직접 강제·검증되지 않은 경로가 있었다.
-- 품질 감사가 `REVIEW` 상태에서도 성공 코드로 끝날 수 있었다.
-- synccheck는 의존성·테스트 공백이 있고 advisory 결과를 성공으로 반환했다.
-- guard·pre-commit·CI 일부가 검사기 또는 Python 부재 시 fail-open이었다.
-- Premiere 실제 앱 가져오기, 연속 A/V, remux 동등성은 자동 테스트만으로 검증되지 않았다.
-
-## 6. 개선 목표
-
-| 목표 | 현재 문제·원인 | 원하는 결과 | 기존 기능 영향 | 완료 기준 | 검증 방법 | 우선순위 |
-|---|---|---|---|---|---|---:|
-| G-01 의도·정본 복원 | L1~L8과 사용자 결정이 비활성 스냅샷에만 남음 | 모든 세션이 같은 순서와 금지 범위에 도달 | 기능 변경 없음 | AGENTS→rules→handoff→현재 레이어 경로가 하나 | 새 세션 읽기 시뮬레이션, 링크 검사 | P0 |
-| G-02 파일·데이터 경계 확정 | 프레임워크·사용자 원본·파생물의 활성 경로가 불명확 | 소유권·읽기·쓰기·버전·삭제 규칙을 한 번에 판단 | 원본 보호 강화 | 경로별 owner/read/write/commit 규칙이 단일 정본에 존재 | 양·음성 경계 사례 점검 | P0 |
-| G-03 파일 기반 상태 정본 | 상태가 여러 파일에 중복 | 영상 작업별 JSON 한 개로 현재 단계·입력·출력·다음 행동 확인 | 기존 상태는 1건씩 수동 이행 | 잘못된 JSON 거부, 원자적 저장, 생성 뷰는 비정본 | 단위 테스트 + 대표 샘플 상태 1건 | P0 |
-| G-04 문서 I/O 최적화 | 매 세션 전체 문서를 재탐색 | 작업 종류별 필요한 문서만 읽고 결정은 해당 정본에 write-back | 기존 문서는 역사 자료로 보존 | 읽기 프로필·문서 라우터·쓰기 대상이 명시되고 중복 규칙 없음 | 3개 대표 요청의 읽은 문서 수·재개 시간 측정 | P0 |
-| G-05 파일 생명주기 단순화 | 17개 메타데이터·7개 승인 상태가 과함 | 실제 소비자가 읽는 최소 필드, current/superseded, 자동 삭제 금지 | 기존 메타데이터 해석 가능 | 파일을 열지 않고 현재본·원본·검증 수준 판단 | manifest/state 무결성 검사 | P1 |
-| G-06 워크플로우 규칙 복원 | 상세 계약은 많지만 실행 크기가 과함 | 8단계 순서·입출력·완료 조건·사용자 판단을 한 페이지로 확인 | 8단계 기능·7A~7D 지식 보존 | 단계별 완료 조건 1~3개, 6→5 순서 명확 | 문서 계약 검사 + 사용자 검토 | P1 |
-| G-07 도구 신뢰·발견성 개선 | 도구가 분산되고 실패가 성공으로 보일 수 있음 | 자주 쓰는 작업만 한 진입점, 정확한 종료 코드·오류 원인 | 기존 도구를 얇게 회수 | 선택 도구의 정상·실패·재실행 계약 통과 | 기존 회귀+신규 음성 테스트+실파일 1건 | P1 |
-| G-08 스킬과 실제 구조 정렬 | 11개 스킬을 모두 유지할 근거가 없음 | 사용하는 스킬만 새 입출력·완료 규칙과 일치 | 판단 지식은 백업에 보존 | 유지 스킬마다 경로·단계·중단·사용자 결정 일치 | 실제 단계 1회 실행·문서 검사 | P2 |
-| G-09 실제 효과 검증 | 과거 재구축은 테스트는 많았으나 제작·생산성 효과 0 | 각 레이어가 시간·오류·품질 중 하나를 실제 개선 | 기존 결과 품질을 떨어뜨리면 롤백 | 레이어별 사전 기준과 사후 결과가 비교됨 | 대표 작업 1건, 사용자 확인 | 모든 레이어 게이트 |
-
-## 7. 제안하는 최종 프로젝트 구조
-
-아래는 완성 폴더를 지금 한꺼번에 만드는 명세가 아니다. 각 레이어의 완료 조건을 통과할 때만 해당 경로를 추가한다.
-
-```text
-김실버유튜브/
-├─ AGENTS.md                       # 시작 라우팅만
-├─ PROJECT_RULES.md                # 운영 규칙 단일 정본
-├─ SESSION_HANDOFF.md              # 현재 단계·첫 다음 행동 단일 정본
-├─ README.md                       # 사람용 실행 진입점, 필요성이 확인되면 L0에서 복구
-├─ docs/
-│  ├─ REBUILD_PLAN.md              # 이 상세 설계·실행 계획
-│  ├─ INHERITANCE_MAP.md           # 기존 자산 승계 판정
-│  ├─ INDEX.md                     # 문서가 늘어날 때만 사용하는 조건부 라우터
-│  ├─ FILE_DATA_CONTRACT.md        # L2 파일 기반 상태·I/O 스펙
-│  └─ WORKFLOW_RULES.md            # L5의 간단한 8단계 규칙
-├─ tools/                           # 실제 쓰는 결정적 도구만 단계별 회수
-├─ skills/                          # 실제 사용하는 스킬만 단계별 활성화
-├─ tests/                           # 활성 도구·계약의 최소 회귀 검사
-├─ inputs/                          # 사용자 원본, Git 비추적, 명시 작업 없이는 조사 금지
-├─ outputs/                         # 사용자 파생 결과, Git 비추적
-│  └─ <project>/
-│     ├─ state.json                # 영상 작업 상태 단일 정본
-│     ├─ STATE.md                  # 선택적 생성 뷰, 직접 편집 금지
-│     ├─ 04_subtitles/
-│     ├─ 06_analysis/
-│     ├─ 05_planning/
-│     ├─ 07_edit_export/
-│     └─ 08_review/
-└─ backup/                          # 읽기 전용 기존 자산·스냅샷
-```
-
-### 7.1 설계 결정과 장단점
-
-| 결정 | 선택 이유 | 장점 | 단점·대응 |
-|---|---|---|---|
-| 단일 저장소, 경로로 프레임워크/데이터 분리 | 현재 1인 순차 작업에 2개 저장소가 과함 | 탐색·설치·Git 운영이 단순 | 병렬 변경 충돌 시 Worktree를 조건부 재검토 |
-| 영상 작업별 `state.json` | 사용자가 파일 기반 구조를 요구했고 사람이 직접 확인 가능 | 이식·백업·검토가 쉽고 DB 의존성 없음 | 동시 쓰기에 약함; 현재 단일 writer, 원자적 교체로 제한 |
-| `STATE.md`는 선택적 생성 뷰 | 사람 가독성과 정본 1개를 함께 만족 | 재개가 빠름 | stale 위험; 생성 표시·재생성 가능, 정본으로 사용 금지 |
-| 정본 문서와 역사 문서 분리 | 분석 보고서가 운영 규칙처럼 사용된 문제가 있었음 | 중복·충돌 감소 | 링크 유지가 필요; 문서 무결성 검사로 보완 |
-| 작업별 선택적 문서 읽기 | 컨텍스트는 비용이고 전체 읽기가 반복됨 | 세션 재개·작업 전환이 빠름 | 중요한 규칙 누락 위험; PROJECT_RULES는 항상 읽음 |
-| 사람용 워크플로 규칙 우선 | 전체 기계 전이 계약의 유지 비용이 큼 | 이해·수정이 쉬움 | 반복 누락이 확인된 조건만 검사로 승격 |
-| 기존 도구의 얇은 회수 | 검증된 로직과 테스트를 버리지 않기 위해 | 재작성 오류·시간 감소 | 기존 결함도 따라올 수 있어 실패 테스트를 먼저 추가 |
-| 외부 플러그인 기본 미도입 | Graphify·Obsidian·MCP의 이득이 현재 측정되지 않음 | 설치·보안·동기화 비용 없음 | 탐색 비용이 계속 크면 제한 파일럿으로 재평가 |
-
-### 7.2 데이터 읽기·쓰기·저장 방식
-
-1. `inputs/`는 사용자 원본만 둔다. 에이전트는 사용자가 지정한 파일과 목적만 읽는다.
-2. 모든 파생물과 영상별 상태는 `outputs/<project>/`에 둔다.
-3. `state.json`은 현재 단계, 기준 입력, 산출물, 다음 행동, blocker, 사용자 결정, 검증 수준의 단일 정본이다.
-4. 쓰기는 임시 파일 생성→구조 검증→동일 볼륨 `os.replace`의 원자적 교체를 사용한다.
-5. 상태 쓰기 실패 시 기존 `state.json`을 보존하고 임시 파일을 성공본으로 승격하지 않는다.
-6. `source_id`는 안정적으로 유지한다. 기본 fingerprint는 크기·mtime·미디어 핵심 정보이며, 충돌 위험·외부 전달·사용자 요청이 있을 때만 전체 sha256을 추가한다.
-7. 산출물은 최소한 `role`, `path`, `source_id`, `stage`, `version/current`, `validation`을 기록한다. 실제 소비자가 요구할 때만 선택 필드를 추가한다.
-8. 입력과 판단이 같으면 기존 결과를 재사용한다. 바뀌면 새 버전을 만들고 이전본을 `superseded`로 남긴다.
-9. 자동 삭제·자동 대량 이동은 하지 않는다. 정리가 필요하면 inventory→사용자 승인→비파괴 검증 순서로 별도 진행한다.
-
-### 7.3 문서 읽기·쓰기 최적화
-
-| 작업 종류 | 기본 읽기 | 조건부 읽기 | write-back 위치 |
-|---|---|---|---|
-| 세션 재개 | `PROJECT_RULES.md`, `SESSION_HANDOFF.md` | 구현 승인 후 현재 레이어 절 | 현재 상태 변화만 `SESSION_HANDOFF.md` |
-| 구조·계획 변경 | 위 2개 + 이 문서 | 관련 분석 원문과 `INHERITANCE_MAP.md` | 장기 설계는 이 문서, 승계 판정은 지도 |
-| 기존 기능 회수 | 위 2개 + 현재 레이어 | 지도에 지정된 기존 코드·테스트만 | 활성 코드·테스트, 결정 변경 시 지도 |
-| 영상별 작업 | 위 2개 + 해당 `state.json` | 현재 단계 `WORKFLOW_RULES`와 해당 스킬만 | `state.json`과 해당 산출물 |
-| 오류 진단 | 현재 작업 파일·실패 출력 | 관련 실패 원장·테스트·기존 구현 | 재발 가치가 있으면 테스트, 현재 차단은 핸드오프 |
-| 검증 | 변경 파일과 해당 계약 | 실패한 검사에 연결된 문서만 | 검증 수준과 미검증 항목을 핸드오프/보고 |
-
-문서 작성 규칙은 다음과 같다.
-
-- 새 문서는 역할, 읽는 시점, 상태/보존 조건을 첫 10줄 안에 둔다.
-- 단순 작업은 새 문서를 만들지 않고 핸드오프에 기록한다.
-- 여러 세션에 걸치거나 설계 판단이 필요한 작업만 별도 계획 문서를 가진다.
-- 같은 규칙을 여러 문서에 복사하지 않고 정본 링크만 둔다.
-- 작업에서 얻은 재사용 가능한 결정은 해당 정본에 write-back하고, 일회성 실행 로그는 정본에 섞지 않는다.
-- 문서 인덱스는 정본이 아니라 라우터다. 자동 생성 그래프·벡터 DB를 정본으로 쓰지 않는다.
-- 읽기 최적화 효과는 대표 요청 3개에서 읽은 파일 수, 재개 시간, 잘못된 문서 선택 수로 측정한다.
-
-### 7.4 오류 방지·복구와 단계별 검증
-
-- 원본 비변경, 출력 경계, 하위 종료 코드, timeout, 파싱 오류를 결정적 검사로 확인한다.
-- 도구의 정상 종료, 파일 생성, 포맷 파싱, 구조 검사, 미디어 도구 검사, 앱 확인, 사용자 품질 확인을 서로 다른 수준으로 기록한다.
-- 단계 검증 실패 시 그 단계의 새 파일만 되돌리고 이전 레이어의 검증된 상태를 유지한다.
-- 같은 목표가 3회 실패하면 같은 접근 재시도를 중단하고 원인·선택지·권고를 보고한다.
-- 실제 미디어·Premiere·콘텐츠 품질은 샘플 파일과 사용 환경이 지정된 단계에서만 검증했다고 표시한다.
-
-### 7.5 기존 기능과 데이터 이전
-
-1. 프레임워크 코드는 `backup/`에서 직접 실행하지 않고 활성 경로로 선별 회수한다.
-2. 회수 전 관련 기존 테스트와 실패 기록을 읽고, 실패 재현 테스트를 먼저 또는 함께 둔다.
-3. 동일 기능을 새로 쓰기보다 기존 구현을 최소 수정한다. 재작성 시 비용 비교 근거를 남긴다.
-4. 사용자 데이터는 일괄 이행하지 않는다. L2 상태 스펙 승인 후 사용자가 지정한 영상 작업 1건만 수동 매핑한다.
-5. 기존 결과는 이동보다 참조를 우선한다. 이동이 필요하면 원본·현재본·참조 무결성을 확인하고 사용자 승인을 받는다.
-6. 1건 이행과 실제 작업이 검증된 뒤에만 템플릿 또는 반복 도구를 만든다.
-
-## 8. 작업 분류
-
-| 분류 | 작업 | 이유 | 우선순위·선행 | 위험·예상 결과 |
-|---|---|---|---|---|
-| 반드시 진행 | L0 정본·기준선·문서 상태 정리 | 잘못된 계획 재실행을 막는 선행 조건 | P0, 계획 승인 후 | 역사 자료를 삭제하면 안 됨; 모든 세션이 같은 계획에 도달 |
-| 반드시 진행 | L1 파일·폴더·원본 보호 규칙 확정 | 모든 후속 파일 쓰기의 안전 경계 | P0, L0 | 규칙 과잉 위험; 경로 소유권을 한 곳에서 판단 |
-| 반드시 진행 | L2 파일 기반 상태·I/O 구조 | 사용자 요구의 핵심이며 상태 분산 해결 | P0, L1 | 스키마 과설계 위험; 한 파일로 재개 가능 |
-| 반드시 진행 | L3 문서 I/O 라우팅과 write-back 규칙 | 세션 변경·컨텍스트 재사용 요구의 핵심 | P0, L2 | 문서 계층 과잉 위험; 필요한 문서만 읽음 |
-| 반드시 진행 | L4 최소 파일 생명주기 규칙 | 현재본·승인·원본 관계 혼선을 방지 | P1, L2·L3 | 기존 메타데이터 손실 위험; 최소 필드와 비파괴 버전 유지 |
-| 반드시 진행 | L5 8단계 워크플로 규칙 복원 | 프로젝트 정체성과 기능 보존 | P1, L4 | 과도 단순화 위험; 기존 상세 문서를 참고 자료로 보존 |
-| 반드시 진행 | L6 워크플로 폴더·파일 구조 | 규칙을 실제 작업 경로로 연결 | P1, L5 | 기존 데이터 일괄 이동 금지; 신규 1건부터 적용 |
-| 조건 확인 후 | L3 파일/문서 helper 명령 또는 플러그인 | 실제 반복 시간을 줄이는 도구만 필요 | L3에서 빈도·시간 측정 후 | 도구 자체가 새 유지비가 될 수 있음 |
-| 조건 확인 후 | L7 상태·전환·미디어 도구 연결 | 실제 자주 쓰는 작업만 얇게 연결 | L6, 사용자 선정 | 기존 결함 회수 위험; 실패 테스트와 함께 활성화 |
-| 조건 확인 후 | L8 스킬 유지·보류 분류와 정비 | 실제 사용 스킬 수가 확인되지 않음 | L7, 사용자 분류 | 전부 손보는 비용 방지; 유지 스킬만 구조와 일치 |
-| 기존 그대로 유지 | `backup/`, Git 이력, 사용자 원본·과거 결과 | 복구와 근거의 원본 | 모든 단계 | 읽기 전용·비파괴 보존 |
-| 기존 그대로 유지 | 8단계 판단 지식, 원본 좌표, 사용자 창작 권한 | 프로젝트 핵심 기능·품질 계약 | L5 이후 활성 | 단순화하면서 의미 손실 금지 |
-| 개선 후 유지 | 원본 자산 등록, Premiere XML, 동기·품질 도구 | 실제 가치가 있으나 실패 처리 공백 존재 | 해당 도구가 선택될 때 | fail-closed·실파일 검증 후 활성화 |
-| 이번 단계 보류 | SQLite, domain/service/storage, 이벤트 소싱 | 현재 규모·파일 기반 요구보다 큼 | 파일 방식 실패가 반복될 때 | 스냅샷만 보존, 활성 코드가 의존하지 않음 |
-| 이번 단계 보류 | Hook·CI·SDD gate·승인 provenance | 설치·운영 비용과 우회 가능성 | 수동/단일 검사 누락이 반복될 때 | 한 명령으로 부족하다는 증거 후 재검토 |
-| 이번 단계 보류 | Graphify·Obsidian·외부 memory/MCP | 효과·보안·갱신 비용 미측정 | 문서 재탐색이 L3 후에도 반복될 때 | 제한 파일럿만 허용, 사용자 데이터 제외 |
-| 이번 단계 보류 | Git Worktree 병렬 운영 | 현재 단일 writer이며 데이터 공유 설계 미확정 | 실제 동시 프레임워크 수정 시 | 판단 충돌은 해결하지 못함 |
-| 진행하지 않음 | 9단계 전면 재작성·독립 QA/레드팀·증거 패키지·30일/10건 게이트 | 제작 이득 없이 비용이 폭발한 이력 | 제외 | 역사 자료만 보존 |
-| 진행하지 않음 | 사용자 데이터 일괄 열거·해시·이동·개명 | 명시 범위 없는 데이터 침해·최신본 손상 위험 | 제외 | 지정된 1건만 별도 승인 후 처리 |
-| 진행하지 않음 | 모든 도구·스킬 일괄 이식, 범용 플랫폼화 | 필요성 미증명, 관리 비용 증가 | 제외 | 사용 빈도 기반 선택 회수 |
-| 폐기·대체 | 기존 3단계 `REBUILD_PLAN` 내용 | L1~L8과 문서 I/O 요구가 소실됨 | 이 문서로 대체 | Git 이력에서 복구 가능 |
-| 폐기·대체 | `docs/REBUILD_EXECUTION_REPORT.md`의 첫 미디어 구현 지시 | 분석 자료로는 유효하나 기반 레이어를 건너뜀 | 역사 자료로 강등 | 이 계획 승인 전 실행 근거로 사용 금지 |
-
-## 9. 단계별 실행 계획
-
-### 승인 게이트 — 구현 전
-
-- 목적: 이 문서가 사용자의 의도와 맞는지 확정한다.
-- 입력 자료: 이 문서, `INHERITANCE_MAP.md`, 이번 사용자 지시.
-- 수행할 작업: 사용자 검토와 수정 반영만 한다.
-- 수정 대상: 계획·핸드오프 문서만.
-- 보존 항목: 현재 코드·백업·사용자 데이터·Git 상태.
-- 완료 조건: 사용자가 계획 전체 또는 L0 착수를 명시적으로 승인한다.
-- 검증 방법: 승인 범위와 수정 요청을 `SESSION_HANDOFF.md`에 기록한다.
-- 실패 시 복구: 문서 수정만 되돌리고 구축을 시작하지 않는다.
-- 다음 단계 조건: 승인 전에는 L0으로 넘어가지 않는다.
-
-### L0 — 정본·자료·기준선 정리
-
-- 목적: 활성 정본과 역사 자료를 구분하고 새 세션이 동일한 계획에 도달하게 한다.
-- 입력 자료: 현재 루트 문서, 이 계획, `INHERITANCE_MAP.md`, 스냅샷 LAYER_PLAN·실패 원장.
-- 수행할 작업: 문서 상태 라벨 확정, 시작 라우팅 점검, 프레임워크 파일 기준선 기록, 필요할 때만 README/INDEX 복구.
-- 수정 대상: `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, 문서 상태 헤더, 선택적 `README.md`·`docs/INDEX.md`.
-- 보존 항목: `backup/`, Git 이력, 분석 보고서 원문, 사용자 데이터, 스냅샷 코드.
-- 완료 조건: 규칙·상태·계획·승계 정본이 각각 하나이고 모든 역사 문서가 active/historical/superseded 중 하나로 구분된다.
-- 검증 방법: 새 세션 읽기 시뮬레이션, 내부 링크, UTF-8/NUL, Git 추적 프레임워크 목록 확인.
-- 실패 시 복구: L0 문서 변경만 되돌린다. 역사 파일을 삭제하지 않는다.
-- 다음 단계 조건: 사용자가 정본 구조를 확인하고 L1 진행을 승인한다.
-
-### L1 — 기본 프로젝트 규칙
-
-- 목적: 파일 입출력·폴더 소유권·원본 보호·실패 보고 기준을 확정한다.
-- 입력 자료: 현재/legacy `PROJECT_RULES.md`, `.gitignore`, `.gitattributes`, 확인된 실패 원장.
-- 수행할 작업: 경로별 owner/read/write/commit 표, 원본/파생물/임시물 규칙, machine-facing ID 명명 규칙, 최소 경계 검사 설계.
-- 수정 대상: `PROJECT_RULES.md`; 반복 위반이 확인되면 최소 검사와 테스트.
-- 보존 항목: 현재 한글 프로젝트 경로와 기존 사용자 파일명. 과거의 blanket ASCII 규칙을 사용자 데이터에 소급 적용하지 않는다.
-- 완료 조건: 새 파일의 위치·쓰기 권한·Git 포함 여부·삭제 권한을 규칙 한 곳에서 판단할 수 있다.
-- 검증 방법: inputs 무단 쓰기, outputs 밖 파생물, backup 수정, 실패 성공 위장 등 양·음성 사례 점검.
-- 실패 시 복구: 추가 규칙/검사만 되돌리고 기존 보호 규칙을 유지한다.
-- 다음 단계 조건: 경계 사례가 모순 없이 판정되고 사용자 확인 후 L2로 진행한다.
-
-### L2 — 파일 기반 데이터 구조
-
-- 목적: 영상 작업별 상태 정본과 안전한 읽기·쓰기 구조를 만든다.
-- 입력 자료: L1 경계, 기존 상태 파일 계약, 원본 자산 필드, 스냅샷 domain/state 아이디어 중 필요한 계약만.
-- 수행할 작업: `FILE_DATA_CONTRACT.md`, 최소 `state.json` schema, 원자적 read/write/validate, 선택적 `STATE.md` 생성, 기존 상태 대응표.
-- 수정 대상: `docs/FILE_DATA_CONTRACT.md`, 최소 상태 모듈·테스트, 사용자 승인 샘플 경로.
-- 보존 항목: 기존 JSON·핸드오프·산출물, `source_id`, 원본 좌표, 현재본/대체본, 검증 수준.
-- 완료 조건: 올바른 샘플은 round-trip되고 필드 누락·타입 오류·중단 쓰기는 기존 상태를 손상하지 않는다.
-- 검증 방법: 단위 테스트, 원자적 실패 테스트, 경로 경계 테스트, 사용자 지정 샘플 1건의 수동 매핑.
-- 실패 시 복구: 새 상태 파일·모듈만 제거하고 기존 상태 자료는 그대로 둔다.
-- 다음 단계 조건: schema와 실제 샘플 1건을 사용자가 확인한 뒤 L3로 진행한다.
-
-### L3 — 문서·파일 읽기/쓰기 최적화
-
-- 목적: 작업 종류별 필요한 문서만 컨텍스트로 사용하고 결정을 올바른 정본에 재사용 가능하게 기록한다.
-- 입력 자료: L2 계약, 기존 bootstrap/index, Claude 4계층 제안, 0001의 fast_resume 아이디어, 실제 대표 요청 3개.
-- 수행할 작업: 읽기 프로필, 문서 라우팅 표, write-back 표, 문서 메타데이터 규칙, 필요성이 입증되면 helper 명령 최대 1~2개.
-- 수정 대상: `AGENTS.md`, 선택적 `docs/INDEX.md`, 문서 유지 규칙, 검증된 helper와 테스트.
-- 보존 항목: `PROJECT_RULES.md` 항상 읽기, `SESSION_HANDOFF.md` 상태 정본, 원문 분석의 역사성.
-- 완료 조건: 재개·구조 변경·영상 작업 3가지에서 필요한 파일만으로 정확한 다음 행동과 쓰기 대상을 결정한다.
-- 검증 방법: 읽은 파일 수·문자량·재개 시간·잘못된 문서 선택을 수동 방식과 비교한다.
-- 실패 시 복구: 라우터/helper를 제거하고 L2 파일 구조는 유지한다.
-- 다음 단계 조건: 컨텍스트 감소가 정확성을 낮추지 않고 사용자가 작업 방식에 동의한다.
-
-### L4 — 파일 사용·관리 규칙
-
-- 목적: 파일명·버전·현재본·승인·보관·검증 수준을 최소 규칙으로 관리한다.
-- 입력 자료: L2 schema, 기존 17개 메타데이터·7개 승인 상태, 실제 소비 도구 필드.
-- 수행할 작업: 필요한 최소 필드 확정, 승인 상태 축소 여부 결정, current/superseded, naming, 해시·무결성, 정리 승인 절차.
-- 수정 대상: `FILE_DATA_CONTRACT.md`, 상태 검사와 테스트.
-- 보존 항목: 기존 파일명·메타데이터를 소급 변경하지 않음, 이전본·실패본 자동 삭제 금지.
-- 완료 조건: `state.json`만 보고 산출물 역할·원본·현재성·검증 수준·다음 사용 가능 여부를 판단한다.
-- 검증 방법: 존재하지 않는 경로, 잘못된 source_id, stale/current 충돌, 해시 불일치, superseded 보존 사례.
-- 실패 시 복구: 새 필드·검사만 제거하고 L2 기본 상태로 복귀한다.
-- 다음 단계 조건: 사용자 승인 상태와 보관 규칙 확정 후 L5로 진행한다.
-
-### L5 — 프로젝트 워크플로우 규칙
-
-- 목적: 기존 8단계 기능을 실제 지킬 수 있는 입출력·완료 조건·사용자 판단으로 복원한다.
-- 입력 자료: `01_youtube_production_workflow.md`, `planning_stage_spec`, 품질 기준, L4 데이터 계약.
-- 수행할 작업: `WORKFLOW_RULES.md`에 두 실행 경로, 단계별 입력/출력/완료 1~3개, 사용자 판단 지점, 검증 수준을 기록한다.
-- 수정 대상: `docs/WORKFLOW_RULES.md`, 필요한 문서 링크.
-- 보존 항목: 단계 번호, 6→5 순서, 7A~7D 판단 지식, 사용자 창작 권한.
-- 완료 조건: 한 문서로 현재 단계의 필수 입력·산출물·완료·다음 사용자 결정을 판단한다.
-- 검증 방법: 촬영 전/완료본 시나리오 walkthrough, 단계 누락·잘못된 5→6 순서 음성 사례.
-- 실패 시 복구: 신규 규칙 문서를 제거하고 기존 workflow 원문은 그대로 보존한다.
-- 다음 단계 조건: 사용자가 단순화 수준과 판단 지점을 승인한다.
-
-### L6 — 프로젝트 워크플로우 구조
-
-- 목적: L5 규칙이 영상별 폴더·파일·상태 구조에 직접 드러나게 한다.
-- 입력 자료: L2 상태 구조, L5 단계 규칙, 기존 outputs 관례.
-- 수행할 작업: 지연 생성 폴더 레이아웃, 새 프로젝트 초기화, 단계 산출물 등록, 기존 프로젝트 1건의 수동 매핑 계획.
-- 수정 대상: 구조 문서, 최소 초기화 기능과 테스트; 사용자 지정 샘플 이외 데이터는 수정하지 않는다.
-- 보존 항목: 기존 프로젝트 경로·파일·참조, 빈 단계 폴더를 강제로 만들지 않음.
-- 완료 조건: 새 샘플 프로젝트가 명령 또는 명확한 절차 1회로 생성되고 문서 구조와 일치한다.
-- 검증 방법: 임시 샘플의 생성·재실행·부분 실패·롤백, 실제 지정 1건은 사용자 승인 후 별도 확인.
-- 실패 시 복구: 신규 샘플·초기화 기능만 제거하고 기존 데이터는 건드리지 않는다.
-- 다음 단계 조건: 구조와 실제 작업 방식의 적합성을 사용자 확인 후 L7로 진행한다.
-
-### L7 — 워크플로우 프레임워크·도구·플러그인
-
-- 목적: 현재 상태 확인·다음 단계·자주 쓰는 미디어 작업을 신뢰 가능한 최소 진입점으로 연결한다.
-- 입력 자료: L6 구조, 사용 빈도 조사, legacy 도구·테스트·실패 원장, snapshot adapter 중 필요한 조각.
-- 수행할 작업: 도구 유지/개선/보류 분류, 선택된 명령 최대 2개, 종료 코드·timeout·파싱·재사용·오류 메시지 보강.
-- 수정 대상: 선택 도구, 얇은 진입점, 관련 테스트와 짧은 사용 표.
-- 보존 항목: 선택되지 않은 도구는 backup에 그대로, 실제 Premiere/미디어 검증 전 완료 주장 금지.
-- 완료 조건: 선택 작업이 한 명령으로 실행되고 정상·실패·재실행 결과가 예측 가능하다.
-- 검증 방법: 기존 회귀 테스트, 실패 재현, 사용자 지정 실파일 1건, 해당 시 Premiere 가져오기·A/V 별도 판정.
-- 실패 시 복구: 얇은 연결부와 변경 도구만 되돌리고 이전 레이어 구조를 유지한다.
-- 다음 단계 조건: 실제 시간/오류 감소가 확인되고 사용자 유지 승인을 받은 도구만 L8 입력이 된다.
-
-### L8 — 워크플로우 스킬 정비
-
-- 목적: 실제 사용하는 스킬만 L2~L7 구조와 일치시키고 판단 지식을 유지한다.
-- 입력 자료: 스킬 11개 원문, L5 규칙, L6 경로, L7 활성 도구, 사용자 사용 실태.
-- 수행할 작업: 유지/보류/폐기 후보 분류, 유지 스킬의 입력·출력·중단·사용자 결정·다음 전달물 동기화.
-- 수정 대상: 활성 `skills/`의 유지 스킬 문서·필요한 스크립트·최소 검사.
-- 보존 항목: 보류·폐기 후보 원문은 backup에 유지, 새 스킬 일괄 작성 금지.
-- 완료 조건: 유지 스킬이 실제 상태·폴더·완료 조건과 일치하고 한 단계 실사용에서 누락이 없다.
-- 검증 방법: 대표 단계 1회 실행, 산출물 등록, 중단 조건, 사용자 판단 전달, 다음 단계 재개 확인.
-- 실패 시 복구: 해당 스킬 변경만 되돌리고 프레임워크 규칙·구조는 유지한다.
-- 다음 단계 조건: 전체 재구축 완료 선언이 아니라, 사용자가 현재 상태 유지/추가 병목 개선/실제 제작 중 하나를 선택한다.
-
-## 10. 공통 레이어 실행 규칙
-
-1. 한 세션은 한 레이어를 기본으로 한다.
-2. 시작 시 `PROJECT_RULES.md`→`SESSION_HANDOFF.md`→이 문서의 현재 레이어만 읽는다.
-3. 기존 기능 변경 전 `INHERITANCE_MAP.md`의 해당 항목과 지정된 backup 파일만 읽는다.
-4. 착수 전에 다음을 한 문장씩 기록한다: 실제 불편, 빨라지거나 덜 틀리는 것, 기존 자산, 실제 델타, 2~4시간 내 가능 여부.
-5. 사용자 확정 항목은 추측하지 않는다.
-6. 계획에 없는 개선은 구현하지 않고 발견 사항으로 기록한다.
-7. 개발 중 빠른 확인은 허용하되 단계 종료 통합 검증은 한 번 실행한다.
-8. 단계 종료 시 목적·변경·검증 수준·미검증·효과·롤백·다음 게이트를 `SESSION_HANDOFF.md`에 갱신한다.
-9. 레이어별 `STAGE_REPORT`·`COMMAND_RESULTS`·`FILE_CHANGES`·`RISKS` 4종 세트를 다시 만들지 않는다.
-10. 사용자 승인 없는 설치·커밋·푸시·외부 전송은 하지 않는다.
-
-## 11. 추가 확인 사항과 주요 위험
-
-| 시점 | 확인 필요 | 확인 전 기본값 | 위험 |
-|---|---|---|---|
-| L0 종료 | 정본 구조 확인과 L1 진행 승인 | L1 시작 금지 | 확인 없이 다음 레이어로 넘어갈 위험 |
-| L1 | machine-facing 이름의 ASCII 범위와 기존 한글 경로 처리 | 기존 이름 유지, 신규 ID만 이식성 우선 | 소급 개명으로 참조 파손 |
-| L2 | 실제 이행할 영상 작업 또는 샘플 1건 | 사용자 데이터 조사 금지 | 최신본·개인정보·대용량 처리 오류 |
-| L2 | JSON 상태 필드 최종안 | 최소 필드 외 확장 금지 | SQLite 대신 JSON을 다시 과설계할 위험 |
-| L3 | 실제 자주 하는 문서·파일 작업 3개와 현재 소요 | helper/플러그인 미도입 | 측정 없이 새 도구가 관리 비용이 됨 |
-| L4 | 승인 상태를 4종으로 줄일지 | 기존 의미 보존, 소급 변환 금지 | 캘리브레이션/다음 단계 승인 의미 혼선 |
-| L7 | 자주 쓰는 도구와 현재 Premiere/OS 환경 | 선택 도구만 회수, 앱 검증 미완료 표시 | 자동 테스트를 실제 앱 성공으로 오인 |
-| L8 | 11개 스킬의 실제 유지/보류/폐기 분류 | 모두 backup에 보존, 활성화 안 함 | 불필요한 전면 정비 |
-
-주요 구조 위험은 다음과 같다.
-
-- `state.json`이 모든 지식을 담는 새 거대 문서가 될 수 있다. 현재 상태와 최소 참조만 저장하고 상세 판단은 산출물에 둔다.
-- `STATE.md`가 두 번째 정본처럼 편집될 수 있다. 생성 표시와 재생성 원칙을 강제한다.
-- 선택적 문서 읽기가 중요한 안전 규칙을 빠뜨릴 수 있다. `PROJECT_RULES.md`는 항상 읽고 실제 변경 전 계약 원문을 확인한다.
-- legacy 도구 회수가 legacy 결함도 되살릴 수 있다. 회수 전에 알려진 실패 테스트를 연결한다.
-- “플러그인 도입” 자체가 목표가 될 수 있다. 기존 방식보다 빠르고 정확하다는 측정 전에는 도입하지 않는다.
-- 계획 문서가 다시 실행보다 커질 수 있다. 이 문서는 상세 정본 하나로 유지하고 레이어별 별도 증거 문서를 만들지 않는다.
-
-## 12. 검증 현황과 한계
-
-- 기존 legacy 테스트: 현재 환경에서 74개 실행, 72개 통과, 2개는 Git safe-directory 환경 문제로 실패.
-- 개선 스냅샷: 과거 Linux clean clone 보고는 159 passed, 1 skipped.
-- 개선 스냅샷 현재 재검증: 세 환경 시도 뒤 113 passed, 14 failed, 33 errors. 주된 원인은 Git safe-directory와 pytest 임시 경로 권한이며 전체 통과를 재현하지 못했다.
-- 동일 목적 3회 실패 규칙에 따라 같은 스냅샷 테스트 재시도는 중단했다.
-- 실제 사용자 미디어, Premiere 가져오기, 연속 A/V, 콘텐츠 품질, 생산성 개선은 이번 조사에서 검증하지 않았다.
-- 이번 문서 작업의 검증 수준은 파일·Git·정적 구조·기존 자동 테스트 결과의 교차검증이다.
-
-## 13. 중단 조건
-
-다음 중 하나면 즉시 중단하고 원인·최소 선택지·권고를 보고한다.
-
-- 현재 레이어 완료 기준이 검증되지 않았다.
-- 계획 범위를 벗어난 파일 또는 사용자 데이터 접근이 필요하다.
-- 한 레이어가 예상 범위의 두 배로 커졌다.
-- 같은 목표가 3회 실패했다.
-- 새 상태 정본 또는 새 문서 계층이 하나 더 필요해 보인다.
-- 생산성 개선을 한 문장으로 설명하거나 측정할 수 없다.
-- 사용자 확정 항목을 추측해야만 진행할 수 있다.
-- 사용자가 같은 방향을 두 번 거절했다.
-
-## 14. 승인 요청 상태
-
-2026-07-18 사용자가 “진행하자”라고 지시해 통합 계획과 L0 착수를 승인했다. L0에서 문서
-상태·시작 라우팅·프레임워크 기준선을 정리했으며 코드 복원, 폴더 생성, 데이터 이동, 도구
-설치, 플러그인 도입, 스킬 수정은 수행하지 않았다.
-
-현재 게이트는 L0 정본 구조 확인과 L1 진행 승인이다. 승인 전에는 L1을 시작하지 않는다.
+| Project-wide rules | `../PROJECT_RULES.md` |
+| Rebuild decision principles and stop conditions | `REBUILD_PRINCIPLES.md` |
+| Current stage, verified state, failures, and next action | `../SESSION_HANDOFF.md` |
+| Existing-asset adoption decisions | `INHERITANCE_MAP.md` |
+| User-facing current summary | `../PROJECT_STATUS.md` |
+| Historical structure analysis | `../PROJECT_STRUCTURE_ANALYSIS.md` |
+| Superseded first implementation proposal | `REBUILD_EXECUTION_REPORT.md` |
+
+Historical reports are evidence only and are not execution inputs unless explicitly requested.
+
+## Layer sequence
+
+| Layer | Outcome | Dependency | Status |
+|---:|---|---|---|
+| L0 | Canonical documents, historical labels, and baseline | None | Complete |
+| L1 | Project-wide file, path, authorization, and failure rules | L0 | Complete |
+| L2 | File-based work state and safe I/O | L1 | Complete |
+| L3 | Task-specific document routing and efficient read/write profiles | L2 | Complete |
+| L4 | Minimal file lifecycle, version, current, and approval rules | L2 and L3 | Complete |
+| L5 | Human-readable YouTube production workflow rules | L4 | Not started |
+| L6 | Workflow folder, file, and state structure | L5 | Not started |
+| L7 | Selected workflow tools and thin entry points | L6 | Not started |
+| L8 | Only the workflow skills confirmed in real use | L7 | Not started |
+
+## Approval gate — before L0
+
+- Objective: Confirm that the rebuild sequence matches the user's intent.
+- Work: Plan and state-document edits only.
+- Completion: User explicitly approves the plan or L0.
+- Verification: Record approval scope in `SESSION_HANDOFF.md`.
+- Rollback: Revert document edits only.
+- Result: Complete on 2026-07-18.
+
+## L0 — Canonical Sources and Baseline
+
+- Objective: Separate active sources from historical evidence and give every session one startup route.
+- Read: Active root documents, this L0 section, relevant historical plan and failure-ledger files selected by the layer.
+- Work: Assign document status, verify startup routing, and record the tracked framework baseline.
+- Modify: `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, document headers; add an index only if routing cannot remain small.
+- Preserve: `backup/`, Git history, reports, user data, archived code.
+- Complete when: Rules, current state, plan, and inheritance decisions each have one source; historical documents cannot be mistaken for active instructions.
+- Verify: Startup simulation, local links, UTF-8/NUL, and Git tracked-file baseline.
+- Rollback: Revert L0 document changes only.
+- Next gate: User approval for L1.
+- Status: Complete.
+
+## L1 — Project-Wide Rules
+
+- Objective: Make file access, ownership, writing, Git inclusion, deletion, naming, and failure reporting decidable from one global rules document.
+- Read: Current and legacy project rules, `.gitignore`, `.gitattributes`, and selected failure-ledger entries.
+- Work: Add the path ownership matrix, original/derivative/temp boundaries, portable internal naming, and fail-closed reporting.
+- Modify: `PROJECT_RULES.md`; add an executable check only after an active repeated violation demonstrates need.
+- Preserve: Existing Korean project path and user filenames; do not apply blanket ASCII renaming.
+- Complete when: A new file's location, write permission, Git status, and deletion authority are unambiguous.
+- Verify: Positive and negative path scenarios, Git ignore behavior, text/binary attributes, and failure-reporting scenarios.
+- Rollback: Revert only L1 rule additions.
+- Next gate: User approval for L2.
+- Status: Complete.
+
+## L2 — File-Based Data Structure
+
+- Objective: Create one minimal state source per video task and safe file read/write behavior.
+- Read: L1 boundaries, relevant rows in `INHERITANCE_MAP.md`, the selected legacy state contracts, and only the user-approved sample mapping.
+- Work: Define `docs/FILE_DATA_CONTRACT.md`, a minimal `state.json` schema, atomic read/write/validate behavior, and an optional generated `STATE.md` view.
+- Minimum inherited fields: current stage, reference input, current outputs, next action, blocker, user decision, validation level, stable source reference, and current/superseded relationship only where consumed.
+- Modify: New contract, minimal state module and tests, and only the approved sample path.
+- Preserve: Existing JSON, handoffs, outputs, source references, original coordinates, and previous versions.
+- Complete when: A valid sample round-trips; invalid types, missing required fields, or interrupted writes do not damage the previous state.
+- Verify: Unit, atomic-failure, path-boundary, and one user-approved real or synthetic mapping test.
+- Rollback: Remove only new L2 files; do not modify existing user data.
+- Required user decisions: The user approved L2; a synthetic sample was selected because no real sample was designated.
+- Result: Added the version-1 contract, strict atomic JSON I/O, and eight synthetic normal/failure tests without reading or writing user data.
+- Next gate: User approval for L3.
+- Status: Complete on 2026-07-18.
+
+## L3 — Document and File Read/Write Optimization
+
+- Objective: Read only documents needed for each task and write durable decisions to the correct source.
+- Read: L2 contract, current router, and three representative user tasks with current effort measurements.
+- Work: Validate read profiles and write-back routes; add `docs/INDEX.md` or at most one or two helper commands only if measured routing remains costly.
+- Modify: `AGENTS.md`, optional `docs/INDEX.md`, and validated helpers/tests.
+- Preserve: `PROJECT_RULES.md` as always-read global policy, `SESSION_HANDOFF.md` as state source, and Korean reports as non-execution documents.
+- Complete when: Resume, structure-change, and video-task scenarios select the correct minimum documents and write target.
+- Verify: Compare files read, context size, resume time, and wrong-document selections across three tasks.
+- Rollback: Remove only L3 routing/helper changes.
+- Result: Added three exact profiles to `AGENTS.md` and three regression tests. Against the seven-document active set, the profiles selected three or four documents, reduced document context by 46-64%, reduced cached local read time by 46-60%, and selected zero unrelated documents.
+- Next gate: The user's instruction authorized continuous execution through L4; no separate L3 pause was required.
+- Status: Complete on 2026-07-19.
+
+## L4 — File Lifecycle Rules
+
+- Objective: Define minimal filename, version, current, approval, retention, and validation semantics.
+- Read: L2 schema, actual consumer fields, and selected legacy metadata contracts.
+- Work: Decide minimum fields, current/superseded behavior, approval-state reduction, integrity checks, and cleanup authorization.
+- Modify: `docs/FILE_DATA_CONTRACT.md` and its tests.
+- Preserve: Existing filenames and metadata; never delete prior or failed versions automatically.
+- Complete when: `state.json` alone identifies each output's role, source, currency, validation, and next-use eligibility.
+- Verify: Missing paths, wrong source IDs, current conflicts, integrity mismatch, and preserved superseded versions.
+- Rollback: Remove only L4 fields and checks, retaining the verified L2 state core.
+- Result: Activated schema version 2 with output version, current/superseded/failed status, lineage, SHA-256 integrity, reduced approval state, and explicit next-use eligibility. Synthetic tests preserve prior and failed files.
+- Next gate: User confirmation of approval and retention semantics before L5.
+- Status: Complete on 2026-07-19.
+
+## L5 — Workflow Rules
+
+- Objective: Recover the existing eight-stage production workflow as concise human-readable inputs, outputs, completion criteria, and user decisions.
+- Read: Only the selected legacy workflow, planning specification, quality standard, and L4 data contract.
+- Work: Create `docs/WORKFLOW_RULES.md` with pre-shoot and recorded-footage routes, one to three completion criteria per stage, user decision points, and validation levels.
+- Preserve: Stage numbering, analysis-before-planning order (`6 -> 5` for recorded footage), 7A-7D judgment knowledge, and user creative authority.
+- Complete when: One document identifies the required input, output, completion, and next user decision for each stage.
+- Verify: Walk through both workflow routes and reject missing stages or an incorrect `5 -> 6` order.
+- Rollback: Remove the new active workflow rule; keep the legacy original untouched.
+- Next gate: User confirms the simplification and decision points.
+- Status: Not started.
+
+## L6 — Workflow Structure
+
+- Objective: Make L5 rules visible in per-video folders, files, and state without pre-creating unused directories.
+- Read: L2 state, L5 workflow rules, and only the selected legacy output conventions.
+- Work: Define lazy folder creation, new-project initialization, output registration, and one existing-project mapping plan.
+- Modify: Structure document, minimal initialization code, and tests; no user data without a designated sample.
+- Preserve: Existing paths and references; do not create empty stage folders by default.
+- Complete when: A synthetic project initializes once, reruns safely, and matches the documented structure.
+- Verify: Creation, rerun, partial failure, rollback, and a separately approved real sample.
+- Rollback: Remove only the new sample and initializer.
+- Next gate: User confirms fit with real work before L7.
+- Status: Not started.
+
+## L7 — Workflow Tools and Plugins
+
+- Objective: Connect only frequently used state, transition, and media operations through trustworthy thin entry points.
+- Read: L6 structure, measured task frequency, selected legacy tools/tests, and only required archived adapter code.
+- Work: Classify tools, activate at most two selected commands, and repair exit codes, timeouts, parsing, reuse, and error messages.
+- Preserve: Unselected tools in `backup/`; do not claim Premiere or media validation before real tests.
+- Complete when: Each selected operation has predictable success, failure, and rerun behavior through one entry point.
+- Verify: Selected regressions, reproduced failures, one user-approved real file, and application/A/V validation where applicable.
+- Rollback: Remove the thin integration and tool changes only.
+- Next gate: Only tools with measured time or error reduction proceed to L8.
+- Status: Not started.
+
+## L8 — Workflow Skill Alignment
+
+- Objective: Align only confirmed-use skills with the L2-L7 state, paths, tools, and completion rules.
+- Read: Only selected skill sources, L5 rules, L6 paths, L7 active tools, and user-confirmed use.
+- Work: Classify skills as keep/defer/retire; update kept skills' input, output, stop, user decision, and handoff contract.
+- Preserve: All deferred or retired originals in `backup/`; do not rewrite every skill.
+- Complete when: A kept skill completes one representative stage without a routing or handoff gap.
+- Verify: Representative execution, output registration, stop condition, user decision transfer, and next-stage resume.
+- Rollback: Revert only the affected skill changes.
+- Final gate: User chooses to keep the current system, address another observed bottleneck, or begin real production.
+- Status: Not started.
+
+## Pending user decisions
+
+| Layer | Decision required before work |
+|---:|---|
+| L2 | Minimum state schema and one real or synthetic sample |
+| L3 | Three representative document/file tasks and current effort |
+| L4 | Minimum approval states and retention behavior |
+| L7 | Selected frequent tools and current Premiere/OS environment |
+| L8 | Which legacy skills are actually used |

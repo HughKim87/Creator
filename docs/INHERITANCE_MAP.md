@@ -1,104 +1,79 @@
-# 기존 자산 승계 지도
+# Existing-Asset Inheritance Map
 
-- 상태: active — 기존 자산 승계 판단 단일 정본.
-- 역할: 재구축 중 기존 규칙·구조·데이터 계약·도구를 잃거나 무조건 다시 만드는 일을 막는다.
-- 읽을 때: 기존 기능을 추가·교체·제거하거나 각 단계의 구현 범위를 정할 때.
-- 보존 기간: 재구축이 끝나고 실제 운영 구조에 승계 결정이 모두 반영될 때까지.
-- 원본 위치: `backup/`과 `backup/root_snapshot_2026-07-18/`은 읽기 전용이다.
+- Purpose: Record whether preserved rules, contracts, tools, tests, and skills are adopted, adopted with changes, deferred, or excluded.
+- Scope: Legacy-asset decisions only; this document does not define global rules, current state, or layer procedures.
+- Audience and language: Agents; English.
+- Read when: An approved task adds, replaces, removes, or recovers an existing feature or contract. Read only the relevant row.
+- Write when: Evidence changes an asset decision, activation layer, retained contract, or recovery condition.
+- Authority: This is the sole source of existing-asset adoption decisions. `backup/` and `backup/root_snapshot_2026-07-18/` remain read-only evidence.
 
-## 판정 의미
+## Decision meanings
 
-| 판정 | 의미 |
+| Decision | Meaning |
 |---|---|
-| 필수 승계 | 프로젝트 정체성·원본 안전·결과 일관성에 필요하다. 구현 형태는 단순화할 수 있다. |
-| 개선 후 승계 | 해결하는 문제는 유효하지만 현재 형태의 관리 비용이 크다. 핵심 계약만 줄여서 가져간다. |
-| 보류 | 실제 필요가 확인되기 전에는 활성 구조에 넣지 않는다. 백업 원본은 보존한다. |
-| 제외 | 새 운영 경로에서 사용하지 않는다. 역사 확인용 백업만 남긴다. |
+| `adopt` | Required for project identity, original safety, or result consistency. The implementation may still be simplified. |
+| `adopt_with_changes` | The problem and core contract are valid, but the preserved implementation or metadata is too costly or unsafe. |
+| `defer` | Keep the source in `backup/`; activate only after the listed real-world condition occurs. |
+| `exclude` | Do not use in the active execution path. Preserve only as historical evidence. |
 
-## 필수 승계 — 지금부터 적용
+Exclusion never authorizes deletion. No row authorizes modifying or executing code directly inside `backup/`.
 
-| 자산 | 기존 근거 | 반드시 이어갈 핵심 | 적용 위치 |
+## Adopted project foundations
+
+| Asset | Evidence | Retained contract | Active destination |
 |---|---|---|---|
-| 원본·파일 경계 | `backup/PROJECT_RULES.md` | `inputs/` 원본 보호, 파생 결과 분리, 사용자 데이터와 공용 프레임워크 분리, 자동 삭제 금지 | `PROJECT_RULES.md` |
-| 파일 형식 안정성 | `backup/root_snapshot_2026-07-18/.gitattributes` | 텍스트 줄바꿈과 미디어 바이너리 판정을 운영체제와 무관하게 유지 | `.gitattributes` |
-| 작은 시작 문맥 | `backup/PROJECT_BOOTSTRAP.md`, `backup/docs/INDEX.md` | 시작 파일은 작게, 현재 작업에 필요한 문서만 선택해서 읽기 | `AGENTS.md`, `SESSION_HANDOFF.md` |
-| 개선 판단 기준 | `backup/docs/DESIGN_PRINCIPLES.md` | 반복 사용성, 결정적 검사, 에이전트 교체 가능성, 문맥 비용, 사용자 창작 권한 | `PROJECT_RULES.md`, `docs/REBUILD_PLAN.md` |
-| 도구와 AI 역할 | `backup/PROJECT_RULES.md` | 반복 추출·변환·검사는 도구, 후보·해석·설명은 AI, 도구 성공과 품질 승인 분리 | `PROJECT_RULES.md` |
-| 검증 표현 | `backup/PROJECT_RULES.md` | 생성·파싱·구조·도구·앱·사용자 확인을 구분하고 미실행을 성공으로 말하지 않기 | `PROJECT_RULES.md` |
-| 실패 중단 | `backup/PROJECT_RULES.md` | 같은 사용자 실행 요청에서 동일 목표 3회 실패 시 중단 | `PROJECT_RULES.md` |
+| Original and file boundaries | `backup/PROJECT_RULES.md` | Protect `inputs/`, separate derivatives, keep user data outside reusable framework files, and prohibit automatic deletion | `PROJECT_RULES.md` |
+| File-format stability | `backup/root_snapshot_2026-07-18/.gitattributes` | Stable text line endings and media binary classification across operating systems | `.gitattributes` |
+| Small startup context | `backup/PROJECT_BOOTSTRAP.md`, `backup/docs/INDEX.md` | Start small and read only documents required by the task | `AGENTS.md` |
+| Improvement criteria | `backup/docs/DESIGN_PRINCIPLES.md` | Reuse, deterministic validation, agent replaceability, context cost, and user creative authority | `REBUILD_PRINCIPLES.md`, `PROJECT_RULES.md` |
+| Tool and AI roles | `backup/PROJECT_RULES.md` | Deterministic tools perform repeatable operations; AI proposes interpretations; tool success is not quality approval | `PROJECT_RULES.md` |
+| Validation vocabulary | `backup/PROJECT_RULES.md` | Separate generated, parsed, structure, tool, app, and user validation | `PROJECT_RULES.md` |
+| Repeated-failure stop | `backup/PROJECT_RULES.md` | Stop after three consecutive failures on the same objective | `PROJECT_RULES.md` |
 
-## 필수 승계 — 해당 단계에서 활성화
+## Adopt when the named layer begins
 
-| 자산 | 기존 근거 | 반드시 이어갈 핵심 | 활성 단계 |
+| Asset | Evidence | Retained contract | Activation layer |
 |---|---|---|---|
-| 원본 식별 | `backup/01_youtube_production_workflow.md`, `backup/tools/source_frame_assets.py` | 같은 원본은 같은 `source_id`; 다른 원본 지문을 같은 ID에 섞지 않기 | L2 상태·데이터 구조 |
-| 원본 근거 좌표 | `backup/tools/source_frame_assets.py`, `backup/tools/register_source_assets.py` | 화면·음성 근거를 원본 시간·프레임과 연결하고, 이미 만든 자산은 재사용 | L2 계약, 실제 도구는 L7 |
-| 제작 경로 | `backup/01_youtube_production_workflow.md` | 촬영 전 1→2→3→4→6→5→7→8, 촬영 완료본은 자막 신뢰 확인 뒤 6→5→7→8 | L5 워크플로 규칙 |
-| 사용자 판단 지점 | 같은 문서 | 소재·콘셉트·대표 편집 방향·업로드는 사용자가 결정 | L5 워크플로 규칙 |
-| 기획과 편집 관계 | 같은 문서 | 데이터 분석 없이 기획하지 않고, 기획 없이 전체 편집하지 않기 | L5 워크플로 규칙 |
-| 현재본과 버전 | 같은 문서, `backup/skills/SKILL_CONTRACT.md` | 입력·판단이 같으면 결과 재사용, 바뀔 때만 버전 생성, 이전본 자동 삭제 금지 | L4 파일 관리 규칙 |
-| 편집 품질 원칙 | `backup/docs/EDITING_QUALITY_STANDARD.md` | 후보 범위와 실제 컷 구분, microbeat 판단, 긴 컷의 근거, 초·중·후반 품질 표본 | L5 규칙, L8 편집 스킬 |
-| 근거 종류 구분 | 같은 문서와 스킬 계약 | 원본 근거와 편집본 렌더 근거를 섞지 않기, 실제 A/V와 앱 확인을 별도 표시 | L5·L7·L8 |
-| 검증된 기존 도구 | `backup/tools/README.md`, 관련 `backup/tests/` | FFmpeg·ffprobe, remux, 원본 프레임 자산, 동기 검사, Premiere XML, 편집 품질 감사 | L3 또는 L7에서 선택된 것만 |
-| 단계별 스킬 | `backup/skills/README.md`, `backup/skills/*/SKILL.md` | 기존 1~8단계 판단 지식과 입출력 계약을 보존하고 실제 사용하는 스킬부터 활성화 | L8 스킬 정비 |
+| Source identity | `backup/01_youtube_production_workflow.md`, `backup/tools/source_frame_assets.py` | The same source keeps one stable `source_id`; a changed fingerprint cannot be aliased to the same source | `FILE_DATA_CONTRACT.md`; tool in L7 |
+| Original evidence coordinates | `backup/tools/source_frame_assets.py`, `backup/tools/register_source_assets.py` | Link visual and audio evidence to original time/frame and reuse unchanged assets | Boundary recorded in `FILE_DATA_CONTRACT.md`; fields and tool in L7 when consumed |
+| Production routes | `backup/01_youtube_production_workflow.md` | Pre-shoot: `1 -> 2 -> 3 -> 4 -> 6 -> 5 -> 7 -> 8`; recorded footage: subtitle confidence, then `6 -> 5 -> 7 -> 8` | L5 |
+| User decision points | Same workflow | User decides subject, concept/message, representative editing direction, and upload | L5 |
+| Analysis before planning | Same workflow | Do not plan without evidence analysis or edit the full piece without an approved plan | L5 |
+| Current and prior versions | Same workflow, `backup/skills/SKILL_CONTRACT.md` | Reuse unchanged results; create a version only after input or judgment changes; preserve prior versions | `FILE_DATA_CONTRACT.md` and `tools/state_io.py` |
+| Editing quality knowledge | `backup/docs/EDITING_QUALITY_STANDARD.md` | Separate candidate range from actual cut, use microbeat judgment, justify long cuts, and sample beginning/middle/end | L5 and L8 |
+| Evidence-type separation | Quality standard and skill contract | Do not mix original-source evidence with edited-render evidence; record real A/V and app checks separately | L5, L7, L8 |
+| Selected existing tools | `backup/tools/README.md`, relevant `backup/tests/` | FFmpeg/ffprobe, remux, source-frame assets, sync advisory, Premiere XML, and editing audit only when selected | L3 or L7 |
+| Selected stage skills | `backup/skills/README.md`, selected `backup/skills/*/SKILL.md` | Preserve stage judgment and I/O contracts for skills confirmed in actual use | L8 |
 
-## 개선 후 승계
+## Adopt with changes
 
-| 대상 | 유효한 핵심 | 줄이거나 바꿀 부분 | 목표 형태 |
+| Asset | Keep | Change before activation | Target form |
 |---|---|---|---|
-| 원본 자산 목록 | `source_id`, 원본 지문, 원본 시간·끝·프레임, 자산 경로·해시·상태 | 기존 19개 필드 중 실제 소비자가 없는 후보·비트·태그·메모 등은 기본 필수에서 제외 | 핵심 필드 + 도구별 선택 필드 |
-| 영상 작업 상태 | 현재 단계, 현재 입력·출력, 다음 행동, 차단 사유, 사용자 결정 | 작업 카드·여러 JSON·각 산출물 메타데이터에 같은 상태를 중복 기록하지 않기 | 영상별 상태 정본 파일 1개 |
-| 산출물 버전 | 현재본, 대체 대상, 원본 ID, 검증 수준 | 17개 메타데이터 필드와 7개 승인 상태를 모든 파일에 강제하지 않기 | 실제 다음 작업이 읽는 최소 필드만 |
-| 워크플로우 계약 | 단계 순서, 필수 완료 조건, 사용자 판단 지점 | `WORKFLOW_CONTRACT.json` 전체 전환 그래프와 기본 거부 방식은 활성화하지 않기 | 사람이 읽는 간단한 규칙, 반복 누락만 검사 |
-| 공통 검사 명령 | 원본 경계, 필수 파일, 실제 코드 검사, 실패 코드 보존 | 최근 `doctor/check`의 폐기 문서·Hook·CI·SQLite 필수 경로 결합 제거 | 현재 구조에 맞는 검사 한 진입점 |
-| 스킬 공통 계약 | 입력·출력·중단 조건·사용자 결정·다음 전달물 | 모든 스킬에 7개 절과 복잡한 승격 역할을 무조건 요구하지 않기 | 실제 단계가 읽는 최소 공통 형식 |
-| 편집 품질 감사 | 긴 구간·후반 밀도·근거 누락을 검토 대상으로 올리기 | 고정 컷 길이를 목표로 쓰거나 모든 게이트를 자동 차단하지 않기 | 경고 + 사람이 읽는 근거 |
+| Source asset record | Stable ID, fingerprint, original time/frame, asset path, integrity, status | Do not require legacy candidate, bit, tag, or note fields without a consumer | L2 source identity core; tool-specific fields only when activated |
+| Video work state | Current stage, reference input/output, next action, blocker, user decision | Do not repeat the same state in cards, multiple JSON files, and output metadata | `FILE_DATA_CONTRACT.md` and `tools/state_io.py` |
+| Output version record | Current/prior relation, source reference, validation | Do not require all legacy metadata and approval states on every file | Version, status, lineage, integrity, reduced approval, and eligibility fields in `FILE_DATA_CONTRACT.md` |
+| Workflow contract | Stage order, required completion, user decisions | Do not restore the full transition graph and default-deny machine contract | Concise human-readable rules; automate only repeated omissions |
+| Common check command | Original boundary, required files, real code checks, failure-code preservation | Remove dependencies on discarded docs, hooks, CI, and SQLite | One active-structure check entry point when needed |
+| Skill contract | Input, output, stop, user decision, next handoff | Do not impose the full legacy promotion protocol on every skill | Minimum shared format used by active stages |
+| Editing quality audit | Surface long sections, late-density gaps, and missing evidence | Do not treat fixed cut length as a target or every finding as a hard gate | Advisory report with human-readable evidence |
 
-## 보류
+## Deferred
 
-| 대상 | 보류 이유 | 재검토 조건 |
+| Asset | Reason | Reconsider only when |
 |---|---|---|
-| SQLite 상태 저장소와 다층 domain/service/storage 구조 | 1인 순차 파일 작업에 비해 구현·학습·유지 비용이 큼 | 파일 하나로 해결되지 않는 동시 쓰기·대규모 조회 문제가 실제 발생 |
-| 이벤트 기반 편집 기억과 append-only 수정 계보 | 판단 보존 가치는 있으나 데이터 입력 비용이 큼 | 반복 편집에서 같은 피드백 손실이 계속 발생하고 간단한 현재본 기록으로 해결되지 않음 |
-| `workflow_gate.py`와 전체 기계 계약 | 단계 누락 방지 가치는 있으나 현재 계약과 상태 필드가 과도함 | 간단한 체크리스트로 같은 누락이 반복됨 |
-| `projectctl`의 에이전트 작업 점유·영수증 상태 | 단일 작업에서는 별도 상태 관리가 중복됨 | 실제 동시 에이전트 충돌이 반복됨 |
-| Hook·CI·강제 pre-commit 체계 | 설치·환경 유지 비용이 있고 현재 기본 단계보다 앞섬 | 수동 검사 누락이 반복되어 한 명령만으로 부족함 |
-| 신규 CLI 포장 | 기존 도구를 감싸는 것만으로는 기능 이득이 없음 | 실제 사용 명령을 반복해서 찾는 비용이 확인됨 |
+| SQLite and domain/service/storage layers | Too costly for one-person sequential file work | File-based state repeatedly fails under real concurrency or query load |
+| Event-sourced editing memory and append-only revision lineage | Potential value but high input and maintenance cost | Simple current/prior recording repeatedly loses important feedback |
+| Full `workflow_gate.py` machine contract | Too much state and transition management | A concise checklist repeatedly misses the same transition |
+| `projectctl` work claims and receipts | Duplicate state in a single-writer workflow | Concurrent framework edits repeatedly collide |
+| Mandatory hooks, CI, and pre-commit | Installation and environment cost exceeds current need | A single manual check repeatedly fails to prevent violations |
+| New CLI wrapper | Wrapping existing commands alone adds no functional value | Repeated command-discovery cost is measured |
 
-## 새 운영 경로에서 제외
+## Excluded from the active path
 
-| 대상 | 이유 |
+| Asset | Reason |
 |---|---|
-| `docs/rebuild/`의 9단계 전면 재작성 계획과 단계별 증거 패키지 | 실제 제작과 생산성 개선 없이 개발 절차만 커졌음 |
-| 독립 QA·레드팀 역할 분리, 장기 관찰·다건 제작 통과 게이트 | 현재 1인 제작 규모에서 관리 비용이 효과보다 큼 |
-| 승인 challenge·provenance·격리·승격 프로토콜 | 일반 로컬 영상 제작의 실제 위험보다 구조가 큼 |
-| 최근 재구축의 전체 CLI·상태·승인 명령 세트 | SQLite와 복잡한 계약에 결합되어 있고 현재 방향과 맞지 않음 |
-| 캐시·가상환경·생성 보고서를 새 정본으로 복원하는 일 | 다시 만들 수 있거나 운영 근거가 아닌 산출물임 |
-
-제외는 즉시 삭제를 뜻하지 않는다. 원본은 백업에 남기되 현재 문서·코드·명령이 실행 근거로
-참조하지 않는다.
-
-## 최소 데이터 구성 원칙
-
-### 원본
-
-- `source_id`: 사람이 다룰 수 있는 안정된 식별자.
-- `source_fingerprint`: 기본은 크기·수정 시각·미디어 정보. 큰 영상의 전체 해시는 실제
-  충돌 위험이나 외부 전송 검증이 필요할 때만 계산한다.
-- 원본 경로와 원본 보존 상태.
-
-### 원본 파생 자산
-
-- 필수: `asset_id`, `source_id`, 원본 시작·끝 시간, 자산 종류, 결과 경로, 현재 상태.
-- 해당할 때: 원본 프레임, FPS, 폭, 해시, 정밀도.
-- 후보 ID·비트 ID·태그·메모는 실제 소비 도구가 있을 때만 추가한다.
-
-### 영상 작업 상태
-
-- 필수: 현재 단계, 현재 기준 입력, 현재 산출물, 다음 행동, 차단 사유, 필요한 사용자 결정.
-- 같은 사실을 여러 파일에 반복하지 않는다. 생성 뷰가 필요하면 정본에서 만든다.
-
-### 산출물
-
-- 필수: 역할, 연결된 `source_id`, 현재본 여부, 검증 수준, 다음 단계 사용 가능 여부.
-- 기준 입력이나 판단이 바뀐 경우에만 새 버전을 만들고 이전본은 `superseded`로 남긴다.
+| The archived nine-stage full rewrite and evidence-package process | Development procedure grew without measured production benefit |
+| Independent QA/red-team roles and long multi-item observation gates | Management cost is excessive for the current one-person workflow |
+| Approval challenge, provenance, quarantine, and promotion protocols | Complexity exceeds the actual local production risk |
+| The archived complete CLI/state/approval command set | Coupled to deferred SQLite and broad machine contracts |
+| Caches, virtual environments, and generated reports as active sources | Re-creatable outputs and not operational evidence |

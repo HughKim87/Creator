@@ -1,18 +1,14 @@
 # 기존 프로젝트 재구축 통합 실행 보고서
 
-> **상태: historical / superseded (2026-07-18).** 이 문서는 Codex·Claude의 첫 구현
-> 후보를 교차검증한 분석 자료다. 사용자가 확정한 기반층→목적층 순서보다 먼저 미디어
-> 구현을 제안하므로 현재 실행 근거로 사용하지 않는다. 활성 계획은
-> [`REBUILD_PLAN.md`](REBUILD_PLAN.md)다.
-
-- 작성일: 2026-07-18
-- 현재 기준 단계: 1단계 — 기본 프로젝트 기반 정비, 구현 착수 전
-- 문서 역할: Codex·Claude 재구축 분석을 현재 정본과 실제 코드 근거로 교차검증한 실행 판단 자료
-- 정본 여부: 이 문서는 운영 규칙·현재 상태·승계 결정의 정본이 아니다.
-- 정본: [`PROJECT_RULES.md`](../PROJECT_RULES.md),
-  [`SESSION_HANDOFF.md`](../SESSION_HANDOFF.md), [`REBUILD_PLAN.md`](REBUILD_PLAN.md),
-  [`INHERITANCE_MAP.md`](INHERITANCE_MAP.md)
-- 데이터 확인 경계: `inputs/`·`outputs/` 내부 파일과 내용은 열거하거나 읽지 않았다.
+- 사용 목적: 사용자가 Codex·Claude의 첫 재구축 구현 후보와 교차검증 결과를 역사 자료로 확인하는 보고서다.
+- 사용 범위: 2026-07-18 당시 첫 미디어 구현 제안만 다루며 현재 실행 지시나 승인 상태로 사용하지 않는다.
+- 독자·언어: 사용자, 한글.
+- 읽는 시점: 사용자가 폐기된 첫 구현안이나 당시 교차검증 근거를 확인해 달라고 요청할 때만 읽는다.
+- 수정하는 시점: 역사 보고서이므로 원칙적으로 수정하지 않으며, 사실 오류·링크·상태 표시만 바로잡는다.
+- 정본 여부: 정본이 아니다. 현재 계획은 [`REBUILD_PLAN.md`](REBUILD_PLAN.md), 현재 상태는
+  [`SESSION_HANDOFF.md`](../SESSION_HANDOFF.md), 승계 판단은 [`INHERITANCE_MAP.md`](INHERITANCE_MAP.md)다.
+- 상태: historical / superseded (2026-07-18). 현재 실행 근거로 사용하지 않는다.
+- 데이터 확인 경계: 당시에도 `inputs/`·`outputs/` 내부 파일과 내용은 열거하거나 읽지 않았다.
 
 ## 1. 최종 결론
 

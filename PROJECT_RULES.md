@@ -1,52 +1,71 @@
-# PROJECT_RULES.md
+# Project-Wide Rules
 
-- 상태: active — 운영 규칙 단일 정본.
-- 역할: 현재 프로젝트 운영 규칙의 단일 정본.
-- 우선순위: 사용자 데이터 보호 > 정확성 > 단순성 > 속도.
+- Purpose: Define the rules that always apply to every task in this project.
+- Scope: Data protection, workspace boundaries, authorization, document governance, validation, and failure reporting.
+- Audience and language: Agents; English.
+- Read when: Before any task that reads or changes this workspace.
+- Write when: Only when the user approves a project-wide rule change.
+- Authority: This is the sole source of project-wide rules. Rebuild principles, work plans, workflow rules, and current state belong elsewhere.
 
-## 재구축 원칙
+## Priorities
 
-1. 새로 만들기 전에 기존 규칙·구조·데이터 계약·도구를 먼저 분류한다.
-2. 기존 자산은 `그대로 승계 / 개선 후 승계 / 보류 / 제외` 중 하나로 근거와 함께 결정한다.
-3. 실제로 확인된 문제 하나를 해결하는 최소 변경만 도입한다.
-4. 품질과 생산성이 함께 좋아지는 변경만 유지한다.
-5. 유지·학습·실행 비용이 효과보다 크면 도입하지 않는다.
-6. 필요성이 입증되지 않은 미래 대비 구조는 만들지 않는다.
-7. 현재 단계가 안정적으로 작동한 뒤에만 다음 단계로 넘어간다.
-8. 승계 결정 없이 기존 기능의 대체 구현을 먼저 만들지 않는다.
+1. Protect user data.
+2. Preserve correctness and evidence.
+3. Prefer the simplest adequate solution.
+4. Optimize speed only after the first three priorities are satisfied.
 
-## 파일과 데이터 경계
+## Document governance
 
-- `inputs/`와 `outputs/`는 사용자 작업 데이터다. 명시적으로 지정된 작업 없이는 내부를
-  열거·열기·복사·요약·해시·인덱싱·보고하지 않는다.
-- 사용자 원본은 덮어쓰지 않는다. 파생 결과는 원본과 분리한다.
-- 같은 원본은 안정된 `source_id`로 식별하고, 원본이 바뀌지 않았으면 기존 결과를 재사용한다.
-- 영상·음성 근거는 가능한 한 편집본 시간이 아니라 원본 시간 또는 원본 프레임에 연결한다.
-- `backup/`은 보존 영역이다. 수정하지 않고, 계획이 지정한 파일만 선별해서 읽는다.
-- 재사용 가능한 규칙·코드·테스트·문서만 프로젝트 루트에 둔다.
-- 임시 파일과 실행 캐시는 저장소에 기록하지 않는다.
+- Read only the documents routed by `AGENTS.md` for the current task.
+- Obey each document's top-level purpose, scope, read condition, and write condition.
+- Agent execution documents are written in English. Documents created for user review or reporting are written in Korean.
+- Every active document starts with its purpose and scope. Historical documents must say that they are not execution sources.
+- Keep one authoritative source for each rule, state, plan, or decision. Other documents link to it rather than copying it.
+- Do not create a document unless it prevents a repeated failure, preserves a durable decision, or reduces repeated work.
+- Keep current task state in `SESSION_HANDOFF.md`. `PROJECT_STATUS.md` is a Korean user-facing derivative, not a second state source.
 
-## 작업과 품질의 경계
+## Workspace and data boundaries
 
-- 반복 가능한 추출·변환·검사는 결정적 도구로 처리하고, AI는 후보·해석·설명을 맡는다.
-- 도구가 성공했다는 사실은 콘텐츠 품질이나 사용자 승인과 같지 않다.
-- 영상의 메시지와 편집 판단은 원본 대사·화면·음성 근거로 추적할 수 있어야 한다.
-- AI는 후보와 근거를 제시한다. 사용자가 소재, 메시지, 편집 감각, 업로드를 최종 결정한다.
-- 검증 상태는 `생성`, `파싱`, `구조 확인`, `도구 확인`, `앱 확인`, `사용자 확인`을 구분한다.
-- 변경되지 않은 결과는 재사용하고, 기준 입력이나 판단이 바뀔 때만 새 버전을 만든다.
-- 이전 결과는 자동 삭제하지 않고 현재본과 대체본 관계를 남긴다.
+Do not enumerate, open, copy, summarize, hash, index, or report user data without a user-specified item and purpose.
 
-## 변경과 검증
+| Path or asset | Owner | Default read | Default write | Git | Move or delete |
+|---|---|---|---|---|---|
+| `inputs/` | User originals | Only the item named by the user | Never overwrite originals; write derivatives to `outputs/` | Never | Only with an explicit user request |
+| `outputs/` | User work results | Only the named task scope | Only derivatives and task state for the named work | Never | Only with an explicit user request |
+| `backup/` | Preserved project history | Only files selected by the active task document | Never | Preserve existing tracking; do not create duplicate backups | Never during normal work |
+| Root, `docs/`, future `tools/`, `skills/`, `tests/` | Reusable framework | Only task-relevant files | Input-independent assets within the approved task scope | Eligible; stage or commit only when requested | Only with an explicit user request |
+| `.git/`, `.agents/`, `.codex/` | Tool metadata | Only settings needed for the task | No direct edits; use approved tool operations | Not applicable | No direct move or delete |
+| Temporary files and caches | Current execution | Only when needed | Outside the repository or in an already ignored path | Never | Clean only items created by the current task |
 
-- 삭제·추가 이동·설치·커밋·푸시·외부 전송은 사용자가 해당 작업을 요청한 범위에서만 한다.
-- 관련 없는 사용자 변경은 보존한다.
-- 한 규칙은 한 문서에만 둔다. 다른 문서는 링크만 한다.
-- 새 문서나 절차는 반복 실패를 막거나 반복 작업을 줄일 때만 추가한다.
-- 개발 중에는 필요한 빠른 확인만 하고, 단계 완료 시 통합 검증을 한 번 실행한다.
-- 쓰기 후 변경 파일의 UTF-8, NUL 바이트, 핵심 내용, 내부 링크를 확인한다.
-- 같은 목표가 세 번 연속 실패하면 중단하고 원인과 최소 선택지를 보고한다.
+- Keep originals and derivatives separate.
+- Never store video-, channel-, person-, or episode-specific facts in reusable framework files.
+- Reuse unchanged results. When inputs or decisions change, create a new version and preserve the prior result unless the user requests cleanup.
+- Do not write temporary files or runtime caches into the repository.
 
-## 시작 순서
+## Naming and path handling
 
-`AGENTS.md` → `PROJECT_RULES.md` → `SESSION_HANDOFF.md` →
-`docs/REBUILD_PLAN.md`의 현재 단계 절.
+- Preserve the existing Korean project path and existing user filenames. Do not rename them retroactively.
+- Use `lower_snake_case` and lowercase ASCII for new internal keys, code identifiers, and command names.
+- When a tool-facing ID or filename needs a portable form, use `[a-z0-9][a-z0-9._-]*` and keep it separate from the user-facing display name.
+- Do not force ASCII naming onto user-owned files or user-facing text.
+- Pass existing Unicode and spaced paths as literal paths. Do not rebuild them through unsafe string concatenation.
+
+## Authorization and change safety
+
+- Delete, move, install, commit, push, publish, upload, send externally, or change permissions only within the user's explicit request.
+- Preserve unrelated user changes in the working tree.
+- Never overwrite user originals or automatically delete previous results.
+- Use deterministic tools for repeatable extraction, transformation, and validation. Use AI for candidates, interpretation, and explanation.
+- Tool completion is not equivalent to content quality, application validation, or user approval.
+- The user makes final content, editing-direction, approval, upload, and external-release decisions.
+
+## Validation and reporting
+
+- Distinguish `generated`, `parsed`, `structure-validated`, `tool-validated`, `app-validated`, and `user-validated` states.
+- After writing a file, verify UTF-8 validity, absence of NUL bytes, expected content, and relevant internal links.
+- During implementation, run only necessary fast checks. Run one integrated validation at task or layer completion.
+- Confirm both a command's exit code and its expected result. Non-zero exits, exceptions, missing dependencies, or partial output are failures.
+- Wrappers preserve child-process failure codes. A completion message or file existence alone is not proof of success.
+- Report unavailable checks as `unverified` and advisory-only results as `advisory`; neither is a pass.
+- Do not promote partial output to current or approved status. Record the cause and restart condition.
+- After three consecutive failures on the same objective, stop and report the cause, risk, and minimum next choices.
