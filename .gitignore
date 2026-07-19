@@ -12,3 +12,11 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Obsidian per-user UI state; stable pilot settings remain reviewable.
+.obsidian/workspace*.json
+.obsidian/appearance.json
+.obsidian/hotkeys.json
+.obsidian/graph.json
+.obsidian/types.json
+.obsidian/cache/

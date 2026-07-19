@@ -9,62 +9,62 @@
 
 ## Current state
 
-- Date: 2026-07-19.
-- Current goal: Await explicit approval to execute the newly planned L3.1 Graphify + Obsidian knowledge-navigation pilot; L5 must wait for an L3.1 `promote` or explicit `defer` decision.
-- Rebuild position: L0-L4 and the backup-independence correction are synthetic-tool-validated.
-- Authorization: The user approved adding the staged integration to the rebuild plan, not installing products, enabling hooks or MCP, moving documents, or changing tool metadata.
-- Data boundary: No real `inputs/` or `outputs/` item is designated; do not enumerate or read user data.
+- Date: 2026-07-19. L3.1 is complete after the missing token comparison was corrected: direct routing remains default and the typed graph is optional validation only.
+- Authorization: Direct routing, optional metadata-only route validation, the bounded helper/tests, existing Ollama/Graphify/Obsidian installation, and stable local Obsidian settings are approved. L5, Graphify-first routing, hooks, MCP, strict mode, cloud/community plugins, document moves, and direct `.codex` edits remain unapproved.
+- Data boundary: No real `inputs/` or `outputs/` item is designated. Exact user-data selectors remain outside the graph and no user data was enumerated or read.
+- Next gate: L5 workflow-rule implementation requires separate explicit approval.
 
 ## Resume checkpoint
 
-- `docs/agent/REBUILD_PLAN.md` now contains one shared knowledge-navigation integration contract, an L3.1 no-move baseline and pilot, and explicit Graphify + Obsidian work, verification, rollback, and gates in L5-L8 and the archive-retirement audit.
-- The planned role split is normative Markdown as source, Obsidian as the local human/agent navigation client, Graphify as a derived query graph, and the verified L3 router as the direct fallback.
-- L3.1 requires a protected-path allowlist, external runtime outputs, three-task before/after measurements, provenance checks, Obsidian application validation, and a `promote`, `revise`, or `defer` user gate.
-- `inputs/`, `outputs/`, `backup/`, `.git/`, `.agents/`, and `.codex/` must never enter the graph. Graphify-generated Obsidian vaults, community plugins, Sync, Publish, strict mode, hooks, MCP, servers, and work memory are not part of the pilot.
-- No product installation, graph generation, vault configuration, document move, metadata migration, or routing implementation has been performed.
+- `AGENTS.md#selection-protocol` requires route-ID selection, explicit affected/named/designated selectors, no link-triggered reads, one-hop traversal, and fail-closed direct fallback.
+- The registry defines two orthogonal indexes only: task-time routing in `AGENTS.md` and document classification in the registry; no third hand-maintained catalog is allowed.
+- New documents must have one durable purpose, six header fields, one registry row, correct audience/lifecycle folder, stable ID/name, typed relationships, and same-change route/link/test updates.
+- Split when authority, audience/language, lifecycle, read trigger, write owner, or repeated task context differs; merge only duplicate ownership with the same attributes.
+- External `typed-route-v1/route-graph.json` contains 13 routes, 13 write routes, 18 document metadata nodes, and 68 edges. Its audit has zero protected paths, stale sources, invalid edges, or orphans.
+- On the historical corpus, compact typed routing totals 5,188, 8,878, and 8,208 tokens: exact selection but +13, +30, and +22 over direct. Current-content deltas are identical because both paths read the same documents.
+- The prior Ollama semantic graph is preserved as evidence but deferred: generic two-hop relationships selected excess context in all three benefit comparisons and cannot select execution authorities.
+- Obsidian 1.12.7 still opens the original `김실버유튜브` vault in place with standard links, no Sync/Publish, and zero community plugins. Ollama remains local and is not required for typed-route queries.
 
 ## Verification state
 
 | Target | Level | Evidence |
 |---|---|---|
-| Obsidian adoption report | structure-validated | Korean governance metadata, expected sections, source links, registry entry, UTF-8/NUL, and local-link checks pass. |
-| Staged rebuild plan | tool-validated | Required L3.1 and L5-L8 sections, UTF-8/NUL, local links, context budgets, and thirty-three `unittest` document, routing, state, and schema tests pass. |
-| Graphify, Obsidian, and proposed node architecture | unimplemented | Plan and research are validated as documents only; product behavior in this workspace remains unverified. |
-| Real video-task operation | unverified | No user-designated sample or application validation. |
+| Document architecture | tool-validated | Stable task/write/document IDs, metadata and naming rules, two-index navigation, explicit selectors, and split/merge lifecycle rules are covered by routing/governance tests. |
+| Typed route graph | tool-validated optional | External build and audit pass at 13 routes, 13 write routes, 18 documents, 68 one-hop edges, zero protected/stale/invalid/orphan results; it is not the default route. |
+| Token benefit | tool-validated failure | Exact selection passes, but compact output adds 13/30/22 tokens; direct routing wins all three profiles and remains default. |
+| Integrated framework | tool-validated | The isolated interpreter passes 47/47 tests; final UTF-8/NUL, link, diff, 70-line handoff, external graph freshness, and repository-output checks pass after this write. |
 
 ## Failure ledger
 
-| Objective | Attempt | Result / cause | Consecutive count | Next condition |
+| Objective | Attempt/version | Result / cause | Consecutive count | Next condition |
 |---|---|---|---:|---|
-| Stage Graphify + Obsidian across the rebuild plan | Current request | Completed with L3.1, L5-L8, rollback, and archive-gate placement; all document tests pass | 0 | Await L3.1 execution approval |
-| Integrated validation | `pytest` attempts 1-2 | Shell Python was unavailable, then bundled Python lacked `pytest`; resolved by bundled Python `unittest discover` with 33/33 passing | 0 after success | Use bundled Python with `unittest discover` unless pytest is explicitly installed |
+| Semantic navigation benefit | Comparisons v1-v3 | Generic semantic BFS selected excess context or added overhead in every profile | 3; stopped and deferred | New evidence and a separately approved semantic design only |
+| Typed-route unit checks | Current attempts 1-4 | PATH and duplicate-table fixes passed; a later literal wording check was aligned to the one-hop semantic contract | 0 after success | Keep heading-bounded parsing and contract-level assertions |
+| Document governance checks | Current attempts 1-2 | Tests initially selected the wrong table and one explanatory path literal violated independence checks; bounded lookup and wording passed 15/15 | 0 after success | Keep route tables independently scoped and avoid operational archive routes |
+| Typed-route token benefit | `typed-comparison-v2` | Exact authorities, but +13/+30/+22 tokens and about 133-164 ms query time versus direct selection near 0.010 ms | 1; gate failed | Keep direct default; use typed graph only for ambiguity or large-set validation |
 
 ## Active blockers and risks
 
-- L3.1 cannot start without explicit approval for both installers, the external Graphify runtime-output location, the allowed source manifest, and the document semantic-analysis backend.
-- If Graphify cannot keep pilot caches and runtime artifacts outside the repository or cannot prove zero protected-path nodes, stop L3.1 rather than weakening the boundary by inference.
-- Automatic installer edits to `AGENTS.md` or `.codex`, hooks, strict mode, MCP, servers, Obsidian community plugins, Sync, Publish, and generated work memory remain separately gated.
-- L5-L8 implementation, document migration, real user-data reads, and archive deletion remain separately gated.
+- L5 is not approved. Do not infer workflow-rule implementation or Graphify-first routing from L3.1 completion.
+- Changes to `AGENTS.md` or `docs/agent/DOCUMENT_REGISTRY.md` make the external typed graph stale; queries must fail closed until it is regenerated.
+- Obsidian exclusions are navigation hints, not access control. Protected paths remain unavailable without an exact user-named item and purpose.
+- Do not revive generic semantic traversal, enable integrations, or index document bodies by inference.
 
 ## Important artifacts
 
 | Path | Status | Role |
 |---|---|---|
-| `docs/agent/REBUILD_PLAN.md` | active tool-validated authority | Controls the staged L3.1 and L5-L8 integration sequence |
-| `docs/reports/2026-07-19_옵시디언_도입_타당성_분석.md` | structure-validated evidence | Current adoption analysis and bounded-pilot recommendation |
-| `docs/reports/2026-07-19_문서_노드_구조_개선_분석.md` | historical structure-validated evidence | Prior L3 node and context-budget proposal |
+| `AGENTS.md` | active authority | Task/read/write routing and deterministic selection protocol |
+| `docs/agent/DOCUMENT_REGISTRY.md` | active authority | Document contract, classification, placement, naming, lifecycle, relationship, and navigation index |
+| `tools/knowledge_navigation.py` and `tests/test_knowledge_navigation.py` | tool-validated implementation | Generate, audit, and query the typed graph; preserve the bounded semantic-pilot audits |
+| `C:/Users/Hugh/AppData/Local/graphify/kim-silver-youtube-l3-1/typed-route-v1/` | external derived evidence | Route graph, current direct snapshot, and typed comparison v2; exact but token-negative, so optional only |
 
 ## First next action
 
-1. Ask whether the user approves L3.1 execution and obtain the four pending choices listed in the L3.1 plan gate.
-2. If approved, read only the L3.1 section, its shared integration contract, the applicable rebuild principles, and the relevant reconstruction-map row before installation.
-3. Establish the direct-routing baseline before installing or generating anything, then execute only the bounded no-move pilot.
-4. Do not start L5, index or read user data, activate always-on integration, or delete the migration archive by inference.
+1. Ask for separate L5 approval. If approved, use the direct `design_l5_workflow` route; invoke the typed graph only for ambiguity validation and do not read user data or enable integrations by inference.
 
 ## Next-session start prompt
 
 ```text
-Read PROJECT_RULES.md and SESSION_HANDOFF.md.
-The rebuild plan now stages Graphify + Obsidian through L3.1 and L5-L8, but installation and execution remain unapproved.
-Wait for L3.1 approval; if approved, read its plan section, shared integration contract, applicable principles, and relevant reconstruction decision before making changes.
+Read PROJECT_RULES.md and SESSION_HANDOFF.md. L3.1 is complete with direct routing as default; typed Graphify is optional and semantic traversal is deferred. Ask for separate L5 approval.
 ```

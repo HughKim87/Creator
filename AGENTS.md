@@ -15,23 +15,32 @@
 4. If a required authority is missing or ambiguous, stop and read `docs/agent/DOCUMENT_REGISTRY.md`; do not guess from filenames.
 5. Do not bulk-read `docs/`, `inputs/`, or `outputs/`.
 
+## Selection protocol
+
+1. Map the request to one stable route ID below. For independent intents, union only the applicable rows and deduplicate the result.
+2. Read the startup set, then the exact read delta. Resolve an `affected`, `named`, or `designated` selector to a document ID, bounded heading, or exact user-named item before opening it.
+3. A document link, registry relationship, Graphify semantic edge, or nearby folder is not a read trigger by itself.
+4. Use this table directly for a known route. Invoke the derived Graphify route graph only to resolve or validate ambiguity or a large affected set; when invoked, it may traverse one hop over `always_read`, `read_when_current_work`, or `requires` edges and must never continue from document nodes.
+5. If the route graph is stale, ambiguous, missing a selector, or disagrees with this table, use this table directly and fail closed on the unresolved part.
+6. If no route applies, use `docs/agent/DOCUMENT_REGISTRY.md` to identify the narrowest authority. Add a route only when the task type is expected to recur.
+
 ## Task routing
 
-| Task | Read in addition to startup | Do not read by default |
-|---|---|---|
-| Resume or report current work | No additional document | Plans, contracts, and reports |
-| Execute or review a rebuild layer | Only affected sections in `docs/agent/REBUILD_PLAN.md` | Other layers and historical reports |
-| Audit L0-L4 or review a reconstructed capability | Affected plan sections, relevant rows in `docs/agent/RECONSTRUCTION_MAP.md`, and only the active authorities named there | Migration sources, unrelated documents, and user data |
-| Read, write, validate, or migrate video-task state | `docs/agent/FILE_DATA_CONTRACT.md` and only the designated task state | Other task directories and unrelated contracts |
-| Change rebuild direction, scope, or exceptions | Relevant section of `docs/agent/REBUILD_PRINCIPLES.md` and the affected plan section | Unrelated plan sections |
-| Design L5 workflow rules | L5 plan section, `docs/agent/WORKFLOW_FOUNDATION.md`, `docs/agent/EDITING_QUALITY_RULES.md`, and the state contract | Migration sources, tool implementation details, and other layers |
-| Select or implement an L7 tool | L7 plan section, relevant capability in `docs/agent/TOOL_REQUIREMENTS.md`, and its active consumer contract | Unselected capabilities and migration sources |
-| Select or implement an L8 skill | L8 plan section, relevant responsibility in `docs/agent/SKILL_REQUIREMENTS.md`, and its active stage/tool contracts | Unselected skills and migration sources |
-| Add, replace, defer, or remove a framework capability | Relevant row in `docs/agent/RECONSTRUCTION_MAP.md`, then only its active authority | Migration sources and unrelated capabilities |
-| Change or audit document architecture | `docs/agent/DOCUMENT_REGISTRY.md` and affected active documents | Document bodies unrelated to the change |
-| Review current user status | `docs/user/PROJECT_STATUS.md` | Agent plans and historical reports |
-| Investigate project history or a superseded proposal | Only the specifically requested file in `docs/reports/` | Active authorities unless needed to show supersession |
-| Work on user data | Only the exact `inputs/` or `outputs/` item and purpose named by the user | Directory enumeration and unrelated data |
+| Route ID | Task intent | Required read delta | Selector before read | Do not read by default |
+|---|---|---|---|---|
+| `resume_current_work` | Resume or report current work | None | None | Plans, contracts, and reports |
+| `execute_rebuild_layer` | Execute or review a rebuild layer | `docs/agent/REBUILD_PLAN.md` | Affected layer section only | Other layers and historical reports |
+| `audit_reconstructed_capability` | Audit L0-L4 or review a reconstructed capability | `docs/agent/REBUILD_PLAN.md` and `docs/agent/RECONSTRUCTION_MAP.md` | Affected sections, relevant rows, and only active authorities named there | Migration sources, unrelated documents, and user data |
+| `handle_video_task_state` | Read, write, validate, or migrate video-task state | `docs/agent/FILE_DATA_CONTRACT.md` | Exact designated task `state.json` | Other task directories and unrelated contracts |
+| `change_rebuild_scope` | Change rebuild direction, scope, or exceptions | `docs/agent/REBUILD_PRINCIPLES.md` and `docs/agent/REBUILD_PLAN.md` | Relevant principle and affected plan section | Unrelated plan sections |
+| `design_l5_workflow` | Design L5 workflow rules | `docs/agent/REBUILD_PLAN.md`, `docs/agent/WORKFLOW_FOUNDATION.md`, `docs/agent/EDITING_QUALITY_RULES.md`, and `docs/agent/FILE_DATA_CONTRACT.md` | L5 plan section and applicable contract sections | Migration sources, tool implementation details, and other layers |
+| `select_l7_tool` | Select or implement an L7 tool | `docs/agent/REBUILD_PLAN.md` and `docs/agent/TOOL_REQUIREMENTS.md` | L7 section, relevant capability, and active consumer contract | Unselected capabilities and migration sources |
+| `select_l8_skill` | Select or implement an L8 skill | `docs/agent/REBUILD_PLAN.md` and `docs/agent/SKILL_REQUIREMENTS.md` | L8 section, relevant responsibility, and active stage/tool contracts | Unselected skills and migration sources |
+| `change_framework_capability` | Add, replace, defer, or remove a framework capability | `docs/agent/RECONSTRUCTION_MAP.md` | Relevant row, then only its active authority | Migration sources and unrelated capabilities |
+| `change_document_route` | Change or audit document architecture | `docs/agent/DOCUMENT_REGISTRY.md` | Affected active documents only | Document bodies unrelated to the change |
+| `review_user_status` | Review current user status | `docs/user/PROJECT_STATUS.md` | None | Agent plans and historical reports |
+| `review_history` | Investigate project history or a superseded proposal | None | Exact named file in `docs/reports/` | Other reports and active authorities unless needed to show supersession |
+| `work_on_user_data` | Work on user data | None | Exact user-named `inputs/` or `outputs/` item and purpose | Directory enumeration and unrelated data |
 
 ## Validated representative profiles
 
@@ -43,20 +52,20 @@
 
 ## Write-back routing
 
-| Information changed | Write to |
-|---|---|
-| Project-wide rule | `PROJECT_RULES.md` |
-| Current stage, blocker, active failure, verification, or next action | `SESSION_HANDOFF.md` |
-| Document classification or reference relationship | `docs/agent/DOCUMENT_REGISTRY.md` |
-| Rebuild principle or stop condition | `docs/agent/REBUILD_PRINCIPLES.md` |
-| Layer scope, deliverable, verification, rollback, or gate | `docs/agent/REBUILD_PLAN.md` |
-| File-state schema or lifecycle behavior | `docs/agent/FILE_DATA_CONTRACT.md` and its schema/tests |
-| Capability reconstruction, deferral, or exclusion decision | `docs/agent/RECONSTRUCTION_MAP.md` |
-| Workflow foundation requirement | `docs/agent/WORKFLOW_FOUNDATION.md` |
-| Editing-quality requirement | `docs/agent/EDITING_QUALITY_RULES.md` |
-| Reusable tool requirement | `docs/agent/TOOL_REQUIREMENTS.md` |
-| Workflow skill requirement | `docs/agent/SKILL_REQUIREMENTS.md` |
-| Current user-facing milestone | `docs/user/PROJECT_STATUS.md` |
-| Point-in-time analysis | A Korean file in `docs/reports/`, marked historical or superseded |
+| Write ID | Information changed | Write to |
+|---|---|---|
+| `global_rule` | Project-wide rule | `PROJECT_RULES.md` |
+| `current_state` | Current stage, blocker, active failure, verification, or next action | `SESSION_HANDOFF.md` |
+| `document_classification` | Document classification or reference relationship | `docs/agent/DOCUMENT_REGISTRY.md` |
+| `rebuild_principle` | Rebuild principle or stop condition | `docs/agent/REBUILD_PRINCIPLES.md` |
+| `rebuild_plan` | Layer scope, deliverable, verification, rollback, or gate | `docs/agent/REBUILD_PLAN.md` |
+| `file_state_contract` | File-state schema or lifecycle behavior | `docs/agent/FILE_DATA_CONTRACT.md` and its schema/tests |
+| `capability_decision` | Capability reconstruction, deferral, or exclusion decision | `docs/agent/RECONSTRUCTION_MAP.md` |
+| `workflow_foundation` | Workflow foundation requirement | `docs/agent/WORKFLOW_FOUNDATION.md` |
+| `editing_quality` | Editing-quality requirement | `docs/agent/EDITING_QUALITY_RULES.md` |
+| `tool_requirement` | Reusable tool requirement | `docs/agent/TOOL_REQUIREMENTS.md` |
+| `skill_requirement` | Workflow skill requirement | `docs/agent/SKILL_REQUIREMENTS.md` |
+| `user_milestone` | Current user-facing milestone | `docs/user/PROJECT_STATUS.md` |
+| `point_in_time_report` | Point-in-time analysis | A Korean file in `docs/reports/`, marked historical or superseded |
 
 Do not duplicate a durable rule, state, plan, classification, or decision. Link to its authority instead.

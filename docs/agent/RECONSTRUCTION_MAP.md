@@ -37,6 +37,9 @@ an active destination, it is incomplete and must be reconstructed before the dep
 
 | Capability | Retained behavior | Active authority | Activation | Status |
 |---|---|---|---:|---|
+| Typed task-route navigation | Keep direct Markdown routing as default and provide an optional metadata-only Graphify-compatible validator with stable IDs, compact deltas, one-hop selection, exact source hashes, selectors, and fail-closed fallback | `AGENTS.md#selection-protocol`, `docs/agent/DOCUMENT_REGISTRY.md#derived-graphify-route-graph`, and `docs/agent/REBUILD_PLAN.md#l31--graphify--obsidian-knowledge-navigation-pilot` | L3.1 | implemented |
+| Obsidian local review client | Review the original Markdown in place with standard links, core navigation, protected-folder UI exclusions, and no cloud or community plugins | `docs/agent/REBUILD_PLAN.md#knowledge-navigation-integration-contract` | L3.1 | implemented |
+| Semantic document-relationship discovery | Preserve the audited semantic graph as evidence only; generic relationship traversal cannot select execution authorities after three benefit comparisons returned excess context or overhead | `docs/agent/REBUILD_PLAN.md#l31--graphify--obsidian-knowledge-navigation-pilot` | Future measured need | deferred |
 | Production routes and stage responsibilities | Pre-shoot and recorded-footage routes, analysis before planning, stage boundaries, gates, and user decisions | `docs/agent/WORKFLOW_FOUNDATION.md` | L5 | specified |
 | Evidence-based planning | Audience promise, one central message, evidence spine, character change, counterevidence, calibration brief, and self-review | `docs/agent/WORKFLOW_FOUNDATION.md#planning-requirements` | L5 | specified |
 | Editing quality judgment | Candidate ranges, microbeats, rhythm modes, sampling, evidence separation, self-validation, and promotion gates | `docs/agent/EDITING_QUALITY_RULES.md` | L5 and L8 | specified |

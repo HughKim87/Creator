@@ -1,0 +1,17 @@
+{
+  "alwaysUpdateLinks": true,
+  "newLinkFormat": "relative",
+  "promptDelete": true,
+  "showUnsupportedFiles": false,
+  "useMarkdownLinks": true,
+  "userIgnoreFilters": [
+    "inputs/",
+    "outputs/",
+    "backup/",
+    ".git/",
+    ".agents/",
+    ".codex/",
+    "tools/",
+    "tests/"
+  ]
+}

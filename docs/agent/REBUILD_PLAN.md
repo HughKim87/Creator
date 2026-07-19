@@ -12,17 +12,17 @@
 - Approved sequence: L0 through L8, with a user gate after every layer; the plan now inserts an L3.1
   knowledge-navigation refinement before L5.
 - Completed: L0 through L4.
-- Current gate: L3.1 is planned but its installation and pilot execution have not been approved.
-- First unstarted layer: L3.1 — Graphify + Obsidian Knowledge-Navigation Pilot.
-- L5 remains unapproved and cannot start until the L3.1 gate either passes or is explicitly deferred.
+- Current gate: The typed-route comparison is complete. It selects exact authorities but adds 13, 30, and 22 tokens over direct routing for the three profiles, so direct routing remains default; the typed graph is optional validation and semantic traversal remains deferred.
+- Active layer: L3.1 complete — direct task routing is default, the typed route graph is an optional derived validator, and no Graphify path selects authorities by default.
+- L5 remains unapproved and requires a separate user gate.
 - User-directed document reorganization after L1 supplied the initial L3 routing structure; L3 then measured and regression-tested three representative profiles.
 - The post-L4 supplement separated agent, user, and report documents; added a document registry and governance checks; and hardened schema, input identity, output promotion, validation scope, and approval scope.
 - Required migration-source knowledge has been reconstructed into active workflow, editing-quality, tool, and skill requirement documents. Active execution must not depend on the temporary migration archive.
 - The later document-node analysis found that mandatory startup and future L5 context remain costly and that
   semantic duplication and registry double-entry remain unresolved; those observed costs justify a bounded
   navigation pilot under the rebuild principles.
-- L2 through L4 and the supplement used synthetic data only. No real user-data mapping, Obsidian or Graphify
-  installation, plugin or hook activation, tool recovery, or L5 implementation is authorized yet.
+- L2 through L4 and navigation verification use framework documents and synthetic exact-item paths only. No real
+  user-data mapping, plugin or hook activation, semantic Graphify promotion, or L5 implementation is authorized.
 
 ## Backup independence rule
 
@@ -72,17 +72,20 @@ This contract applies to L3.1 and to the Graphify or Obsidian work explicitly de
    human and agent navigation client; Graphify is a derived relationship index and query layer.
 2. Graphify `EXTRACTED`, `INFERRED`, or `AMBIGUOUS` edges are retrieval evidence, not authority decisions.
    Every normative answer or change must resolve to an active source file before use.
-3. Do not generate a second Obsidian vault or duplicate project notes from Graphify. Open the approved original
+3. Task-time authority selection uses a generated typed route graph derived only from `AGENTS.md` and
+   `docs/agent/DOCUMENT_REGISTRY.md`. It resolves an explicit route ID and traverses one whitelisted edge;
+   document-node expansion and generic semantic relationships are prohibited.
+4. Do not generate a second Obsidian vault or duplicate project notes from Graphify. Open the approved original
    Markdown scope in place and keep generated views or graphs non-authoritative.
-4. Never index, enumerate, copy, or expose `inputs/`, `outputs/`, `backup/`, `.git/`, `.agents/`, or `.codex/`.
+5. Never index, enumerate, copy, or expose `inputs/`, `outputs/`, `backup/`, `.git/`, `.agents/`, or `.codex/`.
    Use an allowlist-oriented `.graphifyignore` or an equivalent bounded source manifest and verify the resulting
    graph contains zero protected-path nodes.
-5. Keep Graphify caches, costs, converted files, and runtime output outside the repository during the pilot.
+6. Keep Graphify caches, costs, converted files, and runtime output outside the repository during the pilot.
    If the tool cannot satisfy that boundary, stop the layer and request a scoped design decision; do not create
    `graphify-out/` in the repository by inference.
-6. The L3 router and direct Markdown read path remain the fallback when Obsidian, Graphify, their caches, or their
+7. The L3 router and direct Markdown read path remain the fallback when Obsidian, Graphify, their caches, or their
    model backend are unavailable or stale.
-7. Community plugins, Obsidian Sync or Publish, Graphify strict mode, automatic hooks, MCP, shared servers, and
+8. Community plugins, Obsidian Sync or Publish, Graphify strict mode, automatic hooks, MCP, shared servers, and
    generated work-memory or reflection files require their own measured need and explicit approval.
 
 ## Layer sequence
@@ -94,7 +97,7 @@ This contract applies to L3.1 and to the Graphify or Obsidian work explicitly de
 | L2 | File-based work state and safe I/O | L1 | Complete |
 | L3 | Task-specific document routing and efficient read/write profiles | L2 | Complete |
 | L4 | Minimal file lifecycle, version, current, and approval rules | L2 and L3 | Complete |
-| L3.1 | Bounded Graphify + Obsidian baseline, pilot, and promotion decision | L3 and L4 | Planned; implementation not approved |
+| L3.1 | Bounded Graphify + Obsidian baseline, typed-route redesign, and promotion decision | L3 and L4 | Complete; typed route implemented, semantic traversal deferred |
 | L5 | Human-readable YouTube production workflow rules | L3.1 and L4 | Not started |
 | L6 | Workflow folder, file, and state structure | L5 | Not started |
 | L7 | Selected workflow tools and thin entry points | L6 | Not started |
@@ -203,6 +206,8 @@ This contract applies to L3.1 and to the Graphify or Obsidian work explicitly de
      active Markdown sources. Bound graph-query output and total document context separately.
   6. Compare the new results with the direct-routing baseline and test the direct fallback with Graphify and
      Obsidian unavailable.
+  7. After the semantic design failed three comparisons, generate a separate metadata-only route graph from the
+     router and registry, use stable route/write IDs, and restrict task selection to one whitelisted hop.
 - Modify: Only an approved stable metadata schema, source allowlist or `.graphifyignore`, bounded navigation
   helper, tests, and selected stable Obsidian configuration. Do not let an installer overwrite `AGENTS.md` or
   directly edit `.codex` during this layer.
@@ -210,31 +215,37 @@ This contract applies to L3.1 and to the Graphify or Obsidian work explicitly de
   sources, and the rule that reports are not execution inputs.
 - Complete when:
   1. All three tasks return the correct active authority with zero protected-path nodes or reads.
-  2. Graph query plus selected source context is lower than the direct baseline without a wrong-document increase.
+  2. Typed-route results equal the direct minimum set, load zero graph document bodies, perform zero document-node
+     expansion, and remain unchanged when unrelated registered documents are present.
   3. Each normative result is traceable to a source path and Graphify confidence is visibly distinguished from
      source-validated fact.
   4. Obsidian opens the original Markdown, resolves standard links, displays Korean and English metadata, and
      creates no duplicate source hierarchy.
   5. Direct routing still completes the same tasks when both products are unavailable or the graph is stale.
-- Verify: UTF-8/NUL and link checks, graph protected-path audit, stale-graph detection, three-task context and
-  timing comparison, Obsidian application checks, Graphify uninstall/rollback rehearsal, and the integrated
-  document-routing suite.
+  6. A Graphify path becomes default only when its compact query payload plus selected source context is lower
+     than the same direct route without a wrong-authority increase.
+- Verify: UTF-8/NUL and link checks, graph protected-path audit, exact authority hashes, one-hop edge whitelist,
+  missing-selector and stale-graph rejection, three-task exact-selection checks, Obsidian application checks,
+  direct fallback, and the integrated document-routing suite.
 - Rollback: Uninstall only the pilot tools and stable pilot configuration, remove only current-layer external
   outputs, and retain the verified direct router and original Markdown unchanged.
-- Next gate: The user chooses `promote`, `revise`, or `defer`. Only `promote` permits L5 to use Graphify-first
-  discovery; `defer` keeps direct routing and still permits L5 after explicit approval.
-- Status: Planned; installation and execution are not approved by this plan edit.
+- Next gate: L3.1 is complete. L5 may start only after separate explicit approval and must use the direct router
+  by default; the typed graph is on-demand validation and semantic Graphify traversal cannot select authorities.
+- Status: Direct routing wins the final token gate. On the historical corpus the typed graph estimates 5,188,
+  8,878, and 8,208 tokens versus direct 5,175, 8,848, and 8,186; current deltas remain +13, +30, and +22.
+  The typed graph stays implemented but optional, while the earlier semantic content graph remains deferred.
 
 ## L5 — Workflow Rules
 
 - Objective: Convert the reconstructed production foundation into concise human-readable inputs, outputs, completion criteria, and user decisions.
 - Read: The knowledge-navigation integration contract; `docs/agent/WORKFLOW_FOUNDATION.md`,
-  `docs/agent/EDITING_QUALITY_RULES.md`, the L4 state contract, and only this L5 section. If L3.1 was promoted,
-  query Graphify for candidates first but still read the declared active sources.
+  `docs/agent/EDITING_QUALITY_RULES.md`, the L4 state contract, and only this L5 section. Select them through
+  the direct route `design_l5_workflow`; use the typed graph only for ambiguity validation and do not use
+  semantic Graphify relationships.
 - Work: Create `docs/agent/WORKFLOW_RULES.md` with pre-shoot and recorded-footage routes, one to three completion criteria per stage, user decision points, validation levels, stable node metadata, and standard Markdown relationships visible in Obsidian and Graphify.
 - Preserve: Stage numbering, analysis-before-planning order (`6 -> 5` for recorded footage), 7A-7D judgment knowledge, evidence scope, and user creative authority.
-- Complete when: One active document identifies the required input, output, completion, and next user decision for each stage, its complete read path contains no `backup/` dependency, and any promoted graph route selects the same authorities within the L3.1 context budget.
-- Verify: Walk through both workflow routes, reject missing stages or an incorrect `5 -> 6` order, check Obsidian links and metadata, compare Graphify selection with the direct fallback, and reject inferred edges used as authority.
+- Complete when: One active document identifies the required input, output, completion, and next user decision for each stage, its complete read path contains no `backup/` dependency, and the typed route selects the same authorities as the direct fallback.
+- Verify: Walk through both workflow routes, reject missing stages or an incorrect `5 -> 6` order, check Obsidian links and metadata, compare typed-route selection with the direct fallback, and reject semantic edges used as authority.
 - Rollback: Remove only the new active workflow rule; keep the reconstructed foundation unchanged.
 - Next gate: User confirms the simplification and decision points.
 - Status: Not started.
@@ -256,9 +267,9 @@ This contract applies to L3.1 and to the Graphify or Obsidian work explicitly de
 
 - Objective: Connect only frequently used state, transition, media, and validated knowledge-navigation operations through trustworthy thin entry points.
 - Read: The knowledge-navigation integration contract, L3.1 measurements, L6 structure, measured task frequency, the selected capability in `docs/agent/TOOL_REQUIREMENTS.md`, and its active consumer contract.
-- Work: Classify tools, activate at most two selected workflow commands, and repair exit codes, timeouts, parsing, reuse, and error messages. If the L3.1 benefit persists, harden the existing Graphify query/update helper with source-boundary, stale-index, provenance, budget, and direct-fallback checks before considering any always-on integration.
+- Work: Classify tools, activate at most two selected workflow commands, and repair exit codes, timeouts, parsing, reuse, and error messages. Keep the typed route helper bounded by source hashes, one-hop edges, selectors, and direct fallback; consider always-on integration only after repeated navigation cost is measured.
 - Preserve: Unselected capabilities as `specified`, `deferred`, or `excluded`; do not claim Premiere or media validation before real tests, and do not enable Graphify hooks, strict mode, MCP, shared HTTP, work memory, or Obsidian community plugins by inference.
-- Complete when: Each selected operation has predictable success, failure, and rerun behavior through one active entry point, with active tests and no archive import, command, fixture, or documentation dependency; a promoted navigation entry point must also fail closed on protected scope and fail over to direct routing when unavailable.
+- Complete when: Each selected operation has predictable success, failure, and rerun behavior through one active entry point, with active tests and no archive import, command, fixture, or documentation dependency; an active navigation entry point must also fail closed on protected scope and fail over to direct routing when unavailable.
 - Verify: Selected regressions, reproduced failures, graph refresh and stale-cache failures, installer change review, uninstall rollback, one user-approved real file, and application/A/V validation where applicable.
 - Rollback: Remove the thin integration and tool changes only.
 - Next gate: Only tools with measured time or error reduction proceed to L8.
@@ -268,9 +279,9 @@ This contract applies to L3.1 and to the Graphify or Obsidian work explicitly de
 
 - Objective: Align only confirmed-use skills with the L2-L7 state, paths, tools, completion rules, and validated navigation route.
 - Read: The knowledge-navigation integration contract, the selected responsibility in `docs/agent/SKILL_REQUIREMENTS.md`, L5 rules, L6 paths, L7 active tools, and user-confirmed use.
-- Work: Classify responsibilities as implement, defer, or exclude; create each selected active skill with input, output, stop, user decision, handoff, Graphify-query-first when promoted, source-validation, and direct-fallback contracts.
+- Work: Classify responsibilities as implement, defer, or exclude; create each selected active skill with input, output, stop, user decision, handoff, typed-route selection when a route exists, source validation, and direct-fallback contracts.
 - Preserve: Unselected responsibilities as documented decisions; do not implement every skill or make a derived graph the only path to required instructions.
-- Complete when: A selected active skill completes one representative stage without a routing, handoff, or archive dependency through both the promoted navigation route and the direct fallback.
+- Complete when: A selected active skill completes one representative stage without a routing, handoff, or archive dependency through both the typed navigation route and the direct fallback.
 - Verify: Representative execution, bounded graph retrieval, source-file confirmation, protected-path exclusion, output registration, stop condition, user decision transfer, graph-unavailable fallback, and next-stage resume.
 - Rollback: Revert only the affected skill changes.
 - Final gate: Run the archive-retirement gate, then the user chooses whether to retire the migration archive, address another observed bottleneck, or begin real production.
@@ -283,7 +294,7 @@ This contract applies to L3.1 and to the Graphify or Obsidian work explicitly de
 - Check: Every retained capability is implemented or fully specified in an active destination; active documents,
   code, tests, fixtures, commands, Obsidian configuration, and Graphify source manifests have no operational
   `backup/` reference; all active tests and the direct navigation fallback pass without archive access; deferred
-  and excluded items have explicit rationale. Regenerate any promoted graph from active allowlisted paths only
+  and excluded items have explicit rationale. Regenerate the typed route graph from its two active authorities
   and verify it contains no archive or protected-path node. Treat graph results as advisory to the deterministic
   active-reference scan.
 - Report: Produce a Korean readiness report listing any remaining dependency. Do not delete anything while a
@@ -296,8 +307,7 @@ This contract applies to L3.1 and to the Graphify or Obsidian work explicitly de
 
 | Layer | Decision required before work |
 |---:|---|
-| L3.1 | Approval to install Obsidian and Graphify, the external runtime-output location, allowed source manifest, and document semantic-analysis backend |
-| L5 | L3.1 `promote` or explicit `defer`, then approval to build the active workflow rule from reconstructed requirements |
+| L5 | Approval to build the active workflow rule from reconstructed requirements; typed routes are available and semantic Graphify authority selection is deferred |
 | L6 | One exact real or synthetic structure sample |
 | L7 | Selected frequent tools, current Premiere/OS environment, and whether measured navigation benefit justifies any always-on Graphify integration; hooks and MCP remain separate decisions |
 | L8 | Which reconstructed skill responsibilities are actually used |

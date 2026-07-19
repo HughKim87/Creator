@@ -11,13 +11,40 @@ AGENTS_PATH = Path(__file__).resolve().parents[1] / "AGENTS.md"
 
 def profile_cells(profile: str) -> list[str]:
     prefix = f"| `{profile}` |"
-    for line in AGENTS_PATH.read_text(encoding="utf-8").splitlines():
+    lines = AGENTS_PATH.read_text(encoding="utf-8").splitlines()
+    start = lines.index("## Validated representative profiles")
+    for line in lines[start + 1:]:
+        if line.startswith("## "):
+            break
         if line.startswith(prefix):
             return [cell.strip() for cell in line.strip("|").split("|")]
     raise AssertionError(f"missing routing profile {profile!r}")
 
 
+def route_cells(route_id: str) -> list[str]:
+    prefix = f"| `{route_id}` |"
+    lines = AGENTS_PATH.read_text(encoding="utf-8").splitlines()
+    start = lines.index("## Task routing")
+    for line in lines[start + 1:]:
+        if line.startswith("## "):
+            break
+        if line.startswith(prefix):
+            return [cell.strip() for cell in line.strip("|").split("|")]
+    raise AssertionError(f"missing task route {route_id!r}")
+
+
 class DocumentRoutingTests(unittest.TestCase):
+    def test_task_routes_have_stable_ids_and_explicit_selectors(self) -> None:
+        architecture = route_cells("change_document_route")
+        self.assertEqual(architecture[0], "`change_document_route`")
+        self.assertIn("`docs/agent/DOCUMENT_REGISTRY.md`", architecture[2])
+        self.assertIn("Affected active documents only", architecture[3])
+        state = route_cells("handle_video_task_state")
+        self.assertIn("Exact designated task `state.json`", state[3])
+        agents = AGENTS_PATH.read_text(encoding="utf-8")
+        self.assertIn("traverse one hop", agents)
+        self.assertIn("must never continue from document nodes", agents)
+
     def test_resume_profile_reads_only_global_rules_and_current_state(self) -> None:
         cells = profile_cells("resume_current_work")
         read_set = cells[1]
