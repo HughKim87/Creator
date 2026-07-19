@@ -9,14 +9,20 @@
 
 ## Current plan state
 
-- Approved sequence: L0 through L8, with a user gate after every layer.
+- Approved sequence: L0 through L8, with a user gate after every layer; the plan now inserts an L3.1
+  knowledge-navigation refinement before L5.
 - Completed: L0 through L4.
-- Current gate: L5 has not been approved.
-- First unstarted layer: L5 — Human-Readable Workflow Rules.
+- Current gate: L3.1 is planned but its installation and pilot execution have not been approved.
+- First unstarted layer: L3.1 — Graphify + Obsidian Knowledge-Navigation Pilot.
+- L5 remains unapproved and cannot start until the L3.1 gate either passes or is explicitly deferred.
 - User-directed document reorganization after L1 supplied the initial L3 routing structure; L3 then measured and regression-tested three representative profiles.
 - The post-L4 supplement separated agent, user, and report documents; added a document registry and governance checks; and hardened schema, input identity, output promotion, validation scope, and approval scope.
 - Required migration-source knowledge has been reconstructed into active workflow, editing-quality, tool, and skill requirement documents. Active execution must not depend on the temporary migration archive.
-- L2 through L4 and the supplement used synthetic data only. No real user-data mapping, plugin installation, tool recovery, or L5 implementation is authorized yet.
+- The later document-node analysis found that mandatory startup and future L5 context remain costly and that
+  semantic duplication and registry double-entry remain unresolved; those observed costs justify a bounded
+  navigation pilot under the rebuild principles.
+- L2 through L4 and the supplement used synthetic data only. No real user-data mapping, Obsidian or Graphify
+  installation, plugin or hook activation, tool recovery, or L5 implementation is authorized yet.
 
 ## Backup independence rule
 
@@ -53,8 +59,31 @@ The following requirements apply to every layer:
 | User-facing current summary | `docs/user/PROJECT_STATUS.md` |
 | Historical structure analysis | `docs/reports/PROJECT_STRUCTURE_ANALYSIS.md` |
 | Superseded first implementation proposal | `docs/reports/REBUILD_EXECUTION_REPORT.md` |
+| Document-node optimization evidence | `docs/reports/2026-07-19_문서_노드_구조_개선_분석.md` |
+| Graphify and Obsidian adoption evidence | `docs/reports/2026-07-19_옵시디언_도입_타당성_분석.md` |
 
 Historical reports are evidence only and are not execution inputs unless explicitly requested.
+
+## Knowledge-navigation integration contract
+
+This contract applies to L3.1 and to the Graphify or Obsidian work explicitly declared in L5-L8.
+
+1. The existing active Markdown files remain the only document content sources of truth. Obsidian is a local
+   human and agent navigation client; Graphify is a derived relationship index and query layer.
+2. Graphify `EXTRACTED`, `INFERRED`, or `AMBIGUOUS` edges are retrieval evidence, not authority decisions.
+   Every normative answer or change must resolve to an active source file before use.
+3. Do not generate a second Obsidian vault or duplicate project notes from Graphify. Open the approved original
+   Markdown scope in place and keep generated views or graphs non-authoritative.
+4. Never index, enumerate, copy, or expose `inputs/`, `outputs/`, `backup/`, `.git/`, `.agents/`, or `.codex/`.
+   Use an allowlist-oriented `.graphifyignore` or an equivalent bounded source manifest and verify the resulting
+   graph contains zero protected-path nodes.
+5. Keep Graphify caches, costs, converted files, and runtime output outside the repository during the pilot.
+   If the tool cannot satisfy that boundary, stop the layer and request a scoped design decision; do not create
+   `graphify-out/` in the repository by inference.
+6. The L3 router and direct Markdown read path remain the fallback when Obsidian, Graphify, their caches, or their
+   model backend are unavailable or stale.
+7. Community plugins, Obsidian Sync or Publish, Graphify strict mode, automatic hooks, MCP, shared servers, and
+   generated work-memory or reflection files require their own measured need and explicit approval.
 
 ## Layer sequence
 
@@ -65,7 +94,8 @@ Historical reports are evidence only and are not execution inputs unless explici
 | L2 | File-based work state and safe I/O | L1 | Complete |
 | L3 | Task-specific document routing and efficient read/write profiles | L2 | Complete |
 | L4 | Minimal file lifecycle, version, current, and approval rules | L2 and L3 | Complete |
-| L5 | Human-readable YouTube production workflow rules | L4 | Not started |
+| L3.1 | Bounded Graphify + Obsidian baseline, pilot, and promotion decision | L3 and L4 | Planned; implementation not approved |
+| L5 | Human-readable YouTube production workflow rules | L3.1 and L4 | Not started |
 | L6 | Workflow folder, file, and state structure | L5 | Not started |
 | L7 | Selected workflow tools and thin entry points | L6 | Not started |
 | L8 | Only the workflow skills confirmed in real use | L7 | Not started |
@@ -132,6 +162,8 @@ Historical reports are evidence only and are not execution inputs unless explici
 - Verify: Compare files read, context size, resume time, and wrong-document selections across three tasks.
 - Rollback: Remove only L3 routing/helper changes.
 - Result: Added three exact profiles to `AGENTS.md`, a classified document registry, audience/status folders, and routing/governance regression tests. The original profile measurement selected three or four documents, reduced document context by 46-64%, reduced cached local read time by 46-60%, and selected zero unrelated documents.
+- Post-completion refinement: L3.1 tests whether a derived knowledge graph and Obsidian navigation reduce the
+  remaining measured context and discovery costs without replacing this verified router.
 - Next gate: The user's instruction authorized continuous execution through L4; no separate L3 pause was required.
 - Status: Complete on 2026-07-19.
 
@@ -149,14 +181,60 @@ Historical reports are evidence only and are not execution inputs unless explici
 - Next gate: User confirmation of approval and retention semantics before L5.
 - Status: Complete on 2026-07-19.
 
+## L3.1 — Graphify + Obsidian Knowledge-Navigation Pilot
+
+- Objective: Establish a no-move baseline and determine whether Graphify plus Obsidian materially reduce agent
+  document discovery and user review cost before L5-L8 create more documents.
+- Read: The knowledge-navigation integration contract above, current L3 router and registry, the two named
+  decision-evidence reports, and only the representative active source documents selected for each benchmark.
+- Preflight: Classify the navigation capability in the relevant `docs/agent/RECONSTRUCTION_MAP.md` row before
+  installation; confirm approved installers, an external runtime-output location, an allowed document manifest,
+  the document semantic-analysis backend, and a rollback command. Do not read protected paths to build the list.
+- Work:
+  1. Record a fresh direct-routing baseline for resume, document-architecture, and designated state-contract
+     tasks: source files selected, document tokens, query time, wrong-authority selections, and unresolved links.
+  2. Install Obsidian and Graphify only after the L3.1 user gate. Do not run Graphify's Codex installer, strict
+     mode, hooks, MCP, Sync, Publish, or community plugins during the bounded pilot.
+  3. Open the original repository Markdown in Obsidian without moving or duplicating files; use standard Markdown
+     links, core features, Restricted Mode, deletion confirmation, and explicit UI exclusions.
+  4. Build a Graphify graph from the explicit active-framework allowlist only. Store all runtime output outside
+     the repository and retain provenance labels for every returned edge.
+  5. Run the same three representative tasks through Graphify query/path selection, then open only the returned
+     active Markdown sources. Bound graph-query output and total document context separately.
+  6. Compare the new results with the direct-routing baseline and test the direct fallback with Graphify and
+     Obsidian unavailable.
+- Modify: Only an approved stable metadata schema, source allowlist or `.graphifyignore`, bounded navigation
+  helper, tests, and selected stable Obsidian configuration. Do not let an installer overwrite `AGENTS.md` or
+  directly edit `.codex` during this layer.
+- Preserve: Existing active paths, document authority, L3 routing profiles, Git history, user data, migration
+  sources, and the rule that reports are not execution inputs.
+- Complete when:
+  1. All three tasks return the correct active authority with zero protected-path nodes or reads.
+  2. Graph query plus selected source context is lower than the direct baseline without a wrong-document increase.
+  3. Each normative result is traceable to a source path and Graphify confidence is visibly distinguished from
+     source-validated fact.
+  4. Obsidian opens the original Markdown, resolves standard links, displays Korean and English metadata, and
+     creates no duplicate source hierarchy.
+  5. Direct routing still completes the same tasks when both products are unavailable or the graph is stale.
+- Verify: UTF-8/NUL and link checks, graph protected-path audit, stale-graph detection, three-task context and
+  timing comparison, Obsidian application checks, Graphify uninstall/rollback rehearsal, and the integrated
+  document-routing suite.
+- Rollback: Uninstall only the pilot tools and stable pilot configuration, remove only current-layer external
+  outputs, and retain the verified direct router and original Markdown unchanged.
+- Next gate: The user chooses `promote`, `revise`, or `defer`. Only `promote` permits L5 to use Graphify-first
+  discovery; `defer` keeps direct routing and still permits L5 after explicit approval.
+- Status: Planned; installation and execution are not approved by this plan edit.
+
 ## L5 — Workflow Rules
 
 - Objective: Convert the reconstructed production foundation into concise human-readable inputs, outputs, completion criteria, and user decisions.
-- Read: `docs/agent/WORKFLOW_FOUNDATION.md`, `docs/agent/EDITING_QUALITY_RULES.md`, the L4 state contract, and only this L5 section.
-- Work: Create `docs/agent/WORKFLOW_RULES.md` with pre-shoot and recorded-footage routes, one to three completion criteria per stage, user decision points, and validation levels.
+- Read: The knowledge-navigation integration contract; `docs/agent/WORKFLOW_FOUNDATION.md`,
+  `docs/agent/EDITING_QUALITY_RULES.md`, the L4 state contract, and only this L5 section. If L3.1 was promoted,
+  query Graphify for candidates first but still read the declared active sources.
+- Work: Create `docs/agent/WORKFLOW_RULES.md` with pre-shoot and recorded-footage routes, one to three completion criteria per stage, user decision points, validation levels, stable node metadata, and standard Markdown relationships visible in Obsidian and Graphify.
 - Preserve: Stage numbering, analysis-before-planning order (`6 -> 5` for recorded footage), 7A-7D judgment knowledge, evidence scope, and user creative authority.
-- Complete when: One active document identifies the required input, output, completion, and next user decision for each stage, and its complete read path contains no `backup/` dependency.
-- Verify: Walk through both workflow routes and reject missing stages or an incorrect `5 -> 6` order.
+- Complete when: One active document identifies the required input, output, completion, and next user decision for each stage, its complete read path contains no `backup/` dependency, and any promoted graph route selects the same authorities within the L3.1 context budget.
+- Verify: Walk through both workflow routes, reject missing stages or an incorrect `5 -> 6` order, check Obsidian links and metadata, compare Graphify selection with the direct fallback, and reject inferred edges used as authority.
 - Rollback: Remove only the new active workflow rule; keep the reconstructed foundation unchanged.
 - Next gate: User confirms the simplification and decision points.
 - Status: Not started.
@@ -164,36 +242,36 @@ Historical reports are evidence only and are not execution inputs unless explici
 ## L6 — Workflow Structure
 
 - Objective: Make L5 rules visible in per-video folders, files, and state without pre-creating unused directories.
-- Read: L2 state, L5 workflow rules, and active output conventions in the state and workflow foundations.
-- Work: Define lazy folder creation, new-project initialization, output registration, and one existing-project mapping plan.
-- Modify: Structure document, minimal initialization code, and tests; no user data without a designated sample.
-- Preserve: Existing paths and references; do not create empty stage folders by default.
-- Complete when: A synthetic project initializes once, reruns safely, matches the documented structure, and resolves every path and contract through active files.
-- Verify: Creation, rerun, partial failure, rollback, and a separately approved real sample.
+- Read: The knowledge-navigation integration contract, L3.1 result, L2 state, L5 workflow rules, and active output conventions in the state and workflow foundations.
+- Work: Define lazy folder creation, new-project initialization, output registration, one existing-project mapping plan, Obsidian vault boundaries, and Graphify source/output boundaries for the resulting structure.
+- Modify: Structure document, minimal initialization code, deterministic navigation allowlist generation, and tests; no user data without a designated sample.
+- Preserve: Existing paths and references; do not create empty stage folders by default, index task/user data by default, or treat an Obsidian exclusion as an access-control boundary.
+- Complete when: A synthetic project initializes once, reruns safely, matches the documented structure, resolves every path and contract through active files, and remains outside the Graphify active-framework graph unless specifically designated and approved.
+- Verify: Creation, rerun, partial failure, rollback, protected-path graph audit, Obsidian boundary check, and a separately approved real sample.
 - Rollback: Remove only the new sample and initializer.
 - Next gate: User confirms fit with real work before L7.
 - Status: Not started.
 
 ## L7 — Workflow Tools and Plugins
 
-- Objective: Connect only frequently used state, transition, and media operations through trustworthy thin entry points.
-- Read: L6 structure, measured task frequency, the selected capability in `docs/agent/TOOL_REQUIREMENTS.md`, and its active consumer contract.
-- Work: Classify tools, activate at most two selected commands, and repair exit codes, timeouts, parsing, reuse, and error messages.
-- Preserve: Unselected capabilities as `specified`, `deferred`, or `excluded`; do not claim Premiere or media validation before real tests.
-- Complete when: Each selected operation has predictable success, failure, and rerun behavior through one active entry point, with active tests and no archive import, command, fixture, or documentation dependency.
-- Verify: Selected regressions, reproduced failures, one user-approved real file, and application/A/V validation where applicable.
+- Objective: Connect only frequently used state, transition, media, and validated knowledge-navigation operations through trustworthy thin entry points.
+- Read: The knowledge-navigation integration contract, L3.1 measurements, L6 structure, measured task frequency, the selected capability in `docs/agent/TOOL_REQUIREMENTS.md`, and its active consumer contract.
+- Work: Classify tools, activate at most two selected workflow commands, and repair exit codes, timeouts, parsing, reuse, and error messages. If the L3.1 benefit persists, harden the existing Graphify query/update helper with source-boundary, stale-index, provenance, budget, and direct-fallback checks before considering any always-on integration.
+- Preserve: Unselected capabilities as `specified`, `deferred`, or `excluded`; do not claim Premiere or media validation before real tests, and do not enable Graphify hooks, strict mode, MCP, shared HTTP, work memory, or Obsidian community plugins by inference.
+- Complete when: Each selected operation has predictable success, failure, and rerun behavior through one active entry point, with active tests and no archive import, command, fixture, or documentation dependency; a promoted navigation entry point must also fail closed on protected scope and fail over to direct routing when unavailable.
+- Verify: Selected regressions, reproduced failures, graph refresh and stale-cache failures, installer change review, uninstall rollback, one user-approved real file, and application/A/V validation where applicable.
 - Rollback: Remove the thin integration and tool changes only.
 - Next gate: Only tools with measured time or error reduction proceed to L8.
 - Status: Not started.
 
 ## L8 — Workflow Skill Alignment
 
-- Objective: Align only confirmed-use skills with the L2-L7 state, paths, tools, and completion rules.
-- Read: The selected responsibility in `docs/agent/SKILL_REQUIREMENTS.md`, L5 rules, L6 paths, L7 active tools, and user-confirmed use.
-- Work: Classify responsibilities as implement, defer, or exclude; create each selected active skill with input, output, stop, user decision, and handoff contracts.
-- Preserve: Unselected responsibilities as documented decisions; do not implement every skill.
-- Complete when: A selected active skill completes one representative stage without a routing, handoff, or archive dependency.
-- Verify: Representative execution, output registration, stop condition, user decision transfer, and next-stage resume.
+- Objective: Align only confirmed-use skills with the L2-L7 state, paths, tools, completion rules, and validated navigation route.
+- Read: The knowledge-navigation integration contract, the selected responsibility in `docs/agent/SKILL_REQUIREMENTS.md`, L5 rules, L6 paths, L7 active tools, and user-confirmed use.
+- Work: Classify responsibilities as implement, defer, or exclude; create each selected active skill with input, output, stop, user decision, handoff, Graphify-query-first when promoted, source-validation, and direct-fallback contracts.
+- Preserve: Unselected responsibilities as documented decisions; do not implement every skill or make a derived graph the only path to required instructions.
+- Complete when: A selected active skill completes one representative stage without a routing, handoff, or archive dependency through both the promoted navigation route and the direct fallback.
+- Verify: Representative execution, bounded graph retrieval, source-file confirmation, protected-path exclusion, output registration, stop condition, user decision transfer, graph-unavailable fallback, and next-stage resume.
 - Rollback: Revert only the affected skill changes.
 - Final gate: Run the archive-retirement gate, then the user chooses whether to retire the migration archive, address another observed bottleneck, or begin real production.
 - Status: Not started.
@@ -203,8 +281,11 @@ Historical reports are evidence only and are not execution inputs unless explici
 - Objective: Prove the rebuilt project is complete and self-contained before `backup/` deletion.
 - Read: `docs/agent/RECONSTRUCTION_MAP.md`, `docs/agent/DOCUMENT_REGISTRY.md`, active source references, and integrated-test results only.
 - Check: Every retained capability is implemented or fully specified in an active destination; active documents,
-  code, tests, fixtures, and commands have no operational `backup/` reference; all active tests pass without
-  archive access; deferred and excluded items have explicit rationale.
+  code, tests, fixtures, commands, Obsidian configuration, and Graphify source manifests have no operational
+  `backup/` reference; all active tests and the direct navigation fallback pass without archive access; deferred
+  and excluded items have explicit rationale. Regenerate any promoted graph from active allowlisted paths only
+  and verify it contains no archive or protected-path node. Treat graph results as advisory to the deterministic
+  active-reference scan.
 - Report: Produce a Korean readiness report listing any remaining dependency. Do not delete anything while a
   dependency remains.
 - Delete authority: Only a separate explicit user request after a clean readiness report authorizes deleting `backup/`.
@@ -215,7 +296,8 @@ Historical reports are evidence only and are not execution inputs unless explici
 
 | Layer | Decision required before work |
 |---:|---|
-| L5 | Approval to build the active workflow rule from reconstructed requirements |
+| L3.1 | Approval to install Obsidian and Graphify, the external runtime-output location, allowed source manifest, and document semantic-analysis backend |
+| L5 | L3.1 `promote` or explicit `defer`, then approval to build the active workflow rule from reconstructed requirements |
 | L6 | One exact real or synthetic structure sample |
-| L7 | Selected frequent tools and current Premiere/OS environment |
+| L7 | Selected frequent tools, current Premiere/OS environment, and whether measured navigation benefit justifies any always-on Graphify integration; hooks and MCP remain separate decisions |
 | L8 | Which reconstructed skill responsibilities are actually used |
