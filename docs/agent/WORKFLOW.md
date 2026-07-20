@@ -34,10 +34,25 @@ Prefer read-only checks and direct file routes. Do not broaden a search merely t
 4. For staged work, mark the current stage boundary and do not include later-stage implementation.
 5. Use reversible local edits. External or destructive actions require explicit authority.
 
+### Document creation gate
+
+Before creating any maintained document, all of the following must pass:
+
+1. Search the document map for an existing owner and current proposal for the same subject.
+2. If either exists, update it in place; a stage number, agent name, review pass, or rewritten wording is not a distinct purpose.
+3. If a new file is still necessary, state its unique purpose, authority class, preservation state, default-context behavior, and why no existing owner can hold it.
+4. Register the file in the document map in the same change.
+5. For a point-in-time report, include only the unique delta, evidence, validation, unresolved risk, and approval boundary. Link to owned rules, designs, and procedures without restating them.
+
+The gate fails if another current proposal for the subject exists, if the new file repeats an existing owner's content, or if preservation can be satisfied by Git history and a short marker.
+
 ## 4. Execute and record
 
 - Modify active project files only within the approved scope.
 - Keep policies, procedures, technical contracts, current state, and reports in their owning documents.
+- Update an existing owner or current proposal in place when the subject is unchanged. A new stage label alone does not justify a new document.
+- Create a new report only for unique point-in-time evidence. Keep it to the stage delta, sources, actual validation, unresolved risk, and approval boundary; link to owners instead of repeating full rules, procedures, or designs.
+- Allow only one current proposal per subject. Mark a replaced proposal as superseded evidence and exclude it from default context; use verified Git commit, blob, and content hashes to preserve duplicate full text.
 - Record material commands, changed artifacts, failures, and verification results in the available project evidence surface.
 - Until the knowledge record system is implemented, the authoritative evidence surfaces are repository changes, Korean stage reports, and the current handoff. Do not claim that structured work-event logging exists.
 - When a repeated failure affects continuation, preserve the objective, attempt, confirmed cause, consecutive count, and next condition.
@@ -55,6 +70,8 @@ Use the strongest applicable level and name it accurately.
 
 Validation at one level does not imply a higher level. Inspect changed files again after writing, check source links and protected-path status, and report any unresolved failure.
 
+For document changes, also verify that every active document is registered, no subject has more than one current proposal, every new file passed the creation gate, and superseded duplicate text has a recoverable Git commit, blob, and content hash before compaction.
+
 ## 6. Close and hand off
 
 1. Lead the user report with the achieved outcome.
@@ -62,5 +79,7 @@ Validation at one level does not imply a higher level. Inspect changed files aga
 3. State exclusions, unimplemented work, risks, and approval status.
 4. Update [SESSION_HANDOFF.md](../../SESSION_HANDOFF.md) with verified current state, evidence paths, active failures, and the first unstarted action.
 5. If the stage requires approval, stop after the report and wait.
+
+A stage report may be delivered in the user response when no durable point-in-time artifact is required. Do not create another file merely to restate the same closure information.
 
 Detailed record schemas, retrieval behavior, and freshness review are owned by the linked knowledge documents rather than this common workflow.

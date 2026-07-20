@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-This file is an approved foundation contract, not an implementation claim. Structured record directories, schemas, writers, validators, databases, and indexes do not yet exist. They belong to the separately approved knowledge-system stage.
+This file is an approved foundation contract, not a general implementation claim. One user-authorized manual case record exists at [case.project.document-authority-duplication](../../knowledge/cases/case.project.document-authority-duplication.md), and one user-requested closed manual [session record](../../records/sessions/session.2026-07-20.r1-r1.1-document-governance.md) preserves the current conversation and work history. Schemas, writers, automated validators, event stores, databases, and indexes do not yet exist; both records identify their manual bootstrap status.
 
 ## Canonical categories
 
@@ -37,7 +37,7 @@ Every knowledge item must include:
 - low, medium, or high confidence plus a written basis;
 - source references with stable locators and observed dates;
 - related item IDs and typed relationship records;
-- validity range, last check, and review due date;
+- validity range, last check, and either a review due date or an explicit user-approved event-driven review policy with a null due date and named immediate triggers;
 - revision number and link to append-only update history.
 
 Confidence, retrieval score, or LLM authorship never replaces validation status.

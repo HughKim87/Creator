@@ -11,7 +11,7 @@
 1. Follow the current user instruction first, then this file, then accepted project decisions and task-specific contracts.
 2. Do not infer authority for work outside the requested scope. Ask before destructive, external, publishing, or materially broader actions.
 3. When work is divided into approval stages, finish and report the current stage, then wait for explicit approval before starting the next stage.
-4. Keep one authoritative owner for each rule, state, decision, and datum. Link to that owner instead of duplicating its content.
+4. Keep one authoritative owner for each rule, state, decision, and datum. A new stage, version, agent, or validation pass does not justify a duplicate owner or document. Update the existing owner and preserve earlier states in Git unless a distinct point-in-time evidence artifact is explicitly required; link instead of copying owned content.
 
 ## 2. Protected data and historical material
 

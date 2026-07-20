@@ -21,8 +21,15 @@ Create a review requirement when any of the following occurs:
 - a reproduction or regression test fails;
 - new evidence contradicts, invalidates, or narrows an existing item;
 - task results reveal an unrecorded boundary or repeated failure.
+- the user explicitly requests review of an item or its governing subject.
 
 Detection changes status to `needs_review`; it never deletes knowledge or silently rewrites the claim.
+
+## Event-driven review without a periodic deadline
+
+A record may omit a periodic review date only when the user explicitly approves event-driven review for that record or class. Such a record must set `review_policy=event_driven`, `review_due_at=null`, identify the approving user decision, and list concrete triggers that cause immediate review. A null date means “review on trigger,” never “do not review.”
+
+When a listed trigger occurs or the user asks for review, mark the item `needs_review` before reusing its resolution as current guidance, perform the review in the same task when authorized, and append the result to its change history.
 
 ## Review procedure
 
