@@ -1,4 +1,4 @@
-"""Regression checks for the three L3 minimum document profiles."""
+"""Regression checks for minimum routes after Obsidian-native optimization."""
 
 from __future__ import annotations
 
@@ -9,23 +9,11 @@ from pathlib import Path
 AGENTS_PATH = Path(__file__).resolve().parents[1] / "AGENTS.md"
 
 
-def profile_cells(profile: str) -> list[str]:
-    prefix = f"| `{profile}` |"
-    lines = AGENTS_PATH.read_text(encoding="utf-8").splitlines()
-    start = lines.index("## Validated representative profiles")
-    for line in lines[start + 1:]:
-        if line.startswith("## "):
-            break
-        if line.startswith(prefix):
-            return [cell.strip() for cell in line.strip("|").split("|")]
-    raise AssertionError(f"missing routing profile {profile!r}")
-
-
 def route_cells(route_id: str) -> list[str]:
     prefix = f"| `{route_id}` |"
     lines = AGENTS_PATH.read_text(encoding="utf-8").splitlines()
     start = lines.index("## Task routing")
-    for line in lines[start + 1:]:
+    for line in lines[start + 1 :]:
         if line.startswith("## "):
             break
         if line.startswith(prefix):
@@ -34,50 +22,38 @@ def route_cells(route_id: str) -> list[str]:
 
 
 class DocumentRoutingTests(unittest.TestCase):
-    def test_task_routes_have_stable_ids_and_explicit_selectors(self) -> None:
-        architecture = route_cells("change_document_route")
-        self.assertEqual(architecture[0], "`change_document_route`")
-        self.assertIn("`docs/agent/DOCUMENT_REGISTRY.md`", architecture[2])
-        self.assertIn("Affected active documents only", architecture[3])
+    def test_resume_route_has_no_document_delta(self) -> None:
+        cells = route_cells("resume_current_work")
+        self.assertEqual(cells[2], "None")
+        self.assertIn("Plans", cells[4])
+        self.assertIn("reports", cells[4])
+
+    def test_document_move_and_classification_are_separate(self) -> None:
+        move = route_cells("change_document_route")
+        classification = route_cells("change_document_classification")
+        self.assertIn("`docs/agent/navigation/DOCUMENT_PLACEMENT.md`", move[2])
+        self.assertIn("Exact affected note properties and destination", move[3])
+        self.assertIn("`docs/agent/navigation/DOCUMENT_REGISTRY.md`", classification[2])
+        self.assertIn("Exact affected note properties or Base view", classification[3])
+
+    def test_normal_state_operation_excludes_schema_internals(self) -> None:
         state = route_cells("handle_video_task_state")
-        self.assertIn("Exact designated task `state.json`", state[3])
+        self.assertIn("`docs/agent/state/STATE_OPERATIONS.md`", state[2])
+        self.assertIn("Exact designated task `state.json` and operation", state[3])
+        self.assertIn("schema internals", state[4])
+        schema = route_cells("change_video_state_contract")
+        self.assertIn("`docs/agent/state/VIDEO_TASK_STATE.md`", schema[2])
+        self.assertIn("video_task_state.schema.json", schema[2])
+
+    def test_unknown_route_uses_one_obsidian_domain_and_reports_failure(self) -> None:
         agents = AGENTS_PATH.read_text(encoding="utf-8")
         self.assertIn("Use the table directly", agents)
+        self.assertIn("official Obsidian CLI", agents)
+        self.assertIn("narrowest Base domain view or domain folder", agents)
+        self.assertIn("purpose` and `authority", agents)
+        self.assertIn("do not guess, silently use direct routing", agents)
         self.assertIn("stop the unresolved part and report it", agents)
         self.assertIn("Do not expand from one selected document", agents)
-
-    def test_resume_profile_reads_only_global_rules_and_current_state(self) -> None:
-        cells = profile_cells("resume_current_work")
-        read_set = cells[1]
-        exclusions = cells[3]
-        self.assertIn("`AGENTS.md`", read_set)
-        self.assertIn("`PROJECT_RULES.md`", read_set)
-        self.assertIn("`SESSION_HANDOFF.md`", read_set)
-        self.assertNotIn("REBUILD_PLAN", read_set)
-        self.assertIn("Plans", exclusions)
-        self.assertIn("reports", exclusions)
-
-    def test_document_route_profile_is_affected_file_only(self) -> None:
-        cells = profile_cells("change_document_route")
-        read_set = cells[1]
-        write_set = cells[2]
-        exclusions = cells[3]
-        self.assertIn("`docs/agent/DOCUMENT_REGISTRY.md`", read_set)
-        self.assertIn("affected active documents", read_set)
-        self.assertIn("affected authorities only", write_set)
-        self.assertIn("Unrelated documents", exclusions)
-        self.assertIn("user data", exclusions)
-
-    def test_video_state_profile_is_exact_task_only(self) -> None:
-        cells = profile_cells("handle_video_task_state")
-        read_set = cells[1]
-        write_set = cells[2]
-        exclusions = cells[3]
-        self.assertIn("`docs/agent/FILE_DATA_CONTRACT.md`", read_set)
-        self.assertIn("exact designated `state.json`", read_set)
-        self.assertIn("Designated state", write_set)
-        self.assertIn("Other tasks", exclusions)
-        self.assertIn("rebuild documents", exclusions)
 
 
 if __name__ == "__main__":

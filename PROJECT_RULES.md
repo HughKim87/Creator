@@ -18,7 +18,7 @@
 
 - Read only the documents routed by `AGENTS.md` for the current task.
 - Obey each document's top-level purpose, scope, read condition, and write condition.
-- Use `docs/agent/DOCUMENT_REGISTRY.md` as the sole classification and reference registry; folder location is not authority by itself.
+- Use `docs/agent/navigation/DOCUMENT_REGISTRY.md` as the sole classification-property contract and Obsidian index authority; folder location is not authority by itself.
 - Agent execution documents in `docs/agent/` are written in English. Active user documents in `docs/user/` and point-in-time reports in `docs/reports/` are written in Korean.
 - Every active document starts with its purpose and scope. Historical documents must say that they are not execution sources.
 - Keep one authoritative source for each rule, state, plan, or decision. Other documents link to it rather than copying it.
@@ -66,6 +66,9 @@ Do not enumerate, open, copy, summarize, hash, index, or report user data withou
 
 - Delete, move, install, commit, push, publish, upload, send externally, or change permissions only within the user's explicit request.
 - Preserve unrelated user changes in the working tree.
+- Once an exact executable or path is confirmed to require an escalated execution boundary, reuse that exact boundary; do not probe it again from the default sandbox in the same integration or hide the retry inside another command.
+- A wrapper inherits its caller's sandbox and does not inherit an approval granted to the child executable. Do not create a wrapper solely to cross an execution boundary, and validate an integration through the same entry point and boundary that agents will actually use.
+- When a direct external CLI works, use its exact approved command. On an unavailable app, permission mismatch, or unexpected result, report the failure instead of silently falling back or repeating the known-invalid boundary.
 - Never overwrite user originals or automatically delete previous results.
 - Never leave a known corrupt framework file in place. Restore the last verified version from Git or stop and report if safe restoration is not authorized.
 - Use deterministic tools for repeatable extraction, transformation, and validation. Use AI for candidates, interpretation, and explanation.

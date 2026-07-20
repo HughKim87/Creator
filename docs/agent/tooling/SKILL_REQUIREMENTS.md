@@ -1,11 +1,18 @@
+---
+doc_id: doc.skill_requirements
+kind: requirements
+domain: tooling
+lifecycle: active
+authority: normative for pre-L8 workflow skill contracts and responsibilities
+audience: agent
+language: en
+validation: structure_validated
+purpose: Define the minimum shared contract and stage-specific responsibilities needed to reconstruct workflow skills in L8.
+scope: Skill selection, note shape, inputs, outputs, gates, stops, user authority, source evidence, and next-stage handoff; this note does not activate a skill.
+read_when: Selecting, creating, changing, or validating an L8 workflow skill.
+write_when: A confirmed-use skill, shared skill contract, or stage responsibility changes.
+---
 # Workflow Skill Requirements
-
-- Purpose: Define the minimum shared contract and stage-specific responsibilities needed to reconstruct workflow skills in L8.
-- Scope: Skill selection, document shape, inputs, outputs, gates, stops, user authority, source evidence, and next-stage handoff; this document does not activate a skill.
-- Audience and language: Agents; English.
-- Read when: Selecting, creating, changing, or validating an L8 workflow skill.
-- Write when: A confirmed-use skill, shared skill contract, or stage responsibility changes.
-- Authority: This is the sole pre-L8 skill specification. Every active skill must be self-contained with active project links and no migration-archive dependency.
 
 ## Activation boundary
 
@@ -27,7 +34,7 @@
 8. Short realistic request examples
 
 Shared global policy is linked to `PROJECT_RULES.md`; file state is linked to
-`docs/agent/FILE_DATA_CONTRACT.md`; stage order is linked to the future L5 workflow rule. A skill contains only
+`docs/agent/state/STATE_OPERATIONS.md`; stage order is linked to the future L5 workflow rule. A skill contains only
 its unique judgments and operations.
 
 ## Authoring rules

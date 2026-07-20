@@ -1,70 +1,56 @@
 # Session Handoff
 
 - Purpose: Let the next agent resume from verified current project state without chat history.
-- Scope: Current goal, verified result, active blocker or risk, important artifacts, and first next action only.
+- Scope: Current goal, verified result, failure history, risks, and first next action only.
 - Audience and language: Agents; English.
 - Read when: Before continuing, changing, or verifying project work.
 - Write when: Current state, approval, verification, blocker, artifact status, or first next action changes.
-- Authority: This is the sole current-state source. Global rules are in `PROJECT_RULES.md`; durable rebuild scope is in `docs/agent/REBUILD_PLAN.md`.
+- Authority: Sole current-state source; global rules are in `PROJECT_RULES.md` and rebuild scope is in `docs/agent/rebuild/REBUILD_PLAN.md`.
 
 ## Current state
 
-- Current goal: Preserve the verified Graphify rollback and wait for separate user approval before starting L5.
-- Date: 2026-07-20. The user cancelled Graphify adoption; L3.1 is complete and rolled back to direct document routing.
-- Authorization: Direct `AGENTS.md` routing and stable local Obsidian settings remain approved. Graphify is excluded and its package, repository implementation, and project cache were removed. Ollama remains installed but is inactive for document routing; removing it requires a separate request. L5 and other integrations remain unapproved.
-- Data boundary: No real `inputs/` or `outputs/` item was designated, enumerated, or read during the pilot or rollback.
-- Next gate: L5 workflow-rule implementation requires separate explicit approval.
+- L3.3 is complete: active notes use Obsidian Properties, domain folders, atomic contracts, and the derived `docs/agent/navigation/AGENT_DOCUMENTS.base` index.
+- Known task routes remain direct. Unknown classification uses one bounded Base domain view or domain-folder CLI search, then candidate properties and one atomic note.
+- Graphify remains excluded. Ollama/QMD semantic routing, wrappers, MCP, hooks, and community plugins are inactive.
+- No `inputs/`, `outputs/`, migration source, or other protected item was enumerated or read.
+- The normalized three-condition token comparison is recorded in `docs/reports/2026-07-20_옵시디언_전면_도입_토큰_비교.md`.
+- Next gate: L5 workflow rules remain separately unapproved.
 
 ## Resume checkpoint
 
-- `AGENTS.md#selection-protocol` selects stable route IDs directly, requires affected/named/designated selectors, prohibits relationship-driven expansion, and stops and reports ambiguity or protected-path conflicts.
-- The registry defines two orthogonal indexes only: task-time routing in `AGENTS.md` and document classification in the registry; no third hand-maintained catalog is allowed.
-- New documents must have one durable purpose, six header fields, one registry row, correct audience/lifecycle folder, stable ID/name, typed relationships, and same-change route/link/test updates.
-- Split when authority, audience/language, lifecycle, read trigger, write owner, or repeated task context differs; merge only duplicate ownership with the same attributes.
-- Actual semantic Graphify selected 8 and 5 wrong documents in two profiles and added 21,054, 14,197, and 40 estimated tokens over direct across the three profiles.
-- The later typed helper was exact at +13/+30/+22 tokens but did not call Graphify on its active route. Calling it Graphify-first was a material reporting failure.
-- The Korean failure report records the measurements, root causes, impact, rollback scope, and reopening conditions. It is historical evidence, not an execution authority.
-- Obsidian 1.12.7 remains configured on the original vault with standard links, no Sync/Publish, and zero community plugins. Ollama 0.32.1 and its local model were not removed.
+- Use `AGENTS.md` direct routes first. For an unknown route, query the narrowest Base domain view or `docs/agent/<domain>` with at most three candidates.
+- Compare `purpose` and `authority`; use `scope` and `read_when` only to resolve a tie; read one selected atomic note.
+- Base views are generated indexes, never content authorities. YAML Properties own classification; Markdown bodies own rules and state contracts.
+- Call `C:\Users\Hugh\AppData\Local\Programs\Obsidian\Obsidian.com` directly through its confirmed approved boundary. Do not wrap it or retry in the default sandbox.
+- CLI failure, no result, malformed output, ambiguity, or protected-path risk is report-only. Do not silently fall back or switch engines.
 
 ## Verification state
 
 | Target | Level | Evidence |
 |---|---|---|
-| Document architecture | tool-validated | Stable task/write/document IDs, metadata and naming rules, two-index navigation, explicit selectors, and split/merge lifecycle rules remain covered by routing/governance tests. |
-| Direct routing | tool-validated | Representative routes read only their declared delta and report missing selectors, ambiguity, or protected boundaries instead of invoking a generated graph. |
-| Graphify rollback | tool-validated | Dedicated files are absent, `graphifyy` is uninstalled, the project cache is absent, the capability is `excluded`, and the failure report is registered. |
-| Integrated framework | tool-validated | The independent Python runtime passes 35/35 tests; UTF-8/NUL, links, 70-line handoff, Graphify artifact absence, and retained Obsidian configuration checks pass. |
+| Obsidian architecture | app-validated | Active, Navigation, State, and Historical Base views returned only their property-matched notes. |
+| Candidate selection | app-validated | Placement and state-operation queries selected their exact atomic authorities through `purpose` and `authority`. |
+| Routing efficiency | tool-validated | Same-profile direct, unchanged-note Obsidian, and optimized-note measurements are in the Korean comparison report. |
+| Framework | tool-validated | Integrated tests cover properties, domain placement, Base bounds, routes, links, schema, Graphify exclusion, and context budgets. |
 
 ## Failure ledger
 
-| Objective | Attempt/version | Result / cause | Consecutive count | Next condition |
+| Objective | Attempt | Result / cause | Count | Reuse condition |
 |---|---|---|---:|---|
-| Semantic Graphify benefit | Comparisons v1-v3 | Generic depth-2 traversal selected excess context or added overhead in every profile | 3; stopped and excluded | Separate approval, real scale evidence, and a new product-backed design only |
-| Product-use classification | Typed helper review | Active route parsed local tables and JSON but did not call Graphify; it was incorrectly reported as Graphify-first | 1; corrected and rolled back | Require an actual product-call proof before any future adoption claim |
-| Typed helper benefit | `typed-comparison-v2` | Exact authorities, but +13/+30/+22 tokens and about 133-164 ms versus direct selection near 0.010 ms | 1; removed | Direct routing remains authoritative |
+| Semantic Graphify benefit | Three comparisons | Excess context or overhead; excluded | 3 | Separate approval plus new measured design |
+| Product-use classification | Typed helper | Local parsing was misreported as Graphify-first; removed | 1 | Require actual product-call proof |
+| Official CLI startup | Direct version | Failed while app was stopped; one app start corrected it | 0 | Start once, retry once, then report |
+| CLI execution boundary | Python wrapper | Repeated known sandbox failure because wrappers do not inherit child approval; removed | 1 | Use the exact direct boundary only |
+| Obsidian optimization | Initial startup profile | Duplicate router guidance added context; removed before acceptance | 0 | Re-measure all three profiles after control-document edits |
 
-## Active blockers and risks
+## Risks and artifacts
 
-- L5 is not approved. Do not infer workflow-rule implementation from the completed rollback.
-- Do not recreate or reinstall Graphify, a compatible-format route graph, or a semantic router without a separate user decision and the report's evidence conditions.
-- Obsidian exclusions are navigation hints, not access control. Protected paths remain unavailable without an exact user-named item and purpose.
-- Ollama is installed but has no active project role. Do not infer either its use or removal.
-
-## Important artifacts
-
-| Path | Status | Role |
-|---|---|---|
-| `AGENTS.md` | active authority | Task/read/write routing and deterministic selection protocol |
-| `docs/agent/DOCUMENT_REGISTRY.md` | active authority | Document contract, classification, placement, naming, lifecycle, relationship, and navigation index |
-| `docs/reports/2026-07-20_그래피파이_도입_실패_분석.md` | historical evidence | Measured failure, reporting analysis, rollback, and future reopening conditions |
-| `.obsidian/` | retained local configuration | Original-vault review settings; not an access-control or routing authority |
+- Obsidian must be running for CLI use; UI exclusions are navigation hints, not access control.
+- `.obsidian/core-plugins.json` contains a pre-existing user change; preserve it.
+- `docs/agent/navigation/DOCUMENT_PLACEMENT.md` owns placement; `DOCUMENT_REGISTRY.md` owns classification.
+- `docs/agent/state/STATE_OPERATIONS.md` owns normal state I/O; `VIDEO_TASK_STATE.md` owns model/schema changes.
+- Historical failure evidence: `docs/reports/2026-07-20_그래피파이_도입_실패_분석.md` and `docs/reports/2026-07-20_샌드박스_권한_반복_실패_분석.md`.
 
 ## First next action
 
-1. Ask for separate L5 approval. If approved, use direct route `design_l5_workflow`; do not reactivate Graphify or read user data by inference.
-
-## Next-session start prompt
-
-```text
-Read PROJECT_RULES.md and SESSION_HANDOFF.md. Graphify was cancelled and rolled back; direct routing and Obsidian remain. Ask for separate L5 approval.
-```
+Ask for separate L5 approval. If approved, use `design_l5_workflow`; use Obsidian discovery only for an unresolved authority.

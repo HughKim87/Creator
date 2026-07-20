@@ -1,11 +1,18 @@
+---
+doc_id: doc.workflow_foundation
+kind: requirements
+domain: workflow
+lifecycle: active
+authority: normative for pre-L5 workflow knowledge
+audience: agent
+language: en
+validation: structure_validated
+purpose: Preserve production routes, stage responsibilities, planning requirements, gates, and user decisions needed to design the active workflow.
+scope: Durable workflow knowledge for L5-L8; this note does not authorize stage execution or replace the future concise workflow rule.
+read_when: Designing or reviewing L5 workflow rules, L6 structure, L7 stage operations, or L8 skill behavior.
+write_when: The user changes a durable production route, stage responsibility, planning requirement, or creative decision point.
+---
 # Workflow Foundation Requirements
-
-- Purpose: Preserve the production routes, stage responsibilities, planning requirements, gates, and user decisions needed to design the active workflow.
-- Scope: Durable workflow knowledge for L5-L8; this document does not authorize stage execution or replace the future concise workflow rule.
-- Audience and language: Agents; English.
-- Read when: Designing or reviewing L5 workflow rules, L6 structure, L7 stage operations, or L8 skill behavior.
-- Write when: The user changes a durable production route, stage responsibility, planning requirement, or creative decision point.
-- Authority: This is the sole pre-L5 workflow knowledge source. L5 will derive its executable human-readable workflow from this document and the active state and quality contracts.
 
 ## Status boundary
 

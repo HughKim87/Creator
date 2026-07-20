@@ -1,14 +1,22 @@
+---
+doc_id: doc.rebuild_report
+kind: report
+domain: history
+lifecycle: superseded
+authority: evidence for the discarded 2026-07-18 first rebuild proposal
+audience: user
+language: ko
+validation: structure_validated
+purpose: 사용자가 Codex·Claude의 첫 재구축 구현 후보와 교차검증 결과를 역사 자료로 확인한다.
+scope: 2026-07-18 당시 첫 미디어 구현 제안만 다루며 현재 실행 지시나 승인 상태로 사용하지 않는다.
+read_when: 사용자가 폐기된 첫 구현안이나 당시 교차검증 근거를 확인해 달라고 요청할 때만.
+write_when: 사실 오류·링크·상태 표시를 바로잡을 때만.
+---
 # 기존 프로젝트 재구축 통합 실행 보고서
 
-- 사용 목적: 사용자가 Codex·Claude의 첫 재구축 구현 후보와 교차검증 결과를 역사 자료로 확인하는 보고서다.
-- 사용 범위: 2026-07-18 당시 첫 미디어 구현 제안만 다루며 현재 실행 지시나 승인 상태로 사용하지 않는다.
-- 독자·언어: 사용자, 한글.
-- 읽는 시점: 사용자가 폐기된 첫 구현안이나 당시 교차검증 근거를 확인해 달라고 요청할 때만 읽는다.
-- 수정하는 시점: 역사 보고서이므로 원칙적으로 수정하지 않으며, 사실 오류·링크·상태 표시만 바로잡는다.
-- 정본 여부: 정본이 아니다. 현재 계획은 [`REBUILD_PLAN.md`](../agent/REBUILD_PLAN.md), 현재 상태는
-  [`SESSION_HANDOFF.md`](../../SESSION_HANDOFF.md), 재구축 판단은 [`RECONSTRUCTION_MAP.md`](../agent/RECONSTRUCTION_MAP.md)이다.
+- 정본 여부: 정본이 아니다. 현재 계획은 [`REBUILD_PLAN.md`](../agent/rebuild/REBUILD_PLAN.md), 현재 상태는 [`SESSION_HANDOFF.md`](../../SESSION_HANDOFF.md), 재구축 판단은 [`RECONSTRUCTION_MAP.md`](../agent/rebuild/RECONSTRUCTION_MAP.md)이다.
 - 상태: historical / superseded (2026-07-18). 현재 실행 근거로 사용하지 않는다.
-- 이관 상태: 본문의 백업 경로는 당시 조사 기록일 뿐 현재 작업 경로가 아니다. 필요한 요구사항은 `docs/agent/RECONSTRUCTION_MAP.md`의 활성 정본으로 재구축됐다.
+- 이관 상태: 본문의 백업 경로는 당시 조사 기록일 뿐 현재 작업 경로가 아니다. 필요한 요구사항은 `docs/agent/rebuild/RECONSTRUCTION_MAP.md`의 활성 정본으로 재구축됐다.
 - 데이터 확인 경계: 당시에도 `inputs/`·`outputs/` 내부 파일과 내용은 열거하거나 읽지 않았다.
 
 ## 1. 최종 결론

@@ -1,11 +1,18 @@
+---
+doc_id: doc.tool_requirements
+kind: requirements
+domain: tooling
+lifecycle: active
+authority: normative for agent discovery and pre-L7 reusable tool behavior
+audience: agent
+language: en
+validation: structure_validated
+purpose: Define the capability, safety, interface, and validation requirements for agent discovery and reusable workflow tools before implementation or selection.
+scope: Bounded agent-document discovery plus reusable state, media, interchange, audit, and application-validation tools; appearance here alone does not activate a tool.
+read_when: Invoking or reviewing agent discovery, selecting or implementing L7 tools, reviewing a reusable script, or considering helper promotion.
+write_when: A measured tool need, retained capability, interface contract, validation requirement, or activation decision changes.
+---
 # Workflow Tool Requirements
-
-- Purpose: Define the active capability, safety, interface, and validation requirements for reusable workflow tools before implementation or selection.
-- Scope: Reusable state, media inspection, remux, source evidence, sync advisory, interchange, editing audit, and application-validation tools; no tool is activated merely by appearing here.
-- Audience and language: Agents; English.
-- Read when: Selecting or implementing L7 tools, reviewing a reusable script, or deciding whether a task-specific helper should be promoted.
-- Write when: A measured tool need, retained capability, interface contract, validation requirement, or activation decision changes.
-- Authority: This is the sole pre-L7 workflow-tool specification. Active implementations and tests must satisfy it without a migration-archive dependency.
 
 ## Activation rule
 
@@ -20,6 +27,7 @@
 
 | Capability | Required behavior | Layer status |
 |---|---|---|
+| Agent document discovery | Call the official Obsidian CLI directly, query one Base domain view or domain folder, return at most three candidate paths, read one atomic note, and report failure without fallback | Implemented in L3.2 and optimized in L3.3 |
 | Task-state I/O | Strict schema, safe paths, atomic replacement, source fingerprint checks, bounded output verification, and verified promotion | Implemented in `tools/state_io.py` |
 | Media inspection | Report container, streams, duration, frame rate, and audio properties from an exact named file | Candidate for L7 |
 | Lossless remux | Convert a named MKV recording to an MP4 container without re-encoding; preserve the source and skip an existing destination | Candidate for L7 |
@@ -39,6 +47,19 @@
 - Temporary files live outside the repository or in an already ignored task-local location and are removed on failure.
 - Partial output remains ineligible and cannot replace the last verified state.
 - Tests use synthetic files unless the user designates an exact real item and purpose.
+
+## Agent document-discovery contract
+
+- Use the official Obsidian product CLI directly. Do not add a Python, PowerShell, MCP, Graphify, or compatible-format wrapper merely to invoke it.
+- The verified Windows entry point is `C:\Users\Hugh\AppData\Local\Programs\Obsidian\Obsidian.com`. Execute that exact command through its confirmed approved boundary as required by `PROJECT_RULES.md#authorization-and-change-safety`; do not first retry the default sandbox.
+- Obsidian must be running. If the first direct version check reports that the app is stopped, start the installed Obsidian app once and retry the same direct command once; report another failure.
+- For unknown routes, query `base:query path='docs/agent/navigation/AGENT_DOCUMENTS.base' view='<Domain>' format=paths`. If no domain can be selected, report ambiguity instead of querying every note.
+- For an unresolved selector inside one domain, use `search query='<2-6 concise English terms or property filter>' path='docs/agent/<domain>' limit=3 format=json`.
+- Accept only paths returned by the selected domain view or folder. Results are candidates, not authority and not permission to read adjacent files.
+- Compare `purpose` and `authority` through `property:read`; read `scope` and `read_when` only for a tie. Select one atomic note, then use `read path='<candidate>'`. Use `outline` only when the selected note explicitly declares multiple task contexts.
+- Root startup documents and known `AGENTS.md` routes remain direct reads; the CLI does not replace them.
+- On a non-zero exit, unavailable app, permission mismatch, malformed result, no result, unresolved ambiguity, or protected-path risk, report the condition and stop discovery. Do not silently fall back to direct routing or another engine.
+- The checked-in Obsidian Base is the only generated index. QMD, embeddings, Ollama, Graphify, community plugins, MCP, shared servers, and other generated indexes remain inactive unless a separate measured failure and user approval justify one.
 
 ## Source evidence contract
 
@@ -71,11 +92,11 @@
 
 - Accept one content sequence and one section-to-mode profile.
 - Calculate cut count, selected duration, average, maximum, and late-density comparison.
-- Use the warning codes and waiver semantics defined in `docs/agent/EDITING_QUALITY_RULES.md#advisory-audit-contract`.
+- Use the warning codes and waiver semantics defined in `docs/agent/workflow/EDITING_QUALITY_RULES.md#advisory-audit-contract`.
 - Never modify the cutlist and never treat thresholds as target cut lengths.
 
 ## Explicitly non-required infrastructure
 
 The project does not require a database, event-sourced edit memory, machine transition graph, work-claim
 service, mandatory hooks, CI, broad CLI wrapper, or fail-open guard to implement these capabilities. A later
-measured failure must justify any such addition through `docs/agent/RECONSTRUCTION_MAP.md`.
+measured failure must justify any such addition through `docs/agent/rebuild/RECONSTRUCTION_MAP.md`.

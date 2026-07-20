@@ -1,11 +1,18 @@
+---
+doc_id: doc.editing_quality
+kind: requirements
+domain: workflow
+lifecycle: active
+authority: normative for editing judgment, evidence, sampling, and promotion quality
+audience: agent
+language: en
+validation: structure_validated
+purpose: Define the retained editing-judgment, evidence, sampling, self-validation, and promotion requirements needed for consistent quality.
+scope: Stage-7 editing quality and evidence only; global safety, task state, workflow order, and tool implementation remain in their own authorities.
+read_when: Designing L5 editing gates, implementing L7 editing tools, executing or reviewing stage 7, or aligning an L8 editing skill.
+write_when: Verified editing practice or a user decision changes a durable quality rule, warning threshold, evidence requirement, or promotion gate.
+---
 # Editing Quality Rules
-
-- Purpose: Define the retained editing-judgment, evidence, sampling, self-validation, and promotion requirements needed for consistent quality.
-- Scope: Stage-7 editing quality and evidence only; global safety, task state, workflow order, and tool implementation remain in their own authorities.
-- Audience and language: Agents; English.
-- Read when: Designing L5 editing gates, implementing L7 editing tools, executing or reviewing stage 7, or aligning an L8 editing skill.
-- Write when: Verified editing practice or a user decision changes a durable quality rule, warning threshold, evidence requirement, or promotion gate.
-- Authority: This is the sole active editing-quality knowledge source. The future L5 workflow will link to it instead of copying it.
 
 ## Quality definition
 

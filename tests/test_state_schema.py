@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOLS_DIR = ROOT / "tools"
-SCHEMA_PATH = ROOT / "docs/agent/schemas/video_task_state.schema.json"
+SCHEMA_PATH = ROOT / "docs/agent/state/schemas/video_task_state.schema.json"
 sys.path.insert(0, str(TOOLS_DIR))
 
 import state_io  # noqa: E402

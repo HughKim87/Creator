@@ -1,16 +1,23 @@
+---
+doc_id: doc.rebuild_principles
+kind: principle
+domain: rebuild
+lifecycle: active
+authority: normative for rebuild decisions and stop conditions
+audience: agent
+language: en
+validation: structure_validated
+purpose: Define the decision principles, cost limits, and stop conditions for the incremental rebuild.
+scope: Rebuild direction and layer execution discipline only; no current state, layer checklist, or global workspace policy.
+read_when: A rebuild task changes scope, selects an approach, evaluates an exception, or risks exceeding a layer boundary.
+write_when: Only when the user changes the intended rebuild direction or approves a durable exception.
+---
 # Rebuild Principles
-
-- Purpose: Define the decision principles, cost limits, and stop conditions for the incremental rebuild.
-- Scope: Rebuild direction and layer execution discipline only; no current state, layer checklist, or global workspace policy.
-- Audience and language: Agents; English.
-- Read when: A rebuild task changes scope, selects an approach, evaluates an exception, or risks exceeding a layer boundary.
-- Write when: Only when the user changes the intended rebuild direction or approves a durable exception.
-- Authority: This is the sole source of rebuild principles. Layer work belongs in `docs/agent/REBUILD_PLAN.md`; current state belongs in `SESSION_HANDOFF.md`.
 
 ## Core principles
 
 1. **Reconstruct before depending.** Convert every retained behavior into a self-contained active document, tool, or test before a layer uses it. A migration source is never an active dependency.
-2. **Classify before implementing.** Mark a capability as `implemented`, `specified`, `deferred`, or `excluded` in `docs/agent/RECONSTRUCTION_MAP.md` before changing it.
+2. **Classify before implementing.** Mark a capability as `implemented`, `specified`, `deferred`, or `excluded` in `docs/agent/rebuild/RECONSTRUCTION_MAP.md` before changing it.
 3. **Solve an observed problem.** Introduce the smallest change that fixes a concrete failure, repeated cost, or blocked workflow.
 4. **Improve quality and productivity together.** A safer system that makes real work materially slower does not pass.
 5. **Keep documents precise and implementation small.** The plan may be detailed, but one layer should normally fit within two to four hours.
@@ -30,9 +37,9 @@ Before implementation, record concise answers in `SESSION_HANDOFF.md` when they 
 
 ## Layer execution protocol
 
-1. Read `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, and only the current section of `docs/agent/REBUILD_PLAN.md`.
+1. Read `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, and only the current section of `docs/agent/rebuild/REBUILD_PLAN.md`.
 2. Read this document only when a principle or scope decision is required.
-3. If a capability changes, read only the relevant `docs/agent/RECONSTRUCTION_MAP.md` row and its active authority.
+3. If a capability changes, read only the relevant `docs/agent/rebuild/RECONSTRUCTION_MAP.md` row and its active authority.
 4. Implement only the current layer's declared delta.
 5. Run necessary fast checks during work and one integrated validation at layer completion.
 6. Update `SESSION_HANDOFF.md` with verified results, failures, blockers, rollback, and the next gate.

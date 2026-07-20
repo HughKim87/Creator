@@ -1,13 +1,20 @@
+---
+doc_id: doc.structure_report
+kind: report
+domain: history
+lifecycle: historical
+authority: evidence for the 2026-07-18 project structure snapshot
+audience: user
+language: ko
+validation: structure_validated
+purpose: 사용자가 2026-07-18 당시 프로젝트·기존 프레임워크·재구축 스냅샷의 구조 분석을 확인한다.
+scope: 작성 당시의 구조와 분석 판단만 다루며 현재 실행 규칙·작업 계획·진행 상태를 지시하지 않는다.
+read_when: 사용자가 구조 분석의 근거나 당시 판단을 확인해 달라고 요청할 때만.
+write_when: 사실 오류나 문서 상태 표시를 바로잡을 때만.
+---
 # 프로젝트 전체 구조 분석 보고서
-
-- 사용 목적: 사용자가 2026-07-18 당시 프로젝트·기존 프레임워크·재구축 스냅샷의 구조 분석을 확인하는 보고서다.
-- 사용 범위: 작성 당시의 구조와 분석 판단만 다루며 현재 실행 규칙·작업 계획·진행 상태를 지시하지 않는다.
-- 독자·언어: 사용자, 한글.
-- 읽는 시점: 사용자가 구조 분석의 근거나 당시 판단을 확인해 달라고 요청할 때만 읽는다.
-- 수정하는 시점: 역사 보고서이므로 원칙적으로 수정하지 않으며, 사실 오류나 문서 상태 표시를 바로잡을 때만 수정한다.
-- 정본 여부: 정본이 아니다. 현재 상태는 `SESSION_HANDOFF.md`, 사용자용 요약은 `docs/user/PROJECT_STATUS.md`를 따른다.
 - 상태: historical / supporting snapshot.
-- 이관 상태: 본문에 적힌 백업 경로와 승계표 명칭은 당시 구조 기록이며 현재 작업 경로가 아니다. 필요한 내용의 현재 정본은 `docs/agent/RECONSTRUCTION_MAP.md`에서 확인한다.
+- 이관 상태: 본문에 적힌 백업 경로와 승계표 명칭은 당시 구조 기록이며 현재 작업 경로가 아니다. 필요한 내용의 현재 정본은 `docs/agent/rebuild/RECONSTRUCTION_MAP.md`에서 확인한다.
 - 작성일: 2026-07-18.
 - 분석 대상: 당시 활성 루트, 기존 영상 제작 프레임워크 백업, 당시 재구축 실험 스냅샷.
 
