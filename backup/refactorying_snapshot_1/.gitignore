@@ -1,0 +1,41 @@
+### 사용자 데이터 경계 — 어느 깊이에서도 커밋 금지
+inputs/
+outputs/
+
+### 재구축 단계 문서는 docs/rebuild/에서 Git 추적
+# 검증용 worktree와 runtime 임시 폴더는 저장소 밖에서 생성하고 작업 후 제거한다.
+
+### 대용량 미디어 원본 — 커밋 금지 (영상/음성 원본은 git 밖에서 관리)
+*.mkv
+*.mp4
+*.mov
+*.avi
+*.wav
+*.mp3
+
+### 임시/백업
+*.tmp
+__pycache__/
+*.pyc
+.venv/
+.coverage
+build/
+dist/
+*.egg-info/
+
+### 프로젝트 내부 휴대용 도구 — 대용량 바이너리 커밋 금지
+tools/ffmpeg/
+
+### Windows
+# Windows thumbnail cache files
+Thumbs.db
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows shortcuts
+*.lnk
+.pytest_cache

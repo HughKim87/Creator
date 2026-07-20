@@ -1,0 +1,51 @@
+STAGE 00 BEHAVIOR EXECUTION RESULTS
+legacy_sha=8a6ce44068a348c65f21ca69f6cf857aa51fc79b
+worktree_mode=detached
+python=codex-primary-runtime bundled Python
+pythondontwritebytecode=1
+temporary_root=stage-00-local-runtime-temp
+
+STATIC TEST INVENTORY
+files=10
+tests=74
+safe_to_execute=45
+unavailable_policy_boundary=29
+
+DIRECT PYTHON
+batch_1=33 passed, 0 failed, exit 0
+batch_2=12 passed, 0 failed, exit 0
+total=45 passed, 0 failed
+
+RUN_PYTHON_WRAPPER
+batch_1=33 passed in output, exit 0
+batch_2=12 passed in output, exit 0
+note=wrapper exit status is not trustworthy because the child-exit probe below failed
+
+CHILD EXIT PROPAGATION
+direct_command=python -c "raise SystemExit(7)"
+direct_exit=7
+wrapper_command=tools/run_python.bat -c "raise SystemExit(7)"
+wrapper_exit=0
+result=OBSERVED_FALSE_SUCCESS
+cause=percent ERRORLEVEL is expanded before the child runs inside the parenthesized batch block
+
+UNAVAILABLE TESTS
+test_projectctl.py=8; common setup creates a forbidden path segment
+test_workflow_gate.py=17; common setup creates a forbidden path tree
+test_skill_asset_lifecycle.py=3; individual fixtures create a forbidden path segment
+test_tool_wrappers.py=1; preflight checks forbidden root candidates
+
+UNAVAILABLE COMMANDS
+project_preflight=checks candidate paths containing forbidden segments
+doccheck=contains recursive traversal of the forbidden data tree
+workflow_gate_audit=opens state under the forbidden data tree
+projectctl_verify=combines doccheck, workflow gate, and full test discovery
+ffmpeg_remux=not app-validated; no authorized synthetic fixture and no user media use
+premiere_remote_ci_human_av=not app-validated in Stage 00
+
+POST RUN
+legacy_worktree_git_status_entries=0
+backup_tracked_status_entries=0
+user_data_enumerated=0
+user_data_used_as_test_input=0
+commit_tag_push=0

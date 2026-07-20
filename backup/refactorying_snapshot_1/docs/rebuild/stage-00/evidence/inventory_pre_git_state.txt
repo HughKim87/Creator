@@ -1,0 +1,4 @@
+branch=feature/refactoring
+head=dc7f18b4715bff99b806872f742bf1602e2d0418
+backup_worktree_diff_entries=0
+backup_index_diff_entries=0

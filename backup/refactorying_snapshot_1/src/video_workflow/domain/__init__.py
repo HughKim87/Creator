@@ -1,0 +1,137 @@
+"""Pure domain contracts for the video workflow (stage 02).
+
+This package must never import filesystem, database, subprocess, network,
+clock, or random facilities. Identity and time are always supplied by the
+application layer.
+"""
+
+from video_workflow.domain.commands import (
+    AdvancePhase,
+    Cancel,
+    CloseGeneration,
+    Command,
+    Complete,
+    CreateGeneration,
+    RecordApproval,
+    RecordArtifact,
+    RecordFailure,
+    RegisterSource,
+    Resume,
+    Suspend,
+)
+from video_workflow.domain.enums import (
+    HUMAN_ONLY_APPROVALS,
+    PHASE_ORDER,
+    SUSPENDED_STATUSES,
+    TERMINAL_STATUSES,
+    ActorKind,
+    ApprovalDecision,
+    ApprovalType,
+    ArtifactRole,
+    EventKind,
+    GenerationStatus,
+    LifecycleStatus,
+    Phase,
+    next_phase,
+)
+from video_workflow.domain.errors import DomainValidationError, SerializationError
+from video_workflow.domain.ids import (
+    ArtifactId,
+    CommandId,
+    EventId,
+    GenerationId,
+    ProjectId,
+    SourceId,
+    TypedId,
+)
+from video_workflow.domain.records import (
+    ApprovalRecord,
+    ApprovalTarget,
+    ArtifactRecord,
+    FailureRecord,
+    WorkflowEvent,
+    make_payload,
+)
+from video_workflow.domain.serialization import (
+    SCHEMA_VERSION,
+    canonical_json_bytes,
+    deserialize,
+    serialize,
+)
+from video_workflow.domain.state import (
+    GenerationState,
+    ProcessedCommand,
+    ProjectState,
+    initial_state,
+)
+from video_workflow.domain.transitions import (
+    TransitionAccepted,
+    TransitionRejected,
+    TransitionResult,
+    command_digest,
+    transition,
+)
+from video_workflow.domain.values import (
+    Actor,
+    ActorProvenance,
+    SourceFingerprint,
+)
+
+__all__ = [
+    "HUMAN_ONLY_APPROVALS",
+    "PHASE_ORDER",
+    "SCHEMA_VERSION",
+    "SUSPENDED_STATUSES",
+    "TERMINAL_STATUSES",
+    "Actor",
+    "ActorKind",
+    "ActorProvenance",
+    "AdvancePhase",
+    "ApprovalDecision",
+    "ApprovalRecord",
+    "ApprovalTarget",
+    "ApprovalType",
+    "ArtifactId",
+    "ArtifactRecord",
+    "ArtifactRole",
+    "Cancel",
+    "CloseGeneration",
+    "Command",
+    "CommandId",
+    "Complete",
+    "CreateGeneration",
+    "DomainValidationError",
+    "EventId",
+    "EventKind",
+    "FailureRecord",
+    "GenerationId",
+    "GenerationState",
+    "GenerationStatus",
+    "LifecycleStatus",
+    "Phase",
+    "ProcessedCommand",
+    "ProjectId",
+    "ProjectState",
+    "RecordApproval",
+    "RecordArtifact",
+    "RecordFailure",
+    "RegisterSource",
+    "Resume",
+    "SerializationError",
+    "SourceFingerprint",
+    "SourceId",
+    "Suspend",
+    "TransitionAccepted",
+    "TransitionRejected",
+    "TransitionResult",
+    "TypedId",
+    "WorkflowEvent",
+    "canonical_json_bytes",
+    "command_digest",
+    "deserialize",
+    "initial_state",
+    "make_payload",
+    "next_phase",
+    "serialize",
+    "transition",
+]
