@@ -15,6 +15,8 @@
     "target_paths": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
     "target_file_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
     "target_unit_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "target_record_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "target_record_kinds": {"type": "array", "items": {"enum": ["decision", "knowledge", "case", "source"]}, "uniqueItems": true},
     "target_kinds": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
     "output_audience": {"enum": ["agent", "user", "machine"]},
     "include_scopes": {"type": "array", "items": {"type": "string"}},

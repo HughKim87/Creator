@@ -23,6 +23,56 @@
 - 저장 위치: `knowledge/cases/case.project.document-authority-duplication.md`.
 - 연결 관계: [프로젝트 규칙](../../PROJECT_RULES.md), [문서 생성 게이트](../../docs/agent/WORKFLOW.md#document-creation-gate), [문서 지도](../../docs/agent/DOCUMENT_MAP.md), [검색 계약](../../docs/agent/CONTEXT_RETRIEVAL.md), [유지보수 계약](../../docs/agent/KNOWLEDGE_MAINTENANCE.md), [R-1.1 현재 제안](../../docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md), [현재 인수인계](../../SESSION_HANDOFF.md)에 연결된다.
 
+## case.project.document-authority-duplication
+
+아래 JSON은 R-2B부터 resolver와 schema validator가 사용하는 정식 레코드다. 본문의 수동 bootstrap 기록과 revision history는 증거 보존을 위해 유지한다.
+
+```json
+{
+  "schema_version": "1.0.0",
+  "record_kind": "case",
+  "case_id": "case.project.document-authority-duplication",
+  "title": "중복 문서의 권위 충돌과 반복 생성",
+  "status": "resolved",
+  "symptom": {
+    "state": "confirmed",
+    "summary": "같은 지식 시스템 설계가 단계별 완결형 보고서로 반복 생성되어 현재 권위와 수치가 충돌했다.",
+    "evidence": [
+      {"source_id": "source.repo.r1.1", "locator": "§1 사례 요약과 §2 사용자 관찰"},
+      {"source_id": "source.history.overview", "locator": "문서 중심 프로젝트 변천사와 반복 실패 요약"}
+    ]
+  },
+  "resolution": {
+    "state": "resolved",
+    "summary": "단일 owner, 문서 생성 게이트, authority/preservation/default-context 상태 분리와 exact routing을 적용했다.",
+    "evidence": [
+      {"source_id": "source.repo.project-rules", "locator": "1. Authority and scope"},
+      {"source_id": "source.repo.workflow", "locator": "Document creation gate"}
+    ]
+  },
+  "confidence": "high",
+  "source_refs": [
+    {"source_id": "source.repo.r1.1", "locator": "§11과 승인 경계"},
+    {"source_id": "source.repo.project-rules", "locator": "1. Authority and scope"},
+    {"source_id": "source.repo.workflow", "locator": "Document creation gate"},
+    {"source_id": "source.history.overview", "locator": "프로젝트 전체 변천사 요약"}
+  ],
+  "relation_ids": ["relation.case.document-authority.resolved-by.knowledge.single-owner"],
+  "confirmed_at": "2026-07-20T22:50:40+09:00",
+  "resolved_at": "2026-07-20T23:16:47+09:00",
+  "last_verified_at": "2026-07-21",
+  "review_policy": "event_driven",
+  "review_due_at": null,
+  "review_triggers": [
+    "같은 주제의 current proposal이 둘 이상 발견됨",
+    "새 maintained document에 고유 owner가 없음",
+    "대체된 보고서가 active instruction으로 선택됨"
+  ],
+  "retrieval_eligible": true,
+  "task_tags": ["case", "documentation", "authority", "failure", "resolution"]
+}
+```
+
 ## 1. 사례 요약
 
 `F` 같은 지식 시스템 설계를 다루는 최종 교차검증, R-1, 착수 전 의도 검증과 R-1.1 문서가 각각 272줄, 648줄, 444줄, 596줄의 완결형 보고서로 존재했다.

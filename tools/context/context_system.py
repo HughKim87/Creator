@@ -1,4 +1,4 @@
-"""Deterministic R-2A task-scoped context system.
+"""Deterministic R-2A/R-2B task-scoped context and corpus system.
 
 This module uses only the Python standard library. Markdown and JSON/JSONL are
 the canonical project artifacts; catalogs and work contexts are deterministic
@@ -27,9 +27,14 @@ IGNORED_DIRS = {"__pycache__", ".pytest_cache"}
 IGNORED_SUFFIXES = {".pyc", ".pyo"}
 CATALOG_PROJECTIONS = {
     "catalog/files.jsonl",
+    "catalog/records.jsonl",
     "catalog/rules.jsonl",
     "catalog/units.jsonl",
 }
+CORPUS_JSONL_PATHS = ["knowledge/decisions.jsonl", "knowledge/items.jsonl"]
+SOURCE_STORE_PATH = "knowledge/sources.jsonl"
+RELATION_STORE_PATH = "knowledge/relations.jsonl"
+CASE_ROOT = "knowledge/cases"
 KERNEL_RULE_IDS = [
     "rule.core.authority-order",
     "rule.core.scope-authority",
@@ -235,11 +240,12 @@ def classify_file(path: str, root: Path = PROJECT_ROOT, status: str = "active") 
         "docs/agent/KNOWLEDGE_MAINTENANCE.md": ("technical_contract", "Define review and maintenance behavior.", "project_agents", "active_contract", ["maintenance_or_review_work"], ["approved_contract_change"]),
         "catalog/bootstrap.json": ("bootstrap_evidence", "Preserve the R-2A pre-migration inventory and 29-rule mapping.", "project_agents", "retained_evidence", ["r2a_audit"], ["never_after_bootstrap"]),
         "catalog/files.jsonl": ("file_catalog", "Canonical registry of project-governed files.", "context_system", "canonical", ["context_resolution", "validation"], ["context_system_only"]),
+        "catalog/records.jsonl": ("record_projection", "Rebuildable projection of decision, knowledge, and case records.", "context_system", "derived", ["record_resolution", "validation"], ["context_system_only"]),
         "catalog/rules.jsonl": ("rule_projection", "Rebuildable projection of conditional rule records.", "context_system", "derived", ["context_resolution", "validation"], ["context_system_only"]),
         "catalog/units.jsonl": ("unit_projection", "Rebuildable projection of addressable artifact units.", "context_system", "derived", ["context_resolution", "validation"], ["context_system_only"]),
         "records/work/events.jsonl": ("event_store", "Append-only R-2A work evidence chain.", "context_system", "canonical", ["validation", "task_audit"], ["append_only_context_system"]),
-        "tools/context/context_system.py": ("code", "Implement deterministic R-2A parsing, cataloging, resolving, validation, and Markdown writing.", "project_agents", "active_implementation", ["context_system_execution"], ["approved_implementation_change"]),
-        "tests/context/test_context_system.py": ("test", "Verify R-2A context-system contracts.", "project_agents", "active_test", ["r2a_validation"], ["test_maintenance"]),
+        "tools/context/context_system.py": ("code", "Implement deterministic R-2A/R-2B parsing, cataloging, corpus resolving, validation, and Markdown writing.", "project_agents", "active_implementation", ["context_system_execution"], ["approved_implementation_change"]),
+        "tests/context/test_context_system.py": ("test", "Verify R-2A/R-2B context-system contracts.", "project_agents", "active_test", ["r2a_validation", "r2b_validation"], ["test_maintenance"]),
     }
     if normalized in special:
         kind, purpose, owner, authority, read_when, write_when = special[normalized]
@@ -275,6 +281,22 @@ def classify_file(path: str, root: Path = PROJECT_ROOT, status: str = "active") 
         kind, purpose, owner, authority = "case", "Preserve a source-traceable problem and resolution case.", "project_agents", "canonical"
         read_when, write_when = ["exact_case_trigger"], ["authorized_case_review"]
         task_tags = ["knowledge", "case"]
+    elif normalized == "knowledge/decisions.jsonl":
+        kind, purpose, owner, authority = "decision_store", "Hold accepted project decisions as independent records.", "project_agents", "canonical"
+        read_when, write_when = ["exact_decision_route"], ["authorized_decision_migration"]
+        task_tags = ["knowledge", "decision"]
+    elif normalized == "knowledge/items.jsonl":
+        kind, purpose, owner, authority = "knowledge_store", "Hold verified source-traceable project knowledge.", "project_agents", "canonical"
+        read_when, write_when = ["exact_knowledge_route"], ["authorized_knowledge_review"]
+        task_tags = ["knowledge"]
+    elif normalized == SOURCE_STORE_PATH:
+        kind, purpose, owner, authority = "source_store", "Hold stable source locators and integrity observations.", "project_agents", "canonical"
+        read_when, write_when = ["source_trace"], ["authorized_source_review"]
+        task_tags = ["knowledge", "source", "provenance"]
+    elif normalized == RELATION_STORE_PATH:
+        kind, purpose, owner, authority = "relation_store", "Hold verified typed one-hop corpus relations and inactive candidates.", "project_agents", "canonical"
+        read_when, write_when = ["record_one_hop"], ["authorized_relation_review"]
+        task_tags = ["knowledge", "relation"]
     elif normalized.startswith("records/sessions/"):
         kind, purpose, owner, authority = "session_record", "Preserve a closed historical session record.", "project_agents", "retained_evidence"
         read_when, write_when = ["exact_history_route"], ["create_once"]
@@ -310,7 +332,7 @@ def classify_file(path: str, root: Path = PROJECT_ROOT, status: str = "active") 
             "docs/agent/DOCUMENT_MAP.md",
             "knowledge/cases/case.project.document-authority-duplication.md",
         ],
-        "tools/context/context_system.py": ["catalog/files.jsonl", "catalog/rules.jsonl", "catalog/units.jsonl"],
+        "tools/context/context_system.py": ["catalog/files.jsonl", "catalog/records.jsonl", "catalog/rules.jsonl", "catalog/units.jsonl"],
         "tests/context/test_context_system.py": ["tools/context/context_system.py"],
     }
     depends_on = [file_id_for_path(item) for item in relation_paths.get(normalized, [])]
@@ -410,23 +432,39 @@ def build_rule_projection(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
 
 
 def markdown_units(text: str, file_record: dict[str, Any]) -> list[dict[str, Any]]:
-    matches = list(re.finditer(r"^(#{1,6})\s+(.+?)\s*$", text, re.MULTILINE))
-    if not matches:
+    headings: list[tuple[int, int, str]] = []
+    active_fence: tuple[str, int] | None = None
+    offset = 0
+    for line in text.splitlines(keepends=True):
+        fence = re.match(r"^\s*(`{3,}|~{3,})", line)
+        if fence:
+            marker = fence.group(1)
+            signature = (marker[0], len(marker))
+            if active_fence is None:
+                active_fence = signature
+            elif active_fence[0] == signature[0] and signature[1] >= active_fence[1]:
+                active_fence = None
+            offset += len(line)
+            continue
+        if active_fence is None:
+            heading = re.match(r"^(#{1,6})\s+(.+?)\s*(?:\r?\n)?$", line)
+            if heading:
+                headings.append((offset, len(heading.group(1)), heading.group(2).strip()))
+        offset += len(line)
+    if not headings:
         return [whole_file_unit(text, file_record)]
     stack: list[str] = []
     used: dict[str, int] = {}
     units: list[dict[str, Any]] = []
-    for index, match in enumerate(matches):
-        depth = len(match.group(1))
-        title = match.group(2).strip()
+    for index, (start, depth, title) in enumerate(headings):
         stack = stack[: depth - 1]
         stack.append(title)
         end = len(text)
-        for candidate in matches[index + 1 :]:
-            if len(candidate.group(1)) <= depth:
-                end = candidate.start()
+        for candidate_start, candidate_depth, _ in headings[index + 1 :]:
+            if candidate_depth <= depth:
+                end = candidate_start
                 break
-        content = text[match.start() : end].rstrip() + "\n"
+        content = text[start:end].rstrip() + "\n"
         locator = "heading:" + " > ".join(stack)
         slug_path = ".".join(stable_slug(item) for item in stack)
         base = f"unit.{file_record['file_id']}.heading.{slug_path}"
@@ -467,7 +505,7 @@ def json_pointer_units(value: Any, file_record: dict[str, Any]) -> list[dict[str
 
 def jsonl_units(records: list[dict[str, Any]], file_record: dict[str, Any]) -> list[dict[str, Any]]:
     units: list[dict[str, Any]] = []
-    id_fields = ("file_id", "rule_id", "unit_id", "event_id", "task_id", "context_id", "id")
+    id_fields = ("decision_id", "knowledge_id", "case_id", "source_id", "relation_id", "file_id", "rule_id", "unit_id", "event_id", "task_id", "context_id", "id")
     seen: set[str] = set()
     for record in records:
         record_id = next((str(record[field]) for field in id_fields if record.get(field)), None)
@@ -546,6 +584,43 @@ def load_file_catalog(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
     return load_jsonl(root / "catalog/files.jsonl")
 
 
+def record_id(record: dict[str, Any]) -> str:
+    for field in ("decision_id", "knowledge_id", "case_id", "source_id", "relation_id"):
+        if record.get(field):
+            return str(record[field])
+    raise ContextSystemError(f"corpus record lacks stable ID: {record.get('record_kind')}")
+
+
+def parse_markdown_corpus_records(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    case_root = root / CASE_ROOT
+    if not case_root.exists():
+        return records
+    for path in sorted(case_root.glob("*.md")):
+        relative = path.relative_to(root).as_posix()
+        for match in JSON_FENCE_PATTERN.finditer(read_utf8(path)):
+            try:
+                value = json.loads(match.group("json"))
+            except json.JSONDecodeError as exc:
+                raise ContextSystemError(f"invalid corpus JSON: {relative}: {exc}") from exc
+            if isinstance(value, dict) and value.get("record_kind") == "case":
+                records.append(value)
+    return records
+
+
+def build_record_projection(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for relative in CORPUS_JSONL_PATHS:
+        records.extend(load_jsonl(root / relative))
+    records.extend(parse_markdown_corpus_records(root))
+    ids = [record_id(record) for record in records]
+    if len(ids) != len(set(ids)):
+        raise ContextSystemError("duplicate decision, knowledge, or case record ID")
+    records = sorted(records, key=record_id)
+    write_jsonl_atomic(root / "catalog/records.jsonl", records)
+    return records
+
+
 def build_file_catalog(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
     catalog_path = root / "catalog/files.jsonl"
     existing = load_jsonl(catalog_path) if catalog_path.exists() else []
@@ -581,12 +656,14 @@ def build_unit_projection(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
 def sync_catalog(root: Path = PROJECT_ROOT) -> dict[str, int]:
     (root / "catalog").mkdir(parents=True, exist_ok=True)
     build_rule_projection(root)
+    build_record_projection(root)
     build_file_catalog(root)
     build_unit_projection(root)
     files = build_file_catalog(root)
     return {
         "files": len([record for record in files if record["status"] == "active"]),
         "planned": len([record for record in files if record["status"] == "planned"]),
+        "records": len(load_jsonl(root / "catalog/records.jsonl")),
         "rules": len(load_jsonl(root / "catalog/rules.jsonl")),
         "units": len(load_jsonl(root / "catalog/units.jsonl")),
     }
@@ -737,9 +814,13 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
     rules = load_jsonl(root / "catalog/rules.jsonl")
     files = load_file_catalog(root)
     units = load_jsonl(root / "catalog/units.jsonl")
+    corpus_records = load_jsonl(root / "catalog/records.jsonl")
+    source_records = load_jsonl(root / SOURCE_STORE_PATH)
+    relation_records = load_jsonl(root / RELATION_STORE_PATH)
     files_by_path = {record["path"]: record for record in files}
     files_by_id = {record["file_id"]: record for record in files}
     units_by_id = {record["unit_id"]: record for record in units}
+    records_by_id = {record_id(record): record for record in corpus_records + source_records}
 
     selected_rules: list[str] = []
     predicate_evidence: dict[str, Any] = {}
@@ -800,6 +881,58 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
             candidates = [unit for unit in units if unit["file_id"] == file_record["file_id"] and rule_id in unit["locator"]]
         for unit in candidates:
             selected_unit_ids[unit["unit_id"]] = f"selected_rule:{rule_id}"
+
+    requested_record_ids = request.get("target_record_ids", [])
+    selected_record_ids: dict[str, str] = {}
+    for requested_id in requested_record_ids:
+        record = records_by_id.get(requested_id)
+        if not record:
+            raise ContextSystemError(f"target record ID is not registered: {requested_id}")
+        selected_record_ids[requested_id] = "exact_target_record"
+    selected_relations: list[dict[str, Any]] = []
+    for relation in relation_records:
+        if relation.get("status") != "active" or relation.get("review_status") != "verified" or not relation.get("retrieval_eligible"):
+            continue
+        source_id = relation["source_record_id"]
+        target_id = relation["target_record_id"]
+        if source_id in requested_record_ids or target_id in requested_record_ids:
+            selected_relations.append(relation)
+            other_id = target_id if source_id in requested_record_ids else source_id
+            if other_id in records_by_id:
+                selected_record_ids.setdefault(other_id, f"one_hop:{relation['relation_id']}")
+    source_selection: dict[str, str] = {}
+    for selected_id in list(selected_record_ids):
+        for reference in records_by_id[selected_id].get("source_refs", []):
+            source_selection.setdefault(reference["source_id"], f"source_trace:{selected_id}")
+    for relation in selected_relations:
+        for reference in relation.get("source_refs", []):
+            source_selection.setdefault(reference["source_id"], f"relation_trace:{relation['relation_id']}")
+    for source_id, reason in source_selection.items():
+        if source_id not in records_by_id:
+            raise ContextSystemError(f"record source is not registered: {source_id}")
+        selected_record_ids.setdefault(source_id, reason)
+
+    record_manifest = {
+        "records": [
+            {
+                "record_id": selected_id,
+                "record_kind": records_by_id[selected_id]["record_kind"],
+                "status": records_by_id[selected_id].get("status"),
+                "selection_reason": reason,
+                "record": records_by_id[selected_id],
+            }
+            for selected_id, reason in sorted(selected_record_ids.items())
+        ],
+        "relations": selected_relations,
+    }
+    for record in corpus_records + source_records:
+        item_id = record_id(record)
+        if item_id not in selected_record_ids:
+            exclusions.append({"kind": "record", "id": item_id, "reason": "outside_exact_or_one_hop_scope"})
+    for relation in relation_records:
+        if relation not in selected_relations:
+            reason = "candidate_not_active" if relation.get("status") == "candidate" else "outside_one_hop_scope"
+            exclusions.append({"kind": "relation", "id": relation["relation_id"], "reason": reason})
 
     read_manifest: list[dict[str, Any]] = []
     for file_id, reason in sorted(selected_file_ids.items()):
@@ -878,6 +1011,7 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
             "predicate_evidence": predicate_evidence,
         },
         "read_manifest": read_manifest,
+        "record_manifest": record_manifest,
         "exclusions": exclusions,
         "write_contract": write_contract,
     }
@@ -890,7 +1024,7 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
         {request_relative: sha256_file(root / request_relative), output_relative: None},
         {request_relative: sha256_file(root / request_relative), output_relative: sha256_file(root / output_relative)},
         "success",
-        {"selected_rules": selected_rules, "selected_files": sorted(selected_file_ids), "selected_units": sorted(selected_unit_ids)},
+        {"selected_rules": selected_rules, "selected_files": sorted(selected_file_ids), "selected_units": sorted(selected_unit_ids), "selected_records": sorted(selected_record_ids), "selected_relations": [record["relation_id"] for record in selected_relations]},
     )
     sync_catalog(root)
     return context
@@ -943,6 +1077,97 @@ def validate_event_chain(root: Path) -> list[str]:
             errors.append(f"event hash mismatch: {record.get('event_id')}")
         previous = record.get("event_hash")
     return errors
+
+
+def corpus_schema_path(root: Path, record: dict[str, Any]) -> Path:
+    kind = record.get("record_kind")
+    mapping = {
+        "decision": "decision.schema.json",
+        "knowledge": "knowledge.schema.json",
+        "case": "case.schema.json",
+        "source": "source.schema.json",
+        "relation": "relation.schema.json",
+    }
+    if kind not in mapping:
+        raise ContextSystemError(f"unknown corpus record kind: {kind}")
+    return root / "schemas" / mapping[kind]
+
+
+def validate_corpus(root: Path) -> tuple[list[str], dict[str, int]]:
+    errors: list[str] = []
+    projected = load_jsonl(root / "catalog/records.jsonl")
+    canonical: list[dict[str, Any]] = []
+    for relative in CORPUS_JSONL_PATHS:
+        canonical.extend(load_jsonl(root / relative))
+    canonical.extend(parse_markdown_corpus_records(root))
+    canonical = sorted(canonical, key=record_id)
+    if projected != canonical:
+        errors.append("record projection differs from canonical corpus")
+    sources = load_jsonl(root / SOURCE_STORE_PATH)
+    relations = load_jsonl(root / RELATION_STORE_PATH)
+    all_records = projected + sources + relations
+    ids = [record_id(record) for record in all_records]
+    if len(ids) != len(set(ids)):
+        errors.append("duplicate corpus record ID")
+    sources_by_id = {record["source_id"]: record for record in sources}
+    endpoint_ids = {record_id(record) for record in projected + sources}
+    relations_by_id = {record["relation_id"]: record for record in relations}
+    for record in all_records:
+        missing = validate_required(record, corpus_schema_path(root, record))
+        if missing:
+            errors.append(f"{record.get('record_kind')} missing fields {record_id(record)}: {missing}")
+        for reference in record.get("source_refs", []):
+            if reference.get("source_id") not in sources_by_id:
+                errors.append(f"dangling source reference {record_id(record)} -> {reference.get('source_id')}")
+        for relation_id in record.get("relation_ids", []):
+            if relation_id not in relations_by_id:
+                errors.append(f"dangling relation reference {record_id(record)} -> {relation_id}")
+    for source in sources:
+        if source["source_type"] in {"project_document", "historical_document"}:
+            locator_path = source["locator"].split("#", 1)[0]
+            try:
+                normalized = assert_allowed_path(locator_path, root)
+            except ContextSystemError as exc:
+                errors.append(str(exc))
+                continue
+            path = root / normalized
+            if not path.exists():
+                errors.append(f"source path missing: {source['source_id']} -> {normalized}")
+            elif source.get("content_sha256") != sha256_file(path):
+                errors.append(f"source content hash mismatch: {source['source_id']}")
+        if source.get("status") == "historical_candidate":
+            if source.get("retrieval_eligible") or source.get("authority") in {"active_policy", "active_contract"}:
+                errors.append(f"historical candidate became active instruction: {source['source_id']}")
+    for relation in relations:
+        if relation["source_record_id"] not in endpoint_ids or relation["target_record_id"] not in endpoint_ids:
+            errors.append(f"dangling relation endpoint: {relation['relation_id']}")
+        if relation["status"] == "candidate" and (relation["review_status"] != "pending" or relation["retrieval_eligible"]):
+            errors.append(f"unreviewed relation candidate became active: {relation['relation_id']}")
+
+    decisions = [record for record in projected if record.get("record_kind") == "decision"]
+    expected_decisions = {f"decision.r1.1.d{number:02d}" for number in range(1, 18)}
+    if {record["decision_id"] for record in decisions} != expected_decisions:
+        errors.append("D-01 through D-17 decision IDs are incomplete")
+    for record in decisions:
+        approval = record.get("approval", {})
+        if record.get("status") != "accepted" or not all(approval.get(field) for field in ("approved_by", "approved_at", "evidence_source_id", "locator")):
+            errors.append(f"decision is not accepted and approved: {record['decision_id']}")
+        expected_legacy = "D-" + record["decision_id"].rsplit("d", 1)[1]
+        if record.get("legacy_id") != expected_legacy:
+            errors.append(f"decision legacy ID mismatch: {record['decision_id']}")
+    verified = [record for record in projected if record.get("record_kind") == "knowledge" and record.get("status") == "verified"]
+    if not any(record.get("source_refs") and all(ref["source_id"] in sources_by_id for ref in record["source_refs"]) for record in verified):
+        errors.append("no verified knowledge traces to registered sources")
+    cases = [record for record in projected if record.get("record_kind") == "case"]
+    if not any(record.get("status") == "resolved" and record.get("symptom", {}).get("state") == "confirmed" and record.get("resolution", {}).get("state") == "resolved" and record.get("symptom", {}).get("evidence") and record.get("resolution", {}).get("evidence") for record in cases):
+        errors.append("no resolved case separates confirmed symptom and resolution evidence")
+    return errors, {
+        "decisions": len(decisions),
+        "knowledge": len([record for record in projected if record.get("record_kind") == "knowledge"]),
+        "cases": len(cases),
+        "sources": len(sources),
+        "relations": len(relations),
+    }
 
 
 def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
@@ -1061,10 +1286,15 @@ def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
             missing = validate_required(contract, root / "schemas/write_contract.schema.json")
             if missing:
                 errors.append(f"write contract missing fields {context_path.name}: {missing}")
+        selected_rule_ids = context.get("authority", {}).get("selected_conditional_rule_ids", [])
+        if any(rule_id not in {rule["rule_id"] for rule in parsed_rules} for rule_id in selected_rule_ids):
+            errors.append(f"work context selected a non-active instruction: {context_path.name}")
 
     link_errors, link_count = validate_markdown_links(root, actual_paths)
     errors.extend(link_errors)
     errors.extend(validate_event_chain(root))
+    corpus_errors, corpus_counts = validate_corpus(root)
+    errors.extend(corpus_errors)
     for forbidden in ("backup/forbidden", "inputs/forbidden", "outputs/forbidden"):
         try:
             assert_allowed_path(forbidden, root)
@@ -1081,6 +1311,7 @@ def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
             "planned_files": len([record for record in file_records if record["status"] == "planned"]),
             "units": len(unit_records),
             "events": len(load_jsonl(root / "records/work/events.jsonl")),
+            **corpus_counts,
             "local_links": link_count,
             "orphan_files": len(orphan_paths),
         },
@@ -1169,6 +1400,8 @@ def write_fixture(root: Path, context_path: str, payload_path: str) -> dict[str,
 
 
 def cli() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="R-2A deterministic context system")
     parser.add_argument("--root", default=str(PROJECT_ROOT), help="Project root")
     subparsers = parser.add_subparsers(dest="command", required=True)

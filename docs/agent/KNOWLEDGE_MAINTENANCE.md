@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-R-2A records task-context resolution and contract-gated Markdown writes in an append-only hash chain, then refreshes file and unit integrity evidence. Automated knowledge stale detection, review queues, case/decision revision history, relation maintenance, and search reindexing remain unimplemented.
+R-2A records context resolution and contract-gated Markdown writes in an append-only hash chain. R-2B validates source hashes, source-reference and relation endpoints, decision approval fields, verified-knowledge provenance, resolved-case symptom/solution evidence, and inactive candidate gates. Automated status transitions, review queues, case/decision revision writers, relation-maintenance commands, and search reindexing remain unimplemented.
 
 ## Review triggers
 

@@ -1,0 +1,779 @@
+{
+  "schema_version": "1.0.0",
+  "context_id": "context.task.r2b.start",
+  "request": {
+    "schema_version": "1.0.0",
+    "task_id": "task.r2b.start",
+    "requested_by": "user",
+    "intent": "Implement only the approved R-2B migration of existing decisions, reusable knowledge, cases, sources, and relations into the live R-2A context loop.",
+    "actions": [
+      "read",
+      "validate"
+    ],
+    "phase": "plan",
+    "target_paths": [
+      "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md",
+      "SESSION_HANDOFF.md",
+      "docs/agent/KNOWLEDGE_SYSTEM.md",
+      "docs/agent/CONTEXT_RETRIEVAL.md",
+      "docs/agent/KNOWLEDGE_MAINTENANCE.md",
+      "docs/agent/DOCUMENT_MAP.md"
+    ],
+    "target_file_ids": [],
+    "target_unit_ids": [
+      "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.10.10.2-r-2b-corpus",
+      "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.11.-d-01-d-17",
+      "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.13"
+    ],
+    "target_kinds": [
+      "report",
+      "current_state",
+      "technical_contract",
+      "router_registry"
+    ],
+    "output_audience": "agent",
+    "include_scopes": [
+      "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md",
+      "SESSION_HANDOFF.md",
+      "docs/agent"
+    ],
+    "exclude_scopes": [
+      "backup",
+      "inputs",
+      "outputs"
+    ],
+    "task_tags": [
+      "stage",
+      "approval",
+      "knowledge",
+      "decision",
+      "case",
+      "source",
+      "relation",
+      "corpus",
+      "migration",
+      "validation",
+      "retrieval",
+      "context"
+    ],
+    "as_of": "2026-07-21T00:10:00+09:00",
+    "context_budget": 24000
+  },
+  "request_hash": "0ef397380b32e6c342fccfbbaec7b958bf57870b8bc22bb2884024ea3e3c1da9",
+  "as_of": "2026-07-21T00:10:00+09:00",
+  "authority": {
+    "user_scope": {
+      "include": [
+        "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md",
+        "SESSION_HANDOFF.md",
+        "docs/agent"
+      ],
+      "exclude": [
+        "backup",
+        "inputs",
+        "outputs"
+      ]
+    },
+    "kernel_rule_ids": [
+      "rule.core.authority-order",
+      "rule.core.scope-authority",
+      "rule.core.backup-boundary",
+      "rule.core.protected-route",
+      "rule.core.minimum-access",
+      "rule.core.secret-boundary",
+      "rule.core.instruction-trust",
+      "rule.core.external-mutation"
+    ],
+    "selected_conditional_rule_ids": [
+      "rule.documentation.agent-english",
+      "rule.documentation.required-metadata",
+      "rule.documentation.user-korean",
+      "rule.governance.document-boundaries",
+      "rule.governance.stage-approval",
+      "rule.retrieval.default-exclusions",
+      "rule.retrieval.direct-routing-first",
+      "rule.retrieval.minimum-context"
+    ],
+    "predicate_evidence": {
+      "rule.documentation.agent-english": {
+        "mode": "any",
+        "condition_results": [
+          true,
+          false
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.documentation.required-metadata": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          true
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.documentation.user-korean": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          true
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.governance.document-boundaries": {
+        "mode": "any",
+        "condition_results": [
+          true,
+          false
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.governance.single-owner": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          false
+        ],
+        "excluded": false,
+        "matched": false
+      },
+      "rule.governance.stage-approval": {
+        "mode": "any",
+        "condition_results": [
+          true,
+          false
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.knowledge.confidence-is-not-verification": {
+        "phase": "plan",
+        "allowed_phases": [
+          "read",
+          "write",
+          "validate"
+        ],
+        "matched": false
+      },
+      "rule.knowledge.preserve-conflicts": {
+        "phase": "plan",
+        "allowed_phases": [
+          "read",
+          "write",
+          "validate"
+        ],
+        "matched": false
+      },
+      "rule.provenance.claim-classification": {
+        "phase": "plan",
+        "allowed_phases": [
+          "read",
+          "write",
+          "validate",
+          "close"
+        ],
+        "matched": false
+      },
+      "rule.provenance.current-primary-source": {
+        "phase": "plan",
+        "allowed_phases": [
+          "discover",
+          "read",
+          "write",
+          "validate"
+        ],
+        "matched": false
+      },
+      "rule.provenance.preserve-source-language": {
+        "phase": "plan",
+        "allowed_phases": [
+          "read",
+          "write",
+          "validate"
+        ],
+        "matched": false
+      },
+      "rule.provenance.source-and-rationale": {
+        "phase": "plan",
+        "allowed_phases": [
+          "read",
+          "write",
+          "validate",
+          "close"
+        ],
+        "matched": false
+      },
+      "rule.retrieval.default-exclusions": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          true
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.retrieval.direct-routing-first": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          true
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.retrieval.minimum-context": {
+        "mode": "any",
+        "condition_results": [
+          true,
+          true
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.retrieval.projections-not-authority": {
+        "phase": "plan",
+        "allowed_phases": [
+          "discover",
+          "read",
+          "write",
+          "validate"
+        ],
+        "matched": false
+      },
+      "rule.validation.failure-record": {
+        "phase": "plan",
+        "allowed_phases": [
+          "write",
+          "validate",
+          "close"
+        ],
+        "matched": false
+      },
+      "rule.validation.no-overclaim": {
+        "phase": "plan",
+        "allowed_phases": [
+          "validate",
+          "close"
+        ],
+        "matched": false
+      },
+      "rule.validation.proportional-verification": {
+        "phase": "plan",
+        "allowed_phases": [
+          "write",
+          "validate",
+          "close"
+        ],
+        "matched": false
+      },
+      "rule.validation.update-handoff": {
+        "phase": "plan",
+        "allowed_phases": [
+          "validate",
+          "close"
+        ],
+        "matched": false
+      },
+      "rule.version-control.no-ad-hoc-backup": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          false
+        ],
+        "excluded": false,
+        "matched": false
+      }
+    }
+  },
+  "read_manifest": [
+    {
+      "file_id": "file.agents",
+      "path": "AGENTS.md",
+      "status": "active",
+      "expected_hash": "184dae1a13de61dc50cf77e9b47cb501b5745cd2bf09bd62685b18b3bb7a08f1",
+      "selection_reason": "dependency_of:file.docs.agent.document-map",
+      "units": []
+    },
+    {
+      "file_id": "file.docs.agent.context-retrieval",
+      "path": "docs/agent/CONTEXT_RETRIEVAL.md",
+      "status": "active",
+      "expected_hash": "60815f7f8ed5e402f49044eb94ba23558ed106b1929cf1de7c8cb02ba5ea5b7f",
+      "selection_reason": "exact_target",
+      "units": []
+    },
+    {
+      "file_id": "file.docs.agent.document-map",
+      "path": "docs/agent/DOCUMENT_MAP.md",
+      "status": "active",
+      "expected_hash": "f2ab0477a4ee96b2ebde613128db423a10cccde9561845187f185a9f915d0ae1",
+      "selection_reason": "exact_target",
+      "units": []
+    },
+    {
+      "file_id": "file.docs.agent.knowledge-maintenance",
+      "path": "docs/agent/KNOWLEDGE_MAINTENANCE.md",
+      "status": "active",
+      "expected_hash": "23ff6852a77bd0a4243f0294ae2628eb0a2ab0f08a17b8644348a3cec49cec8d",
+      "selection_reason": "exact_target",
+      "units": []
+    },
+    {
+      "file_id": "file.docs.agent.knowledge-system",
+      "path": "docs/agent/KNOWLEDGE_SYSTEM.md",
+      "status": "active",
+      "expected_hash": "e01f94524ef69f9b5083035c75f3145ec52fe5af39372117dfb0173950029419",
+      "selection_reason": "exact_target",
+      "units": []
+    },
+    {
+      "file_id": "file.docs.agent.workflow",
+      "path": "docs/agent/WORKFLOW.md",
+      "status": "active",
+      "expected_hash": "2626340abb5b30fc28b44ba71421cf3a3097d6c9dc590a147f6a26b87c724cdb",
+      "selection_reason": "dependency_of:file.session-handoff",
+      "units": []
+    },
+    {
+      "file_id": "file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe",
+      "path": "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md",
+      "status": "active",
+      "expected_hash": "84ff62bf2ab9d0b3178032166a6e57fafe059b40dbe4c4a53ffbd7040b6018ff",
+      "selection_reason": "unit_parent",
+      "units": [
+        {
+          "unit_id": "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.10.10.2-r-2b-corpus",
+          "locator": "heading:R-1.1 지식 시스템 설계 보정 보고서 > 10. 보정된 단계별 구축 > 10.2 R-2B — 기존 corpus 확대",
+          "unit_hash": "5dca740afe23282e883964936089dc37586b3cdd294d75e5656dec2d7b4c03d9",
+          "selection_reason": "exact_target_unit"
+        },
+        {
+          "unit_id": "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.11.-d-01-d-17",
+          "locator": "heading:R-1.1 지식 시스템 설계 보정 보고서 > 11. D-01~D-17 보정 판정",
+          "unit_hash": "fb4fbc14e5245cec57477b1fa5b626ea07431b6d836c0fcb0a2c693207715b96",
+          "selection_reason": "exact_target_unit"
+        },
+        {
+          "unit_id": "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.13",
+          "locator": "heading:R-1.1 지식 시스템 설계 보정 보고서 > 13. 공통 완료·안전 기준",
+          "unit_hash": "21a530c52260a3505f4b40372c74c110af053b8e0b81e6e655e29fccb3cb85f2",
+          "selection_reason": "exact_target_unit"
+        }
+      ]
+    },
+    {
+      "file_id": "file.project-rules",
+      "path": "PROJECT_RULES.md",
+      "status": "active",
+      "expected_hash": "285edcc8fa65786d35ba44c32cc232b69a19ba76b04d8580879fd9ce7715d00f",
+      "selection_reason": "kernel",
+      "units": []
+    },
+    {
+      "file_id": "file.rules.documentation",
+      "path": "rules/documentation.md",
+      "status": "active",
+      "expected_hash": "45041833f52101ac37ac61d59894b1991b0506745a87acfcae7769990ce44ade",
+      "selection_reason": "selected_rule:rule.documentation.user-korean",
+      "units": [
+        {
+          "unit_id": "unit.file.rules.documentation.heading.documentation-rules.rule.documentation.agent-english",
+          "locator": "heading:Documentation Rules > rule.documentation.agent-english",
+          "unit_hash": "e90462d6239eeb01b1bc83555ac2742a3778f4db50c08ff275d8937d71476eb6",
+          "selection_reason": "selected_rule:rule.documentation.agent-english"
+        },
+        {
+          "unit_id": "unit.file.rules.documentation.heading.documentation-rules.rule.documentation.required-metadata",
+          "locator": "heading:Documentation Rules > rule.documentation.required-metadata",
+          "unit_hash": "57c7a46a8b297863609b656e4de14a536e6c3a28a1d33bf550b56b349e839f8b",
+          "selection_reason": "selected_rule:rule.documentation.required-metadata"
+        },
+        {
+          "unit_id": "unit.file.rules.documentation.heading.documentation-rules.rule.documentation.user-korean",
+          "locator": "heading:Documentation Rules > rule.documentation.user-korean",
+          "unit_hash": "67441187a038dabc8ccf1295f6d165decfe11345295e4418f8e550fb69e29d96",
+          "selection_reason": "selected_rule:rule.documentation.user-korean"
+        }
+      ]
+    },
+    {
+      "file_id": "file.rules.governance",
+      "path": "rules/governance.md",
+      "status": "active",
+      "expected_hash": "1466d5013adb288102659835a45cce09974181f80bbfb218bbc3c727b6a42d71",
+      "selection_reason": "selected_rule:rule.governance.stage-approval",
+      "units": [
+        {
+          "unit_id": "unit.file.rules.governance.heading.governance-rules.rule.governance.document-boundaries",
+          "locator": "heading:Governance Rules > rule.governance.document-boundaries",
+          "unit_hash": "64e9e7221a51aea52d422115cc3e0392b9eb590ad589428359431f776e4a0d3e",
+          "selection_reason": "selected_rule:rule.governance.document-boundaries"
+        },
+        {
+          "unit_id": "unit.file.rules.governance.heading.governance-rules.rule.governance.stage-approval",
+          "locator": "heading:Governance Rules > rule.governance.stage-approval",
+          "unit_hash": "67b7a33662c5aa0f4aa0845c082e6335a08216e5195bef990d6ed52694cee1ff",
+          "selection_reason": "selected_rule:rule.governance.stage-approval"
+        }
+      ]
+    },
+    {
+      "file_id": "file.rules.retrieval",
+      "path": "rules/retrieval.md",
+      "status": "active",
+      "expected_hash": "09f621aa4967cb03e987b5c2d82d6e5519f58689351b094916baf40a01a85d81",
+      "selection_reason": "selected_rule:rule.retrieval.minimum-context",
+      "units": [
+        {
+          "unit_id": "unit.file.rules.retrieval.heading.retrieval-rules.rule.retrieval.default-exclusions",
+          "locator": "heading:Retrieval Rules > rule.retrieval.default-exclusions",
+          "unit_hash": "072c4b6ab9b312a046b77c2d5688c3a84cf1938d71095a76988c424c37820f22",
+          "selection_reason": "selected_rule:rule.retrieval.default-exclusions"
+        },
+        {
+          "unit_id": "unit.file.rules.retrieval.heading.retrieval-rules.rule.retrieval.direct-routing-first",
+          "locator": "heading:Retrieval Rules > rule.retrieval.direct-routing-first",
+          "unit_hash": "e808b9ebf47ac836973643ac20c1a7c82855d55008115aa170a58af7fa66a298",
+          "selection_reason": "selected_rule:rule.retrieval.direct-routing-first"
+        },
+        {
+          "unit_id": "unit.file.rules.retrieval.heading.retrieval-rules.rule.retrieval.minimum-context",
+          "locator": "heading:Retrieval Rules > rule.retrieval.minimum-context",
+          "unit_hash": "0ce2e31e26d49e0c1d252c47aa4e569d69952bf80be0bdc6f618e72d2e337473",
+          "selection_reason": "selected_rule:rule.retrieval.minimum-context"
+        }
+      ]
+    },
+    {
+      "file_id": "file.session-handoff",
+      "path": "SESSION_HANDOFF.md",
+      "status": "active",
+      "expected_hash": "dab23ae7650bed792b2d2a6e812b6899d159d9f56fcdaeae1e190542a59fc375",
+      "selection_reason": "exact_target",
+      "units": []
+    }
+  ],
+  "exclusions": [
+    {
+      "kind": "rule",
+      "id": "rule.governance.single-owner",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.knowledge.confidence-is-not-verification",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.knowledge.preserve-conflicts",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.provenance.claim-classification",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.provenance.current-primary-source",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.provenance.preserve-source-language",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.provenance.source-and-rationale",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.retrieval.projections-not-authority",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.validation.failure-record",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.validation.no-overclaim",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.validation.proportional-verification",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.validation.update-handoff",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.version-control.no-ad-hoc-backup",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "file",
+      "id": "file.catalog.bootstrap",
+      "path": "catalog/bootstrap.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.catalog.files",
+      "path": "catalog/files.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.catalog.rules",
+      "path": "catalog/rules.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.catalog.units",
+      "path": "catalog/units.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r2a-write",
+      "path": "context/payloads/r2a_write.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r2a-read",
+      "path": "context/requests/r2a_read.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r2a-write",
+      "path": "context/requests/r2a_write.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r2b-start",
+      "path": "context/requests/r2b_start.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r2a-read",
+      "path": "context/work/r2a_read.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r2a-write",
+      "path": "context/work/r2a_write.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20-r-1.id-49dd93d5e105",
+      "path": "docs/reports/2026-07-20_R-1_지식_시스템_설계_정정.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20-r-2.id-8bcd8a28b291",
+      "path": "docs/reports/2026-07-20_R-2_착수전_사용자_의도_정합성_검증.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20-r-2a.id-7a58b912b7d9",
+      "path": "docs/reports/2026-07-20_R-2A_컨텍스트_시스템_구현_결과.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20.id-1d4a536992b0",
+      "path": "docs/reports/2026-07-20_프로젝트_기반_및_지식_시스템_설계.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20.id-21229a5354b5",
+      "path": "docs/reports/2026-07-20_프로젝트_기본_기반_구축.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20.id-5d22f87b8ded",
+      "path": "docs/reports/2026-07-20_기존_프로젝트_분석.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.user.guide",
+      "path": "docs/user/GUIDE.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.gitattributes",
+      "path": ".gitattributes",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.gitignore",
+      "path": ".gitignore",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.knowledge.cases.case.project.document-authority-duplication",
+      "path": "knowledge/cases/case.project.document-authority-duplication.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.readme",
+      "path": "README.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.records.sessions.session.2026-07-20.r1-r1.1-document-governance",
+      "path": "records/sessions/session.2026-07-20.r1-r1.1-document-governance.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.records.work.events",
+      "path": "records/work/events.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.reports.history.00-overview",
+      "path": "reports/history/00_overview.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.reports.history.v1-origin",
+      "path": "reports/history/v1_origin.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.reports.history.v2-refactorying-snapshot-1",
+      "path": "reports/history/v2_refactorying_snapshot_1.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.reports.history.v3-refactorying-snapshot-2",
+      "path": "reports/history/v3_refactorying_snapshot_2.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.reports.history.v4-current",
+      "path": "reports/history/v4_current.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.reports.id-e3339a806212",
+      "path": "reports/최종_구축상태_교차검증보고.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.rules.knowledge",
+      "path": "rules/knowledge.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.rules.provenance",
+      "path": "rules/provenance.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.rules.validation",
+      "path": "rules/validation.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.rules.version-control",
+      "path": "rules/version-control.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.event.schema",
+      "path": "schemas/event.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.file.schema",
+      "path": "schemas/file.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.rule.schema",
+      "path": "schemas/rule.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.task-request.schema",
+      "path": "schemas/task_request.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.unit.schema",
+      "path": "schemas/unit.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.work-context.schema",
+      "path": "schemas/work_context.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.write-contract.schema",
+      "path": "schemas/write_contract.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.tests.context.test-context-system",
+      "path": "tests/context/test_context_system.py",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.tools.context.context-system",
+      "path": "tools/context/context_system.py",
+      "reason": "outside_exact_or_dependency_scope"
+    }
+  ],
+  "write_contract": null
+}

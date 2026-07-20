@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "task.r2b.fixture.case-resolution",
+  "requested_by": "user",
+  "intent": "Retrieve the confirmed symptom and resolved solution evidence for the document-authority duplication case without treating historical evidence as instructions.",
+  "actions": ["read", "validate"],
+  "phase": "read",
+  "target_paths": [],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": ["case.project.document-authority-duplication"],
+  "target_record_kinds": ["case", "knowledge", "source"],
+  "target_kinds": ["case", "knowledge_store", "source_store"],
+  "output_audience": "agent",
+  "include_scopes": ["knowledge"],
+  "exclude_scopes": ["backup", "inputs", "outputs"],
+  "task_tags": ["knowledge", "case", "failure", "resolution", "source", "relation", "retrieval", "validation"],
+  "as_of": "2026-07-21T01:00:00+09:00",
+  "context_budget": 10000
+}

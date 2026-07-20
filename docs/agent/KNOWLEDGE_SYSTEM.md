@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-R-2A implements the project-file and task-context thin slice: rule, file, unit, task-request, work-context, write-contract, and event schemas; the universal file catalog; deterministic Markdown/JSON/JSONL units; an append-only R-2A event chain; and a contract-gated Markdown writer. One user-authorized manual case record and one closed manual session record remain outside the structured corpus. Knowledge, decision, case, source, relation, review-history migration and databases or search indexes are still unimplemented and belong to later approved stages.
+R-2A provides the project-file and task-context thin slice. R-2B adds formal decision, knowledge, case, source, and relation schemas; canonical JSONL stores for 17 accepted decisions, four verified knowledge items, seven sources, and six typed relations; a schema-backed JSON record inside the existing stable case document; and a rebuildable record projection. The resolver now selects exact record IDs, verified active one-hop relations, and source locators in the same work context. General record lifecycle writers, review-history automation, databases, and search indexes remain unimplemented and require later stage approval.
 
 ## Canonical categories
 
@@ -23,7 +23,7 @@ Keep these data types physically and semantically separate:
 7. Append-only revision and review history.
 8. Derived task context packages.
 
-Markdown holds human-reviewable knowledge, decisions, cases, and summaries. JSONL holds ordered events, relationships, and revision history. JSON Schema Draft 2020-12 will define machine-readable contracts. A local SQLite index will remain a rebuildable projection.
+R-2B canonical decisions and atomic knowledge items use JSONL. Stable case documents remain human-reviewable Markdown and contain a formal schema-backed JSON record; summaries remain Markdown. Sources, relationships, ordered events, and future revision history use JSONL. JSON Schema Draft 2020-12 defines the active machine-readable contracts. Any later SQLite index remains a rebuildable projection.
 
 ## Required knowledge metadata
 

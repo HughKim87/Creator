@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project://schemas/source.schema.json",
+  "title": "Project source locator",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "record_kind", "source_id", "source_type", "title", "locator", "authority", "status", "observed_at", "retrieval_eligible", "task_tags"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "record_kind": {"const": "source"},
+    "source_id": {"type": "string", "pattern": "^source\\.[a-z0-9._-]+$"},
+    "source_type": {"enum": ["project_document", "git_commit", "official_url", "work_event", "historical_document"]},
+    "title": {"type": "string", "minLength": 1},
+    "locator": {"type": "string", "minLength": 1},
+    "content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "authority": {"enum": ["active_policy", "active_contract", "accepted_decision_source", "primary_specification", "evidence", "historical_evidence"]},
+    "status": {"enum": ["active", "historical_candidate", "needs_review", "superseded"]},
+    "observed_at": {"type": "string"},
+    "published_at": {"type": ["string", "null"]},
+    "retrieval_eligible": {"type": "boolean"},
+    "task_tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  }
+}

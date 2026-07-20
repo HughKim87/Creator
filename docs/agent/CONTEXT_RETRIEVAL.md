@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-R-2A direct routing is active through `catalog/files.jsonl`, deterministic artifact units, exact file/unit targets, conditional-rule predicates, one-hop declared file dependencies, and generated work contexts with explicit exclusions and selection reasons. Knowledge/case/decision retrieval, typed relation expansion, SQLite FTS5, vector retrieval, and a general search index remain unimplemented.
+R-2A direct file/unit routing remains active. R-2B adds `catalog/records.jsonl`, exact `target_record_ids`, decision/knowledge/case/source manifests, verified active typed-relation expansion limited to one hop, and registered source-locator traces. Candidate relations and historical candidates stay excluded from active retrieval, while exact case evidence may expose a historical source as non-instruction evidence. SQLite FTS5, vector retrieval, and a general search index remain unimplemented.
 
 ## Context assembly order
 

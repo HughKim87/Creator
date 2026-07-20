@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "task.r2b.start",
+  "requested_by": "user",
+  "intent": "Implement only the approved R-2B migration of existing decisions, reusable knowledge, cases, sources, and relations into the live R-2A context loop.",
+  "actions": ["read", "validate"],
+  "phase": "plan",
+  "target_paths": [
+    "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md",
+    "SESSION_HANDOFF.md",
+    "docs/agent/KNOWLEDGE_SYSTEM.md",
+    "docs/agent/CONTEXT_RETRIEVAL.md",
+    "docs/agent/KNOWLEDGE_MAINTENANCE.md",
+    "docs/agent/DOCUMENT_MAP.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [
+    "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.10.10.2-r-2b-corpus",
+    "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.11.-d-01-d-17",
+    "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.13"
+  ],
+  "target_kinds": ["report", "current_state", "technical_contract", "router_registry"],
+  "output_audience": "agent",
+  "include_scopes": [
+    "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md",
+    "SESSION_HANDOFF.md",
+    "docs/agent"
+  ],
+  "exclude_scopes": ["backup", "inputs", "outputs"],
+  "task_tags": ["stage", "approval", "knowledge", "decision", "case", "source", "relation", "corpus", "migration", "validation", "retrieval", "context"],
+  "as_of": "2026-07-21T00:10:00+09:00",
+  "context_budget": 24000
+}

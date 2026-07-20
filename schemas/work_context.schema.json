@@ -22,6 +22,14 @@
       }
     },
     "read_manifest": {"type": "array", "items": {"type": "object"}},
+    "record_manifest": {
+      "type": "object",
+      "required": ["records", "relations"],
+      "properties": {
+        "records": {"type": "array", "items": {"type": "object"}},
+        "relations": {"type": "array", "items": {"type": "object"}}
+      }
+    },
     "exclusions": {"type": "array", "items": {"type": "object"}},
     "write_contract": {"type": ["object", "null"]}
   }

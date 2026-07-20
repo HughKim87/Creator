@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project://schemas/case.schema.json",
+  "title": "Confirmed problem and resolved solution case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "record_kind", "case_id", "title", "status", "symptom", "resolution", "confidence", "source_refs", "relation_ids", "confirmed_at", "resolved_at", "last_verified_at", "review_policy", "review_due_at", "review_triggers", "retrieval_eligible", "task_tags"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "record_kind": {"const": "case"},
+    "case_id": {"type": "string", "pattern": "^case\\.[a-z0-9._-]+$"},
+    "title": {"type": "string", "minLength": 1},
+    "status": {"enum": ["open", "confirmed", "resolved", "needs_review"]},
+    "symptom": {"$ref": "#/$defs/evidence_state"},
+    "resolution": {"$ref": "#/$defs/evidence_state"},
+    "confidence": {"enum": ["high", "medium", "low"]},
+    "source_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_ref"}},
+    "relation_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "confirmed_at": {"type": "string"},
+    "resolved_at": {"type": ["string", "null"]},
+    "last_verified_at": {"type": "string"},
+    "review_policy": {"enum": ["event_driven", "scheduled"]},
+    "review_due_at": {"type": ["string", "null"]},
+    "review_triggers": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "retrieval_eligible": {"type": "boolean"},
+    "task_tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  },
+  "$defs": {
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "locator"],
+      "properties": {"source_id": {"type": "string"}, "locator": {"type": "string"}}
+    },
+    "evidence_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "summary", "evidence"],
+      "properties": {
+        "state": {"enum": ["reported", "confirmed", "rejected", "proposed", "resolved"]},
+        "summary": {"type": "string", "minLength": 1},
+        "evidence": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_ref"}}
+      }
+    }
+  }
+}

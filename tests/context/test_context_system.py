@@ -1,4 +1,4 @@
-"""Automated checks for the R-2A deterministic context system."""
+"""Automated checks for the R-2A/R-2B deterministic context system."""
 
 from __future__ import annotations
 
@@ -94,6 +94,47 @@ class ContextSystemTests(unittest.TestCase):
         result = context_system.validate_project(ROOT)
         self.assertTrue(result["ok"], result["errors"])
         self.assertEqual(0, result["counts"]["orphan_files"])
+
+    def test_r2b_decisions_are_independent_and_approved(self) -> None:
+        records = context_system.load_jsonl(ROOT / "catalog/records.jsonl")
+        decisions = [record for record in records if record.get("record_kind") == "decision"]
+        self.assertEqual(17, len(decisions))
+        self.assertEqual({f"D-{number:02d}" for number in range(1, 18)}, {record["legacy_id"] for record in decisions})
+        self.assertTrue(all(record["status"] == "accepted" for record in decisions))
+        self.assertTrue(all(record["approval"]["approved_by"] == "user" for record in decisions))
+        self.assertTrue(all(record["approval"]["evidence_source_id"] for record in decisions))
+
+    def test_r2b_decision_evidence_fixture_traces_to_sources(self) -> None:
+        context = context_system.load_json(ROOT / "context/work/r2b_decision_evidence.json")
+        manifest = context["record_manifest"]
+        selected = {item["record_id"]: item["record"] for item in manifest["records"]}
+        self.assertIn("decision.r1.1.d14", selected)
+        self.assertIn("knowledge.context.shared-work-context", selected)
+        self.assertIn("source.repo.r1.1", selected)
+        self.assertEqual("accepted", selected["decision.r1.1.d14"]["status"])
+        self.assertEqual("verified", selected["knowledge.context.shared-work-context"]["status"])
+        self.assertTrue(selected["source.repo.r1.1"]["locator"])
+        self.assertFalse(any("reports/history" in rule_id for rule_id in context["authority"]["selected_conditional_rule_ids"]))
+
+    def test_r2b_case_fixture_separates_symptom_and_resolution(self) -> None:
+        context = context_system.load_json(ROOT / "context/work/r2b_case_resolution.json")
+        selected = {item["record_id"]: item["record"] for item in context["record_manifest"]["records"]}
+        case = selected["case.project.document-authority-duplication"]
+        self.assertEqual("resolved", case["status"])
+        self.assertEqual("confirmed", case["symptom"]["state"])
+        self.assertEqual("resolved", case["resolution"]["state"])
+        self.assertTrue(case["symptom"]["evidence"])
+        self.assertTrue(case["resolution"]["evidence"])
+        historical = selected["source.history.overview"]
+        self.assertEqual("historical_candidate", historical["status"])
+        self.assertFalse(historical["retrieval_eligible"])
+
+    def test_relation_candidates_cannot_be_active_before_review(self) -> None:
+        relations = context_system.load_jsonl(ROOT / "knowledge/relations.jsonl")
+        candidates = [record for record in relations if record["status"] == "candidate"]
+        self.assertTrue(candidates)
+        self.assertTrue(all(record["review_status"] == "pending" for record in candidates))
+        self.assertTrue(all(not record["retrieval_eligible"] for record in candidates))
 
 
 if __name__ == "__main__":

@@ -62,22 +62,23 @@ Git history is the normal preservation surface for superseded full text. Do not 
 | [R-1 design correction marker](../reports/2026-07-20_R-1_지식_시스템_설계_정정.md) | Report | Superseded proposal; no current design authority | `superseded-evidence`; preservation marker only | Exact comparison with the replaced 11/18 proposal |
 | [Pre-R-2 intent audit marker](../reports/2026-07-20_R-2_착수전_사용자_의도_정합성_검증.md) | Report | Evidence only | `retained-evidence`; preservation marker only | Auditing why R-1.1 was required |
 | [R-1.1 corrected design](../reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md) | Report and accepted decision source | Accepted D-01 through D-17 and R-2A implementation boundary | `retained-evidence`; exact R-2A route, not startup | Implementing or validating R-2A, or reviewing later R-2B-to-R-5 boundaries |
-| [R-2A context-system implementation result](../reports/2026-07-20_R-2A_컨텍스트_시스템_구현_결과.md) | Report | R-2A implementation and validation evidence; no policy authority | `retained-evidence`; exact R-2A audit route | Auditing the completed R-2A thin slice or deciding whether to approve R-2B |
+| [R-2A context-system implementation result](../reports/2026-07-20_R-2A_컨텍스트_시스템_구현_결과.md) | Report | R-2A implementation and validation evidence; no policy authority | `retained-evidence`; exact R-2A audit route | Auditing the completed R-2A thin slice |
+| [R-2B corpus migration result](../reports/2026-07-21_R-2B_기존_지식_코퍼스_이관_결과.md) | Report | R-2B corpus implementation and validation evidence; no policy authority | `retained-evidence`; exact R-2B audit route | Auditing the completed corpus migration or deciding whether to approve R-3 |
 | [Document authority duplication case](../../knowledge/cases/case.project.document-authority-duplication.md) | Case record | Active resolved case evidence; prevention authority stays in the linked rules and workflow | `maintained-current`; task-routed, not startup | Creating or reviewing documents, reports, proposals, authority, preservation, or duplicate context behavior |
 
 ## Report routing and creation
 
 1. Reports do not enter startup or default task context.
-2. Read the R-1.1 report alone as the accepted R-2A design source. Read the earlier approved baseline or R-1 material only for an explicit comparison or provenance question.
+2. Read the R-1.1 report alone for the accepted staged design boundary; use the R-2A or R-2B result only for an exact implementation audit.
 3. A stage transition does not by itself justify a new report file. Update the existing current proposal or owning authority when the subject is unchanged.
 4. A new report requires a unique point-in-time evidence purpose that no existing document owns. It contains deltas, evidence, validation, and approval status; it links to technical owners instead of restating their full content.
 5. Only one `current-proposal` may exist for a subject. Replaced proposals become `superseded-evidence` immediately.
 6. When a superseded report substantially duplicates a current document, preserve its full committed snapshot by commit, blob, and content hash and keep only a short preservation marker in the working tree.
 7. Every maintained document creation must pass the mandatory [document creation gate](WORKFLOW.md#document-creation-gate). A file without a unique owner and registry row is invalid even when its content is correct.
 
-## Universal file catalog
+## Universal file and record catalogs
 
-[`catalog/files.jsonl`](../../catalog/files.jsonl) is the R-2A canonical machine registry for every project-governed file, including non-Markdown artifacts and planned write targets. [`catalog/units.jsonl`](../../catalog/units.jsonl) and [`catalog/rules.jsonl`](../../catalog/rules.jsonl) are rebuildable projections. This document remains the human authority and routing registry for maintained documents; it does not duplicate file hashes, unit records, or write contracts owned by the universal catalog and work contexts.
+[`catalog/files.jsonl`](../../catalog/files.jsonl) is the canonical machine registry for every project-governed file. [`catalog/units.jsonl`](../../catalog/units.jsonl), [`catalog/rules.jsonl`](../../catalog/rules.jsonl), and [`catalog/records.jsonl`](../../catalog/records.jsonl) are rebuildable projections. Canonical corpus records live in the typed `knowledge/` stores and stable case documents. This document remains the human authority for maintained-document routing; it does not duplicate hashes, units, records, or work contracts.
 
 ## Document metadata contract
 

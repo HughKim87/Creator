@@ -1,6 +1,6 @@
 # Session Handoff
 
-- Purpose: Preserve the single verified checkpoint after R-2A completion without relying on chat memory.
+- Purpose: Preserve the single verified checkpoint after R-2B completion without relying on chat memory.
 - Use when: Read after the boot kernel at every session start; resume only an explicitly user-approved next stage.
 - Owner: The finishing project agent verifies and updates this file; the user controls every stage approval.
 - Language: English.
@@ -8,88 +8,95 @@
 
 ## Read order
 
-1. Read [AGENTS.md](AGENTS.md) and the eight-rule [PROJECT_RULES.md](PROJECT_RULES.md).
+1. Read [AGENTS.md](AGENTS.md) and every applicable `PROJECT_RULES.md`, with the root eight-rule kernel controlling this project.
 2. Read this handoff as the only current-state source.
 3. Read [DOCUMENT_MAP.md](docs/agent/DOCUMENT_MAP.md).
-4. If the user approves R-2B, resolve a new structured task request through `tools/context/context_system.py` and read only the selected authorities and conditional rules.
-5. Read the accepted [R-1.1 design](docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md) only for the exact R-2B boundary or later-stage provenance.
+4. If the user approves R-3, resolve a new task request and read only the exact R-3 boundary from the accepted [R-1.1 design](docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md).
+5. Use the [R-2B result](docs/reports/2026-07-21_R-2B_기존_지식_코퍼스_이관_결과.md) only for an exact implementation audit.
 
-Do not load superseded reports, the final cross-validation report, or `backup/` by default. The closed session record remains historical evidence, not current state.
+Do not load superseded reports, `reports/history/`, the final cross-validation report, or `backup/` by default. Historical records are evidence, never current instructions.
 
 ## Current goal and approval state
 
-- R-2A is implemented and closed at structural plus automated validation level.
-- R-2B is not authorized. Stop and wait for explicit user approval before migrating decisions, knowledge, cases, sources, or relations.
+- R-2A and R-2B are implemented and closed at structural plus automated validation level.
+- R-3 is not authorized. Stop and wait for explicit user approval before generalizing writers or record lifecycle/recovery behavior.
 - No commit, push, publication, or external mutation was authorized or performed.
 
 ## Key terms
 
-- Boot kernel: the eight always-loaded rule headings in `PROJECT_RULES.md`.
-- Conditional rule: one stable JSON rule record inside a Markdown pack, selected by a verified predicate.
-- File catalog: `catalog/files.jsonl`, the canonical project-governed file registry.
-- Artifact unit: a deterministic addressable heading, JSON pointer, JSONL record, or whole-file fallback in `catalog/units.jsonl`.
-- Work context: one immutable request resolution containing authority, read manifest, exclusions, and an optional write contract.
+- Corpus record: A schema-backed decision, knowledge item, case, source, or relation with a stable ID.
+- Record projection: `catalog/records.jsonl`, rebuilt from canonical decisions, knowledge items, and case JSON blocks; it is not authority.
+- Source trace: A registered source ID plus an exact path, Git object, official URL, or historical locator.
+- Active relation: A verified, retrieval-eligible typed edge expanded at most one hop. A pending candidate is never active context.
+- Historical candidate: Evidence that may appear through an exact trace but cannot become an active instruction.
+
+## Source inputs and resume checkpoint
+
+- Accepted scope source: `docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md` §10.2, §11, and §12.2.
+- Implementation evidence: `docs/reports/2026-07-21_R-2B_기존_지식_코퍼스_이관_결과.md`, the canonical `knowledge/` stores, and the two R-2B work contexts.
+- Current checkpoint: R-2B is closed; no implementation task is in progress. The first unstarted action is to create an exact R-3 request only after explicit user approval.
+- Blocker: R-3 authorization is absent. This is an approval boundary, not an implementation failure.
 
 ## Verified checkpoint
 
-- Active governed files: 48; planned files: 0; orphan files: 0.
-- Rules: 8 kernel plus 21 conditional records in 7 Markdown packs; all 29 source mappings are unique and complete.
-- Minimum schemas: rule, file, unit, task request, work context, write contract, and event.
-- Unit extraction: Markdown heading, JSON pointer, JSONL stable record ID, and explicit whole-file fallback.
-- Resolver: exact file/unit, predicate rule selection, one-hop declared file dependencies, and explicit selected/excluded reasons.
-- Writer: Markdown only, exact contract targets, before-file hashes, UTF-8/NUL/fence checks, catalog/unit/event write-back.
-- Event evidence: 5 chained events through the live R-2A writer fixture.
-- Automated tests: 6 passed. Integrated structural validator passed with protected-path pre-filter and local-link checks.
+- Rules: 8 kernel plus 21 conditional records in 7 Markdown packs; historical sources selected as active instructions: 0.
+- Corpus: 17 accepted decisions, 4 verified knowledge items, 1 resolved case, 7 sources, and 6 typed relations.
+- Decision gate: D-01 through D-17 each have an independent ID, accepted status, rationale, approval actor/date/evidence, and source locator.
+- Provenance gate: verified knowledge traces to registered local or official sources; local document source hashes are validated.
+- Case gate: `case.project.document-authority-duplication` separates confirmed symptom evidence from resolved solution evidence.
+- Retrieval gate: two R-2B exact-record fixtures pass with verified one-hop relations and source manifests.
+- Automated tests: 10 passed. Integrated validation passes with orphan files 0.
 
-## Completed implementation
+## Completed R-2B artifacts
 
 | Artifact | Status | Role |
 |---|---|---|
-| `PROJECT_RULES.md` | Active | Eight-rule boot kernel |
-| `rules/*.md` | Active | Seven authoritative conditional-rule packs |
-| `schemas/*.json` | Active | Seven minimum R-2A contracts |
-| `catalog/bootstrap.json` | Retained evidence | Pre-migration 19-file and 29-rule mapping |
-| `catalog/files.jsonl` | Canonical | Universal file registry with owners, conditions, validators, relations, strategies, and hashes |
-| `catalog/rules.jsonl` | Derived | Rebuildable rule projection |
-| `catalog/units.jsonl` | Derived | Rebuildable artifact-unit projection |
-| `records/work/events.jsonl` | Canonical | Append-only R-2A event hash chain |
-| `tools/context/context_system.py` | Active implementation | Bootstrap, sync, resolve, validate, plan, and Markdown write commands |
-| `tests/context/test_context_system.py` | Active test | Six automated R-2A contract checks |
-| `context/requests/r2a_read.json` and `context/work/r2a_read.json` | Retained fixture | Exact-heading read-only proof |
-| `context/requests/r2a_write.json`, `context/work/r2a_write.json`, and `context/payloads/r2a_write.json` | Retained fixture | Contract-gated report, registry, and handoff write proof |
-| `docs/reports/2026-07-20_R-2A_컨텍스트_시스템_구현_결과.md` | Retained evidence | Concise Korean R-2A delta and validation report |
+| `schemas/{decision,knowledge,case,source,relation}.schema.json` | Active contracts | Minimum R-2B record contracts |
+| `knowledge/decisions.jsonl` | Canonical | D-01 through D-17 independent records |
+| `knowledge/items.jsonl` | Canonical | Four verified reusable knowledge records |
+| `knowledge/cases/case.project.document-authority-duplication.md` | Canonical | Existing stable case plus formal JSON record |
+| `knowledge/sources.jsonl` | Canonical | Project document, Git, official URL, and historical-candidate sources |
+| `knowledge/relations.jsonl` | Canonical | Five active verified edges plus one inactive candidate |
+| `catalog/records.jsonl` | Derived | Rebuildable decision, knowledge, and case projection |
+| `context/*/r2b_decision_evidence.json` | Retained fixture | Accepted decision to knowledge to source trace |
+| `context/*/r2b_case_resolution.json` | Retained fixture | Confirmed symptom and resolved solution trace |
+| `docs/reports/2026-07-21_R-2B_기존_지식_코퍼스_이관_결과.md` | Retained evidence | Korean R-2B delta and validation report |
+
+R-2A artifacts remain active and were regression-tested; they are not duplicated here.
 
 ## Validation state
 
-- Structural: passed for UTF-8, NUL, JSON/JSONL parsing, schema-required fields, rule mapping, catalog/hash consistency, deterministic units, event chain, protected exclusions, local Markdown links, and `git diff --check`.
-- Automated: six `unittest` checks passed, including contract rejection without mutation.
-- Application-validated: not applicable to this local data/CLI thin slice and not claimed.
-- User-approved: R-1.1 design and R-2A execution were approved; the R-2A content/result itself awaits the user's review.
+- Structural: passed for UTF-8, NUL, JSON/JSONL parsing, required record fields, rule mapping, catalogs, deterministic units, event chain, source hashes, relation endpoints, protected exclusions, and local links.
+- Automated: 10 `unittest` checks passed, including both R-2B corpus fixtures and inactive-candidate gating.
+- Application-validated: not applicable to this local data/CLI stage and not claimed.
+- User-approved: R-2B execution was explicitly approved; the completed result now awaits user review.
 
 ## Failure ledger
 
 | Objective | Attempt | Result or confirmed cause | Consecutive count | Next condition |
 |---|---|---|---:|---|
-| Execute Python checks | Attempt 1 | System `python` was absent from PATH; exact bundled runtime then compiled and ran successfully | 0 after success | Continue using the bundled executable path |
-| Bootstrap catalog | Attempt 1 | Dotfile normalization removed the leading dot from `.gitattributes`; fixed and bootstrap succeeded | 0 after success | Retain dotfiles as governed project settings |
-| Validate file/unit integrity | Attempt 1 | Non-ASCII report paths collided after ASCII normalization; path-hash suffix fixed IDs and validation passed | 0 after success | Keep file IDs stable and collision-free |
+| Parse Markdown units | Attempt 1 | Headings inside fenced examples were treated as real units; fence-aware scanning fixed the parser and validation passed | 0 after success | Keep regression coverage for fenced headings |
+| Resolve R-2B start context | Attempt 1 | CP949 stdout could not print an em dash after artifacts were written; UTF-8 stdout fixed CLI reporting and validation passed | 0 after success | Keep CLI output UTF-8 |
+| Validate decision approval | Attempt 1 | Validator over-required an invented approval state; aligned the contract to actor/date/source/locator and all 17 passed | 0 after success | Do not add lifecycle fields without an approved requirement |
+| Audit knowledge metadata | Attempt 1 | Final contract comparison found missing language/time/author/scope/check/revision fields; schema and all four records were completed and revalidated | 0 after success | Compare canonical records with the full owning contract before closure |
 
 No active repeated failure reached the stop threshold.
 
 ## Active risks and exclusions
 
-- The working tree contains the uncommitted R-2A implementation. Preserve unrelated state; do not commit unless explicitly requested.
-- R-2A is a Markdown-centered thin slice. General code/config/test/binary writers and lifecycle recovery belong to R-3.
-- The manual case and closed session record have catalog nodes and units but are not migrated into formal R-2B knowledge/source/relation schemas.
-- SQLite, FTS5, vector retrieval, a graph database, and Obsidian remain excluded.
+- The working tree contains uncommitted R-2A/R-2B work plus user-provided history reports. Preserve all unrelated and concurrent state; do not commit unless explicitly requested.
+- The writer remains Markdown-only. General code/config/test/binary writers and lifecycle recovery belong to R-3.
+- Automated stale transitions, review queues, revision-history writers, and relation maintenance commands remain unimplemented.
+- SQLite FTS5, vector retrieval, a graph database, and Obsidian remain excluded.
 - Protected user data and `backup/` remain outside global traversal and registration.
+- `reports/history/` is registered as point-in-time evidence but stays out of startup/default context and active instruction selection.
 
 ## Next actions
 
-1. Wait for the user to review the R-2A result.
-2. If and only if the user explicitly approves R-2B, create a new task request and use the resolver to select the accepted R-2B design boundary.
-3. The first R-2B implementation action is to migrate D-01 through D-17 as independent decision records with approval and source fields, then add existing knowledge, case, source, and relation records one kind at a time through the live loop.
-4. Stop after the R-2B Korean result report and wait for R-3 approval.
+1. Wait for the user to review the R-2B result.
+2. If and only if the user explicitly approves R-3, create a new bounded request for the R-3 section of R-1.1.
+3. R-3 may generalize registered file writers and lifecycle/failure recovery; do not pull R-4 search-index work forward.
+4. Stop after the approved R-3 boundary and report before any later stage.
 
 ## Backup and deduplication
 
@@ -97,4 +104,4 @@ No backup was created: project rules use version history and prohibit ad hoc dup
 
 ## Next-session start prompt
 
-Read the boot kernel, this handoff, and the document map. R-2A is complete; do not rerun it or start R-2B without explicit user approval. If R-2B is approved, resolve a new bounded task request, migrate the accepted decisions and existing corpus one real record kind at a time, preserve protected exclusions, write the Korean R-2B result through the contract-gated loop, update this handoff, and stop before R-3.
+Read the boot kernel, this handoff, and the document map. R-2A and R-2B are complete; do not rerun them or start R-3 without explicit user approval. If R-3 is approved, resolve the exact R-3 boundary, preserve the canonical corpus and protected exclusions, verify failure recovery without adding R-4 search infrastructure, update this handoff through a valid write contract, and stop at the next approval boundary.

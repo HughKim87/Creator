@@ -1,0 +1,10 @@
+{
+  "operations": [
+    {
+      "target_path": "SESSION_HANDOFF.md",
+      "operation": "replace_text",
+      "before": "- No commit, push, publication, or external mutation was authorized or performed.\n\n## Verified checkpoint",
+      "after": "- No commit, push, publication, or external mutation was authorized or performed.\n\n## Key terms\n\n- Corpus record: A schema-backed decision, knowledge item, case, source, or relation with a stable ID.\n- Record projection: `catalog/records.jsonl`, rebuilt from canonical decisions, knowledge items, and case JSON blocks; it is not authority.\n- Source trace: A registered source ID plus an exact path, Git object, official URL, or historical locator.\n- Active relation: A verified, retrieval-eligible typed edge expanded at most one hop. A pending candidate is never active context.\n- Historical candidate: Evidence that may appear through an exact trace but cannot become an active instruction.\n\n## Source inputs and resume checkpoint\n\n- Accepted scope source: `docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md` §10.2, §11, and §12.2.\n- Implementation evidence: `docs/reports/2026-07-21_R-2B_기존_지식_코퍼스_이관_결과.md`, the canonical `knowledge/` stores, and the two R-2B work contexts.\n- Current checkpoint: R-2B is closed; no implementation task is in progress. The first unstarted action is to create an exact R-3 request only after explicit user approval.\n- Blocker: R-3 authorization is absent. This is an approval boundary, not an implementation failure.\n\n## Verified checkpoint"
+    }
+  ]
+}

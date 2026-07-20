@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "task.r2b.close",
+  "requested_by": "user",
+  "intent": "Close the approved R-2B corpus migration with updated technical contracts, document routing, a Korean delta report, and the single current handoff, then stop before R-3.",
+  "actions": ["create", "write", "validate", "close"],
+  "phase": "close",
+  "target_paths": [
+    "docs/agent/KNOWLEDGE_SYSTEM.md",
+    "docs/agent/CONTEXT_RETRIEVAL.md",
+    "docs/agent/KNOWLEDGE_MAINTENANCE.md",
+    "docs/agent/DOCUMENT_MAP.md",
+    "docs/reports/2026-07-21_R-2B_기존_지식_코퍼스_이관_결과.md",
+    "SESSION_HANDOFF.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": ["technical_contract", "router_registry", "report", "current_state"],
+  "output_audience": "user",
+  "include_scopes": ["docs/agent", "docs/reports", "SESSION_HANDOFF.md"],
+  "exclude_scopes": ["backup", "inputs", "outputs"],
+  "task_tags": ["stage", "documentation", "report", "handoff", "knowledge", "decision", "case", "source", "relation", "validation", "close"],
+  "as_of": "2026-07-21T01:20:00+09:00",
+  "context_budget": 20000,
+  "write_payload_path": "context/payloads/r2b_close.json"
+}
