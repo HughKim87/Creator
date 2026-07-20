@@ -14,9 +14,9 @@
 
 ## Current goal and scope
 
-- Goal: Rebuild a minimal active project foundation and then, only after separate approval, implement a local provenance-preserving knowledge and RAG system.
-- Current stage: Command 3, project foundation implementation.
-- Scope completed in this stage: root router, common rules, document ownership and language boundaries, common workflow, knowledge/retrieval/maintenance contracts, Korean user guide, report metadata reconciliation, and this handoff.
+- Goal: Build a minimal boot kernel plus task-scoped rule retrieval, register every active non-protected file in a shared read/write context system, migrate existing project knowledge into that structure, and only then add provenance-preserving local retrieval projections.
+- Current stage: Corrected-intent reanalysis after Command 3. The prior positive assessment is withdrawn, the current design requires revision, and Command 4 remains unauthorized.
+- Scope completed in this stage: Reinterpreted the goal as task-scoped rule retrieval plus universal file read/write context and prior-knowledge migration; reassessed the active foundation; replaced the Korean assessment; and updated this handoff.
 - Explicitly excluded: structured records, schemas, writers, SQLite, FTS5, context package generation, vectors, graph databases, Obsidian configuration, and migration of video-production functions.
 
 ## Key terms
@@ -25,21 +25,23 @@
 - Historical source: Read-only material under `backup/`; never an active runtime dependency.
 - Canonical file: Human-reviewable Markdown, JSONL, or future JSON Schema that owns a datum.
 - Projection: A rebuildable index, view, summary, or context package; never source of truth.
-- Stage 4-A: The first proposed knowledge implementation slice: separated record directories, schemas, templates, append-only event/history handling, and validators.
+- Stage 4-A: The old proposed knowledge implementation slice. It is not a valid next step until the architecture is revised.
+- Stage R-1: The proposed corrected design-only stage for the boot kernel, conditional rules, universal file catalog, existing-corpus migration, and shared read/write context flow.
 
 ## Source inputs and decisions
 
 - [Existing project analysis](docs/reports/2026-07-20_기존_프로젝트_분석.md) — active report, user-approved on 2026-07-20; historical evidence and migration classification.
 - [Foundation and knowledge system design](docs/reports/2026-07-20_프로젝트_기반_및_지식_시스템_설계.md) — active report, user-approved on 2026-07-20; owns decisions D-01 through D-11 and phase boundaries.
+- [Corrected-intent foundation assessment](reports/codex_구축상태분석보고.md) — current point-in-time audit; withdraws the former 89/100 rating and rates corrected-intent fit at 27/100 because task-scoped rule records, universal file context, prior-knowledge migration, and the read/write loop are absent.
 - User instruction — `backup/` immutable; Korean user reports; English agent documents; separate fact/inference/decision with sources; stop for approval after each stage.
 - User approval — “진행해” after the Command 2 report authorized Command 3 only.
 
 ## Resume checkpoint
 
-- Last completed action: Created the Command 3 foundation documents and reconciled the two approved reports' stale “approval pending” metadata.
-- Current verification point: Final structural and repository-scope validation passed for all 13 active foundation documents, including this handoff and the Command 3 report.
-- First unstarted action: Report Command 3 in Korean and wait for explicit user approval.
-- First implementation action after approval: Execute Stage 4-A only, beginning with exact schemas and separated canonical record types; do not create a search database yet.
+- Last completed action: Replaced the prior assessment with the corrected-intent Korean report at `reports/codex_구축상태분석보고.md`.
+- Current verification point: Confirmed 29 always-loaded numbered rules, 15 non-protected tracked active files, an 11-row document registry, and no task-scoped rule schema, universal file catalog, migrated active corpus, resolver, or writer.
+- First unstarted action: The user reviews the reanalysis and decides whether to authorize revised design stage R-1.
+- First implementation action after approval: Revise the architecture only: define the minimal boot kernel, conditional rule records, universal file catalog, prior-corpus migration, and the shared read/write context flow. Do not execute the old Stage 4-A or build a search database.
 
 ## Implemented foundation
 
@@ -59,11 +61,12 @@
 
 ## Verification state
 
-- Final document check: Passed for 13 active files with zero reported issues.
+- Foundation document check: Reproduced the prior result for 13 active files with zero reported issues.
 - Checks completed: strict UTF-8, NUL absence, trailing whitespace, balanced fenced blocks, required document metadata, Korean user-document presence, declared English agent-document language, required rule and handoff sections, approved report statuses, and local Markdown link resolution.
 - Final link result: 148 Markdown links parsed: 128 local and 20 external. All local targets resolved; external URLs were counted but not network-revalidated in Command 3.
+- Assessment check: The corrected-intent Korean report replaced the earlier report and was re-read in full. Its local links, UTF-8, NUL, whitespace, fenced blocks, and required metadata were checked after writing.
 - Repository check: `backup/` has no Git status changes.
-- Git state: New active foundation files are untracked; no commit or publication was requested or performed.
+- Git state: Local commit `944c2a7` now contains the 13 foundation files, and the branch is two commits ahead of its remote. This assessment session did not create that commit. Its remaining worktree changes are this modified handoff and the new untracked `reports/` directory. No push or publication was requested or performed.
 - Scope check: Stage 4 implementation paths and a duplicate current-state document are absent.
 - Application or user content validation: Not applicable to this documentation-only stage.
 
@@ -78,9 +81,13 @@ No active repeated failure has reached a stop threshold.
 
 ## Active blockers and risks
 
-- Blocker: Stage 4 is not authorized until the user approves the Command 3 report.
+- Blocker: The old Stage 4-A is not an authorized or valid next step. The user must first approve a corrected architecture stage R-1.
+- Risk: `PROJECT_RULES.md` contains 29 always-loaded numbered rules instead of a minimal safety/authority kernel plus task-scoped conditional rule records.
+- Risk: `DOCUMENT_MAP.md` is a partial document list, not a universal catalog for every active file's read/write conditions, validators, ownership, hashes, and relations.
+- Risk: Previously identified rules, knowledge, decisions, and failure cases remain in reports and `backup/`; they have not been migrated into an active, provenance-preserving corpus.
+- Risk: There is no task-to-rule-to-file-to-knowledge resolver and no write-back path that updates file metadata, events, relations, or knowledge candidates.
 - Risk: Knowledge-system documents describe future contracts. Do not claim structured logging, RAG, SQLite search, automatic freshness review, or generated context packages are operational.
-- Risk: Foundation files are not committed. Preserve them as user-owned workspace changes unless the user requests Git actions.
+- Risk: The foundation is in local commit `944c2a7`, but the branch is two commits ahead of the remote. Do not push or otherwise publish it without an explicit user request.
 - Risk: `backup/` contains obsolete procedures with their own rule files. Read them for history and access safety only; the root active rules control new work.
 
 ## Backup and deduplication
@@ -91,9 +98,9 @@ No active repeated failure has reached a stop threshold.
 
 ## Next actions
 
-1. Report Command 3 completion in Korean and wait for explicit approval.
-2. After approval, implement Stage 4-A only and report before Stage 4-B.
+1. Review `reports/codex_구축상태분석보고.md` and decide whether to authorize corrected design stage R-1.
+2. After explicit approval, revise the design only and report it for approval before migrating data or implementing resolver/index code.
 
 ## Next-session start prompt
 
-Read every applicable `PROJECT_RULES.md` as required by `AGENTS.md`, then read `SESSION_HANDOFF.md`. Confirm whether the user approved the Command 3 foundation report. If approval is absent, do not implement Stage 4. If approval is present, read the approved design and knowledge contracts, execute Stage 4-A only, verify source traceability and protected-path exclusion, update this handoff, report in Korean, and stop for approval.
+Read every applicable `PROJECT_RULES.md` as required by `AGENTS.md`, then read `SESSION_HANDOFF.md` and the corrected-intent assessment. Confirm whether the user approved design stage R-1. If approval is absent, do not modify the foundation or implement Stage 4. If approval is present, revise only the architecture for a minimal boot kernel, conditional rule catalog, universal file catalog, existing-corpus migration, and the shared read/write context flow. Report the revised Korean design and stop for approval before implementation.
