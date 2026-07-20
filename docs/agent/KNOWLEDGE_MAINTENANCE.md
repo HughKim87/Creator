@@ -59,7 +59,7 @@ Each completed review must produce:
 - a review record and append-only history event;
 - updated current record metadata and status;
 - relationship changes where required;
-- a rebuilt index manifest after R-4, or an explicit note before R-4 that indexing is not yet implemented;
+- a rebuilt index manifest when an index is selected, or the R-4 measured `not_needed_baseline_passed` decision and logical result hash when no index exists;
 - affected evaluation results;
 - a handoff update when the change affects current work.
 

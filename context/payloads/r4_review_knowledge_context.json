@@ -1,0 +1,12 @@
+{
+  "operation_id": "operation.r4.review-knowledge.context",
+  "task_id": "task.r4.knowledge-review",
+  "action": "review",
+  "outcome": "verified",
+  "knowledge_id": "knowledge.context.shared-work-context",
+  "expected_record_hash": "b5c37f2168097d8720904742765bc74645050c7b73f20b89d84eb142dcf71f21",
+  "expected_revision": 4,
+  "actor": "project_agents",
+  "timestamp": "2026-07-21T02:22:00+09:00",
+  "reason": "R-4 evaluation keeps read selection and write authority in the same request-derived context and does not narrow the verified claim."
+}

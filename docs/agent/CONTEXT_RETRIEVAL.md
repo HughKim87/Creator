@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-R-3 preserves direct exact routing and verified one-hop relations, adds explicit file and record metadata filters, and records the exact selected rule/file/unit/record/relation IDs. Every new context includes catalog, rule, unit, record, source, and relation revision hashes plus a deterministic selection fingerprint; the same request and revisions therefore reproduce the same selection IDs without LLM memory. Non-verified knowledge remains ineligible for default metadata retrieval, and source-hash changes force the source and dependent knowledge to `needs_review`. Ranked text retrieval, SQLite FTS5, vector retrieval, and a general search index remain R-4 decisions.
+R-4 freezes eight exact-rule/decision, Korean descriptive, metadata, stale, conflict, and protected-scope queries in `evaluation/retrieval/r4_queries.json`. The direct ID, metadata-title/tag, and verified one-hop relation baseline passes all eight with Recall@k and Precision@k 1.0, source trace rate 1.0, protected leakage 0, and no budget failure. The measured result and logical result hash live in `evaluation/retrieval/r4_baseline_result.json`. Because the approved conditional gate was met, no SQLite FTS5 or other search projection was added. R-3 deterministic selection fingerprints and non-verified-record exclusion remain active.
 
 ## Context assembly order
 
@@ -40,11 +40,11 @@ Known authoritative routes come before similarity search. Search must not replac
 - A preservation marker is sufficient for superseded duplicate content. Resolve its recorded Git snapshot only when the user asks for the historical full text.
 - Summaries in the handoff and user guides route to owners; they do not cause linked reports to be loaded automatically.
 
-## Planned local retrieval
+## Measured local retrieval decision
 
-The minimum implementation will use a rebuildable SQLite FTS5 index containing current records, deterministic heading-based chunks, source metadata, and active typed edges. Korean retrieval must compare available tokenizers on a fixed project evaluation set before selecting a default.
+The R-4 fixed evaluation set is the current acceptance surface. Known IDs route directly; metadata queries use registered kinds, paths, statuses, titles, and tags; descriptive Korean queries use deterministic normalized metadata text; and only verified active relations expand one hop. Every result includes selection reason, status, conflict IDs, exact source locators, source status, content hash, retrieval eligibility, and instruction eligibility.
 
-Vector retrieval and a dedicated graph database remain deferred. They may be added only after the same evaluation set shows a material, repeatable improvement that justifies new dependencies and migration cost.
+SQLite FTS5 is not implemented because the baseline met every strict target. If a future fixed query fails, preserve that query and its relevance judgment, measure the same baseline again, and add a rebuildable FTS projection only if it closes the demonstrated gap without source, scope, or budget regression. Vector retrieval and a dedicated graph database remain deferred under the same evidence requirement.
 
 ## Context package requirements
 
@@ -56,7 +56,7 @@ A generated package must record:
 - source URI, locator, content hash, and observed date for every result;
 - retrieval path, rank, and selection reason;
 - conflicts, stale evidence, omitted candidates, and known gaps;
-- schema, index, tokenizer, and retriever versions.
+- schema, retriever, and evaluation versions; index and tokenizer versions are explicitly null when no projection is selected.
 
 Every package item must trace back to an actual repository file, work event, artifact, or official URL. A broken trace makes the item ineligible for default context.
 

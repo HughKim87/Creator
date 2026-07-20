@@ -1,0 +1,12 @@
+{
+  "operation_id": "operation.r4.review-knowledge.safety",
+  "task_id": "task.r4.knowledge-review",
+  "action": "review",
+  "outcome": "verified",
+  "knowledge_id": "knowledge.safety.protected-prefilter",
+  "expected_record_hash": "2b3b3c4a883bc7904f29b995363175a5ee2cee39ec23af110681525dbedffee7",
+  "expected_revision": 4,
+  "actor": "project_agents",
+  "timestamp": "2026-07-21T02:22:00+09:00",
+  "reason": "The R-4 protected-scope query was rejected before retrieval and recorded zero leakage, preserving the claim."
+}

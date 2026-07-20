@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "task.r4.close",
+  "requested_by": "user",
+  "intent": "Record the verified R-4 retrieval evaluation, register its unique result report, and advance the single handoff checkpoint to the already authorized R-5 stage.",
+  "actions": ["read", "create", "write", "validate", "close"],
+  "phase": "close",
+  "target_paths": [
+    "docs/reports/2026-07-21_R-4_검색_평가_결과.md",
+    "docs/agent/DOCUMENT_MAP.md",
+    "SESSION_HANDOFF.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": ["report", "router_registry", "current_state"],
+  "output_audience": "user",
+  "include_scopes": ["docs/reports", "docs/agent/DOCUMENT_MAP.md", "SESSION_HANDOFF.md"],
+  "exclude_scopes": ["backup", "inputs", "outputs"],
+  "task_tags": ["stage", "documentation", "user-facing", "validation", "close", "handoff", "retrieval"],
+  "as_of": "2026-07-21T02:20:00+09:00",
+  "context_budget": 20000,
+  "write_payload_path": "context/payloads/r4_close.json"
+}

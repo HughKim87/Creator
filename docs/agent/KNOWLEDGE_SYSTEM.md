@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-R-2A provides the project-file and task-context thin slice, and R-2B adds the canonical decision, knowledge, case, source, and relation corpus. R-3 generalizes deterministic units to code symbols, test symbols, config keys, and binary sidecar metadata; adds contract-gated create, write, move, and delete operations with before-file and before-unit hashes; rolls partial writes back and links successful retries to the failed event; maintains append-only review and revision chains; supports candidate, review, verification, revision, and supersession transitions; detects changed project-document sources and marks dependent knowledge `needs_review`; and emits deterministic selection fingerprints from the request and catalog/rule/corpus revisions. Session summaries and the single handoff can be rendered from structured closure data through the same writer. Search ranking and rebuildable indexes remain R-4 work.
+R-2A provides the project-file and task-context thin slice, R-2B adds the canonical corpus, and R-3 generalizes units, transactional lifecycle writes, recovery, record review, source review, and deterministic fingerprints. R-4 adds a canonical fixed retrieval evaluation and a rebuildable measured result with a logical result hash. The direct/metadata/verified-one-hop baseline meets all strict retrieval, trace, protection, and budget gates, so no search index became part of the system. Session summaries and the single handoff remain structured writer outputs; R-5 now owns operational cold-start and closed-loop acceptance rather than new retrieval features.
 
 ## Canonical categories
 

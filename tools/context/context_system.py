@@ -18,6 +18,7 @@ import re
 import sys
 import tempfile
 import tomllib
+import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
@@ -298,6 +299,14 @@ def classify_file(
         kind, purpose, owner, authority = "write_fixture", "Preserve an R-2A live write-fixture payload.", "project_agents", "retained_evidence"
         read_when, write_when = ["matching_write_fixture", "r2a_audit"], ["fixture_definition"]
         task_tags = ["context", "fixture"]
+    elif normalized.startswith("evaluation/retrieval/") and suffix == ".json":
+        if normalized.endswith("_queries.json"):
+            kind, purpose, owner, authority = "retrieval_evaluation", "Hold a fixed source-traceable retrieval evaluation set.", "project_agents", "canonical"
+            read_when, write_when = ["retrieval_evaluation"], ["approved_evaluation_change"]
+        else:
+            kind, purpose, owner, authority = "retrieval_result", "Hold a rebuildable measured retrieval evaluation result.", "context_system", "derived"
+            read_when, write_when = ["retrieval_audit"], ["context_system_only"]
+        task_tags = ["retrieval", "evaluation"]
     elif normalized.startswith("docs/reports/") or normalized.startswith("reports/"):
         kind, purpose, owner, authority = "report", "Preserve point-in-time project evidence and validation.", "project_agents", "evidence"
         read_when, write_when = ["exact_provenance_or_stage_route"], ["unique_point_in_time_evidence_with_contract"]
@@ -1640,6 +1649,38 @@ def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
         if any(rule_id not in {rule["rule_id"] for rule in parsed_rules} for rule_id in selected_rule_ids):
             errors.append(f"work context selected a non-active instruction: {context_path.name}")
 
+    retrieval_evaluations = []
+    retrieval_results = []
+    evaluation_root = root / "evaluation/retrieval"
+    if evaluation_root.exists():
+        for evaluation_path in sorted(evaluation_root.glob("*_queries.json")):
+            evaluation = load_json(evaluation_path)
+            missing = validate_required(evaluation, root / "schemas/retrieval_evaluation.schema.json")
+            if missing:
+                errors.append(f"retrieval evaluation missing fields {evaluation_path.name}: {missing}")
+            query_ids = [query.get("query_id") for query in evaluation.get("queries", [])]
+            if len(query_ids) != len(set(query_ids)):
+                errors.append(f"duplicate retrieval query ID: {evaluation_path.name}")
+            retrieval_evaluations.append(evaluation)
+        for result_path in sorted(evaluation_root.glob("*_result.json")):
+            result = load_json(result_path)
+            missing = validate_required(result, root / "schemas/retrieval_result.schema.json")
+            if missing:
+                errors.append(f"retrieval result missing fields {result_path.name}: {missing}")
+            source_path = result.get("source_evaluation_path")
+            if source_path:
+                try:
+                    normalized = assert_allowed_path(source_path, root)
+                    if not (root / normalized).exists() or result.get("source_evaluation_sha256") != sha256_file(root / normalized):
+                        errors.append(f"retrieval result source mismatch: {result_path.name}")
+                except ContextSystemError as exc:
+                    errors.append(str(exc))
+            if result.get("ok") and any(not query.get("passed") for query in result.get("queries", [])):
+                errors.append(f"retrieval result overclaims pass: {result_path.name}")
+            if result.get("logical_result_hash") != sha256_text(canonical_json(result.get("queries", []))):
+                errors.append(f"retrieval result logical hash mismatch: {result_path.name}")
+            retrieval_results.append(result)
+
     link_errors, link_count = validate_markdown_links(root, actual_paths)
     errors.extend(link_errors)
     errors.extend(validate_event_chain(root))
@@ -1663,6 +1704,8 @@ def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
             "planned_files": len([record for record in file_records if record["status"] == "planned"]),
             "units": len(unit_records),
             "events": len(load_jsonl(root / "records/work/events.jsonl")),
+            "retrieval_evaluations": len(retrieval_evaluations),
+            "retrieval_results": len(retrieval_results),
             **history_counts,
             **corpus_counts,
             "local_links": link_count,
@@ -2444,6 +2487,381 @@ def maintain_source(root: Path, operation_path: str) -> dict[str, Any]:
     return {"event_id": event["event_id"], "source_id": source["source_id"], **counts}
 
 
+def _normalize_search_text(value: str) -> str:
+    normalized = unicodedata.normalize("NFKC", value).lower()
+    return " ".join(re.findall(r"[0-9a-z가-힣]+", normalized))
+
+
+def _search_terms(value: str) -> list[str]:
+    stopwords = {"근거", "찾기", "찾아줘", "알려줘", "관련", "대한", "있는", "없는"}
+    return [term for term in _normalize_search_text(value).split() if len(term) > 1 and term not in stopwords]
+
+
+def _retrieval_eligible(record: dict[str, Any]) -> bool:
+    kind = record.get("record_kind")
+    if kind == "decision":
+        return record.get("status") == "accepted" and bool(record.get("retrieval_eligible"))
+    if kind == "knowledge":
+        return record.get("status") == "verified" and bool(record.get("retrieval_eligible"))
+    if kind == "case":
+        return record.get("status") in {"confirmed", "resolved", "recurring"} and bool(record.get("retrieval_eligible"))
+    if kind == "source":
+        return record.get("status") == "active" and bool(record.get("retrieval_eligible"))
+    if kind == "rule":
+        return record.get("status") == "active"
+    if kind == "file":
+        return record.get("status") == "active" and record.get("index_scope") == "global"
+    return False
+
+
+def _retrieval_candidates(root: Path) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
+    sources = load_jsonl(root / SOURCE_STORE_PATH)
+    sources_by_id = {source["source_id"]: source for source in sources}
+    candidates: list[dict[str, Any]] = []
+    for record in load_jsonl(root / "catalog/records.jsonl") + sources:
+        item_id = record_id(record)
+        title = record.get("title") or record.get("legacy_id") or item_id
+        metadata_text = " ".join(
+            str(value)
+            for value in (
+                item_id,
+                record.get("legacy_id", ""),
+                title,
+                " ".join(record.get("task_tags", [])),
+                record.get("record_kind", ""),
+                record.get("status", ""),
+            )
+        )
+        candidates.append(
+            {
+                "item_id": item_id,
+                "item_kind": record.get("record_kind"),
+                "title": title,
+                "status": record.get("status"),
+                "task_tags": record.get("task_tags", []),
+                "path": None,
+                "eligible": _retrieval_eligible(record),
+                "metadata_text": _normalize_search_text(metadata_text),
+                "record": record,
+            }
+        )
+    for rule in load_jsonl(root / "catalog/rules.jsonl"):
+        record = {**rule, "record_kind": "rule"}
+        candidates.append(
+            {
+                "item_id": rule["rule_id"],
+                "item_kind": "rule",
+                "title": rule["rule_id"],
+                "status": rule["status"],
+                "task_tags": rule.get("task_tags", []),
+                "path": rule["pack_path"],
+                "eligible": _retrieval_eligible(record),
+                "metadata_text": _normalize_search_text(" ".join([rule["rule_id"], rule.get("text", ""), " ".join(rule.get("task_tags", []))])),
+                "record": record,
+            }
+        )
+    for file_record in load_file_catalog(root):
+        record = {**file_record, "record_kind": "file"}
+        candidates.append(
+            {
+                "item_id": file_record["file_id"],
+                "item_kind": "file",
+                "title": file_record["purpose"],
+                "status": file_record["status"],
+                "task_tags": file_record.get("task_tags", []),
+                "path": file_record["path"],
+                "eligible": _retrieval_eligible(record),
+                "metadata_text": _normalize_search_text(" ".join([file_record["file_id"], file_record["path"], file_record["kind"], file_record["purpose"], " ".join(file_record.get("task_tags", []))])),
+                "record": record,
+            }
+        )
+    return candidates, sources_by_id
+
+
+def _candidate_source_trace(
+    candidate: dict[str, Any], sources_by_id: dict[str, dict[str, Any]], root: Path
+) -> list[dict[str, Any]]:
+    record = candidate["record"]
+    if candidate["item_kind"] in {"rule", "file"}:
+        references = []
+    elif candidate["item_kind"] == "source":
+        references = [{"source_id": candidate["item_id"], "locator": record["locator"]}]
+    else:
+        references = list(record.get("source_refs", []))
+    traces: list[dict[str, Any]] = []
+    for reference in references:
+        source = sources_by_id.get(reference["source_id"])
+        if not source:
+            continue
+        traces.append(
+            {
+                "source_id": source["source_id"],
+                "locator": reference.get("locator") or source["locator"],
+                "source_locator": source["locator"],
+                "source_status": source["status"],
+                "content_sha256": source.get("content_sha256"),
+                "retrieval_eligible": bool(source.get("retrieval_eligible")),
+                "instruction_eligible": source.get("status") == "active" and source.get("authority") in {"active_policy", "active_contract"},
+            }
+        )
+    if candidate["item_kind"] == "rule":
+        path = candidate["path"]
+        traces.append(
+            {
+                "source_id": f"file-source:{candidate['item_id']}",
+                "locator": f"{path}#heading:{candidate['item_id']}",
+                "source_locator": path,
+                "source_status": "active",
+                "content_sha256": sha256_file(root / path),
+                "retrieval_eligible": True,
+                "instruction_eligible": True,
+            }
+        )
+    elif candidate["item_kind"] == "file":
+        record_hash = record.get("content_sha256") or record.get("runtime_hash")
+        traces.append(
+            {
+                "source_id": f"file-source:{candidate['item_id']}",
+                "locator": candidate["path"],
+                "source_locator": candidate["path"],
+                "source_status": record["status"],
+                "content_sha256": record_hash,
+                "retrieval_eligible": True,
+                "instruction_eligible": False,
+            }
+        )
+    return traces
+
+
+def _text_candidate_score(query_text: str, candidate: dict[str, Any]) -> float:
+    query_normalized = _normalize_search_text(query_text)
+    metadata = candidate["metadata_text"]
+    if query_normalized == candidate["item_id"].lower():
+        return 1000.0
+    aliases = [candidate["item_id"], str(candidate["record"].get("legacy_id", ""))]
+    if any(alias and _normalize_search_text(alias) in query_normalized for alias in aliases):
+        return 500.0
+    terms = _search_terms(query_text)
+    if not terms:
+        return 0.0
+    matched = [term for term in terms if term in metadata]
+    if not matched:
+        return 0.0
+    title = _normalize_search_text(candidate["title"])
+    title_matches = sum(term in title for term in matched)
+    return (len(matched) / len(terms)) * 100.0 + title_matches * 20.0
+
+
+def _metadata_candidate_match(candidate: dict[str, Any], filters: dict[str, Any]) -> bool:
+    record = candidate["record"]
+    kinds = filters.get("kinds", [])
+    if kinds and candidate["item_kind"] not in kinds and record.get("kind") not in kinds:
+        return False
+    if filters.get("statuses") and candidate["status"] not in filters["statuses"]:
+        return False
+    if filters.get("task_tags") and not set(filters["task_tags"]) & set(candidate["task_tags"]):
+        return False
+    if filters.get("path_prefixes"):
+        path = candidate.get("path") or ""
+        if not any(path == prefix or path.startswith(prefix.rstrip("/") + "/") for prefix in filters["path_prefixes"]):
+            return False
+    return True
+
+
+def retrieve_evaluation_query(root: Path, query: dict[str, Any]) -> dict[str, Any]:
+    candidates, sources_by_id = _retrieval_candidates(root)
+    by_id = {candidate["item_id"]: candidate for candidate in candidates}
+    exclusions: list[dict[str, Any]] = []
+    for scope in query.get("scope_paths", []):
+        try:
+            assert_allowed_path(scope, root)
+        except ContextSystemError as exc:
+            return {
+                "query_id": query["query_id"],
+                "outcome": "rejected",
+                "rejection_reason": str(exc),
+                "results": [],
+                "exclusions": [{"id": scope, "reason": "protected_scope_prefilter"}],
+                "conflicts": [],
+            }
+    mode = query["mode"]
+    selected: list[tuple[dict[str, Any], str, float]] = []
+    if mode == "exact":
+        for item_id in query.get("exact_ids", []):
+            candidate = by_id.get(item_id)
+            if not candidate:
+                exclusions.append({"id": item_id, "reason": "not_found"})
+            elif not candidate["eligible"]:
+                exclusions.append({"id": item_id, "reason": f"ineligible_status:{candidate['status']}"})
+            else:
+                selected.append((candidate, "exact_id", 1000.0))
+    elif mode == "metadata":
+        for candidate in candidates:
+            if candidate["eligible"] and _metadata_candidate_match(candidate, query.get("filters", {})):
+                selected.append((candidate, "metadata_match", 100.0))
+    elif mode == "text":
+        ranked = [
+            (candidate, _text_candidate_score(query["query"], candidate))
+            for candidate in candidates
+            if candidate["eligible"]
+        ]
+        ranked = sorted((item for item in ranked if item[1] > 0), key=lambda item: (-item[1], item[0]["item_id"]))
+        for candidate, score in ranked[: query.get("seed_limit", query["k"])]:
+            selected.append((candidate, "metadata_text_match", score))
+    elif mode == "conflict_scan":
+        for candidate in candidates:
+            if candidate["eligible"] and candidate["record"].get("conflict_ids"):
+                selected.append((candidate, "conflict_scan", 100.0))
+    else:
+        raise ContextSystemError(f"unsupported evaluation query mode: {mode}")
+
+    if query.get("expand_relations"):
+        selected_ids = {candidate["item_id"] for candidate, _, _ in selected}
+        for relation in load_jsonl(root / RELATION_STORE_PATH):
+            if relation.get("status") != "active" or relation.get("review_status") != "verified" or not relation.get("retrieval_eligible"):
+                continue
+            source_id = relation["source_record_id"]
+            target_id = relation["target_record_id"]
+            if source_id not in selected_ids and target_id not in selected_ids:
+                continue
+            other_id = target_id if source_id in selected_ids else source_id
+            candidate = by_id.get(other_id)
+            if candidate and candidate["eligible"] and other_id not in selected_ids:
+                selected.append((candidate, f"one_hop:{relation['relation_id']}", 90.0))
+                selected_ids.add(other_id)
+    deduped: list[tuple[dict[str, Any], str, float]] = []
+    seen: set[str] = set()
+    for candidate, reason, score in sorted(selected, key=lambda item: (-item[2], item[0]["item_id"])):
+        if candidate["item_id"] not in seen:
+            seen.add(candidate["item_id"])
+            deduped.append((candidate, reason, score))
+    results = []
+    for candidate, reason, score in deduped[: query["k"]]:
+        results.append(
+            {
+                "item_id": candidate["item_id"],
+                "item_kind": candidate["item_kind"],
+                "title": candidate["title"],
+                "status": candidate["status"],
+                "selection_reason": reason,
+                "score": round(score, 6),
+                "source_trace": _candidate_source_trace(candidate, sources_by_id, root),
+                "conflicts": list(candidate["record"].get("conflict_ids", [])),
+            }
+        )
+    return {
+        "query_id": query["query_id"],
+        "outcome": "success",
+        "rejection_reason": None,
+        "results": results,
+        "exclusions": exclusions,
+        "conflicts": sorted({conflict for result in results for conflict in result["conflicts"]}),
+    }
+
+
+def evaluate_retrieval(root: Path, evaluation_path: str, output_path: str) -> dict[str, Any]:
+    evaluation_relative = assert_allowed_path(evaluation_path, root)
+    output_relative = assert_allowed_path(output_path, root)
+    evaluation = load_json(root / evaluation_relative)
+    missing = validate_required(evaluation, root / "schemas/retrieval_evaluation.schema.json")
+    if missing:
+        raise ContextSystemError(f"retrieval evaluation missing fields: {missing}")
+    thresholds = evaluation["thresholds"]
+    query_results: list[dict[str, Any]] = []
+    for query in evaluation["queries"]:
+        retrieved = retrieve_evaluation_query(root, query)
+        result_ids = [result["item_id"] for result in retrieved["results"]]
+        expected = set(query["expected_ids"])
+        returned = set(result_ids)
+        relevant = len(expected & returned)
+        recall = relevant / len(expected) if expected else (1.0 if not returned else 0.0)
+        precision = relevant / len(returned) if returned else (1.0 if not expected else 0.0)
+        traced = [result for result in retrieved["results"] if result["source_trace"]]
+        trace_rate = len(traced) / len(retrieved["results"]) if retrieved["results"] else 1.0
+        protected_leakage = sum(
+            1
+            for result in retrieved["results"]
+            for trace in result["source_trace"]
+            if PurePosixPath(trace["source_locator"]).parts and PurePosixPath(trace["source_locator"]).parts[0] in {"backup", "inputs", "outputs"}
+        )
+        ineligible_results = [result["item_id"] for result in retrieved["results"] if result["status"] in {"candidate", "needs_review", "superseded", "rejected", "historical_candidate"}]
+        result_bytes = len(canonical_json(retrieved["results"]).encode("utf-8"))
+        required_exclusions = set(query.get("required_exclusion_ids", []))
+        actual_exclusions = {item["id"] for item in retrieved["exclusions"]}
+        expected_outcome = query.get("expected_outcome", "success")
+        passed = all(
+            [
+                retrieved["outcome"] == expected_outcome,
+                recall >= thresholds["minimum_recall_at_k"],
+                precision >= thresholds["minimum_precision_at_k"],
+                trace_rate >= thresholds["minimum_source_trace_rate"],
+                protected_leakage <= thresholds["maximum_protected_leakage"],
+                not ineligible_results,
+                result_bytes <= query["budget_bytes"],
+                required_exclusions <= actual_exclusions,
+            ]
+        )
+        query_results.append(
+            {
+                **retrieved,
+                "expected_ids": sorted(expected),
+                "metrics": {
+                    "recall_at_k": recall,
+                    "precision_at_k": precision,
+                    "source_trace_rate": trace_rate,
+                    "protected_leakage": protected_leakage,
+                    "ineligible_result_ids": ineligible_results,
+                    "result_bytes": result_bytes,
+                    "budget_bytes": query["budget_bytes"],
+                },
+                "passed": passed,
+            }
+        )
+    all_passed = all(result["passed"] for result in query_results)
+    logical_result_hash = sha256_text(canonical_json(query_results))
+    result = {
+        "schema_version": SCHEMA_VERSION,
+        "evaluation_id": evaluation["evaluation_id"],
+        "evaluated_at": now_iso(),
+        "retriever": "direct-metadata-relation-baseline",
+        "retriever_version": "r4.1",
+        "source_evaluation_path": evaluation_relative,
+        "source_evaluation_sha256": sha256_file(root / evaluation_relative),
+        "thresholds": thresholds,
+        "queries": query_results,
+        "logical_result_hash": logical_result_hash,
+        "summary": {
+            "queries": len(query_results),
+            "passed": sum(result["passed"] for result in query_results),
+            "failed": sum(not result["passed"] for result in query_results),
+            "minimum_recall_at_k": min(result["metrics"]["recall_at_k"] for result in query_results),
+            "minimum_precision_at_k": min(result["metrics"]["precision_at_k"] for result in query_results),
+            "minimum_source_trace_rate": min(result["metrics"]["source_trace_rate"] for result in query_results),
+            "protected_leakage": sum(result["metrics"]["protected_leakage"] for result in query_results),
+            "budget_failures": sum(result["metrics"]["result_bytes"] > result["metrics"]["budget_bytes"] for result in query_results),
+        },
+        "fts_decision": "not_needed_baseline_passed" if all_passed else "required_baseline_gap",
+        "search_projection": None,
+        "ok": all_passed,
+    }
+    output_before_hash = sha256_file(root / output_relative) if (root / output_relative).exists() else None
+    write_json_atomic(root / output_relative, result)
+    event = append_event(
+        root,
+        "retrieval_evaluated",
+        "task.r4.evaluate",
+        [evaluation_relative, output_relative],
+        {evaluation_relative: sha256_file(root / evaluation_relative), output_relative: output_before_hash},
+        {evaluation_relative: sha256_file(root / evaluation_relative), output_relative: sha256_file(root / output_relative)},
+        "success" if all_passed else "failed",
+        {"evaluation_id": evaluation["evaluation_id"], "summary": result["summary"], "fts_decision": result["fts_decision"]},
+    )
+    result["event_id"] = event["event_id"]
+    if (root / "catalog/bootstrap.json").exists():
+        sync_catalog(root)
+    return result
+
+
 def cli() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -2467,6 +2885,9 @@ def cli() -> int:
     source_parser.add_argument("--task-id", default="task.source.hash-check")
     source_review_parser = subparsers.add_parser("maintain-source")
     source_review_parser.add_argument("--operation", required=True)
+    evaluation_parser = subparsers.add_parser("evaluate-retrieval")
+    evaluation_parser.add_argument("--evaluation", required=True)
+    evaluation_parser.add_argument("--output", required=True)
     args = parser.parse_args()
     root = Path(args.root).resolve()
     try:
@@ -2488,6 +2909,8 @@ def cli() -> int:
             result = check_source_hashes(root, args.task_id)
         elif args.command == "maintain-source":
             result = maintain_source(root, args.operation)
+        elif args.command == "evaluate-retrieval":
+            result = evaluate_retrieval(root, args.evaluation, args.output)
         else:  # pragma: no cover
             raise ContextSystemError(f"unsupported command: {args.command}")
     except ContextSystemError as exc:

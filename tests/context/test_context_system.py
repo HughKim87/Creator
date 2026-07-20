@@ -358,6 +358,34 @@ class ContextSystemTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertTrue(context_system._file_matches_metadata({"path": "tools/context/a.py", "kind": "code", "status": "active", "task_tags": ["context"]}, {"kinds": ["code"], "task_tags": ["context"]}, ["tools/context"]))
 
+    def test_r4_fixed_evaluation_meets_strict_metrics_without_fts(self) -> None:
+        result = context_system.load_json(ROOT / "evaluation/retrieval/r4_baseline_result.json")
+        self.assertTrue(result["ok"])
+        self.assertEqual("not_needed_baseline_passed", result["fts_decision"])
+        self.assertIsNone(result["search_projection"])
+        self.assertEqual(8, result["summary"]["queries"])
+        self.assertEqual(8, result["summary"]["passed"])
+        self.assertEqual(0, result["summary"]["failed"])
+        self.assertEqual(1.0, result["summary"]["minimum_recall_at_k"])
+        self.assertEqual(1.0, result["summary"]["minimum_precision_at_k"])
+        self.assertEqual(1.0, result["summary"]["minimum_source_trace_rate"])
+        self.assertEqual(0, result["summary"]["protected_leakage"])
+        self.assertEqual(0, result["summary"]["budget_failures"])
+        self.assertEqual(result["logical_result_hash"], context_system.sha256_text(context_system.canonical_json(result["queries"])))
+        self.assertFalse(any(Path(path).suffix in {".db", ".sqlite", ".sqlite3"} for path in context_system.iter_project_files(ROOT)))
+
+    def test_r4_logical_retrieval_is_deterministic_and_source_traced(self) -> None:
+        evaluation = context_system.load_json(ROOT / "evaluation/retrieval/r4_queries.json")
+        query = next(item for item in evaluation["queries"] if item["query_id"] == "r4.decision.d14-evidence")
+        first = context_system.retrieve_evaluation_query(ROOT, query)
+        second = context_system.retrieve_evaluation_query(ROOT, query)
+        self.assertEqual(first, second)
+        self.assertEqual(
+            {"decision.r1.1.d14", "knowledge.context.shared-work-context"},
+            {result["item_id"] for result in first["results"]},
+        )
+        self.assertTrue(all(result["source_trace"] for result in first["results"]))
+
 
 if __name__ == "__main__":
     unittest.main()

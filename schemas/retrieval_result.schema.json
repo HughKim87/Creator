@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project://schemas/retrieval_result.schema.json",
+  "title": "Measured retrieval evaluation result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "evaluation_id", "evaluated_at", "retriever", "retriever_version", "source_evaluation_path", "source_evaluation_sha256", "thresholds", "queries", "logical_result_hash", "summary", "fts_decision", "search_projection", "ok"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "evaluation_id": {"type": "string"},
+    "evaluated_at": {"type": "string"},
+    "retriever": {"type": "string"},
+    "retriever_version": {"type": "string"},
+    "source_evaluation_path": {"type": "string"},
+    "source_evaluation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "thresholds": {"type": "object"},
+    "queries": {"type": "array", "items": {"type": "object"}},
+    "logical_result_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "summary": {"type": "object"},
+    "fts_decision": {"enum": ["not_needed_baseline_passed", "required_baseline_gap"]},
+    "search_projection": {"type": ["string", "null"]},
+    "ok": {"type": "boolean"}
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "task.r4.start",
+  "requested_by": "user",
+  "intent": "Implement only the approved R-4 fixed retrieval evaluation, measure the exact/metadata/relation baseline, and add a rebuildable local search projection only if the strict target set demonstrates a gap.",
+  "actions": ["read", "validate"],
+  "phase": "plan",
+  "target_paths": [
+    "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md",
+    "SESSION_HANDOFF.md",
+    "docs/agent/CONTEXT_RETRIEVAL.md",
+    "docs/agent/KNOWLEDGE_SYSTEM.md",
+    "docs/agent/WORKFLOW.md",
+    "tools/context/context_system.py",
+    "tests/context/test_context_system.py",
+    "catalog/files.jsonl",
+    "catalog/records.jsonl",
+    "catalog/units.jsonl",
+    "knowledge/sources.jsonl",
+    "knowledge/relations.jsonl"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [
+    "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.10.10.4-r-4",
+    "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.13"
+  ],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": ["report", "current_state", "technical_contract", "procedure", "code", "test", "file_catalog", "record_projection", "unit_projection", "source_store", "relation_store"],
+  "output_audience": "agent",
+  "include_scopes": ["docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md", "SESSION_HANDOFF.md", "docs/agent", "tools/context", "tests/context", "catalog", "knowledge"],
+  "exclude_scopes": ["backup", "inputs", "outputs"],
+  "task_tags": ["stage", "retrieval", "evaluation", "metrics", "source", "scope", "budget", "validation"],
+  "as_of": "2026-07-21T02:30:00+09:00",
+  "context_budget": 24000
+}

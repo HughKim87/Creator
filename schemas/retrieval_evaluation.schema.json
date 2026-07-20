@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project://schemas/retrieval_evaluation.schema.json",
+  "title": "Fixed retrieval evaluation set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "evaluation_id", "title", "source_design", "thresholds", "queries"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "evaluation_id": {"type": "string", "pattern": "^evaluation\\.[a-z0-9._-]+$"},
+    "title": {"type": "string"},
+    "source_design": {"type": "object"},
+    "thresholds": {
+      "type": "object",
+      "required": ["minimum_recall_at_k", "minimum_precision_at_k", "minimum_source_trace_rate", "maximum_protected_leakage"],
+      "properties": {
+        "minimum_recall_at_k": {"type": "number", "minimum": 0, "maximum": 1},
+        "minimum_precision_at_k": {"type": "number", "minimum": 0, "maximum": 1},
+        "minimum_source_trace_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "maximum_protected_leakage": {"type": "integer", "minimum": 0}
+      }
+    },
+    "queries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["query_id", "category", "mode", "query", "k", "budget_bytes", "expected_ids"],
+        "properties": {
+          "query_id": {"type": "string"},
+          "category": {"enum": ["rule_decision", "korean_descriptive", "metadata_scope", "stale_candidate", "conflict", "protected_scope"]},
+          "mode": {"enum": ["exact", "metadata", "text", "conflict_scan"]},
+          "query": {"type": "string"},
+          "k": {"type": "integer", "minimum": 1},
+          "budget_bytes": {"type": "integer", "minimum": 1},
+          "expected_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "exact_ids": {"type": "array", "items": {"type": "string"}},
+          "filters": {"type": "object"},
+          "scope_paths": {"type": "array", "items": {"type": "string"}},
+          "seed_limit": {"type": "integer", "minimum": 1},
+          "expand_relations": {"type": "boolean"},
+          "required_exclusion_ids": {"type": "array", "items": {"type": "string"}},
+          "expected_outcome": {"enum": ["success", "rejected"]}
+        }
+      }
+    }
+  }
+}
