@@ -9,6 +9,7 @@
 
 ## Current state
 
+- Current goal: Preserve the verified Graphify rollback and wait for separate user approval before starting L5.
 - Date: 2026-07-20. The user cancelled Graphify adoption; L3.1 is complete and rolled back to direct document routing.
 - Authorization: Direct `AGENTS.md` routing and stable local Obsidian settings remain approved. Graphify is excluded and its package, repository implementation, and project cache were removed. Ollama remains installed but is inactive for document routing; removing it requires a separate request. L5 and other integrations remain unapproved.
 - Data boundary: No real `inputs/` or `outputs/` item was designated, enumerated, or read during the pilot or rollback.
@@ -32,7 +33,7 @@
 | Document architecture | tool-validated | Stable task/write/document IDs, metadata and naming rules, two-index navigation, explicit selectors, and split/merge lifecycle rules remain covered by routing/governance tests. |
 | Direct routing | tool-validated | Representative routes read only their declared delta and report missing selectors, ambiguity, or protected boundaries instead of invoking a generated graph. |
 | Graphify rollback | tool-validated | Dedicated files are absent, `graphifyy` is uninstalled, the project cache is absent, the capability is `excluded`, and the failure report is registered. |
-| Integrated framework | tool-validated | The independent Python runtime passes 35/35 tests; UTF-8/NUL, links, 69-line handoff, Graphify artifact absence, and retained Obsidian configuration checks pass. |
+| Integrated framework | tool-validated | The independent Python runtime passes 35/35 tests; UTF-8/NUL, links, 70-line handoff, Graphify artifact absence, and retained Obsidian configuration checks pass. |
 
 ## Failure ledger
 
