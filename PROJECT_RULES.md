@@ -1,7 +1,7 @@
 # Project-Wide Rules
 
 - Purpose: Define the rules that always apply to every task in this project.
-- Scope: Data protection, workspace boundaries, authorization, document governance, validation, and failure reporting.
+- Scope: Data protection, workspace boundaries, authorization, document governance, requirement compatibility, implementation identity, validation, and failure reporting.
 - Audience and language: Agents; English.
 - Read when: Before any task that reads or changes this workspace.
 - Write when: Only when the user approves a project-wide rule change.
@@ -74,6 +74,17 @@ Do not enumerate, open, copy, summarize, hash, index, or report user data withou
 - Use deterministic tools for repeatable extraction, transformation, and validation. Use AI for candidates, interpretation, and explanation.
 - Tool completion is not equivalent to content quality, application validation, or user approval.
 - The user makes final content, editing-direction, approval, upload, and external-release decisions.
+
+## Requirement compatibility and implementation identity
+
+- Treat an explicitly named product, tool, library, model, or execution method as a method requirement. Treat accuracy, cost, speed, and quality targets as separate outcome requirements. Neither requirement waives the other.
+- If verified evidence shows that the requested method and outcome cannot both be satisfied, stop before substitution or completion. Report the method result, outcome result, conflict, and minimum user choices; the user decides which requirement may be relaxed.
+- Never replace a named product with a custom implementation, wrapper, compatible format, alternative library, or different execution path while retaining the original product name. Label the alternative by what actually executes and obtain separate approval for substitution.
+- Claim that a named product is implemented, active, or validated only when the active production path is proven to invoke that product's public executable, API, or library entry point.
+- A successful output does not prove that the requested product was used. Installation, imports in inactive code, compatible files, shared environments, and wrapper names are not product-use evidence.
+- Completion requires separate evidence for every explicit method and outcome requirement. Record unmet requirements as failed, deferred, excluded, or explicitly waived by the user.
+- Report all failed baseline results that materially affect the user's decision; do not present only the metrics of a replacement implementation.
+- If user approval was obtained from an inaccurate product or implementation classification, treat that approval as invalid and request confirmation again after correcting the facts.
 
 ## Validation and reporting
 
