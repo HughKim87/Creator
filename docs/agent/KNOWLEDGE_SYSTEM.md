@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-R-2A provides the project-file and task-context thin slice. R-2B adds formal decision, knowledge, case, source, and relation schemas; canonical JSONL stores for 17 accepted decisions, four verified knowledge items, seven sources, and six typed relations; a schema-backed JSON record inside the existing stable case document; and a rebuildable record projection. The resolver now selects exact record IDs, verified active one-hop relations, and source locators in the same work context. General record lifecycle writers, review-history automation, databases, and search indexes remain unimplemented and require later stage approval.
+R-2A provides the project-file and task-context thin slice, and R-2B adds the canonical decision, knowledge, case, source, and relation corpus. R-3 generalizes deterministic units to code symbols, test symbols, config keys, and binary sidecar metadata; adds contract-gated create, write, move, and delete operations with before-file and before-unit hashes; rolls partial writes back and links successful retries to the failed event; maintains append-only review and revision chains; supports candidate, review, verification, revision, and supersession transitions; detects changed project-document sources and marks dependent knowledge `needs_review`; and emits deterministic selection fingerprints from the request and catalog/rule/corpus revisions. Session summaries and the single handoff can be rendered from structured closure data through the same writer. Search ranking and rebuildable indexes remain R-4 work.
 
 ## Canonical categories
 
@@ -23,7 +23,7 @@ Keep these data types physically and semantically separate:
 7. Append-only revision and review history.
 8. Derived task context packages.
 
-R-2B canonical decisions and atomic knowledge items use JSONL. Stable case documents remain human-reviewable Markdown and contain a formal schema-backed JSON record; summaries remain Markdown. Sources, relationships, ordered events, and future revision history use JSONL. JSON Schema Draft 2020-12 defines the active machine-readable contracts. Any later SQLite index remains a rebuildable projection.
+R-2B canonical decisions and atomic knowledge items use JSONL. Stable case documents remain human-reviewable Markdown and contain a formal schema-backed JSON record; summaries remain Markdown. Sources, relationships, ordered events, reviews, and revision history use JSONL. JSON Schema Draft 2020-12 defines the active machine-readable contracts. Any later SQLite index remains a rebuildable projection.
 
 ## Required knowledge metadata
 

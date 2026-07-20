@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-R-2A records context resolution and contract-gated Markdown writes in an append-only hash chain. R-2B validates source hashes, source-reference and relation endpoints, decision approval fields, verified-knowledge provenance, resolved-case symptom/solution evidence, and inactive candidate gates. Automated status transitions, review queues, case/decision revision writers, relation-maintenance commands, and search reindexing remain unimplemented.
+R-3 records contract-gated text, code, config, binary, move, and delete operations; restores all touched paths after a partial failure; and links a successful retry to the rejected or failed event. `maintain-knowledge` creates non-eligible candidates, performs hash-and-revision-gated reviews and revisions, and preserves superseded knowledge beside a replacement candidate and pending typed relation. `check-sources` compares registered project-document hashes, changes mismatched sources and dependent knowledge to `needs_review`, and appends review and revision evidence; `maintain-source` accepts a reviewed current hash only when the source has not changed again. Automated scheduling, case and decision lifecycle writers, review queues, and search reindexing remain unimplemented because they are outside R-3.
 
 ## Review triggers
 
@@ -59,8 +59,8 @@ Each completed review must produce:
 - a review record and append-only history event;
 - updated current record metadata and status;
 - relationship changes where required;
-- a rebuilt index manifest or an explicit note that indexing is not yet implemented;
+- a rebuilt index manifest after R-4, or an explicit note before R-4 that indexing is not yet implemented;
 - affected evaluation results;
 - a handoff update when the change affects current work.
 
-Until the structured system exists, record review-relevant findings in the active Korean report and [SESSION_HANDOFF.md](../../SESSION_HANDOFF.md), clearly labeled as manual evidence rather than automated maintenance.
+R-3 structured knowledge and source review operations must use the lifecycle commands and append-only history stores. Record kinds without an implemented lifecycle writer remain manual evidence in the active Korean report and [SESSION_HANDOFF.md](../../SESSION_HANDOFF.md); do not claim automated maintenance for those kinds.

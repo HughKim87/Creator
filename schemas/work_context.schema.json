@@ -11,6 +11,9 @@
     "request": {"type": "object"},
     "request_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "as_of": {"type": "string"},
+    "revision_manifest": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+    "selection_ids": {"type": "object"},
+    "selection_fingerprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "authority": {
       "type": "object",
       "required": ["user_scope", "kernel_rule_ids", "selected_conditional_rule_ids", "predicate_evidence"],

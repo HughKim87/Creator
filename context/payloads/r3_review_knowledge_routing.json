@@ -1,0 +1,12 @@
+{
+  "operation_id": "operation.r3.review-knowledge.routing",
+  "task_id": "task.r3.knowledge-review",
+  "action": "review",
+  "outcome": "verified",
+  "knowledge_id": "knowledge.routing.direct-first",
+  "expected_record_hash": "05b34eda8efca9b6a8d575a1c593f8d0dcef1d1aba82637004e5ec2ed392d02e",
+  "expected_revision": 2,
+  "actor": "project_agents",
+  "timestamp": "2026-07-21T02:05:00+09:00",
+  "reason": "The updated retrieval contract still routes kernel and exact identifiers before metadata and optional broad search."
+}

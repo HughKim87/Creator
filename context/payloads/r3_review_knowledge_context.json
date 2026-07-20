@@ -1,0 +1,12 @@
+{
+  "operation_id": "operation.r3.review-knowledge.context",
+  "task_id": "task.r3.knowledge-review",
+  "action": "review",
+  "outcome": "verified",
+  "knowledge_id": "knowledge.context.shared-work-context",
+  "expected_record_hash": "c0912f6c9f0f55ed129c839124ff2069d14913cec496361042094265b0ebcc47",
+  "expected_revision": 2,
+  "actor": "project_agents",
+  "timestamp": "2026-07-21T02:05:00+09:00",
+  "reason": "The updated R-3 retrieval contract preserves the shared request/read/write context claim and adds deterministic revision evidence."
+}

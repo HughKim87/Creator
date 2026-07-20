@@ -13,6 +13,8 @@
     "title": {"type": "string", "minLength": 1},
     "locator": {"type": "string", "minLength": 1},
     "content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "observed_content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "last_checked_at": {"type": "string"},
     "authority": {"enum": ["active_policy", "active_contract", "accepted_decision_source", "primary_specification", "evidence", "historical_evidence"]},
     "status": {"enum": ["active", "historical_candidate", "needs_review", "superseded"]},
     "observed_at": {"type": "string"},

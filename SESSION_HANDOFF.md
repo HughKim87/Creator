@@ -1,107 +1,92 @@
 # Session Handoff
 
-- Purpose: Preserve the single verified checkpoint after R-2B completion without relying on chat memory.
-- Use when: Read after the boot kernel at every session start; resume only an explicitly user-approved next stage.
-- Owner: The finishing project agent verifies and updates this file; the user controls every stage approval.
+- Purpose: Preserve the single verified checkpoint after R-3 completion without relying on chat memory.
+- Use when: Read after the boot kernel at every session start; resume only the already authorized R-4 boundary.
+- Owner: The finishing project agent verifies and updates this file; the user controls scope and external actions.
 - Language: English.
 - Location: Project root. Governed by [PROJECT_RULES.md](PROJECT_RULES.md), routed through [DOCUMENT_MAP.md](docs/agent/DOCUMENT_MAP.md), and executed through [WORKFLOW.md](docs/agent/WORKFLOW.md).
 
 ## Read order
 
-1. Read [AGENTS.md](AGENTS.md) and every applicable `PROJECT_RULES.md`, with the root eight-rule kernel controlling this project.
+1. Read [AGENTS.md](AGENTS.md) and the root [PROJECT_RULES.md](PROJECT_RULES.md).
 2. Read this handoff as the only current-state source.
 3. Read [DOCUMENT_MAP.md](docs/agent/DOCUMENT_MAP.md).
-4. If the user approves R-3, resolve a new task request and read only the exact R-3 boundary from the accepted [R-1.1 design](docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md).
-5. Use the [R-2B result](docs/reports/2026-07-21_R-2B_기존_지식_코퍼스_이관_결과.md) only for an exact implementation audit.
+4. Resolve the exact R-4 boundary from the accepted [R-1.1 design](docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md).
+5. Use the [R-3 result](docs/reports/2026-07-21_R-3_resolver_writer_일반화_결과.md) only for an exact implementation audit.
 
-Do not load superseded reports, `reports/history/`, the final cross-validation report, or `backup/` by default. Historical records are evidence, never current instructions.
+Do not load superseded reports, the final cross-validation report, historical source directories, `backup/`, or protected task data by default.
 
 ## Current goal and approval state
 
-- R-2A and R-2B are implemented and closed at structural plus automated validation level.
-- R-3 is not authorized. Stop and wait for explicit user approval before generalizing writers or record lifecycle/recovery behavior.
-- No commit, push, publication, or external mutation was authorized or performed.
-
-## Key terms
-
-- Corpus record: A schema-backed decision, knowledge item, case, source, or relation with a stable ID.
-- Record projection: `catalog/records.jsonl`, rebuilt from canonical decisions, knowledge items, and case JSON blocks; it is not authority.
-- Source trace: A registered source ID plus an exact path, Git object, official URL, or historical locator.
-- Active relation: A verified, retrieval-eligible typed edge expanded at most one hop. A pending candidate is never active context.
-- Historical candidate: Evidence that may appear through an exact trace but cannot become an active instruction.
+- R-2A, R-2B, and R-3 are implemented and closed at structural plus automated validation level.
+- The user's 2026-07-21 command explicitly authorizes R-4 and R-5 in sequence after each prior gate passes; R-4 is the next authorized stage.
+- R-4 must measure a fixed retrieval evaluation set before deciding whether SQLite FTS5 is needed. Vector, graph, and Obsidian remain excluded.
+- Commit is authorized per completed stage. Push, deployment, publication, and other external mutation remain unauthorized.
 
 ## Source inputs and resume checkpoint
 
-- Accepted scope source: `docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md` §10.2, §11, and §12.2.
-- Implementation evidence: `docs/reports/2026-07-21_R-2B_기존_지식_코퍼스_이관_결과.md`, the canonical `knowledge/` stores, and the two R-2B work contexts.
-- Current checkpoint: R-2B is closed; no implementation task is in progress. The first unstarted action is to create an exact R-3 request only after explicit user approval.
-- Blocker: R-3 authorization is absent. This is an approval boundary, not an implementation failure.
+- Accepted scope source: `docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md` §10.4 and §13.
+- R-3 implementation evidence: `docs/reports/2026-07-21_R-3_resolver_writer_일반화_결과.md`, R-3 contexts, events, reviews, revisions, code, and tests.
+- Current checkpoint: R-3 completion gate passed. The first unstarted action is to define the R-4 fixed evaluation queries, exact relevance judgments, metric calculations, protected-leakage check, and context-budget gate.
 
-## Verified checkpoint
+## Completed R-3 work
 
-- Rules: 8 kernel plus 21 conditional records in 7 Markdown packs; historical sources selected as active instructions: 0.
-- Corpus: 17 accepted decisions, 4 verified knowledge items, 1 resolved case, 7 sources, and 6 typed relations.
-- Decision gate: D-01 through D-17 each have an independent ID, accepted status, rationale, approval actor/date/evidence, and source locator.
-- Provenance gate: verified knowledge traces to registered local or official sources; local document source hashes are validated.
-- Case gate: `case.project.document-authority-duplication` separates confirmed symptom evidence from resolved solution evidence.
-- Retrieval gate: two R-2B exact-record fixtures pass with verified one-hop relations and source manifests.
-- Automated tests: 10 passed. Integrated validation passes with orphan files 0.
+- Code, test, config-key, and binary-sidecar artifact unit adapters are active.
+- Contract-gated create/write/move/delete verifies file and unit hashes and restores partial failures before a linked retry.
+- Knowledge candidate, review, revision, and supersession plus source change detection and review are backed by append-only review/revision chains.
+- Session summary and handoff rendering are available through structured writer operations.
+- Exact and metadata selection plus verified one-hop relations record revision manifests, selected IDs, and deterministic fingerprints.
+- R-3 metadata fixture selected the intended code/test, D-14 knowledge/source chain, and one active relation without broad search.
 
-## Completed R-2B artifacts
+## Verification state
 
-| Artifact | Status | Role |
-|---|---|---|
-| `schemas/{decision,knowledge,case,source,relation}.schema.json` | Active contracts | Minimum R-2B record contracts |
-| `knowledge/decisions.jsonl` | Canonical | D-01 through D-17 independent records |
-| `knowledge/items.jsonl` | Canonical | Four verified reusable knowledge records |
-| `knowledge/cases/case.project.document-authority-duplication.md` | Canonical | Existing stable case plus formal JSON record |
-| `knowledge/sources.jsonl` | Canonical | Project document, Git, official URL, and historical-candidate sources |
-| `knowledge/relations.jsonl` | Canonical | Five active verified edges plus one inactive candidate |
-| `catalog/records.jsonl` | Derived | Rebuildable decision, knowledge, and case projection |
-| `context/*/r2b_decision_evidence.json` | Retained fixture | Accepted decision to knowledge to source trace |
-| `context/*/r2b_case_resolution.json` | Retained fixture | Confirmed symptom and resolved solution trace |
-| `docs/reports/2026-07-21_R-2B_기존_지식_코퍼스_이관_결과.md` | Retained evidence | Korean R-2B delta and validation report |
-
-R-2A artifacts remain active and were regression-tested; they are not duplicated here.
-
-## Validation state
-
-- Structural: passed for UTF-8, NUL, JSON/JSONL parsing, required record fields, rule mapping, catalogs, deterministic units, event chain, source hashes, relation endpoints, protected exclusions, and local links.
-- Automated: 10 `unittest` checks passed, including both R-2B corpus fixtures and inactive-candidate gating.
+- Structural: passed for UTF-8, NUL, schemas, projections, catalog hashes, unit parents, source traces, relation endpoints, event/review/revision chains, protected exclusions, and local links.
+- Automated: 16 `unittest` checks passed, including six R-3 adapter/lifecycle/recovery/maintenance/reproduction tests and all ten R-2A/R-2B regressions.
+- Integrated validation: `ok=true`, errors 0, orphan files 0 in the isolated R-3 commit scope.
 - Application-validated: not applicable to this local data/CLI stage and not claimed.
-- User-approved: R-2B execution was explicitly approved; the completed result now awaits user review.
+- User-approved: execution scope was approved; completed implementation has not received a separate post-result acceptance.
 
 ## Failure ledger
 
 | Objective | Attempt | Result or confirmed cause | Consecutive count | Next condition |
 |---|---|---|---:|---|
-| Parse Markdown units | Attempt 1 | Headings inside fenced examples were treated as real units; fence-aware scanning fixed the parser and validation passed | 0 after success | Keep regression coverage for fenced headings |
-| Resolve R-2B start context | Attempt 1 | CP949 stdout could not print an em dash after artifacts were written; UTF-8 stdout fixed CLI reporting and validation passed | 0 after success | Keep CLI output UTF-8 |
-| Validate decision approval | Attempt 1 | Validator over-required an invented approval state; aligned the contract to actor/date/source/locator and all 17 passed | 0 after success | Do not add lifecycle fields without an approved requirement |
-| Audit knowledge metadata | Attempt 1 | Final contract comparison found missing language/time/author/scope/check/revision fields; schema and all four records were completed and revalidated | 0 after success | Compare canonical records with the full owning contract before closure |
+| Run resolver | Attempt 1 | System Python was absent from PATH; bundled Python succeeded | 0 after success | Keep bundled runtime path |
+| Apply schema changes | Attempt 1 | One large patch stalled; smaller verified patches succeeded | 0 after success | Keep patches bounded |
+| Close source review loop | Attempt 1 | Detection lacked source acceptance; `maintain-source` was added and live revalidation passed | 0 after success | Require explicit source review |
+| Validate without concurrent user artifacts | Attempt 1 | Untracked `blog_images/` appeared during work; isolated R-3 scope passed without touching them | 0 after success | Keep concurrent files out of catalog, stage, and commits |
 
 No active repeated failure reached the stop threshold.
 
 ## Active risks and exclusions
 
-- The working tree contains uncommitted R-2A/R-2B work plus user-provided history reports. Preserve all unrelated and concurrent state; do not commit unless explicitly requested.
-- The writer remains Markdown-only. General code/config/test/binary writers and lifecycle recovery belong to R-3.
-- Automated stale transitions, review queues, revision-history writers, and relation maintenance commands remain unimplemented.
-- SQLite FTS5, vector retrieval, a graph database, and Obsidian remain excluded.
-- Protected user data and `backup/` remain outside global traversal and registration.
-- `reports/history/` is registered as point-in-time evidence but stays out of startup/default context and active instruction selection.
+- Decision and case lifecycle writers, scheduled review queues, and automatic relation maintenance remain unimplemented and are not claimed.
+- Ranked search and an index do not exist yet; R-4 must first measure the direct/metadata/relation baseline.
+- The main workspace contains concurrent untracked `blog_images/` artifacts. They were not inspected for content, modified, cataloged, staged, or committed by this work.
+- Protected paths and `backup/` remain outside global traversal and registration.
+
+## Important artifacts
+
+| Artifact | Status | Role |
+|---|---|---|
+| `tools/context/context_system.py` | Active implementation | R-3 resolver, writer, lifecycle, review, and recovery |
+| `tests/context/test_context_system.py` | Active test | 16 regression and R-3 tests |
+| `knowledge/reviews.jsonl` | Canonical | Append-only review evidence |
+| `knowledge/revisions.jsonl` | Canonical | Append-only revision history |
+| `context/work/r3_metadata_retrieval.json` | Retained fixture | Metadata plus one-hop deterministic selection |
+| `docs/reports/2026-07-21_R-3_resolver_writer_일반화_결과.md` | Retained evidence | Korean R-3 delta, validation, review, and risk report |
 
 ## Next actions
 
-1. Wait for the user to review the R-2B result.
-2. If and only if the user explicitly approves R-3, create a new bounded request for the R-3 section of R-1.1.
-3. R-3 may generalize registered file writers and lifecycle/failure recovery; do not pull R-4 search-index work forward.
-4. Stop after the approved R-3 boundary and report before any later stage.
+1. Commit only the verified R-3 scope; do not include concurrent `blog_images/`.
+2. Start R-4 by defining a fixed exact/metadata/relation and Korean descriptive evaluation set with explicit relevance judgments.
+3. Require complete source trace, zero protected leakage, and context budget compliance; measure Recall@k and Precision@k per query.
+4. Add SQLite FTS5 only if the direct baseline misses the fixed logical targets, then prove delete-and-rebuild equivalence.
+5. Stop R-4 at its gate, write its report, commit it, then proceed to the already authorized R-5 boundary.
 
 ## Backup and deduplication
 
-No backup was created: project rules use version history and prohibit ad hoc duplicates; `backup/` is immutable. No `NEXT_SESSION_TASK.md` exists. This file remains the sole current checkpoint.
+No ad hoc backup was created: project rules use version history and `backup/` is immutable. No duplicate next-task document exists; this file remains the sole current checkpoint.
 
 ## Next-session start prompt
 
-Read the boot kernel, this handoff, and the document map. R-2A and R-2B are complete; do not rerun them or start R-3 without explicit user approval. If R-3 is approved, resolve the exact R-3 boundary, preserve the canonical corpus and protected exclusions, verify failure recovery without adding R-4 search infrastructure, update this handoff through a valid write contract, and stop at the next approval boundary.
+Read the boot kernel, this handoff, and the document map. R-3 is complete. Resolve only R-4 from the accepted R-1.1 design, freeze a source-traceable evaluation set, measure the direct/metadata/relation baseline before adding FTS, preserve protected exclusions and concurrent user files, record actual metrics and rebuild equivalence, update this handoff through a valid write contract, commit the R-4 scope, and continue to R-5 only after the R-4 gate passes.

@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-R-2A direct file/unit routing remains active. R-2B adds `catalog/records.jsonl`, exact `target_record_ids`, decision/knowledge/case/source manifests, verified active typed-relation expansion limited to one hop, and registered source-locator traces. Candidate relations and historical candidates stay excluded from active retrieval, while exact case evidence may expose a historical source as non-instruction evidence. SQLite FTS5, vector retrieval, and a general search index remain unimplemented.
+R-3 preserves direct exact routing and verified one-hop relations, adds explicit file and record metadata filters, and records the exact selected rule/file/unit/record/relation IDs. Every new context includes catalog, rule, unit, record, source, and relation revision hashes plus a deterministic selection fingerprint; the same request and revisions therefore reproduce the same selection IDs without LLM memory. Non-verified knowledge remains ineligible for default metadata retrieval, and source-hash changes force the source and dependent knowledge to `needs_review`. Ranked text retrieval, SQLite FTS5, vector retrieval, and a general search index remain R-4 decisions.
 
 ## Context assembly order
 

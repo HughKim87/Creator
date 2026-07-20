@@ -1,0 +1,10 @@
+{
+  "operation_id": "operation.r3.review-source.workflow",
+  "task_id": "task.r3.source-review",
+  "source_id": "source.repo.workflow",
+  "expected_record_hash": "7dda9f93b1b1f990a07192a7780fe63db6a5d166fe76af53fb254ff039c5e6d7",
+  "actor": "project_agents",
+  "timestamp": "2026-07-21T02:00:00+09:00",
+  "reason": "R-3 implementation updated the owned workflow procedure; the exact diff was reviewed and remains consistent with the accepted R-1.1 boundary.",
+  "outcome": "accept_current_hash"
+}

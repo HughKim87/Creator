@@ -1,4 +1,4 @@
-"""Deterministic R-2A/R-2B task-scoped context and corpus system.
+"""Deterministic task-scoped context, corpus, and lifecycle system.
 
 This module uses only the Python standard library. Markdown and JSON/JSONL are
 the canonical project artifacts; catalogs and work contexts are deterministic
@@ -8,12 +8,16 @@ views with explicit integrity policies.
 from __future__ import annotations
 
 import argparse
+import ast
+import base64
+import configparser
 import hashlib
 import json
 import os
 import re
 import sys
 import tempfile
+import tomllib
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
@@ -34,7 +38,13 @@ CATALOG_PROJECTIONS = {
 CORPUS_JSONL_PATHS = ["knowledge/decisions.jsonl", "knowledge/items.jsonl"]
 SOURCE_STORE_PATH = "knowledge/sources.jsonl"
 RELATION_STORE_PATH = "knowledge/relations.jsonl"
+REVIEW_STORE_PATH = "knowledge/reviews.jsonl"
+REVISION_STORE_PATH = "knowledge/revisions.jsonl"
 CASE_ROOT = "knowledge/cases"
+BINARY_SUFFIXES = {
+    ".bin", ".gif", ".jpeg", ".jpg", ".mp3", ".mp4", ".pdf", ".png", ".wav", ".webp", ".zip"
+}
+CONFIG_SUFFIXES = {".cfg", ".ini", ".toml", ".yaml", ".yml"}
 KERNEL_RULE_IDS = [
     "rule.core.authority-order",
     "rule.core.scope-authority",
@@ -153,6 +163,14 @@ def write_text_atomic(path: Path, content: str) -> None:
     os.replace(temporary, path)
 
 
+def write_bytes_atomic(path: Path, content: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile("wb", dir=path.parent, delete=False) as handle:
+        handle.write(content)
+        temporary = Path(handle.name)
+    os.replace(temporary, path)
+
+
 def write_json_atomic(path: Path, value: Any) -> None:
     write_text_atomic(path, json.dumps(value, ensure_ascii=False, indent=2) + "\n")
 
@@ -214,7 +232,12 @@ def detect_language(path: Path) -> str:
     return "ko" if re.search(r"[가-힣]", text) else "en"
 
 
-def classify_file(path: str, root: Path = PROJECT_ROOT, status: str = "active") -> dict[str, Any]:
+def classify_file(
+    path: str,
+    root: Path = PROJECT_ROOT,
+    status: str = "active",
+    existing_record: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     normalized = assert_allowed_path(path, root)
     full_path = root / normalized
     suffix = full_path.suffix.lower()
@@ -244,11 +267,17 @@ def classify_file(path: str, root: Path = PROJECT_ROOT, status: str = "active") 
         "catalog/rules.jsonl": ("rule_projection", "Rebuildable projection of conditional rule records.", "context_system", "derived", ["context_resolution", "validation"], ["context_system_only"]),
         "catalog/units.jsonl": ("unit_projection", "Rebuildable projection of addressable artifact units.", "context_system", "derived", ["context_resolution", "validation"], ["context_system_only"]),
         "records/work/events.jsonl": ("event_store", "Append-only R-2A work evidence chain.", "context_system", "canonical", ["validation", "task_audit"], ["append_only_context_system"]),
-        "tools/context/context_system.py": ("code", "Implement deterministic R-2A/R-2B parsing, cataloging, corpus resolving, validation, and Markdown writing.", "project_agents", "active_implementation", ["context_system_execution"], ["approved_implementation_change"]),
-        "tests/context/test_context_system.py": ("test", "Verify R-2A/R-2B context-system contracts.", "project_agents", "active_test", ["r2a_validation", "r2b_validation"], ["test_maintenance"]),
+        "tools/context/context_system.py": ("code", "Implement deterministic parsing, cataloging, corpus resolution, lifecycle maintenance, validation, and contract-gated writing.", "project_agents", "active_implementation", ["context_system_execution"], ["approved_implementation_change"]),
+        "tests/context/test_context_system.py": ("test", "Verify context, corpus, lifecycle, recovery, and retrieval contracts.", "project_agents", "active_test", ["context_system_validation"], ["test_maintenance"]),
+        REVIEW_STORE_PATH: ("review_store", "Hold append-only knowledge and source review evidence.", "context_system", "canonical", ["knowledge_review", "source_review"], ["append_only_context_system"]),
+        REVISION_STORE_PATH: ("revision_store", "Hold append-only record revision history.", "context_system", "canonical", ["knowledge_review", "record_audit"], ["append_only_context_system"]),
     }
     if normalized in special:
         kind, purpose, owner, authority, read_when, write_when = special[normalized]
+        if normalized == "tools/context/context_system.py":
+            task_tags = ["context", "implementation", "lifecycle", "retrieval"]
+        elif normalized == "tests/context/test_context_system.py":
+            task_tags = ["context", "test", "validation"]
     elif normalized.startswith("rules/") and suffix == ".md":
         kind, purpose, owner, authority = "rule_pack", "Hold resolver-selected conditional project rules.", "user", "active_policy"
         read_when, write_when = ["selected_rule_predicate"], ["user_approved_policy_change"]
@@ -312,8 +341,14 @@ def classify_file(path: str, root: Path = PROJECT_ROOT, status: str = "active") 
         unit_strategy = "whole_file" if normalized in CATALOG_PROJECTIONS else "jsonl_record_id"
         validators = ["validate.utf8", "validate.nul", "validate.jsonl"]
     elif suffix == ".py":
-        unit_strategy = "whole_file"
+        unit_strategy = "test_symbol" if normalized.startswith("tests/") or full_path.name.startswith("test_") else "code_symbol"
         validators = ["validate.utf8", "validate.nul", "validate.python_compile"]
+    elif suffix in CONFIG_SUFFIXES:
+        unit_strategy = "key_path"
+        validators = ["validate.utf8", "validate.nul", "validate.config"]
+    elif suffix in BINARY_SUFFIXES:
+        unit_strategy = "binary_sidecar"
+        validators = ["validate.content_hash", "validate.binary_sidecar"]
     else:
         unit_strategy = "whole_file"
         validators = ["validate.content_hash"]
@@ -365,9 +400,15 @@ def classify_file(path: str, root: Path = PROJECT_ROOT, status: str = "active") 
         runtime_hash = None
         language = detect_language(full_path)
 
+    observed_at = now_iso()
+    if existing_record and existing_record.get("status") == status:
+        previous_hash = existing_record.get("content_sha256") or existing_record.get("runtime_hash")
+        current_hash = content_hash or runtime_hash
+        if previous_hash == current_hash:
+            observed_at = existing_record.get("observed_at", observed_at)
     return {
         "schema_version": SCHEMA_VERSION,
-        "file_id": file_id_for_path(normalized),
+        "file_id": existing_record.get("file_id", file_id_for_path(normalized)) if existing_record else file_id_for_path(normalized),
         "path": normalized,
         "kind": kind,
         "purpose": purpose,
@@ -389,8 +430,8 @@ def classify_file(path: str, root: Path = PROJECT_ROOT, status: str = "active") 
         "content_sha256": content_hash,
         "hash_policy": hash_policy,
         "runtime_hash": runtime_hash,
-        "observed_at": now_iso(),
-        "moved_from": [],
+        "observed_at": observed_at,
+        "moved_from": list(existing_record.get("moved_from", [])) if existing_record else [],
     }
 
 
@@ -505,7 +546,7 @@ def json_pointer_units(value: Any, file_record: dict[str, Any]) -> list[dict[str
 
 def jsonl_units(records: list[dict[str, Any]], file_record: dict[str, Any]) -> list[dict[str, Any]]:
     units: list[dict[str, Any]] = []
-    id_fields = ("decision_id", "knowledge_id", "case_id", "source_id", "relation_id", "file_id", "rule_id", "unit_id", "event_id", "task_id", "context_id", "id")
+    id_fields = ("decision_id", "knowledge_id", "case_id", "source_id", "relation_id", "review_id", "revision_id", "file_id", "rule_id", "unit_id", "event_id", "task_id", "context_id", "id")
     seen: set[str] = set()
     for record in records:
         record_id = next((str(record[field]) for field in id_fields if record.get(field)), None)
@@ -527,6 +568,163 @@ def jsonl_units(records: list[dict[str, Any]], file_record: dict[str, Any]) -> l
     return units
 
 
+def code_symbol_units(text: str, file_record: dict[str, Any], tests_only: bool = False) -> list[dict[str, Any]]:
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return [whole_file_unit(text, file_record)]
+    lines = text.splitlines(keepends=True)
+    symbols: list[tuple[str, ast.AST, str]] = []
+
+    def visit(body: list[ast.stmt], prefix: str = "") -> None:
+        for node in body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                qualified = f"{prefix}.{node.name}" if prefix else node.name
+                is_test = node.name.startswith("test_") or node.name.startswith("Test") or prefix.startswith("Test")
+                if not tests_only or is_test:
+                    locator_type = "test_symbol" if tests_only and is_test else "code_symbol"
+                    symbols.append((qualified, node, locator_type))
+                if isinstance(node, ast.ClassDef):
+                    visit(node.body, qualified)
+
+    visit(tree.body)
+    if not symbols:
+        return [whole_file_unit(text, file_record)]
+    units: list[dict[str, Any]] = []
+    for qualified, node, locator_type in symbols:
+        start = max(getattr(node, "lineno", 1) - 1, 0)
+        end = getattr(node, "end_lineno", start + 1)
+        content = "".join(lines[start:end])
+        units.append(
+            make_unit(
+                file_record,
+                f"unit.{file_record['file_id']}.symbol.{stable_slug(qualified)}",
+                locator_type,
+                f"symbol:{qualified}",
+                qualified,
+                content,
+            )
+        )
+    return units
+
+
+def _config_value_units(value: Any, file_record: dict[str, Any]) -> list[dict[str, Any]]:
+    units: list[dict[str, Any]] = []
+
+    def visit(current: Any, parts: list[str]) -> None:
+        if parts:
+            locator = ".".join(parts)
+            units.append(
+                make_unit(
+                    file_record,
+                    f"unit.{file_record['file_id']}.key.{stable_slug(locator)}",
+                    "key_path",
+                    f"key:{locator}",
+                    locator,
+                    canonical_json(current),
+                )
+            )
+        if isinstance(current, dict):
+            for key in sorted(current):
+                visit(current[key], [*parts, str(key)])
+        elif isinstance(current, list):
+            for index, item in enumerate(current):
+                visit(item, [*parts, str(index)])
+
+    visit(value, [])
+    return units or [whole_file_unit(canonical_json(value), file_record)]
+
+
+def _parse_simple_yaml(text: str) -> dict[str, Any]:
+    root: dict[str, Any] = {}
+    stack: list[tuple[int, dict[str, Any]]] = [(-1, root)]
+    for raw in text.splitlines():
+        if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        if raw.lstrip().startswith("-") or "\t" in raw:
+            raise ContextSystemError("complex YAML requires whole-file fallback")
+        match = re.match(r"^(\s*)([A-Za-z0-9_.-]+):(?:\s*(.*))?$", raw)
+        if not match:
+            raise ContextSystemError("unsupported YAML syntax requires whole-file fallback")
+        indent = len(match.group(1))
+        key = match.group(2)
+        value = (match.group(3) or "").strip()
+        while stack and indent <= stack[-1][0]:
+            stack.pop()
+        parent = stack[-1][1]
+        if key in parent:
+            raise ContextSystemError(f"duplicate YAML key: {key}")
+        if value:
+            if value in {"true", "false"}:
+                parsed: Any = value == "true"
+            elif value in {"null", "~"}:
+                parsed = None
+            elif re.fullmatch(r"-?\d+", value):
+                parsed = int(value)
+            else:
+                parsed = value.strip("\"'")
+            parent[key] = parsed
+        else:
+            child: dict[str, Any] = {}
+            parent[key] = child
+            stack.append((indent, child))
+    return root
+
+
+def config_key_units(text: str, file_record: dict[str, Any], suffix: str) -> list[dict[str, Any]]:
+    try:
+        if suffix == ".toml":
+            value: Any = tomllib.loads(text)
+        elif suffix in {".ini", ".cfg"}:
+            parser = configparser.ConfigParser()
+            parser.read_string(text)
+            value = {section: dict(parser.items(section)) for section in parser.sections()}
+            if parser.defaults():
+                value["DEFAULT"] = dict(parser.defaults())
+        else:
+            value = _parse_simple_yaml(text)
+    except (ValueError, configparser.Error, ContextSystemError, tomllib.TOMLDecodeError):
+        return [whole_file_unit(text, file_record)]
+    return _config_value_units(value, file_record)
+
+
+def binary_sidecar_unit(root: Path, path: Path, file_record: dict[str, Any]) -> dict[str, Any]:
+    sidecar = path.with_name(path.name + ".sidecar.json")
+    if sidecar.exists():
+        sidecar_value = load_json(sidecar)
+        sidecar_relative = sidecar.relative_to(root).as_posix()
+        content = canonical_json(
+            {
+                "binary_content_sha256": sha256_file(path),
+                "sidecar_path": sidecar_relative,
+                "sidecar_content_sha256": sha256_file(sidecar),
+                "sidecar": sidecar_value,
+            }
+        )
+        status = "active"
+    else:
+        sidecar_relative = path.relative_to(root).as_posix() + ".sidecar.json"
+        content = canonical_json(
+            {
+                "binary_content_sha256": sha256_file(path),
+                "sidecar_path": sidecar_relative,
+                "sidecar_status": "missing",
+            }
+        )
+        # A metadata-only sidecar view is still safe: it exposes the binary hash,
+        # never the binary body, and clearly records that no authored sidecar exists.
+        status = "active"
+    return make_unit(
+        file_record,
+        f"unit.{file_record['file_id']}.sidecar",
+        "binary_sidecar",
+        f"sidecar:{sidecar_relative}",
+        file_record["purpose"],
+        content,
+        status=status,
+    )
+
+
 def make_unit(
     file_record: dict[str, Any],
     unit_id: str,
@@ -534,6 +732,7 @@ def make_unit(
     locator: str,
     purpose: str,
     content: str,
+    status: str = "active",
 ) -> dict[str, Any]:
     parent_hash = file_record.get("content_sha256") or file_record.get("runtime_hash")
     return {
@@ -550,7 +749,7 @@ def make_unit(
         "parent_file_hash": parent_hash,
         "unit_hash": sha256_text(content),
         "task_tags": file_record["task_tags"],
-        "status": "active",
+        "status": status,
     }
 
 
@@ -570,6 +769,8 @@ def extract_units_for_file(root: Path, file_record: dict[str, Any]) -> list[dict
         return []
     path = root / file_record["path"]
     strategy = file_record["unit_strategy"]
+    if strategy == "binary_sidecar":
+        return [binary_sidecar_unit(root, path, file_record)]
     text = read_utf8(path)
     if strategy == "markdown_heading":
         return markdown_units(text, file_record)
@@ -577,6 +778,12 @@ def extract_units_for_file(root: Path, file_record: dict[str, Any]) -> list[dict
         return json_pointer_units(json.loads(text), file_record)
     if strategy == "jsonl_record_id":
         return jsonl_units(load_jsonl(path), file_record)
+    if strategy == "code_symbol":
+        return code_symbol_units(text, file_record)
+    if strategy == "test_symbol":
+        return code_symbol_units(text, file_record, tests_only=True)
+    if strategy == "key_path":
+        return config_key_units(text, file_record, path.suffix.lower())
     return [whole_file_unit(text, file_record)]
 
 
@@ -624,17 +831,23 @@ def build_record_projection(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
 def build_file_catalog(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
     catalog_path = root / "catalog/files.jsonl"
     existing = load_jsonl(catalog_path) if catalog_path.exists() else []
-    planned = {
-        record["path"]: record
-        for record in existing
-        if record.get("status") == "planned" and not (root / record["path"]).exists()
-    }
+    existing_by_path = {record["path"]: record for record in existing}
     paths = iter_project_files(root)
     if "catalog/files.jsonl" not in paths:
         paths.append("catalog/files.jsonl")
-    records = [classify_file(path, root, "active") for path in sorted(set(paths))]
-    for path in sorted(planned):
-        records.append(classify_file(path, root, "planned"))
+    actual_paths = set(paths)
+    records = [
+        classify_file(path, root, "active", existing_by_path.get(path))
+        for path in sorted(actual_paths)
+    ]
+    for record in existing:
+        if record["path"] in actual_paths:
+            continue
+        if record.get("status") in {"planned", "deleted", "moved"}:
+            records.append(record)
+        elif record.get("status") == "active":
+            # Missing active files are retained so validation reports an unrecorded deletion.
+            records.append(record)
     records = sorted(records, key=lambda item: item["file_id"])
     self_record = next(record for record in records if record["path"] == "catalog/files.jsonl")
     self_record["runtime_hash"] = None
@@ -790,10 +1003,21 @@ def rule_matches(rule: dict[str, Any], request: dict[str, Any]) -> tuple[bool, d
 
 
 def validate_task_request(request: dict[str, Any], root: Path) -> None:
-    required = load_json(root / "schemas/task_request.schema.json")["required"]
+    schema = load_json(root / "schemas/task_request.schema.json")
+    required = schema["required"]
     missing = [field for field in required if field not in request]
     if missing:
         raise ContextSystemError(f"task request missing fields: {missing}")
+    unknown = sorted(set(request) - set(schema["properties"]))
+    if unknown:
+        raise ContextSystemError(f"task request has unsupported fields: {unknown}")
+    allowed_actions = set(schema["properties"]["actions"]["items"]["enum"])
+    if not request["actions"] or len(request["actions"]) != len(set(request["actions"])) or not set(request["actions"]) <= allowed_actions:
+        raise ContextSystemError(f"task request has invalid actions: {request['actions']}")
+    if request["phase"] not in schema["properties"]["phase"]["enum"]:
+        raise ContextSystemError(f"task request has invalid phase: {request['phase']}")
+    if not isinstance(request["context_budget"], int) or request["context_budget"] < 1:
+        raise ContextSystemError("task request context_budget must be a positive integer")
     for target in request["target_paths"]:
         assert_allowed_path(target, root)
     for scope in request["include_scopes"]:
@@ -802,6 +1026,64 @@ def validate_task_request(request: dict[str, Any], root: Path) -> None:
         normalized = normalize_path(scope, root)
         if normalized.split("/", 1)[0] not in PROTECTED_TOP_LEVEL:
             assert_allowed_path(normalized, root)
+    for prefix in request.get("metadata_filters", {}).get("path_prefixes", []):
+        assert_allowed_path(prefix, root)
+
+
+def _path_in_scopes(path: str, scopes: list[str]) -> bool:
+    if not scopes:
+        return True
+    normalized = PurePosixPath(path)
+    return any(normalized == PurePosixPath(scope) or PurePosixPath(scope) in normalized.parents for scope in scopes)
+
+
+def _file_matches_metadata(record: dict[str, Any], filters: dict[str, Any], scopes: list[str]) -> bool:
+    if not _path_in_scopes(record["path"], scopes):
+        return False
+    if filters.get("kinds") and record.get("kind") not in filters["kinds"]:
+        return False
+    if filters.get("statuses") and record.get("status") not in filters["statuses"]:
+        return False
+    if filters.get("task_tags") and not set(filters["task_tags"]) & set(record.get("task_tags", [])):
+        return False
+    if filters.get("path_prefixes") and not any(
+        record["path"] == prefix or record["path"].startswith(prefix.rstrip("/") + "/")
+        for prefix in filters["path_prefixes"]
+    ):
+        return False
+    return True
+
+
+def _record_matches_metadata(record: dict[str, Any], filters: dict[str, Any]) -> bool:
+    if filters.get("kinds") and record.get("record_kind") not in filters["kinds"]:
+        return False
+    if filters.get("statuses") and record.get("status") not in filters["statuses"]:
+        return False
+    if filters.get("task_tags") and not set(filters["task_tags"]) & set(record.get("task_tags", [])):
+        return False
+    if filters.get("retrieval_eligible") is not None and record.get("retrieval_eligible") is not filters["retrieval_eligible"]:
+        return False
+    return True
+
+
+def _revision_hash(records: list[dict[str, Any]], volatile_fields: set[str] | None = None) -> str:
+    volatile = volatile_fields or set()
+    normalized = [{key: value for key, value in record.items() if key not in volatile} for record in records]
+    return sha256_text(canonical_json(normalized))
+
+
+def selection_fingerprint_for(
+    request_hash: str, revision_manifest: dict[str, str], selection_ids: dict[str, list[str]]
+) -> str:
+    return sha256_text(
+        canonical_json(
+            {
+                "request_hash": request_hash,
+                "revisions": revision_manifest,
+                "selection_ids": selection_ids,
+            }
+        )
+    )
 
 
 def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str, Any]:
@@ -849,6 +1131,11 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
         selected_file_ids[file_id] = "exact_target_id"
         if record not in target_records:
             target_records.append(record)
+    metadata_filters = request.get("metadata_filters")
+    if metadata_filters:
+        for record in files:
+            if record["status"] == "active" and _file_matches_metadata(record, metadata_filters, request["include_scopes"]):
+                selected_file_ids.setdefault(record["file_id"], "metadata_match")
     for rule_id in selected_rules:
         rule = next(item for item in rules if item["rule_id"] == rule_id)
         record = files_by_path[rule["pack_path"]]
@@ -889,15 +1176,21 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
         if not record:
             raise ContextSystemError(f"target record ID is not registered: {requested_id}")
         selected_record_ids[requested_id] = "exact_target_record"
+    record_filters = request.get("record_filters")
+    if record_filters:
+        for item_id, record in records_by_id.items():
+            if _record_matches_metadata(record, record_filters):
+                selected_record_ids.setdefault(item_id, "metadata_match")
     selected_relations: list[dict[str, Any]] = []
+    relation_seed_ids = set(selected_record_ids)
     for relation in relation_records:
         if relation.get("status") != "active" or relation.get("review_status") != "verified" or not relation.get("retrieval_eligible"):
             continue
         source_id = relation["source_record_id"]
         target_id = relation["target_record_id"]
-        if source_id in requested_record_ids or target_id in requested_record_ids:
+        if source_id in relation_seed_ids or target_id in relation_seed_ids:
             selected_relations.append(relation)
-            other_id = target_id if source_id in requested_record_ids else source_id
+            other_id = target_id if source_id in relation_seed_ids else source_id
             if other_id in records_by_id:
                 selected_record_ids.setdefault(other_id, f"one_hop:{relation['relation_id']}")
     source_selection: dict[str, str] = {}
@@ -964,14 +1257,30 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
         if record["file_id"] not in selected_file_ids and record["status"] == "active":
             exclusions.append({"kind": "file", "id": record["file_id"], "path": record["path"], "reason": "outside_exact_or_dependency_scope"})
 
+    revision_manifest = {
+        "catalog": _revision_hash(files, {"observed_at"}),
+        "rules": _revision_hash(rules),
+        "units": _revision_hash(units),
+        "records": _revision_hash(corpus_records),
+        "sources": _revision_hash(source_records),
+        "relations": _revision_hash(relation_records),
+    }
+    selection_ids = {
+        "rules": sorted(selected_rules),
+        "files": sorted(selected_file_ids),
+        "units": sorted(selected_unit_ids),
+        "records": sorted(selected_record_ids),
+        "relations": sorted(record["relation_id"] for record in selected_relations),
+    }
+    selection_fingerprint = selection_fingerprint_for(request_hash, revision_manifest, selection_ids)
+
     write_contract: dict[str, Any] | None = None
-    if set(request["actions"]) & {"create", "write"}:
+    write_actions = set(request["actions"]) & {"create", "write", "move", "delete"}
+    if write_actions:
         targets = []
         for record in target_records:
-            if not record["path"].endswith(".md"):
-                raise ContextSystemError(f"R-2A writer only supports Markdown: {record['path']}")
-            if record["status"] == "planned" and "create" not in request["actions"]:
-                raise ContextSystemError(f"planned target requires create action: {record['path']}")
+            if record["status"] == "planned" and not ({"create", "move"} & write_actions):
+                raise ContextSystemError(f"planned target requires create or move action: {record['path']}")
             target_units = [unit for unit in units if unit["file_id"] == record["file_id"]]
             targets.append(
                 {
@@ -991,7 +1300,7 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
             "schema_version": SCHEMA_VERSION,
             "contract_id": f"contract.{request['task_id']}",
             "request_hash": request_hash,
-            "allowed_actions": sorted(set(request["actions"]) & {"create", "write"}),
+            "allowed_actions": sorted(write_actions),
             "targets": targets,
             "selected_rule_ids": selected_rules,
             "validators": sorted({validator for target in targets for validator in target["validators"]}),
@@ -1004,6 +1313,9 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
         "request": request,
         "request_hash": request_hash,
         "as_of": request["as_of"],
+        "revision_manifest": revision_manifest,
+        "selection_ids": selection_ids,
+        "selection_fingerprint": selection_fingerprint,
         "authority": {
             "user_scope": {"include": request["include_scopes"], "exclude": request["exclude_scopes"]},
             "kernel_rule_ids": KERNEL_RULE_IDS,
@@ -1024,7 +1336,7 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
         {request_relative: sha256_file(root / request_relative), output_relative: None},
         {request_relative: sha256_file(root / request_relative), output_relative: sha256_file(root / output_relative)},
         "success",
-        {"selected_rules": selected_rules, "selected_files": sorted(selected_file_ids), "selected_units": sorted(selected_unit_ids), "selected_records": sorted(selected_record_ids), "selected_relations": [record["relation_id"] for record in selected_relations]},
+        {"selected_rules": selected_rules, "selected_files": sorted(selected_file_ids), "selected_units": sorted(selected_unit_ids), "selected_records": sorted(selected_record_ids), "selected_relations": [record["relation_id"] for record in selected_relations], "selection_fingerprint": selection_fingerprint},
     )
     sync_catalog(root)
     return context
@@ -1077,6 +1389,33 @@ def validate_event_chain(root: Path) -> list[str]:
             errors.append(f"event hash mismatch: {record.get('event_id')}")
         previous = record.get("event_hash")
     return errors
+
+
+def validate_history_chains(root: Path) -> tuple[list[str], dict[str, int]]:
+    errors: list[str] = []
+    reviews = load_jsonl(root / REVIEW_STORE_PATH)
+    revisions = load_jsonl(root / REVISION_STORE_PATH)
+    previous = None
+    for record in reviews:
+        missing = validate_required(record, root / "schemas/review.schema.json")
+        if missing:
+            errors.append(f"review missing fields {record.get('review_id')}: {missing}")
+        if record.get("previous_review_hash") != previous:
+            errors.append(f"review chain predecessor mismatch: {record.get('review_id')}")
+        if record.get("review_hash") != _history_hash(record, "review_hash"):
+            errors.append(f"review hash mismatch: {record.get('review_id')}")
+        previous = record.get("review_hash")
+    previous = None
+    for record in revisions:
+        missing = validate_required(record, root / "schemas/revision.schema.json")
+        if missing:
+            errors.append(f"revision missing fields {record.get('revision_id')}: {missing}")
+        if record.get("previous_revision_hash") != previous:
+            errors.append(f"revision chain predecessor mismatch: {record.get('revision_id')}")
+        if record.get("revision_hash") != _history_hash(record, "revision_hash"):
+            errors.append(f"revision hash mismatch: {record.get('revision_id')}")
+        previous = record.get("revision_hash")
+    return errors, {"reviews": len(reviews), "revisions": len(revisions)}
 
 
 def corpus_schema_path(root: Path, record: dict[str, Any]) -> Path:
@@ -1132,9 +1471,15 @@ def validate_corpus(root: Path) -> tuple[list[str], dict[str, int]]:
                 continue
             path = root / normalized
             if not path.exists():
-                errors.append(f"source path missing: {source['source_id']} -> {normalized}")
-            elif source.get("content_sha256") != sha256_file(path):
-                errors.append(f"source content hash mismatch: {source['source_id']}")
+                if source.get("source_type") == "project_document" and source.get("status") == "active":
+                    errors.append(f"source path missing: {source['source_id']} -> {normalized}")
+            else:
+                actual_hash = sha256_file(path)
+                if source.get("content_sha256") != actual_hash:
+                    if source.get("status") != "needs_review":
+                        errors.append(f"source content hash mismatch without needs_review: {source['source_id']}")
+                    elif source.get("observed_content_sha256") != actual_hash:
+                        errors.append(f"source observed hash is stale: {source['source_id']}")
         if source.get("status") == "historical_candidate":
             if source.get("retrieval_eligible") or source.get("authority") in {"active_policy", "active_contract"}:
                 errors.append(f"historical candidate became active instruction: {source['source_id']}")
@@ -1161,6 +1506,11 @@ def validate_corpus(root: Path) -> tuple[list[str], dict[str, int]]:
     cases = [record for record in projected if record.get("record_kind") == "case"]
     if not any(record.get("status") == "resolved" and record.get("symptom", {}).get("state") == "confirmed" and record.get("resolution", {}).get("state") == "resolved" and record.get("symptom", {}).get("evidence") and record.get("resolution", {}).get("evidence") for record in cases):
         errors.append("no resolved case separates confirmed symptom and resolution evidence")
+    for record in [item for item in projected if item.get("record_kind") == "knowledge"]:
+        if record.get("status") == "verified" and not record.get("retrieval_eligible"):
+            errors.append(f"verified knowledge is not retrieval eligible: {record['knowledge_id']}")
+        if record.get("status") != "verified" and record.get("retrieval_eligible"):
+            errors.append(f"non-verified knowledge is retrieval eligible: {record['knowledge_id']}")
     return errors, {
         "decisions": len(decisions),
         "knowledge": len([record for record in projected if record.get("record_kind") == "knowledge"]),
@@ -1295,6 +1645,8 @@ def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
     errors.extend(validate_event_chain(root))
     corpus_errors, corpus_counts = validate_corpus(root)
     errors.extend(corpus_errors)
+    history_errors, history_counts = validate_history_chains(root)
+    errors.extend(history_errors)
     for forbidden in ("backup/forbidden", "inputs/forbidden", "outputs/forbidden"):
         try:
             assert_allowed_path(forbidden, root)
@@ -1311,11 +1663,72 @@ def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
             "planned_files": len([record for record in file_records if record["status"] == "planned"]),
             "units": len(unit_records),
             "events": len(load_jsonl(root / "records/work/events.jsonl")),
+            **history_counts,
             **corpus_counts,
             "local_links": link_count,
             "orphan_files": len(orphan_paths),
         },
     }
+
+
+def render_session_summary(data: dict[str, Any]) -> str:
+    required = ["session_id", "title", "date", "goal", "scope", "completed", "validation", "failures", "risks", "next_action"]
+    missing = [field for field in required if field not in data]
+    if missing:
+        raise ContextSystemError(f"session summary data missing fields: {missing}")
+    bullets = lambda values: "\n".join(f"- {value}" for value in values) if values else "- None"
+    return (
+        f"# {data['title']}\n\n"
+        f"- Purpose: Preserve verified evidence for session `{data['session_id']}`.\n"
+        "- Use when: Exact session-history review only; current state remains in `SESSION_HANDOFF.md`.\n"
+        "- Owner: Project agents maintain this immutable session record.\n"
+        "- Language: English.\n"
+        f"- Location: `{data['path']}`.\n"
+        f"- Date: {data['date']}\n\n"
+        f"## Goal\n\n{data['goal']}\n\n"
+        f"## Scope\n\n{bullets(data['scope'])}\n\n"
+        f"## Completed work\n\n{bullets(data['completed'])}\n\n"
+        f"## Validation\n\n{bullets(data['validation'])}\n\n"
+        f"## Failure ledger\n\n{bullets(data['failures'])}\n\n"
+        f"## Remaining risks\n\n{bullets(data['risks'])}\n\n"
+        f"## First unstarted action\n\n{data['next_action']}\n"
+    )
+
+
+def render_handoff(data: dict[str, Any]) -> str:
+    required = ["checkpoint", "approval_state", "completed", "validation", "failure_ledger", "risks", "artifacts", "next_actions", "start_prompt"]
+    missing = [field for field in required if field not in data]
+    if missing:
+        raise ContextSystemError(f"handoff data missing fields: {missing}")
+    bullets = lambda values: "\n".join(f"- {value}" for value in values) if values else "- None"
+    return (
+        "# Session Handoff\n\n"
+        "- Purpose: Preserve the single verified resumable project checkpoint without relying on chat memory.\n"
+        "- Use when: Read after the boot kernel at every session start; resume only user-authorized work.\n"
+        "- Owner: Project agents verify and update this file; the user controls approval boundaries.\n"
+        "- Language: English.\n"
+        "- Location: Project root. Governed by [PROJECT_RULES.md](PROJECT_RULES.md), routed through [DOCUMENT_MAP.md](docs/agent/DOCUMENT_MAP.md), and executed through [WORKFLOW.md](docs/agent/WORKFLOW.md).\n\n"
+        "## Current checkpoint\n\n"
+        f"{data['checkpoint']}\n\n"
+        "## Approval state\n\n"
+        f"{data['approval_state']}\n\n"
+        "## Completed work\n\n"
+        f"{bullets(data['completed'])}\n\n"
+        "## Verification state\n\n"
+        f"{bullets(data['validation'])}\n\n"
+        "## Failure ledger\n\n"
+        f"{bullets(data['failure_ledger'])}\n\n"
+        "## Active risks and exclusions\n\n"
+        f"{bullets(data['risks'])}\n\n"
+        "## Important artifacts\n\n"
+        f"{bullets(data['artifacts'])}\n\n"
+        "## Next actions\n\n"
+        f"{bullets(data['next_actions'])}\n\n"
+        "## Backup and deduplication\n\n"
+        "No ad hoc backup was created; version history is the preservation surface and `backup/` remains immutable.\n\n"
+        "## Next-session start prompt\n\n"
+        f"{data['start_prompt']}\n"
+    )
 
 
 def apply_payload_operation(root: Path, operation: dict[str, Any], current: str | None) -> str:
@@ -1334,7 +1747,120 @@ def apply_payload_operation(root: Path, operation: dict[str, Any], current: str 
         if current.count(before) != 1:
             raise ContextSystemError(f"replace_text expected one match, found {current.count(before)}")
         return current.replace(before, operation["after"], 1)
-    raise ContextSystemError(f"unsupported Markdown operation: {mode}")
+    if mode == "render_session_summary":
+        return render_session_summary(operation["data"])
+    if mode == "render_handoff":
+        return render_handoff(operation["data"])
+    raise ContextSystemError(f"unsupported text operation: {mode}")
+
+
+def _operation_touched_paths(operation: dict[str, Any], root: Path) -> list[str]:
+    target = assert_allowed_path(operation["target_path"], root)
+    if operation["operation"] == "move_file":
+        return [target, assert_allowed_path(operation["destination_path"], root)]
+    return [target]
+
+
+def _validate_rendered_content(path: Path, content: bytes) -> None:
+    if path.suffix.lower() in BINARY_SUFFIXES:
+        return
+    if b"\x00" in content:
+        raise ContextSystemError(f"write rejected: NUL content for {path}")
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ContextSystemError(f"write rejected: invalid UTF-8 for {path}") from exc
+    suffix = path.suffix.lower()
+    if suffix == ".md" and (text.count("```") % 2 or text.count("~~~") % 2):
+        raise ContextSystemError(f"write rejected: unbalanced Markdown fence for {path}")
+    if suffix == ".json":
+        json.loads(text)
+    elif suffix == ".jsonl":
+        for line in text.splitlines():
+            if line.strip():
+                value = json.loads(line)
+                if not isinstance(value, dict):
+                    raise ContextSystemError(f"write rejected: JSONL row is not an object for {path}")
+    elif suffix == ".py":
+        compile(text, str(path), "exec")
+    elif suffix == ".toml":
+        tomllib.loads(text)
+    elif suffix in {".ini", ".cfg"}:
+        parser = configparser.ConfigParser()
+        parser.read_string(text)
+
+
+def _sync_if_project(root: Path) -> None:
+    if (root / "PROJECT_RULES.md").exists() and (root / "catalog/bootstrap.json").exists():
+        sync_catalog(root)
+
+
+def _record_write_failure(
+    root: Path,
+    context: dict[str, Any],
+    event_type: str,
+    paths: list[str],
+    before_hashes: dict[str, str | None],
+    result: str,
+    details: dict[str, Any],
+) -> dict[str, Any]:
+    event = append_event(
+        root,
+        event_type,
+        context.get("request", {}).get("task_id"),
+        paths,
+        before_hashes,
+        before_hashes,
+        result,
+        details,
+    )
+    _sync_if_project(root)
+    return event
+
+
+def _update_catalog_lifecycle(root: Path, operations: list[dict[str, Any]], before_hashes: dict[str, str | None]) -> None:
+    catalog_path = root / "catalog/files.jsonl"
+    if not catalog_path.exists():
+        return
+    records = load_jsonl(catalog_path)
+    for operation in operations:
+        mode = operation["operation"]
+        source = assert_allowed_path(operation["target_path"], root)
+        if mode == "move_file":
+            destination = assert_allowed_path(operation["destination_path"], root)
+            source_record = next(record for record in records if record["path"] == source)
+            moved_from = [*source_record.get("moved_from", []), source]
+            records = [record for record in records if record["path"] not in {source, destination}]
+            active = classify_file(destination, root, "active", source_record)
+            active["moved_from"] = list(dict.fromkeys(moved_from))
+            records.append(active)
+        elif mode == "delete_file":
+            record = next(record for record in records if record["path"] == source)
+            record["status"] = "deleted"
+            record["content_sha256"] = before_hashes[source]
+            record["hash_policy"] = "content_sha256"
+            record["runtime_hash"] = None
+            record["observed_at"] = now_iso()
+    records = sorted(records, key=lambda item: item["file_id"])
+    self_record = next(record for record in records if record["path"] == "catalog/files.jsonl")
+    self_record["runtime_hash"] = None
+    self_record["runtime_hash"] = sha256_text(canonical_json(records))
+    write_jsonl_atomic(catalog_path, records)
+
+
+def _commit_operation(root: Path, operation: dict[str, Any], rendered: dict[str, bytes]) -> None:
+    source = assert_allowed_path(operation["target_path"], root)
+    mode = operation["operation"]
+    if mode in {"replace_file", "replace_text", "write_binary", "render_session_summary", "render_handoff"}:
+        write_bytes_atomic(root / source, rendered[source])
+    elif mode == "move_file":
+        destination = assert_allowed_path(operation["destination_path"], root)
+        (root / destination).parent.mkdir(parents=True, exist_ok=True)
+        os.replace(root / source, root / destination)
+    elif mode == "delete_file":
+        (root / source).unlink()
+    else:
+        raise ContextSystemError(f"unsupported operation: {mode}")
 
 
 def write_fixture(root: Path, context_path: str, payload_path: str) -> dict[str, Any]:
@@ -1351,58 +1877,577 @@ def write_fixture(root: Path, context_path: str, payload_path: str) -> dict[str,
         raise ContextSystemError("write rejected: payload path is not authorized by the request")
     contract_targets = {target["path"]: target for target in contract["targets"]}
     operations = payload.get("operations", [])
-    operation_paths = [assert_allowed_path(operation["target_path"], root) for operation in operations]
-    if len(set(operation_paths)) != len(operation_paths):
+    touched_paths = [path for operation in operations for path in _operation_touched_paths(operation, root)]
+    if len(set(touched_paths)) != len(touched_paths):
         raise ContextSystemError("write rejected: duplicate payload target")
-    if set(operation_paths) != set(contract_targets):
+    if set(touched_paths) != set(contract_targets):
         raise ContextSystemError("write rejected: payload targets do not match contract targets")
 
-    rendered: dict[str, str] = {}
     before_hashes: dict[str, str | None] = {}
-    for operation, normalized in zip(operations, operation_paths):
-        target = contract_targets[normalized]
-        path = root / normalized
-        if path.suffix.lower() != ".md":
-            raise ContextSystemError(f"write rejected: non-Markdown target {normalized}")
-        exists = path.exists()
-        actual_before = sha256_file(path) if exists else None
-        if actual_before != target["before_file_hash"]:
-            raise ContextSystemError(f"write rejected: before hash mismatch for {normalized}")
-        if target["status"] == "planned" and exists:
-            raise ContextSystemError(f"write rejected: planned target already exists {normalized}")
-        if target["status"] == "active" and not exists:
-            raise ContextSystemError(f"write rejected: active target is missing {normalized}")
-        current = read_utf8(path) if exists else None
-        content = apply_payload_operation(root, operation, current)
-        if "\x00" in content:
-            raise ContextSystemError(f"write rejected: NUL content for {normalized}")
-        if content.count("```") % 2:
-            raise ContextSystemError(f"write rejected: unbalanced Markdown fence for {normalized}")
-        rendered[normalized] = content
-        before_hashes[normalized] = actual_before
+    snapshots: dict[str, bytes | None] = {}
+    rendered: dict[str, bytes] = {}
+    try:
+        retry_of = payload.get("retry_of_event_id")
+        if retry_of:
+            prior = next(
+                (event for event in load_jsonl(root / "records/work/events.jsonl") if event.get("event_id") == retry_of),
+                None,
+            )
+            if not prior or prior.get("result") not in {"failed", "rejected"}:
+                raise ContextSystemError(f"write rejected: retry event is not a failed or rejected attempt: {retry_of}")
+            if prior.get("details", {}).get("contract_id") != contract["contract_id"]:
+                raise ContextSystemError(f"write rejected: retry event belongs to another contract: {retry_of}")
+        catalog_by_path = {
+            record["path"]: record for record in load_file_catalog(root)
+        } if (root / "catalog/files.jsonl").exists() else {}
+        for normalized, target in contract_targets.items():
+            path = root / normalized
+            exists = path.exists()
+            actual_before = sha256_file(path) if exists else None
+            before_hashes[normalized] = actual_before
+            snapshots[normalized] = path.read_bytes() if exists else None
+            if actual_before != target["before_file_hash"]:
+                raise ContextSystemError(f"write rejected: before hash mismatch for {normalized}")
+            if target["status"] == "planned" and exists:
+                raise ContextSystemError(f"write rejected: planned target already exists {normalized}")
+            if target["status"] == "active" and not exists:
+                raise ContextSystemError(f"write rejected: active target is missing {normalized}")
+            expected_unit_hashes = target.get("before_unit_hashes", {})
+            if exists and expected_unit_hashes and normalized in catalog_by_path:
+                actual_unit_hashes = {
+                    unit["unit_id"]: unit["unit_hash"]
+                    for unit in extract_units_for_file(root, catalog_by_path[normalized])
+                }
+                if actual_unit_hashes != expected_unit_hashes:
+                    raise ContextSystemError(f"write rejected: before unit hash mismatch for {normalized}")
+        for operation in operations:
+            normalized = assert_allowed_path(operation["target_path"], root)
+            mode = operation["operation"]
+            if mode == "move_file":
+                if "move" not in contract["allowed_actions"]:
+                    raise ContextSystemError("write rejected: move action is not authorized")
+                continue
+            if mode == "delete_file":
+                if "delete" not in contract["allowed_actions"]:
+                    raise ContextSystemError("write rejected: delete action is not authorized")
+                continue
+            target = contract_targets[normalized]
+            required_action = "create" if target["status"] == "planned" else "write"
+            if required_action not in contract["allowed_actions"]:
+                raise ContextSystemError(f"write rejected: {required_action} action is not authorized for {normalized}")
+            if mode == "write_binary":
+                try:
+                    content_bytes = base64.b64decode(operation["content_base64"], validate=True)
+                except (ValueError, KeyError) as exc:
+                    raise ContextSystemError(f"write rejected: invalid base64 for {normalized}") from exc
+            else:
+                current = snapshots[normalized].decode("utf-8") if snapshots[normalized] is not None else None
+                content_bytes = apply_payload_operation(root, operation, current).encode("utf-8")
+            _validate_rendered_content(root / normalized, content_bytes)
+            rendered[normalized] = content_bytes
+    except (ContextSystemError, json.JSONDecodeError, SyntaxError, configparser.Error, tomllib.TOMLDecodeError) as exc:
+        _record_write_failure(
+            root,
+            context,
+            "write_rejected",
+            sorted(set(touched_paths)),
+            before_hashes,
+            "rejected",
+            {"contract_id": contract["contract_id"], "payload_path": payload_relative, "cause": str(exc)},
+        )
+        raise ContextSystemError(str(exc)) from exc
 
-    after_hashes: dict[str, str | None] = {}
-    for normalized in operation_paths:
-        write_text_atomic(root / normalized, rendered[normalized])
-        after_hashes[normalized] = sha256_file(root / normalized)
+    applied = 0
+    try:
+        for operation in operations:
+            _commit_operation(root, operation, rendered)
+            applied += 1
+    except Exception as exc:  # noqa: BLE001 - every partial mutation must roll back
+        rollback_errors: list[str] = []
+        for normalized, snapshot in snapshots.items():
+            try:
+                path = root / normalized
+                if snapshot is None:
+                    if path.exists():
+                        path.unlink()
+                else:
+                    write_bytes_atomic(path, snapshot)
+            except Exception as rollback_exc:  # noqa: BLE001
+                rollback_errors.append(f"{normalized}: {rollback_exc}")
+        event = _record_write_failure(
+            root,
+            context,
+            "write_failed",
+            sorted(set(touched_paths)),
+            before_hashes,
+            "failed",
+            {
+                "contract_id": contract["contract_id"],
+                "payload_path": payload_relative,
+                "cause": str(exc),
+                "applied_operation_count": applied,
+                "rollback": "failed" if rollback_errors else "success",
+                "rollback_errors": rollback_errors,
+            },
+        )
+        raise ContextSystemError(f"write failed and rollback {'failed' if rollback_errors else 'succeeded'}: {event['event_id']}") from exc
+
+    _update_catalog_lifecycle(root, operations, before_hashes)
+    after_hashes = {
+        normalized: sha256_file(root / normalized) if (root / normalized).exists() else None
+        for normalized in sorted(set(touched_paths))
+    }
+    retry_of = payload.get("retry_of_event_id")
+    event_type = "write_retried" if retry_of else (
+        "lifecycle_applied" if any(operation["operation"] in {"move_file", "delete_file"} for operation in operations) else "write_applied"
+    )
     event = append_event(
         root,
-        "write_applied",
+        event_type,
         context["request"]["task_id"],
-        operation_paths,
+        sorted(set(touched_paths)),
         before_hashes,
         after_hashes,
         "success",
-        {"contract_id": contract["contract_id"], "payload_path": payload_relative},
+        {"contract_id": contract["contract_id"], "payload_path": payload_relative, "retry_of_event_id": retry_of},
     )
-    counts = sync_catalog(root)
+    counts = sync_catalog(root) if (root / "catalog/bootstrap.json").exists() else {}
     return {"event_id": event["event_id"], "after_hashes": after_hashes, **counts}
+
+
+def _history_hash(record: dict[str, Any], hash_field: str) -> str:
+    value = dict(record)
+    value.pop(hash_field, None)
+    return sha256_text(canonical_json(value))
+
+
+def _append_review_record(
+    records: list[dict[str, Any]],
+    record_id_value: str,
+    record_kind: str,
+    action: str,
+    outcome: str,
+    actor: str,
+    timestamp: str,
+    reason: str,
+    before_hash: str | None,
+    after_hash: str | None,
+    source_ids: list[str],
+) -> dict[str, Any]:
+    sequence = len(records) + 1
+    review = {
+        "schema_version": SCHEMA_VERSION,
+        "review_id": f"review.{stable_slug(record_id_value)}.{sequence:04d}",
+        "record_id": record_id_value,
+        "record_kind": record_kind,
+        "action": action,
+        "outcome": outcome,
+        "actor": actor,
+        "timestamp": timestamp,
+        "reason": reason,
+        "source_ids": source_ids,
+        "before_hash": before_hash,
+        "after_hash": after_hash,
+        "previous_review_hash": records[-1]["review_hash"] if records else None,
+        "review_hash": "",
+    }
+    review["review_hash"] = _history_hash(review, "review_hash")
+    records.append(review)
+    return review
+
+
+def _append_revision_record(
+    records: list[dict[str, Any]],
+    record_id_value: str,
+    record_kind: str,
+    from_revision: int | None,
+    to_revision: int,
+    actor: str,
+    timestamp: str,
+    reason: str,
+    before_hash: str | None,
+    after_hash: str,
+) -> dict[str, Any]:
+    sequence = len(records) + 1
+    revision = {
+        "schema_version": SCHEMA_VERSION,
+        "revision_id": f"revision.{stable_slug(record_id_value)}.{sequence:04d}",
+        "record_id": record_id_value,
+        "record_kind": record_kind,
+        "from_revision": from_revision,
+        "to_revision": to_revision,
+        "actor": actor,
+        "timestamp": timestamp,
+        "reason": reason,
+        "before_hash": before_hash,
+        "after_hash": after_hash,
+        "previous_revision_hash": records[-1]["revision_hash"] if records else None,
+        "revision_hash": "",
+    }
+    revision["revision_hash"] = _history_hash(revision, "revision_hash")
+    records.append(revision)
+    return revision
+
+
+def _validate_knowledge_sources(record: dict[str, Any], source_ids: set[str]) -> None:
+    missing = [reference.get("source_id") for reference in record.get("source_refs", []) if reference.get("source_id") not in source_ids]
+    if missing:
+        raise ContextSystemError(f"knowledge record has unregistered sources: {missing}")
+
+
+def maintain_knowledge(root: Path, operation_path: str) -> dict[str, Any]:
+    relative = assert_allowed_path(operation_path, root)
+    operation = load_json(root / relative)
+    required = ["operation_id", "task_id", "action", "actor", "timestamp", "reason"]
+    missing = [field for field in required if field not in operation]
+    if missing:
+        raise ContextSystemError(f"knowledge operation missing fields: {missing}")
+    items_path = root / "knowledge/items.jsonl"
+    reviews_path = root / REVIEW_STORE_PATH
+    revisions_path = root / REVISION_STORE_PATH
+    relations_path = root / RELATION_STORE_PATH
+    sources = load_jsonl(root / SOURCE_STORE_PATH)
+    source_ids = {record["source_id"] for record in sources}
+    items = load_jsonl(items_path)
+    reviews = load_jsonl(reviews_path)
+    revisions = load_jsonl(revisions_path)
+    relations = load_jsonl(relations_path)
+    action = operation["action"]
+    before_records = {
+        "knowledge/items.jsonl": items_path.read_bytes() if items_path.exists() else None,
+        REVIEW_STORE_PATH: reviews_path.read_bytes() if reviews_path.exists() else None,
+        REVISION_STORE_PATH: revisions_path.read_bytes() if revisions_path.exists() else None,
+        RELATION_STORE_PATH: relations_path.read_bytes() if relations_path.exists() else None,
+    }
+    changed_ids: list[str] = []
+
+    if action == "create_candidate":
+        record = dict(operation.get("record") or {})
+        knowledge_id = record.get("knowledge_id")
+        if not knowledge_id or any(item["knowledge_id"] == knowledge_id for item in items):
+            raise ContextSystemError(f"knowledge candidate ID is missing or already exists: {knowledge_id}")
+        if record.get("record_kind") != "knowledge" or record.get("status") != "candidate" or record.get("retrieval_eligible"):
+            raise ContextSystemError("new knowledge must start as a non-retrieval-eligible candidate")
+        if record.get("revision") != 1:
+            raise ContextSystemError("new knowledge candidate must start at revision 1")
+        _validate_knowledge_sources(record, source_ids)
+        missing_fields = validate_required(record, root / "schemas/knowledge.schema.json")
+        if missing_fields:
+            raise ContextSystemError(f"knowledge candidate missing fields: {missing_fields}")
+        items.append(record)
+        after_hash = sha256_text(canonical_json(record))
+        _append_revision_record(revisions, knowledge_id, "knowledge", None, 1, operation["actor"], operation["timestamp"], operation["reason"], None, after_hash)
+        _append_review_record(reviews, knowledge_id, "knowledge", action, "candidate", operation["actor"], operation["timestamp"], operation["reason"], None, after_hash, [ref["source_id"] for ref in record["source_refs"]])
+        changed_ids.append(knowledge_id)
+    else:
+        knowledge_id = operation.get("knowledge_id")
+        index = next((index for index, item in enumerate(items) if item["knowledge_id"] == knowledge_id), None)
+        if index is None:
+            raise ContextSystemError(f"knowledge record not found: {knowledge_id}")
+        current = items[index]
+        before_hash = sha256_text(canonical_json(current))
+        if operation.get("expected_record_hash") != before_hash:
+            raise ContextSystemError(f"knowledge before hash mismatch: {knowledge_id}")
+        if operation.get("expected_revision") != current.get("revision"):
+            raise ContextSystemError(f"knowledge revision mismatch: {knowledge_id}")
+        updated = dict(current)
+        updates = operation.get("updates", {})
+        forbidden = {"knowledge_id", "record_kind", "created_at", "revision"}
+        if forbidden & set(updates):
+            raise ContextSystemError(f"knowledge updates contain immutable fields: {sorted(forbidden & set(updates))}")
+        updated.update(updates)
+        updated["updated_at"] = operation["timestamp"]
+        updated["revision"] = current["revision"] + 1
+        if action == "review":
+            outcome = operation.get("outcome")
+            allowed_outcomes = {"reviewed", "verified", "needs_review", "rejected"}
+            if outcome not in allowed_outcomes:
+                raise ContextSystemError(f"unsupported knowledge review outcome: {outcome}")
+            updated["status"] = outcome
+            updated["retrieval_eligible"] = outcome == "verified"
+            if outcome == "verified":
+                updated["validated_by"] = operation["actor"]
+                updated["validated_at"] = operation["timestamp"]
+                updated["last_checked_at"] = operation["timestamp"]
+        elif action == "supersede":
+            updated["status"] = "superseded"
+            updated["retrieval_eligible"] = False
+            outcome = "superseded"
+        elif action == "revise":
+            outcome = updated.get("status", "needs_review")
+            if outcome == "verified" and not operation.get("evidence_revalidated"):
+                updated["status"] = "needs_review"
+                updated["retrieval_eligible"] = False
+                outcome = "needs_review"
+        else:
+            raise ContextSystemError(f"unsupported knowledge action: {action}")
+        _validate_knowledge_sources(updated, source_ids)
+        missing_fields = validate_required(updated, root / "schemas/knowledge.schema.json")
+        if missing_fields:
+            raise ContextSystemError(f"knowledge update missing fields: {missing_fields}")
+        after_hash = sha256_text(canonical_json(updated))
+        items[index] = updated
+        _append_revision_record(revisions, knowledge_id, "knowledge", current["revision"], updated["revision"], operation["actor"], operation["timestamp"], operation["reason"], before_hash, after_hash)
+        _append_review_record(reviews, knowledge_id, "knowledge", action, outcome, operation["actor"], operation["timestamp"], operation["reason"], before_hash, after_hash, [ref["source_id"] for ref in updated["source_refs"]])
+        changed_ids.append(knowledge_id)
+        if action == "supersede" and operation.get("replacement_record"):
+            replacement = dict(operation["replacement_record"])
+            replacement_id = replacement.get("knowledge_id")
+            if not replacement_id or any(item["knowledge_id"] == replacement_id for item in items):
+                raise ContextSystemError(f"replacement knowledge ID is missing or already exists: {replacement_id}")
+            if replacement.get("status") != "candidate" or replacement.get("retrieval_eligible") or replacement.get("revision") != 1:
+                raise ContextSystemError("replacement knowledge must be a revision-1 non-eligible candidate")
+            _validate_knowledge_sources(replacement, source_ids)
+            items.append(replacement)
+            replacement_hash = sha256_text(canonical_json(replacement))
+            _append_revision_record(revisions, replacement_id, "knowledge", None, 1, operation["actor"], operation["timestamp"], operation["reason"], None, replacement_hash)
+            relation_id = f"relation.{stable_slug(replacement_id)}.supersedes.{stable_slug(knowledge_id)}"
+            relations.append(
+                {
+                    "schema_version": SCHEMA_VERSION,
+                    "record_kind": "relation",
+                    "relation_id": relation_id,
+                    "relation_type": "supersedes",
+                    "source_record_id": replacement_id,
+                    "target_record_id": knowledge_id,
+                    "status": "candidate",
+                    "review_status": "pending",
+                    "source_refs": replacement["source_refs"],
+                    "retrieval_eligible": False,
+                }
+            )
+            changed_ids.append(replacement_id)
+
+    rendered = {
+        "knowledge/items.jsonl": [canonical_json(record) for record in sorted(items, key=lambda item: item["knowledge_id"])],
+        REVIEW_STORE_PATH: [canonical_json(record) for record in reviews],
+        REVISION_STORE_PATH: [canonical_json(record) for record in revisions],
+        RELATION_STORE_PATH: [canonical_json(record) for record in sorted(relations, key=lambda item: item["relation_id"])],
+    }
+    try:
+        for path, lines in rendered.items():
+            write_text_atomic(root / path, "\n".join(lines) + ("\n" if lines else ""))
+    except Exception as exc:  # noqa: BLE001
+        for path, snapshot in before_records.items():
+            target = root / path
+            if snapshot is None:
+                if target.exists():
+                    target.unlink()
+            else:
+                write_bytes_atomic(target, snapshot)
+        raise ContextSystemError(f"knowledge lifecycle write failed and was rolled back: {exc}") from exc
+    event = append_event(
+        root,
+        "record_reviewed" if action == "review" else "record_lifecycle",
+        operation["task_id"],
+        list(rendered),
+        {path: sha256_bytes(content) if content is not None else None for path, content in before_records.items()},
+        {path: sha256_file(root / path) for path in rendered},
+        "success",
+        {"operation_id": operation["operation_id"], "action": action, "record_ids": changed_ids},
+    )
+    counts = sync_catalog(root) if (root / "catalog/bootstrap.json").exists() else {}
+    return {"event_id": event["event_id"], "record_ids": changed_ids, **counts}
+
+
+def check_source_hashes(root: Path, task_id: str = "task.source.hash-check") -> dict[str, Any]:
+    store_paths = [SOURCE_STORE_PATH, "knowledge/items.jsonl", REVIEW_STORE_PATH, REVISION_STORE_PATH]
+    snapshots = {
+        relative: (root / relative).read_bytes() if (root / relative).exists() else None
+        for relative in store_paths
+    }
+    sources = load_jsonl(root / SOURCE_STORE_PATH)
+    items = load_jsonl(root / "knowledge/items.jsonl")
+    reviews = load_jsonl(root / REVIEW_STORE_PATH)
+    revisions = load_jsonl(root / REVISION_STORE_PATH)
+    changed_sources: list[str] = []
+    changed_knowledge: list[str] = []
+    timestamp = now_iso()
+    for source in sources:
+        if source.get("source_type") != "project_document" or source.get("status") != "active":
+            continue
+        locator_path = source["locator"].split("#", 1)[0]
+        normalized = assert_allowed_path(locator_path, root)
+        path = root / normalized
+        actual_hash = sha256_file(path) if path.exists() else None
+        if actual_hash == source.get("content_sha256"):
+            continue
+        before_hash = sha256_text(canonical_json(source))
+        source["status"] = "needs_review"
+        source["retrieval_eligible"] = False
+        source["observed_content_sha256"] = actual_hash
+        source["last_checked_at"] = timestamp
+        after_hash = sha256_text(canonical_json(source))
+        prior_source_revisions = [record for record in revisions if record.get("record_id") == source["source_id"]]
+        from_revision = prior_source_revisions[-1]["to_revision"] if prior_source_revisions else None
+        _append_revision_record(
+            revisions,
+            source["source_id"],
+            "source",
+            from_revision,
+            (from_revision or 0) + 1,
+            "context_system",
+            timestamp,
+            "Registered source content changed or disappeared.",
+            before_hash,
+            after_hash,
+        )
+        _append_review_record(reviews, source["source_id"], "source", "hash_check", "needs_review", "context_system", timestamp, "Registered source content changed or disappeared.", before_hash, after_hash, [source["source_id"]])
+        changed_sources.append(source["source_id"])
+        for item in items:
+            if not any(reference["source_id"] == source["source_id"] for reference in item.get("source_refs", [])):
+                continue
+            item_before = sha256_text(canonical_json(item))
+            old_revision = item["revision"]
+            item["status"] = "needs_review"
+            item["retrieval_eligible"] = False
+            item["updated_at"] = timestamp
+            item["revision"] = old_revision + 1
+            item_after = sha256_text(canonical_json(item))
+            _append_revision_record(revisions, item["knowledge_id"], "knowledge", old_revision, item["revision"], "context_system", timestamp, f"Source hash changed: {source['source_id']}", item_before, item_after)
+            _append_review_record(reviews, item["knowledge_id"], "knowledge", "source_hash_change", "needs_review", "context_system", timestamp, f"Source hash changed: {source['source_id']}", item_before, item_after, [source["source_id"]])
+            changed_knowledge.append(item["knowledge_id"])
+    if changed_sources:
+        try:
+            write_jsonl_atomic(root / SOURCE_STORE_PATH, sorted(sources, key=lambda item: item["source_id"]))
+            write_jsonl_atomic(root / "knowledge/items.jsonl", sorted(items, key=lambda item: item["knowledge_id"]))
+            write_jsonl_atomic(root / REVIEW_STORE_PATH, reviews)
+            write_jsonl_atomic(root / REVISION_STORE_PATH, revisions)
+        except Exception as exc:  # noqa: BLE001 - maintenance must restore every canonical store
+            rollback_errors: list[str] = []
+            for relative, snapshot in snapshots.items():
+                try:
+                    target = root / relative
+                    if snapshot is None:
+                        if target.exists():
+                            target.unlink()
+                    else:
+                        write_bytes_atomic(target, snapshot)
+                except Exception as rollback_exc:  # noqa: BLE001
+                    rollback_errors.append(f"{relative}: {rollback_exc}")
+            raise ContextSystemError(
+                f"source maintenance failed; rollback {'failed: ' + '; '.join(rollback_errors) if rollback_errors else 'succeeded'}: {exc}"
+            ) from exc
+    after_store_hashes = {
+        relative: sha256_file(root / relative) if (root / relative).exists() else None
+        for relative in store_paths
+    }
+    event = append_event(
+        root,
+        "source_checked",
+        task_id,
+        store_paths,
+        {relative: sha256_bytes(snapshot) if snapshot is not None else None for relative, snapshot in snapshots.items()},
+        after_store_hashes,
+        "success",
+        {"changed_source_ids": changed_sources, "changed_knowledge_ids": changed_knowledge},
+    )
+    counts = sync_catalog(root) if (root / "catalog/bootstrap.json").exists() else {}
+    return {"event_id": event["event_id"], "changed_source_ids": changed_sources, "changed_knowledge_ids": changed_knowledge, **counts}
+
+
+def maintain_source(root: Path, operation_path: str) -> dict[str, Any]:
+    relative = assert_allowed_path(operation_path, root)
+    operation = load_json(root / relative)
+    required = ["operation_id", "task_id", "source_id", "expected_record_hash", "actor", "timestamp", "reason", "outcome"]
+    missing = [field for field in required if field not in operation]
+    if missing:
+        raise ContextSystemError(f"source review operation missing fields: {missing}")
+    if operation["outcome"] != "accept_current_hash":
+        raise ContextSystemError(f"unsupported source review outcome: {operation['outcome']}")
+    store_paths = [SOURCE_STORE_PATH, REVIEW_STORE_PATH, REVISION_STORE_PATH]
+    snapshots = {
+        path: (root / path).read_bytes() if (root / path).exists() else None
+        for path in store_paths
+    }
+    sources = load_jsonl(root / SOURCE_STORE_PATH)
+    reviews = load_jsonl(root / REVIEW_STORE_PATH)
+    revisions = load_jsonl(root / REVISION_STORE_PATH)
+    index = next((index for index, source in enumerate(sources) if source["source_id"] == operation["source_id"]), None)
+    if index is None:
+        raise ContextSystemError(f"source record not found: {operation['source_id']}")
+    source = sources[index]
+    before_hash = sha256_text(canonical_json(source))
+    if before_hash != operation["expected_record_hash"]:
+        raise ContextSystemError(f"source record before hash mismatch: {operation['source_id']}")
+    if source.get("status") != "needs_review":
+        raise ContextSystemError(f"source is not awaiting review: {operation['source_id']}")
+    if source.get("source_type") != "project_document":
+        raise ContextSystemError("accept_current_hash supports project_document sources only")
+    locator_path = assert_allowed_path(source["locator"].split("#", 1)[0], root)
+    locator = root / locator_path
+    if not locator.exists():
+        raise ContextSystemError(f"source review cannot accept a missing path: {locator_path}")
+    actual_hash = sha256_file(locator)
+    if source.get("observed_content_sha256") != actual_hash:
+        raise ContextSystemError(f"source changed again after detection: {operation['source_id']}")
+    updated = dict(source)
+    updated["content_sha256"] = actual_hash
+    updated["observed_content_sha256"] = actual_hash
+    updated["status"] = "active"
+    updated["retrieval_eligible"] = True
+    updated["observed_at"] = operation["timestamp"]
+    updated["last_checked_at"] = operation["timestamp"]
+    after_hash = sha256_text(canonical_json(updated))
+    sources[index] = updated
+    prior = [record for record in revisions if record.get("record_id") == source["source_id"]]
+    from_revision = prior[-1]["to_revision"] if prior else None
+    _append_revision_record(
+        revisions,
+        source["source_id"],
+        "source",
+        from_revision,
+        (from_revision or 0) + 1,
+        operation["actor"],
+        operation["timestamp"],
+        operation["reason"],
+        before_hash,
+        after_hash,
+    )
+    _append_review_record(
+        reviews,
+        source["source_id"],
+        "source",
+        "source_review",
+        "active",
+        operation["actor"],
+        operation["timestamp"],
+        operation["reason"],
+        before_hash,
+        after_hash,
+        [source["source_id"]],
+    )
+    try:
+        write_jsonl_atomic(root / SOURCE_STORE_PATH, sorted(sources, key=lambda item: item["source_id"]))
+        write_jsonl_atomic(root / REVIEW_STORE_PATH, reviews)
+        write_jsonl_atomic(root / REVISION_STORE_PATH, revisions)
+    except Exception as exc:  # noqa: BLE001
+        for path, snapshot in snapshots.items():
+            target = root / path
+            if snapshot is None:
+                if target.exists():
+                    target.unlink()
+            else:
+                write_bytes_atomic(target, snapshot)
+        raise ContextSystemError(f"source review failed and was rolled back: {exc}") from exc
+    event = append_event(
+        root,
+        "record_reviewed",
+        operation["task_id"],
+        store_paths,
+        {path: sha256_bytes(snapshot) if snapshot is not None else None for path, snapshot in snapshots.items()},
+        {path: sha256_file(root / path) for path in store_paths},
+        "success",
+        {"operation_id": operation["operation_id"], "source_id": source["source_id"], "outcome": operation["outcome"]},
+    )
+    counts = sync_catalog(root) if (root / "catalog/bootstrap.json").exists() else {}
+    return {"event_id": event["event_id"], "source_id": source["source_id"], **counts}
 
 
 def cli() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    parser = argparse.ArgumentParser(description="R-2A deterministic context system")
+    parser = argparse.ArgumentParser(description="Deterministic project context, lifecycle, and retrieval system")
     parser.add_argument("--root", default=str(PROJECT_ROOT), help="Project root")
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("bootstrap")
@@ -1416,6 +2461,12 @@ def cli() -> int:
     write_parser = subparsers.add_parser("write-fixture")
     write_parser.add_argument("--context", required=True)
     write_parser.add_argument("--payload", required=True)
+    knowledge_parser = subparsers.add_parser("maintain-knowledge")
+    knowledge_parser.add_argument("--operation", required=True)
+    source_parser = subparsers.add_parser("check-sources")
+    source_parser.add_argument("--task-id", default="task.source.hash-check")
+    source_review_parser = subparsers.add_parser("maintain-source")
+    source_review_parser.add_argument("--operation", required=True)
     args = parser.parse_args()
     root = Path(args.root).resolve()
     try:
@@ -1431,6 +2482,12 @@ def cli() -> int:
             result = resolve_request(root, args.request, args.output)
         elif args.command == "write-fixture":
             result = write_fixture(root, args.context, args.payload)
+        elif args.command == "maintain-knowledge":
+            result = maintain_knowledge(root, args.operation)
+        elif args.command == "check-sources":
+            result = check_source_hashes(root, args.task_id)
+        elif args.command == "maintain-source":
+            result = maintain_source(root, args.operation)
         else:  # pragma: no cover
             raise ContextSystemError(f"unsupported command: {args.command}")
     except ContextSystemError as exc:

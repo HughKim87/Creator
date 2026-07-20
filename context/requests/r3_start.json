@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "task.r3.start",
+  "requested_by": "user",
+  "intent": "Implement only the approved R-3 generalization of registered file and record lifecycle handling, deterministic resolution, maintenance review, session closure, and failure recovery after R-2B.",
+  "actions": ["read", "validate"],
+  "phase": "plan",
+  "target_paths": [
+    "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md",
+    "SESSION_HANDOFF.md",
+    "docs/agent/WORKFLOW.md",
+    "docs/agent/KNOWLEDGE_SYSTEM.md",
+    "docs/agent/CONTEXT_RETRIEVAL.md",
+    "docs/agent/KNOWLEDGE_MAINTENANCE.md",
+    "docs/agent/DOCUMENT_MAP.md",
+    "tools/context/context_system.py",
+    "tests/context/test_context_system.py",
+    "schemas/task_request.schema.json",
+    "schemas/work_context.schema.json",
+    "schemas/write_contract.schema.json",
+    "schemas/event.schema.json",
+    "knowledge/items.jsonl",
+    "knowledge/sources.jsonl",
+    "knowledge/relations.jsonl",
+    "records/work/events.jsonl"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [
+    "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.10.10.3-r-3-resolver-writer",
+    "unit.file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe.heading.r-1.1.13"
+  ],
+  "target_kinds": [
+    "report",
+    "current_state",
+    "procedure",
+    "technical_contract",
+    "router_registry",
+    "code",
+    "test",
+    "schema",
+    "knowledge_store",
+    "source_store",
+    "relation_store",
+    "event_store"
+  ],
+  "output_audience": "agent",
+  "include_scopes": [
+    "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md",
+    "SESSION_HANDOFF.md",
+    "docs/agent",
+    "tools/context",
+    "tests/context",
+    "schemas",
+    "knowledge",
+    "records/work"
+  ],
+  "exclude_scopes": ["backup", "inputs", "outputs"],
+  "task_tags": [
+    "stage",
+    "maintenance",
+    "retrieval",
+    "context",
+    "writer",
+    "lifecycle",
+    "review",
+    "failure",
+    "recovery",
+    "validation",
+    "handoff"
+  ],
+  "as_of": "2026-07-21T01:23:31+09:00",
+  "context_budget": 32000
+}

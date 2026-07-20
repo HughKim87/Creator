@@ -10,7 +10,7 @@
     "task_id": {"type": "string", "pattern": "^task\\.[a-z0-9._-]+$"},
     "requested_by": {"type": "string"},
     "intent": {"type": "string", "minLength": 1},
-    "actions": {"type": "array", "items": {"enum": ["read", "create", "write", "validate", "close"]}, "minItems": 1, "uniqueItems": true},
+    "actions": {"type": "array", "items": {"enum": ["read", "create", "write", "move", "delete", "review", "validate", "close"]}, "minItems": 1, "uniqueItems": true},
     "phase": {"enum": ["discover", "plan", "read", "write", "validate", "close"]},
     "target_paths": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
     "target_file_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
@@ -24,6 +24,26 @@
     "task_tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
     "as_of": {"type": "string"},
     "context_budget": {"type": "integer", "minimum": 1},
-    "write_payload_path": {"type": "string"}
+    "write_payload_path": {"type": "string"},
+    "metadata_filters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kinds": {"type": "array", "items": {"type": "string"}},
+        "statuses": {"type": "array", "items": {"type": "string"}},
+        "task_tags": {"type": "array", "items": {"type": "string"}},
+        "path_prefixes": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "record_filters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kinds": {"type": "array", "items": {"type": "string"}},
+        "statuses": {"type": "array", "items": {"type": "string"}},
+        "task_tags": {"type": "array", "items": {"type": "string"}},
+        "retrieval_eligible": {"type": "boolean"}
+      }
+    }
   }
 }

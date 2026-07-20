@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project://schemas/review.schema.json",
+  "title": "Append-only record review evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "review_id", "record_id", "record_kind", "action", "outcome", "actor", "timestamp", "reason", "source_ids", "before_hash", "after_hash", "previous_review_hash", "review_hash"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "review_id": {"type": "string", "pattern": "^review\\.[a-z0-9._-]+$"},
+    "record_id": {"type": "string"},
+    "record_kind": {"enum": ["knowledge", "source", "decision", "case", "relation"]},
+    "action": {"type": "string"},
+    "outcome": {"type": "string"},
+    "actor": {"type": "string"},
+    "timestamp": {"type": "string"},
+    "reason": {"type": "string"},
+    "source_ids": {"type": "array", "items": {"type": "string"}},
+    "before_hash": {"type": ["string", "null"]},
+    "after_hash": {"type": ["string", "null"]},
+    "previous_review_hash": {"type": ["string", "null"]},
+    "review_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

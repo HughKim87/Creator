@@ -20,7 +20,7 @@
     "read_when": {"type": "array", "items": {"type": "string"}},
     "write_when": {"type": "array", "items": {"type": "string"}},
     "task_tags": {"type": "array", "items": {"type": "string"}},
-    "unit_strategy": {"enum": ["whole_file", "markdown_heading", "json_pointer", "jsonl_record_id"]},
+    "unit_strategy": {"enum": ["whole_file", "markdown_heading", "json_pointer", "jsonl_record_id", "code_symbol", "test_symbol", "key_path", "binary_sidecar"]},
     "unit_overrides": {"type": "array", "items": {"type": "object"}},
     "consumes": {"type": "array", "items": {"type": "string"}},
     "produces": {"type": "array", "items": {"type": "string"}},

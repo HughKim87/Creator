@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -135,6 +137,226 @@ class ContextSystemTests(unittest.TestCase):
         self.assertTrue(candidates)
         self.assertTrue(all(record["review_status"] == "pending" for record in candidates))
         self.assertTrue(all(not record["retrieval_eligible"] for record in candidates))
+
+    def test_r3_code_config_test_and_binary_sidecar_unit_adapters(self) -> None:
+        base = {
+            "file_id": "file.fixture",
+            "path": "fixture.py",
+            "purpose": "Fixture",
+            "owner": "test",
+            "read_when": [],
+            "write_when": [],
+            "validators": [],
+            "content_sha256": "0" * 64,
+            "runtime_hash": None,
+            "task_tags": [],
+        }
+        code = context_system.code_symbol_units("class Alpha:\n    def run(self):\n        return 1\n", base)
+        tests = context_system.code_symbol_units("def helper():\n    pass\n\ndef test_value():\n    assert True\n", base, tests_only=True)
+        config = context_system.config_key_units("[service]\nport = 8080\n", base, ".toml")
+        self.assertIn("symbol:Alpha.run", {unit["locator"] for unit in code})
+        self.assertEqual({"symbol:test_value"}, {unit["locator"] for unit in tests})
+        self.assertIn("key:service.port", {unit["locator"] for unit in config})
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            binary = root / "asset.png"
+            binary.write_bytes(b"PNG fixture")
+            sidecar = root / "asset.png.sidecar.json"
+            sidecar.write_text(json.dumps({"title": "fixture"}), encoding="utf-8")
+            record = {**base, "path": "asset.png", "content_sha256": context_system.sha256_file(binary)}
+            unit = context_system.binary_sidecar_unit(root, binary, record)
+            self.assertEqual("binary_sidecar", unit["locator_type"])
+            self.assertEqual("active", unit["status"])
+            self.assertNotEqual(context_system.sha256_file(binary), unit["unit_hash"])
+
+    def test_r3_lifecycle_move_and_delete_are_contract_gated(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "context/work").mkdir(parents=True)
+            (root / "context/payloads").mkdir(parents=True)
+            source = root / "source.txt"
+            source.write_text("value\n", encoding="utf-8")
+            source_hash = context_system.sha256_file(source)
+            context = {
+                "request": {"task_id": "task.move", "write_payload_path": "context/payloads/move.json"},
+                "request_hash": "1" * 64,
+                "write_contract": {
+                    "contract_id": "contract.task.move",
+                    "request_hash": "1" * 64,
+                    "allowed_actions": ["move"],
+                    "targets": [
+                        {"path": "source.txt", "status": "active", "before_file_hash": source_hash},
+                        {"path": "moved.txt", "status": "planned", "before_file_hash": None},
+                    ],
+                },
+            }
+            payload = {"operations": [{"target_path": "source.txt", "destination_path": "moved.txt", "operation": "move_file"}]}
+            (root / "context/work/move.json").write_text(json.dumps(context), encoding="utf-8")
+            (root / "context/payloads/move.json").write_text(json.dumps(payload), encoding="utf-8")
+            result = context_system.write_fixture(root, "context/work/move.json", "context/payloads/move.json")
+            self.assertFalse(source.exists())
+            self.assertEqual("value\n", (root / "moved.txt").read_text(encoding="utf-8"))
+            self.assertTrue(result["event_id"].startswith("event.lifecycle-applied"))
+
+            moved_hash = context_system.sha256_file(root / "moved.txt")
+            context["request"] = {"task_id": "task.delete", "write_payload_path": "context/payloads/delete.json"}
+            context["request_hash"] = "2" * 64
+            context["write_contract"] = {
+                "contract_id": "contract.task.delete",
+                "request_hash": "2" * 64,
+                "allowed_actions": ["delete"],
+                "targets": [{"path": "moved.txt", "status": "active", "before_file_hash": moved_hash}],
+            }
+            (root / "context/work/delete.json").write_text(json.dumps(context), encoding="utf-8")
+            (root / "context/payloads/delete.json").write_text(json.dumps({"operations": [{"target_path": "moved.txt", "operation": "delete_file"}]}), encoding="utf-8")
+            context_system.write_fixture(root, "context/work/delete.json", "context/payloads/delete.json")
+            self.assertFalse((root / "moved.txt").exists())
+
+    def test_r3_partial_write_rolls_back_and_retry_is_linked(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "context/work").mkdir(parents=True)
+            (root / "context/payloads").mkdir(parents=True)
+            for name in ("a.txt", "b.txt"):
+                (root / name).write_text(f"{name}-before\n", encoding="utf-8")
+            context = {
+                "request": {"task_id": "task.retry", "write_payload_path": "context/payloads/retry.json"},
+                "request_hash": "3" * 64,
+                "write_contract": {
+                    "contract_id": "contract.task.retry",
+                    "request_hash": "3" * 64,
+                    "allowed_actions": ["write"],
+                    "targets": [
+                        {"path": name, "status": "active", "before_file_hash": context_system.sha256_file(root / name)}
+                        for name in ("a.txt", "b.txt")
+                    ],
+                },
+            }
+            payload = {"operations": [{"target_path": name, "operation": "replace_file", "content": f"{name}-after\n"} for name in ("a.txt", "b.txt")]}
+            (root / "context/work/retry.json").write_text(json.dumps(context), encoding="utf-8")
+            (root / "context/payloads/retry.json").write_text(json.dumps(payload), encoding="utf-8")
+            original_commit = context_system._commit_operation
+            calls = {"count": 0}
+
+            def fail_second(*args):
+                calls["count"] += 1
+                if calls["count"] == 2:
+                    raise OSError("simulated commit failure")
+                return original_commit(*args)
+
+            with mock.patch.object(context_system, "_commit_operation", side_effect=fail_second):
+                with self.assertRaises(context_system.ContextSystemError):
+                    context_system.write_fixture(root, "context/work/retry.json", "context/payloads/retry.json")
+            self.assertEqual("a.txt-before\n", (root / "a.txt").read_text(encoding="utf-8"))
+            self.assertEqual("b.txt-before\n", (root / "b.txt").read_text(encoding="utf-8"))
+            failed = context_system.load_jsonl(root / "records/work/events.jsonl")[-1]
+            self.assertEqual("write_failed", failed["event_type"])
+            self.assertEqual("success", failed["details"]["rollback"])
+            payload["retry_of_event_id"] = failed["event_id"]
+            (root / "context/payloads/retry.json").write_text(json.dumps(payload), encoding="utf-8")
+            result = context_system.write_fixture(root, "context/work/retry.json", "context/payloads/retry.json")
+            self.assertTrue(result["event_id"].startswith("event.write-retried"))
+            self.assertEqual("a.txt-after\n", (root / "a.txt").read_text(encoding="utf-8"))
+
+    def test_r3_knowledge_candidate_review_and_supersession(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for path in ("knowledge", "schemas", "operations"):
+                (root / path).mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / "schemas/knowledge.schema.json", root / "schemas/knowledge.schema.json")
+            source = {"source_id": "source.fixture", "record_kind": "source"}
+            context_system.write_jsonl_atomic(root / "knowledge/sources.jsonl", [source])
+            for path in ("items.jsonl", "relations.jsonl", "reviews.jsonl", "revisions.jsonl"):
+                (root / "knowledge" / path).write_text("", encoding="utf-8")
+            timestamp = "2026-07-21T01:00:00+09:00"
+
+            def candidate(knowledge_id: str, statement: str) -> dict:
+                return {
+                    "schema_version": "1.0.0", "record_kind": "knowledge", "knowledge_id": knowledge_id,
+                    "title": knowledge_id, "language": "en", "classification": "fact", "statement": statement,
+                    "created_at": timestamp, "updated_at": timestamp, "author": "test", "status": "candidate",
+                    "confidence": "medium", "confidence_basis": "fixture", "validated_by": "", "validated_at": "",
+                    "source_refs": [{"source_id": "source.fixture", "locator": "fixture"}], "relation_ids": [],
+                    "validity_scope": "test", "last_checked_at": timestamp, "review_policy": "event_driven",
+                    "review_due_at": None, "review_triggers": ["source_change"], "revision": 1,
+                    "retrieval_eligible": False, "task_tags": ["fixture"],
+                }
+
+            create = {"operation_id": "op.create", "task_id": "task.knowledge", "action": "create_candidate", "actor": "test", "timestamp": timestamp, "reason": "fixture", "record": candidate("knowledge.fixture.one", "one")}
+            (root / "operations/create.json").write_text(json.dumps(create), encoding="utf-8")
+            context_system.maintain_knowledge(root, "operations/create.json")
+            current = context_system.load_jsonl(root / "knowledge/items.jsonl")[0]
+            verify = {"operation_id": "op.verify", "task_id": "task.knowledge", "action": "review", "outcome": "verified", "knowledge_id": current["knowledge_id"], "expected_record_hash": context_system.sha256_text(context_system.canonical_json(current)), "expected_revision": 1, "actor": "test", "timestamp": timestamp, "reason": "verified fixture"}
+            (root / "operations/verify.json").write_text(json.dumps(verify), encoding="utf-8")
+            context_system.maintain_knowledge(root, "operations/verify.json")
+            current = context_system.load_jsonl(root / "knowledge/items.jsonl")[0]
+            self.assertEqual("verified", current["status"])
+            self.assertTrue(current["retrieval_eligible"])
+            supersede = {"operation_id": "op.supersede", "task_id": "task.knowledge", "action": "supersede", "knowledge_id": current["knowledge_id"], "expected_record_hash": context_system.sha256_text(context_system.canonical_json(current)), "expected_revision": 2, "actor": "test", "timestamp": timestamp, "reason": "replacement fixture", "replacement_record": candidate("knowledge.fixture.two", "two")}
+            (root / "operations/supersede.json").write_text(json.dumps(supersede), encoding="utf-8")
+            context_system.maintain_knowledge(root, "operations/supersede.json")
+            items = {item["knowledge_id"]: item for item in context_system.load_jsonl(root / "knowledge/items.jsonl")}
+            self.assertEqual("superseded", items["knowledge.fixture.one"]["status"])
+            self.assertEqual("candidate", items["knowledge.fixture.two"]["status"])
+            relation = context_system.load_jsonl(root / "knowledge/relations.jsonl")[0]
+            self.assertEqual("supersedes", relation["relation_type"])
+            self.assertEqual("pending", relation["review_status"])
+
+    def test_r3_source_change_marks_dependents_needs_review(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "knowledge").mkdir()
+            source_path = root / "source.md"
+            source_path.write_text("before\n", encoding="utf-8")
+            old_hash = context_system.sha256_file(source_path)
+            source = {"source_id": "source.local", "source_type": "project_document", "locator": "source.md", "status": "active", "retrieval_eligible": True, "content_sha256": old_hash}
+            item = {"knowledge_id": "knowledge.local", "status": "verified", "retrieval_eligible": True, "revision": 1, "updated_at": "old", "source_refs": [{"source_id": "source.local", "locator": "source.md"}]}
+            context_system.write_jsonl_atomic(root / "knowledge/sources.jsonl", [source])
+            context_system.write_jsonl_atomic(root / "knowledge/items.jsonl", [item])
+            for name in ("reviews.jsonl", "revisions.jsonl"):
+                (root / "knowledge" / name).write_text("", encoding="utf-8")
+            source_path.write_text("after\n", encoding="utf-8")
+            result = context_system.check_source_hashes(root)
+            self.assertEqual(["source.local"], result["changed_source_ids"])
+            self.assertEqual(["knowledge.local"], result["changed_knowledge_ids"])
+            self.assertEqual("needs_review", context_system.load_jsonl(root / "knowledge/sources.jsonl")[0]["status"])
+            changed_item = context_system.load_jsonl(root / "knowledge/items.jsonl")[0]
+            self.assertEqual("needs_review", changed_item["status"])
+            self.assertFalse(changed_item["retrieval_eligible"])
+            changed_source = context_system.load_jsonl(root / "knowledge/sources.jsonl")[0]
+            operation = {
+                "operation_id": "op.source.accept", "task_id": "task.source.review",
+                "source_id": "source.local",
+                "expected_record_hash": context_system.sha256_text(context_system.canonical_json(changed_source)),
+                "actor": "test", "timestamp": "2026-07-21T02:00:00+09:00",
+                "reason": "Reviewed fixture change.", "outcome": "accept_current_hash",
+            }
+            (root / "source_review.json").write_text(json.dumps(operation), encoding="utf-8")
+            context_system.maintain_source(root, "source_review.json")
+            reviewed_source = context_system.load_jsonl(root / "knowledge/sources.jsonl")[0]
+            self.assertEqual("active", reviewed_source["status"])
+            self.assertEqual(context_system.sha256_file(source_path), reviewed_source["content_sha256"])
+
+    def test_r3_session_generation_and_selection_reproduction(self) -> None:
+        session = context_system.render_session_summary({
+            "session_id": "session.fixture", "title": "Fixture Session", "date": "2026-07-21",
+            "goal": "Verify rendering.", "scope": ["R-3"], "completed": ["Implemented"],
+            "validation": ["passed"], "failures": [], "risks": [], "next_action": "Stop.",
+            "path": "records/sessions/session.fixture.md",
+        })
+        handoff = context_system.render_handoff({
+            "checkpoint": "R-3 complete.", "approval_state": "R-4 approved.", "completed": ["R-3"],
+            "validation": ["passed"], "failure_ledger": [], "risks": [], "artifacts": ["artifact"],
+            "next_actions": ["R-4"], "start_prompt": "Resume R-4.",
+        })
+        self.assertIn("## Failure ledger", session)
+        self.assertIn("## Next-session start prompt", handoff)
+        revisions = {"catalog": "a" * 64, "rules": "b" * 64}
+        selections = {"files": ["file.a"], "rules": ["rule.a"], "units": [], "records": [], "relations": []}
+        first = context_system.selection_fingerprint_for("c" * 64, revisions, selections)
+        second = context_system.selection_fingerprint_for("c" * 64, revisions, selections)
+        self.assertEqual(first, second)
+        self.assertTrue(context_system._file_matches_metadata({"path": "tools/context/a.py", "kind": "code", "status": "active", "task_tags": ["context"]}, {"kinds": ["code"], "task_tags": ["context"]}, ["tools/context"]))
 
 
 if __name__ == "__main__":
