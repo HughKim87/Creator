@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-R-2A provides the project-file and task-context thin slice, R-2B adds the canonical corpus, and R-3 generalizes units, transactional lifecycle writes, recovery, record review, source review, and deterministic fingerprints. R-4 adds a canonical fixed retrieval evaluation and a rebuildable measured result with a logical result hash. The direct/metadata/verified-one-hop baseline meets all strict retrieval, trace, protection, and budget gates, so no search index became part of the system. Session summaries and the single handoff remain structured writer outputs; R-5 now owns operational cold-start and closed-loop acceptance rather than new retrieval features.
+R-2A provides the project-file and task-context thin slice, R-2B adds the canonical corpus, and R-3 generalizes units, transactional lifecycle writes, recovery, record review, source review, and deterministic fingerprints. R-4 adds the fixed retrieval evaluation and proves that no search index is needed. R-5 adds no alternative retrieval stack: its nine-scenario operational acceptance proves lifecycle, review, conflict and supersession preservation, partial-failure recovery, derived-projection rebuild, cold-start reproduction, protected task closure, real-task isolation, and event-to-next-context feedback.
 
 ## Canonical categories
 

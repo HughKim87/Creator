@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "task.r5.start",
+  "requested_by": "user",
+  "intent": "Freeze the accepted R-5 operational scenarios 1-9, their expected outcomes, and the existing regression boundary before implementing the acceptance harness.",
+  "actions": ["read", "validate"],
+  "phase": "plan",
+  "target_paths": [
+    "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md",
+    "docs/reports/2026-07-21_R-4_검색_평가_결과.md",
+    "tools/context/context_system.py",
+    "tests/context/test_context_system.py"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": ["acceptance", "test", "technical_contract"],
+  "output_audience": "user",
+  "include_scopes": ["docs/reports", "docs/agent", "tools/context", "tests/context", "evaluation/operations", "schemas"],
+  "exclude_scopes": ["backup", "inputs", "outputs"],
+  "task_tags": ["stage", "validation", "failure", "recovery", "context", "knowledge", "closure"],
+  "as_of": "2026-07-21T02:30:00+09:00",
+  "context_budget": 24000
+}

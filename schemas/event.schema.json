@@ -9,7 +9,7 @@
     "schema_version": {"type": "string"},
     "event_id": {"type": "string", "pattern": "^event\\.[a-z0-9._-]+$"},
     "timestamp": {"type": "string"},
-    "event_type": {"enum": ["manual_bootstrap", "catalog_sync", "context_resolved", "write_applied", "write_rejected", "write_failed", "write_retried", "lifecycle_applied", "record_lifecycle", "record_reviewed", "source_checked", "retrieval_evaluated", "validation"]},
+    "event_type": {"enum": ["manual_bootstrap", "catalog_sync", "context_resolved", "write_applied", "write_rejected", "write_failed", "write_retried", "lifecycle_applied", "record_lifecycle", "record_reviewed", "source_checked", "retrieval_evaluated", "protected_scope_closed", "operational_acceptance_evaluated", "validation"]},
     "actor": {"type": "string"},
     "task_id": {"type": ["string", "null"]},
     "target_paths": {"type": "array", "items": {"type": "string"}},

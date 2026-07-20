@@ -1,8 +1,8 @@
 # Session Handoff
 
-- Purpose: Preserve the single verified checkpoint after R-4 completion without relying on chat memory.
-- Use when: Read after the boot kernel at every session start; resume only the already authorized R-5 boundary.
-- Owner: The finishing project agent verifies and updates this file; the user controls scope and external actions.
+- Purpose: Preserve the single verified checkpoint after R-3 through R-5 completion without relying on chat memory.
+- Use when: Read after the boot kernel at every session start; no implementation stage remains authorized or pending.
+- Owner: The finishing project agent verifies and updates this file; the user controls any new scope and external actions.
 - Language: English.
 - Location: Project root. Governed by [PROJECT_RULES.md](PROJECT_RULES.md), routed through [DOCUMENT_MAP.md](docs/agent/DOCUMENT_MAP.md), and executed through [WORKFLOW.md](docs/agent/WORKFLOW.md).
 
@@ -11,71 +11,69 @@
 1. Read [AGENTS.md](AGENTS.md) and the root [PROJECT_RULES.md](PROJECT_RULES.md).
 2. Read this handoff as the only current-state source.
 3. Read [DOCUMENT_MAP.md](docs/agent/DOCUMENT_MAP.md).
-4. Resolve the exact R-5 boundary and scenarios 1-9 from the accepted [R-1.1 design](docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md).
-5. Use the [R-4 result](docs/reports/2026-07-21_R-4_검색_평가_결과.md) only for the measured retrieval baseline.
+4. Use the [R-5 final result](docs/reports/2026-07-21_R-5_운영_인수_및_전체_완료_결과.md) only for an exact completion or risk audit.
 
-Do not load superseded reports, historical source directories, `backup/`, or protected task data by default.
+Do not load retained reports, historical source directories, `backup/`, or protected task data by default.
 
 ## Current goal and approval state
 
-- R-2A, R-2B, R-3, and R-4 are implemented and closed at structural plus automated validation level.
-- The user's 2026-07-21 command explicitly authorizes R-5 after the R-4 gate; R-5 is the next authorized stage.
-- R-5 is operational acceptance of the accepted design scenarios 1-9, not a new feature-design stage.
-- Commit is authorized for R-5. Push, deployment, publication, and other external mutation remain unauthorized.
+- R-2A, R-2B, R-3, R-4, and R-5 are implemented and closed at structural plus automated validation level.
+- The user's 2026-07-21 R-3-to-R-5 command is fulfilled. There is no next authorized implementation stage.
+- The R-5 stage commit is identified by the current Git HEAD after this closure; R-3 is `286ad74` and R-4 is `8ea3a60`.
+- Push, deployment, publication, protected-data cleanup, and other external mutation remain unauthorized.
 
-## Source inputs and resume checkpoint
+## Verified completion checkpoint
 
-- Accepted scope source: `docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md` §10.5 and §13.
-- R-4 evidence: `docs/reports/2026-07-21_R-4_검색_평가_결과.md` and `evaluation/retrieval/r4_{queries,baseline_result}.json`.
-- Current checkpoint: R-4 completion gate passed. The first unstarted action is to freeze R-5 scenario inputs and expected outcomes before implementing the acceptance harness.
-
-## Completed R-4 work
-
-- Eight fixed exact/metadata/Korean/status/conflict/protected queries passed strict recall, precision, source trace, leakage, and budget gates.
-- Every returned result records status, selection reason, conflict state, and source trace eligibility.
-- The final logical result hash is `006bd8f314be6dbf9ff620a0c7764054a1704f2deb59b424bc61f48ac24d213d`.
-- Direct/metadata/verified-one-hop baseline passed; SQLite FTS5 was not needed and no search database was created.
+- R-3 generalized adapters, transactional writes, rollback/retry, knowledge/source review, and deterministic context fingerprints.
+- R-4 fixed eight retrieval queries and passed strict recall, precision, trace, protection, and budget gates without FTS.
+- R-5 passed all nine accepted operational scenarios, including cold rebuild, cold start, exact protected namespace closure, zero three-task leakage, and feedback into the next context.
+- The final result is `docs/reports/2026-07-21_R-5_운영_인수_및_전체_완료_결과.md`.
 
 ## Verification state
 
-- Retrieval evaluation: 8/8 passed; minimum Recall@k, Precision@k, source-trace rate all 1.0; protected leakage 0; budget failures 0.
-- Automated: 18 `unittest` checks passed, including all 16 R-2A-to-R-3 regressions and 2 R-4 tests.
-- Integrated validation: `ok=true`, errors 0, orphan files 0 in the isolated R-4 scope.
-- Application-validated: not applicable to this local data/CLI stage and not claimed.
+- Operational acceptance: 9/9 passed, failed 0, rule/file leakage 0.
+- Automated: 22 `unittest` checks passed, including all 18 prior regressions and four R-5 checks.
+- Retrieval regression: R-4 evaluation passed before and after derived-projection deletion with identical current logical results and no search database.
+- Integrated validation: `ok=true`, errors 0, orphan files 0 in the isolated committed scope.
+- Source review: changed contract sources 2 and dependent knowledge 4 were explicitly reviewed back to active/verified.
+- Application-validated: not applicable to this local data/CLI system and not claimed.
+- User-approved: execution and per-stage commits were approved; no separate post-result acceptance has been recorded.
 
 ## Failure ledger
 
 | Objective | Attempt | Result or confirmed cause | Consecutive count | Next condition |
 |---|---|---|---:|---|
-| First baseline run | Attempt 1 | Rule source refs used a distinct shape; type-specific trace handling fixed it and the full set passed | 0 after success | Test every record kind's trace |
-| Retrieve final command output | Attempt 1 | Completed execution cell was no longer available; identical commands reran successfully | 0 after success | Preserve final artifacts directly |
-| Validate without concurrent user artifacts | Attempt 1 | Untracked `blog_images/` remained outside R-4; isolated scope passed without touching them | 0 after success | Keep concurrent files out of catalog, stage, and commits |
+| R-5 start catalog | Attempt 1 | `plan-file` targeted an already copied file; sync registered it and resolution succeeded | 0 after success | Plan before creation or sync existing files |
+| Operational acceptance | Attempt 1 | 6/9 exposed three real lifecycle/rebuild/scope defects | 0 after fixes | Full rerun |
+| Operational acceptance | Attempt 2 | 7/9 exposed derived rebuild and catalog self-hash determinism gaps | 0 after fixes | Full rerun |
+| Operational acceptance | Final | 9/9 passed with zero leakage | 0 after success | None |
+| Validate without concurrent user artifacts | Ongoing | Untracked `blog_images/` stayed outside catalog, validation, stage, and commits | 0 after isolated success | Preserve unless user scopes it in |
 
 No active repeated failure reached the stop threshold.
 
 ## Active risks and exclusions
 
-- No FTS physical index exists because the measured baseline passed. R-5 must test cold rebuild of the selected derived projections, not invent an unnecessary index.
-- Decision/case lifecycle writers and automatic review scheduling remain outside the accepted stages and are not claimed.
-- Concurrent untracked `blog_images/` artifacts remain untouched and excluded from project catalogs and stage commits.
-- Protected paths and `backup/` remain outside global traversal; R-5 may use only exact authorized synthetic test namespaces, never broad discovery.
+- No FTS, vector, graph, or Obsidian component exists because measured gates did not justify one.
+- Decision/case lifecycle writers and automated review scheduling remain outside the completed scope and are not claimed.
+- Protected scope closure expires authorization but deliberately does not delete user data; cleanup requires separate exact authority.
+- Concurrent untracked `blog_images/` artifacts remain untouched and excluded.
+- Protected paths and `backup/` remain outside global traversal and registration.
 
 ## Important artifacts
 
 | Artifact | Status | Role |
 |---|---|---|
-| `evaluation/retrieval/r4_queries.json` | Canonical evaluation | Eight fixed relevance judgments and strict thresholds |
-| `evaluation/retrieval/r4_baseline_result.json` | Derived retained evidence | Measured baseline and logical result hash |
-| `tools/context/context_system.py` | Active implementation | Direct/metadata/text/relation retrieval and evaluation |
-| `tests/context/test_context_system.py` | Active test | 18 regression and R-4 tests |
-| `docs/reports/2026-07-21_R-4_검색_평가_결과.md` | Retained evidence | Korean R-4 delta, metrics, review, and risk report |
+| `evaluation/operations/r5_acceptance.json` | Canonical evaluation | Fixed R-5 scenarios and expected outcomes |
+| `evaluation/operations/r5_acceptance_result.json` | Derived retained evidence | Final 9/9 results and evidence |
+| `tools/context/context_system.py` | Active implementation | Completed context, lifecycle, retrieval, maintenance, and acceptance system |
+| `tests/context/test_context_system.py` | Active test | 22 R-2A-through-R-5 tests |
+| `docs/reports/2026-07-21_R-5_운영_인수_및_전체_완료_결과.md` | Retained evidence | Korean final completion and risk report |
 
 ## Next actions
 
-1. Define expected results for accepted R-5 scenarios 1-9 before implementation.
-2. Exercise create/modify/move/delete, source review, conflict/supersession, partial failure/resume, cold rebuild, new-session reproduction, exact protected namespace isolation, three real task classes, and feedback into next context.
-3. Run the complete acceptance suite plus all 18 existing tests and structural validation.
-4. Record R-5 results and residual risks, update this single handoff through a valid write contract, and commit only the R-5 scope.
+1. No project implementation action is pending.
+2. Wait for a new explicit user objective before changing code, data, protected scopes, or external systems.
+3. For any future retrieval gap, add a fixed failing query first and preserve the existing strict metrics before proposing an index.
 
 ## Backup and deduplication
 
@@ -83,4 +81,4 @@ No ad hoc backup was created. Git is the recovery surface and `backup/` is immut
 
 ## Next-session start prompt
 
-Read the boot kernel, this handoff, and the document map. R-4 is complete. Resolve only R-5 scenarios 1-9 from the accepted R-1.1 design, freeze expected outcomes, run operational acceptance in isolated exact scope, preserve protected exclusions and concurrent user files, fix only defects required by those scenarios, record actual results and risks, update the handoff through a valid write contract, and commit the R-5 scope without push or deployment.
+Read the boot kernel, this handoff, and the document map. R-3 through R-5 are complete with no pending implementation action. Do not resume a completed stage or load retained reports by default. Wait for a new explicit user objective, preserve protected and concurrent user files, resolve the exact task context, and require a fresh approval boundary for any new feature, protected-data cleanup, push, deployment, or external mutation.

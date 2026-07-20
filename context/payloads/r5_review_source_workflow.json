@@ -1,0 +1,10 @@
+{
+  "operation_id": "op.r5.source.workflow.accept",
+  "task_id": "task.r5.source-contract-review",
+  "source_id": "source.repo.workflow",
+  "expected_record_hash": "d50f99ae038fba24d95806979c4caeea7e3c8241b46380a4b4a500a2459502e4",
+  "actor": "project-agent",
+  "timestamp": "2026-07-21T02:50:00+09:00",
+  "reason": "Reviewed the R-5 task-local protected manifest and conflict lifecycle procedure changes against the accepted R-1.1 scenarios.",
+  "outcome": "accept_current_hash"
+}

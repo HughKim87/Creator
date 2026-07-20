@@ -9,7 +9,7 @@
     "schema_version": {"type": "string"},
     "record_kind": {"const": "relation"},
     "relation_id": {"type": "string", "pattern": "^relation\\.[a-z0-9._-]+$"},
-    "relation_type": {"enum": ["supported_by", "resolved_by", "implements", "derived_from", "supersedes", "related_to"]},
+    "relation_type": {"enum": ["supported_by", "resolved_by", "implements", "derived_from", "supersedes", "contradicted_by", "related_to"]},
     "source_record_id": {"type": "string"},
     "target_record_id": {"type": "string"},
     "status": {"enum": ["active", "candidate", "superseded"]},

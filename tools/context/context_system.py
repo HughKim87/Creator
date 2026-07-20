@@ -15,6 +15,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import sys
 import tempfile
 import tomllib
@@ -114,6 +115,51 @@ def assert_allowed_path(value: str | Path, root: Path = PROJECT_ROOT) -> str:
     if ".." in parts:
         raise ContextSystemError(f"parent traversal rejected: {normalized}")
     return normalized
+
+
+def normalize_authorized_protected_scope(value: str | Path, root: Path = PROJECT_ROOT) -> str:
+    """Validate one exact task namespace below inputs/ or outputs/."""
+    normalized = normalize_path(value, root)
+    parts = PurePosixPath(normalized).parts
+    if ".." in parts:
+        raise ContextSystemError(f"parent traversal rejected: {normalized}")
+    if len(parts) < 2 or parts[0] not in {"inputs", "outputs"}:
+        raise ContextSystemError(f"protected task scope must be an exact inputs/ or outputs/ namespace: {normalized}")
+    if any(part in {"backup", ".git", ".agents", ".codex"} for part in parts[1:]):
+        raise ContextSystemError(f"nested protected boundary rejected: {normalized}")
+    return normalized.rstrip("/")
+
+
+def protected_scope_for(
+    value: str | Path,
+    authorized_protected_scopes: Iterable[str],
+    root: Path = PROJECT_ROOT,
+) -> str | None:
+    normalized = normalize_path(value, root)
+    path = PurePosixPath(normalized)
+    for raw_scope in authorized_protected_scopes:
+        scope = normalize_authorized_protected_scope(raw_scope, root)
+        scope_path = PurePosixPath(scope)
+        if path == scope_path or scope_path in path.parents:
+            return scope
+    return None
+
+
+def assert_task_scoped_path(
+    value: str | Path,
+    root: Path = PROJECT_ROOT,
+    authorized_protected_scopes: Iterable[str] = (),
+) -> str:
+    """Allow a protected path only inside an explicitly authorized exact task scope."""
+    normalized = normalize_path(value, root)
+    parts = PurePosixPath(normalized).parts
+    if ".." in parts:
+        raise ContextSystemError(f"parent traversal rejected: {normalized}")
+    if parts and parts[0] in {"inputs", "outputs"}:
+        if not protected_scope_for(normalized, authorized_protected_scopes, root):
+            raise ContextSystemError(f"protected path is outside the authorized task namespace: {normalized}")
+        return normalized
+    return assert_allowed_path(normalized, root)
 
 
 def iter_project_files(root: Path = PROJECT_ROOT) -> list[str]:
@@ -238,8 +284,10 @@ def classify_file(
     root: Path = PROJECT_ROOT,
     status: str = "active",
     existing_record: dict[str, Any] | None = None,
+    authorized_protected_scopes: Iterable[str] = (),
 ) -> dict[str, Any]:
-    normalized = assert_allowed_path(path, root)
+    normalized = assert_task_scoped_path(path, root, authorized_protected_scopes)
+    task_protected = protected_scope_for(normalized, authorized_protected_scopes, root) is not None
     full_path = root / normalized
     suffix = full_path.suffix.lower()
     kind = "project_file"
@@ -307,6 +355,14 @@ def classify_file(
             kind, purpose, owner, authority = "retrieval_result", "Hold a rebuildable measured retrieval evaluation result.", "context_system", "derived"
             read_when, write_when = ["retrieval_audit"], ["context_system_only"]
         task_tags = ["retrieval", "evaluation"]
+    elif normalized.startswith("evaluation/operations/") and suffix == ".json":
+        if normalized.endswith("_acceptance.json"):
+            kind, purpose, owner, authority = "operational_acceptance", "Hold the fixed R-5 operational acceptance scenarios and expected outcomes.", "project_agents", "canonical"
+            read_when, write_when = ["operational_acceptance"], ["approved_evaluation_change"]
+        else:
+            kind, purpose, owner, authority = "operational_acceptance_result", "Hold rebuildable R-5 operational acceptance evidence.", "context_system", "derived"
+            read_when, write_when = ["operational_acceptance_audit"], ["context_system_only"]
+        task_tags = ["operations", "acceptance", "validation"]
     elif normalized.startswith("docs/reports/") or normalized.startswith("reports/"):
         kind, purpose, owner, authority = "report", "Preserve point-in-time project evidence and validation.", "project_agents", "evidence"
         read_when, write_when = ["exact_provenance_or_stage_route"], ["unique_point_in_time_evidence_with_contract"]
@@ -415,6 +471,14 @@ def classify_file(
         current_hash = content_hash or runtime_hash
         if previous_hash == current_hash:
             observed_at = existing_record.get("observed_at", observed_at)
+    if task_protected:
+        purpose = "Task-scoped protected artifact; never globally cataloged or indexed."
+        owner = "requester"
+        authority = "task_scoped_input" if normalized.startswith("inputs/") else "task_scoped_output"
+        read_when = ["exact_authorized_task_scope"]
+        write_when = ["same_task_write_contract_before_scope_close"]
+        task_tags = sorted(set(task_tags) | {"protected", "task_scope"})
+        depends_on = []
     return {
         "schema_version": SCHEMA_VERSION,
         "file_id": existing_record.get("file_id", file_id_for_path(normalized)) if existing_record else file_id_for_path(normalized),
@@ -425,8 +489,8 @@ def classify_file(
         "authority": authority,
         "status": status,
         "language": language,
-        "sensitivity": "public_project",
-        "index_scope": "none" if authority in {"derived", "retained_evidence"} else "global",
+        "sensitivity": "protected_task" if task_protected else "public_project",
+        "index_scope": "task" if task_protected else ("none" if authority in {"derived", "retained_evidence"} else "global"),
         "read_when": read_when,
         "write_when": write_when,
         "task_tags": task_tags,
@@ -855,6 +919,10 @@ def build_file_catalog(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
         if record.get("status") in {"planned", "deleted", "moved"}:
             records.append(record)
         elif record.get("status") == "active":
+            if record.get("authority") == "derived":
+                # Missing derived projections are valid only while their
+                # deterministic producer is rebuilding them from canonical data.
+                continue
             # Missing active files are retained so validation reports an unrecorded deletion.
             records.append(record)
     records = sorted(records, key=lambda item: item["file_id"])
@@ -906,6 +974,7 @@ def append_event(
     after_hashes: dict[str, str | None],
     result: str,
     details: dict[str, Any] | None = None,
+    authorized_protected_scopes: Iterable[str] = (),
 ) -> dict[str, Any]:
     path = root / "records/work/events.jsonl"
     records = load_jsonl(path) if path.exists() else []
@@ -918,7 +987,7 @@ def append_event(
         "event_type": event_type,
         "actor": "context_system",
         "task_id": task_id,
-        "target_paths": [assert_allowed_path(item, root) for item in target_paths],
+        "target_paths": [assert_task_scoped_path(item, root, authorized_protected_scopes) for item in target_paths],
         "before_hashes": before_hashes,
         "after_hashes": after_hashes,
         "result": result,
@@ -1027,16 +1096,28 @@ def validate_task_request(request: dict[str, Any], root: Path) -> None:
         raise ContextSystemError(f"task request has invalid phase: {request['phase']}")
     if not isinstance(request["context_budget"], int) or request["context_budget"] < 1:
         raise ContextSystemError("task request context_budget must be a positive integer")
+    protected_scopes = [
+        normalize_authorized_protected_scope(scope, root)
+        for scope in request.get("authorized_protected_scopes", [])
+    ]
+    if len(protected_scopes) != len(set(protected_scopes)):
+        raise ContextSystemError("task request has duplicate authorized protected scopes")
     for target in request["target_paths"]:
-        assert_allowed_path(target, root)
+        assert_task_scoped_path(target, root, protected_scopes)
     for scope in request["include_scopes"]:
-        assert_allowed_path(scope, root)
+        assert_task_scoped_path(scope, root, protected_scopes)
     for scope in request["exclude_scopes"]:
         normalized = normalize_path(scope, root)
         if normalized.split("/", 1)[0] not in PROTECTED_TOP_LEVEL:
             assert_allowed_path(normalized, root)
     for prefix in request.get("metadata_filters", {}).get("path_prefixes", []):
-        assert_allowed_path(prefix, root)
+        assert_task_scoped_path(prefix, root, protected_scopes)
+    if request.get("write_payload_path"):
+        assert_allowed_path(request["write_payload_path"], root)
+    normalized_includes = [normalize_path(item, root).rstrip("/") for item in request["include_scopes"]]
+    for scope in protected_scopes:
+        if scope not in normalized_includes:
+            raise ContextSystemError(f"authorized protected scope must be an exact include scope: {scope}")
 
 
 def _path_in_scopes(path: str, scopes: list[str]) -> bool:
@@ -1077,7 +1158,14 @@ def _record_matches_metadata(record: dict[str, Any], filters: dict[str, Any]) ->
 
 def _revision_hash(records: list[dict[str, Any]], volatile_fields: set[str] | None = None) -> str:
     volatile = volatile_fields or set()
-    normalized = [{key: value for key, value in record.items() if key not in volatile} for record in records]
+    normalized = []
+    for record in records:
+        value = {key: item for key, item in record.items() if key not in volatile}
+        if "observed_at" in volatile and value.get("path") == "catalog/files.jsonl":
+            # The catalog self hash includes observation timestamps; clear it
+            # when computing a logical revision that already excludes them.
+            value["runtime_hash"] = None
+        normalized.append(value)
     return sha256_text(canonical_json(normalized))
 
 
@@ -1102,6 +1190,17 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
     request = load_json(root / request_relative)
     validate_task_request(request, root)
     request_hash = sha256_text(canonical_json(request))
+    protected_scopes = [
+        normalize_authorized_protected_scope(scope, root)
+        for scope in request.get("authorized_protected_scopes", [])
+    ]
+    for event in load_jsonl(root / "records/work/events.jsonl"):
+        if (
+            event.get("event_type") == "protected_scope_closed"
+            and event.get("task_id") == request["task_id"]
+            and event.get("details", {}).get("request_hash") == request_hash
+        ):
+            raise ContextSystemError(f"protected task context is closed: {request['task_id']}")
     rules = load_jsonl(root / "catalog/rules.jsonl")
     files = load_file_catalog(root)
     units = load_jsonl(root / "catalog/units.jsonl")
@@ -1111,6 +1210,8 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
     files_by_path = {record["path"]: record for record in files}
     files_by_id = {record["file_id"]: record for record in files}
     units_by_id = {record["unit_id"]: record for record in units}
+    all_units = list(units)
+    task_protected_records: list[dict[str, Any]] = []
     records_by_id = {record_id(record): record for record in corpus_records + source_records}
 
     selected_rules: list[str] = []
@@ -1127,8 +1228,27 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
     selected_file_ids: dict[str, str] = {file_id_for_path("PROJECT_RULES.md"): "kernel"}
     target_records: list[dict[str, Any]] = []
     for target_path in request["target_paths"]:
-        normalized = assert_allowed_path(target_path, root)
+        normalized = assert_task_scoped_path(target_path, root, protected_scopes)
         record = files_by_path.get(normalized)
+        protected_scope = protected_scope_for(normalized, protected_scopes, root)
+        if protected_scope:
+            status = "active" if (root / normalized).exists() else "planned"
+            if status == "planned" and "create" not in request["actions"]:
+                raise ContextSystemError(f"protected target does not exist and create is not authorized: {normalized}")
+            record = classify_file(
+                normalized,
+                root,
+                status,
+                authorized_protected_scopes=protected_scopes,
+            )
+            record["file_id"] = f"file.task-scope.{sha256_text(normalized)[:16]}"
+            task_protected_records.append(record)
+            files_by_path[normalized] = record
+            files_by_id[record["file_id"]] = record
+            if status == "active":
+                task_units = extract_units_for_file(root, record)
+                all_units.extend(task_units)
+                units_by_id.update({unit["unit_id"]: unit for unit in task_units})
         if not record:
             raise ContextSystemError(f"target is not registered: {normalized}")
         selected_file_ids[record["file_id"]] = "exact_target"
@@ -1142,7 +1262,7 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
             target_records.append(record)
     metadata_filters = request.get("metadata_filters")
     if metadata_filters:
-        for record in files:
+        for record in files + task_protected_records:
             if record["status"] == "active" and _file_matches_metadata(record, metadata_filters, request["include_scopes"]):
                 selected_file_ids.setdefault(record["file_id"], "metadata_match")
     for rule_id in selected_rules:
@@ -1170,11 +1290,11 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
         file_record = files_by_path[rule["pack_path"]]
         candidates = [
             unit
-            for unit in units
+            for unit in all_units
             if unit["file_id"] == file_record["file_id"] and unit["locator"].split(" > ")[-1] == f"heading:{rule_id}"
         ]
         if not candidates:
-            candidates = [unit for unit in units if unit["file_id"] == file_record["file_id"] and rule_id in unit["locator"]]
+            candidates = [unit for unit in all_units if unit["file_id"] == file_record["file_id"] and rule_id in unit["locator"]]
         for unit in candidates:
             selected_unit_ids[unit["unit_id"]] = f"selected_rule:{rule_id}"
 
@@ -1274,6 +1394,8 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
         "sources": _revision_hash(source_records),
         "relations": _revision_hash(relation_records),
     }
+    if task_protected_records:
+        revision_manifest["protected_task_scope"] = _revision_hash(task_protected_records, {"observed_at"})
     selection_ids = {
         "rules": sorted(selected_rules),
         "files": sorted(selected_file_ids),
@@ -1290,7 +1412,7 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
         for record in target_records:
             if record["status"] == "planned" and not ({"create", "move"} & write_actions):
                 raise ContextSystemError(f"planned target requires create or move action: {record['path']}")
-            target_units = [unit for unit in units if unit["file_id"] == record["file_id"]]
+            target_units = [unit for unit in all_units if unit["file_id"] == record["file_id"]]
             targets.append(
                 {
                     "file_id": record["file_id"],
@@ -1326,13 +1448,18 @@ def resolve_request(root: Path, request_path: str, output_path: str) -> dict[str
         "selection_ids": selection_ids,
         "selection_fingerprint": selection_fingerprint,
         "authority": {
-            "user_scope": {"include": request["include_scopes"], "exclude": request["exclude_scopes"]},
+            "user_scope": {
+                "include": request["include_scopes"],
+                "exclude": request["exclude_scopes"],
+                "authorized_protected_scopes": protected_scopes,
+            },
             "kernel_rule_ids": KERNEL_RULE_IDS,
             "selected_conditional_rule_ids": selected_rules,
             "predicate_evidence": predicate_evidence,
         },
         "read_manifest": read_manifest,
         "record_manifest": record_manifest,
+        "protected_file_manifest": task_protected_records,
         "exclusions": exclusions,
         "write_contract": write_contract,
     }
@@ -1460,6 +1587,7 @@ def validate_corpus(root: Path) -> tuple[list[str], dict[str, int]]:
     sources_by_id = {record["source_id"]: record for record in sources}
     endpoint_ids = {record_id(record) for record in projected + sources}
     relations_by_id = {record["relation_id"]: record for record in relations}
+    allowed_relation_types = set(load_json(root / "schemas/relation.schema.json")["properties"]["relation_type"]["enum"])
     for record in all_records:
         missing = validate_required(record, corpus_schema_path(root, record))
         if missing:
@@ -1493,6 +1621,8 @@ def validate_corpus(root: Path) -> tuple[list[str], dict[str, int]]:
             if source.get("retrieval_eligible") or source.get("authority") in {"active_policy", "active_contract"}:
                 errors.append(f"historical candidate became active instruction: {source['source_id']}")
     for relation in relations:
+        if relation.get("relation_type") not in allowed_relation_types:
+            errors.append(f"unsupported relation type: {relation.get('relation_id')} -> {relation.get('relation_type')}")
         if relation["source_record_id"] not in endpoint_ids or relation["target_record_id"] not in endpoint_ids:
             errors.append(f"dangling relation endpoint: {relation['relation_id']}")
         if relation["status"] == "candidate" and (relation["review_status"] != "pending" or relation["retrieval_eligible"]):
@@ -1648,6 +1778,16 @@ def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
         selected_rule_ids = context.get("authority", {}).get("selected_conditional_rule_ids", [])
         if any(rule_id not in {rule["rule_id"] for rule in parsed_rules} for rule_id in selected_rule_ids):
             errors.append(f"work context selected a non-active instruction: {context_path.name}")
+        protected_scopes = context.get("request", {}).get("authorized_protected_scopes", [])
+        for record in context.get("protected_file_manifest", []):
+            try:
+                assert_task_scoped_path(record.get("path", ""), root, protected_scopes)
+                if not protected_scope_for(record["path"], protected_scopes, root):
+                    errors.append(f"work context protected manifest is outside task scope: {context_path.name}")
+                if record["path"] in active_paths:
+                    errors.append(f"protected task file leaked into global catalog: {record['path']}")
+            except (ContextSystemError, KeyError) as exc:
+                errors.append(f"invalid protected task manifest {context_path.name}: {exc}")
 
     retrieval_evaluations = []
     retrieval_results = []
@@ -1681,6 +1821,39 @@ def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
                 errors.append(f"retrieval result logical hash mismatch: {result_path.name}")
             retrieval_results.append(result)
 
+    operational_evaluations = []
+    operational_results = []
+    operations_root = root / "evaluation/operations"
+    if operations_root.exists():
+        for evaluation_path in sorted(operations_root.glob("*_acceptance.json")):
+            evaluation = load_json(evaluation_path)
+            missing = validate_required(evaluation, root / "schemas/operational_acceptance.schema.json")
+            if missing:
+                errors.append(f"operational acceptance missing fields {evaluation_path.name}: {missing}")
+            scenario_ids = [scenario.get("scenario_id") for scenario in evaluation.get("scenarios", [])]
+            scenario_kinds = [scenario.get("scenario_kind") for scenario in evaluation.get("scenarios", [])]
+            if len(scenario_ids) != 9 or len(set(scenario_ids)) != 9 or len(set(scenario_kinds)) != 9:
+                errors.append(f"operational acceptance is not nine unique scenarios: {evaluation_path.name}")
+            operational_evaluations.append(evaluation)
+        for result_path in sorted(operations_root.glob("*_result.json")):
+            result = load_json(result_path)
+            missing = validate_required(result, root / "schemas/operational_acceptance_result.schema.json")
+            if missing:
+                errors.append(f"operational result missing fields {result_path.name}: {missing}")
+            source_path = result.get("source_evaluation_path")
+            if source_path:
+                try:
+                    normalized = assert_allowed_path(source_path, root)
+                    if not (root / normalized).exists() or result.get("source_evaluation_sha256") != sha256_file(root / normalized):
+                        errors.append(f"operational result source mismatch: {result_path.name}")
+                except ContextSystemError as exc:
+                    errors.append(str(exc))
+            if result.get("ok") and any(not scenario.get("passed") for scenario in result.get("scenarios", [])):
+                errors.append(f"operational result overclaims pass: {result_path.name}")
+            if result.get("logical_result_hash") != sha256_text(canonical_json(result.get("scenarios", []))):
+                errors.append(f"operational result logical hash mismatch: {result_path.name}")
+            operational_results.append(result)
+
     link_errors, link_count = validate_markdown_links(root, actual_paths)
     errors.extend(link_errors)
     errors.extend(validate_event_chain(root))
@@ -1706,6 +1879,8 @@ def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
             "events": len(load_jsonl(root / "records/work/events.jsonl")),
             "retrieval_evaluations": len(retrieval_evaluations),
             "retrieval_results": len(retrieval_results),
+            "operational_evaluations": len(operational_evaluations),
+            "operational_results": len(operational_results),
             **history_counts,
             **corpus_counts,
             "local_links": link_count,
@@ -1797,10 +1972,19 @@ def apply_payload_operation(root: Path, operation: dict[str, Any], current: str 
     raise ContextSystemError(f"unsupported text operation: {mode}")
 
 
-def _operation_touched_paths(operation: dict[str, Any], root: Path) -> list[str]:
-    target = assert_allowed_path(operation["target_path"], root)
+def _operation_touched_paths(
+    operation: dict[str, Any],
+    root: Path,
+    authorized_protected_scopes: Iterable[str] = (),
+) -> list[str]:
+    target = assert_task_scoped_path(operation["target_path"], root, authorized_protected_scopes)
     if operation["operation"] == "move_file":
-        return [target, assert_allowed_path(operation["destination_path"], root)]
+        destination = assert_task_scoped_path(operation["destination_path"], root, authorized_protected_scopes)
+        source_scope = protected_scope_for(target, authorized_protected_scopes, root)
+        destination_scope = protected_scope_for(destination, authorized_protected_scopes, root)
+        if source_scope != destination_scope:
+            raise ContextSystemError("move across a protected task boundary is rejected")
+        return [target, destination]
     return [target]
 
 
@@ -1846,6 +2030,7 @@ def _record_write_failure(
     before_hashes: dict[str, str | None],
     result: str,
     details: dict[str, Any],
+    authorized_protected_scopes: Iterable[str] = (),
 ) -> dict[str, Any]:
     event = append_event(
         root,
@@ -1856,21 +2041,29 @@ def _record_write_failure(
         before_hashes,
         result,
         details,
+        authorized_protected_scopes,
     )
     _sync_if_project(root)
     return event
 
 
-def _update_catalog_lifecycle(root: Path, operations: list[dict[str, Any]], before_hashes: dict[str, str | None]) -> None:
+def _update_catalog_lifecycle(
+    root: Path,
+    operations: list[dict[str, Any]],
+    before_hashes: dict[str, str | None],
+    authorized_protected_scopes: Iterable[str] = (),
+) -> None:
     catalog_path = root / "catalog/files.jsonl"
     if not catalog_path.exists():
         return
     records = load_jsonl(catalog_path)
     for operation in operations:
         mode = operation["operation"]
-        source = assert_allowed_path(operation["target_path"], root)
+        source = assert_task_scoped_path(operation["target_path"], root, authorized_protected_scopes)
+        if protected_scope_for(source, authorized_protected_scopes, root):
+            continue
         if mode == "move_file":
-            destination = assert_allowed_path(operation["destination_path"], root)
+            destination = assert_task_scoped_path(operation["destination_path"], root, authorized_protected_scopes)
             source_record = next(record for record in records if record["path"] == source)
             moved_from = [*source_record.get("moved_from", []), source]
             records = [record for record in records if record["path"] not in {source, destination}]
@@ -1891,13 +2084,18 @@ def _update_catalog_lifecycle(root: Path, operations: list[dict[str, Any]], befo
     write_jsonl_atomic(catalog_path, records)
 
 
-def _commit_operation(root: Path, operation: dict[str, Any], rendered: dict[str, bytes]) -> None:
-    source = assert_allowed_path(operation["target_path"], root)
+def _commit_operation(
+    root: Path,
+    operation: dict[str, Any],
+    rendered: dict[str, bytes],
+    authorized_protected_scopes: Iterable[str] = (),
+) -> None:
+    source = assert_task_scoped_path(operation["target_path"], root, authorized_protected_scopes)
     mode = operation["operation"]
     if mode in {"replace_file", "replace_text", "write_binary", "render_session_summary", "render_handoff"}:
         write_bytes_atomic(root / source, rendered[source])
     elif mode == "move_file":
-        destination = assert_allowed_path(operation["destination_path"], root)
+        destination = assert_task_scoped_path(operation["destination_path"], root, authorized_protected_scopes)
         (root / destination).parent.mkdir(parents=True, exist_ok=True)
         os.replace(root / source, root / destination)
     elif mode == "delete_file":
@@ -1910,6 +2108,17 @@ def write_fixture(root: Path, context_path: str, payload_path: str) -> dict[str,
     context_relative = assert_allowed_path(context_path, root)
     payload_relative = assert_allowed_path(payload_path, root)
     context = load_json(root / context_relative)
+    protected_scopes = [
+        normalize_authorized_protected_scope(scope, root)
+        for scope in context.get("request", {}).get("authorized_protected_scopes", [])
+    ]
+    if protected_scopes and any(
+        event.get("event_type") == "protected_scope_closed"
+        and event.get("task_id") == context.get("request", {}).get("task_id")
+        and event.get("details", {}).get("request_hash") == context.get("request_hash")
+        for event in load_jsonl(root / "records/work/events.jsonl")
+    ):
+        raise ContextSystemError("write rejected: protected task context is closed")
     contract = context.get("write_contract")
     if not contract:
         raise ContextSystemError("write rejected: work context has no write contract")
@@ -1920,7 +2129,11 @@ def write_fixture(root: Path, context_path: str, payload_path: str) -> dict[str,
         raise ContextSystemError("write rejected: payload path is not authorized by the request")
     contract_targets = {target["path"]: target for target in contract["targets"]}
     operations = payload.get("operations", [])
-    touched_paths = [path for operation in operations for path in _operation_touched_paths(operation, root)]
+    touched_paths = [
+        path
+        for operation in operations
+        for path in _operation_touched_paths(operation, root, protected_scopes)
+    ]
     if len(set(touched_paths)) != len(touched_paths):
         raise ContextSystemError("write rejected: duplicate payload target")
     if set(touched_paths) != set(contract_targets):
@@ -1943,6 +2156,9 @@ def write_fixture(root: Path, context_path: str, payload_path: str) -> dict[str,
         catalog_by_path = {
             record["path"]: record for record in load_file_catalog(root)
         } if (root / "catalog/files.jsonl").exists() else {}
+        catalog_by_path.update(
+            {record["path"]: record for record in context.get("protected_file_manifest", [])}
+        )
         for normalized, target in contract_targets.items():
             path = root / normalized
             exists = path.exists()
@@ -1964,7 +2180,7 @@ def write_fixture(root: Path, context_path: str, payload_path: str) -> dict[str,
                 if actual_unit_hashes != expected_unit_hashes:
                     raise ContextSystemError(f"write rejected: before unit hash mismatch for {normalized}")
         for operation in operations:
-            normalized = assert_allowed_path(operation["target_path"], root)
+            normalized = assert_task_scoped_path(operation["target_path"], root, protected_scopes)
             mode = operation["operation"]
             if mode == "move_file":
                 if "move" not in contract["allowed_actions"]:
@@ -1997,13 +2213,14 @@ def write_fixture(root: Path, context_path: str, payload_path: str) -> dict[str,
             before_hashes,
             "rejected",
             {"contract_id": contract["contract_id"], "payload_path": payload_relative, "cause": str(exc)},
+            protected_scopes,
         )
         raise ContextSystemError(str(exc)) from exc
 
     applied = 0
     try:
         for operation in operations:
-            _commit_operation(root, operation, rendered)
+            _commit_operation(root, operation, rendered, protected_scopes)
             applied += 1
     except Exception as exc:  # noqa: BLE001 - every partial mutation must roll back
         rollback_errors: list[str] = []
@@ -2032,10 +2249,11 @@ def write_fixture(root: Path, context_path: str, payload_path: str) -> dict[str,
                 "rollback": "failed" if rollback_errors else "success",
                 "rollback_errors": rollback_errors,
             },
+            protected_scopes,
         )
         raise ContextSystemError(f"write failed and rollback {'failed' if rollback_errors else 'succeeded'}: {event['event_id']}") from exc
 
-    _update_catalog_lifecycle(root, operations, before_hashes)
+    _update_catalog_lifecycle(root, operations, before_hashes, protected_scopes)
     after_hashes = {
         normalized: sha256_file(root / normalized) if (root / normalized).exists() else None
         for normalized in sorted(set(touched_paths))
@@ -2053,9 +2271,48 @@ def write_fixture(root: Path, context_path: str, payload_path: str) -> dict[str,
         after_hashes,
         "success",
         {"contract_id": contract["contract_id"], "payload_path": payload_relative, "retry_of_event_id": retry_of},
+        protected_scopes,
     )
     counts = sync_catalog(root) if (root / "catalog/bootstrap.json").exists() else {}
     return {"event_id": event["event_id"], "after_hashes": after_hashes, **counts}
+
+
+def close_protected_context(root: Path, context_path: str) -> dict[str, Any]:
+    """Expire one task-scoped protected authorization without deleting user data."""
+    relative = assert_allowed_path(context_path, root)
+    context = load_json(root / relative)
+    request = context.get("request", {})
+    scopes = [
+        normalize_authorized_protected_scope(scope, root)
+        for scope in request.get("authorized_protected_scopes", [])
+    ]
+    if not scopes:
+        raise ContextSystemError("protected context closure requires at least one exact task scope")
+    if any(
+        event.get("event_type") == "protected_scope_closed"
+        and event.get("task_id") == request.get("task_id")
+        and event.get("details", {}).get("request_hash") == context.get("request_hash")
+        for event in load_jsonl(root / "records/work/events.jsonl")
+    ):
+        raise ContextSystemError(f"protected task context is already closed: {request.get('task_id')}")
+    event = append_event(
+        root,
+        "protected_scope_closed",
+        request.get("task_id"),
+        scopes,
+        {scope: None for scope in scopes},
+        {scope: None for scope in scopes},
+        "success",
+        {
+            "context_id": context.get("context_id"),
+            "request_hash": context.get("request_hash"),
+            "authorized_protected_scopes": scopes,
+            "data_deleted": False,
+        },
+        scopes,
+    )
+    counts = sync_catalog(root) if (root / "catalog/bootstrap.json").exists() else {}
+    return {"event_id": event["event_id"], "closed_scopes": scopes, **counts}
 
 
 def _history_hash(record: dict[str, Any], hash_field: str) -> str:
@@ -2164,7 +2421,50 @@ def maintain_knowledge(root: Path, operation_path: str) -> dict[str, Any]:
     }
     changed_ids: list[str] = []
 
-    if action == "create_candidate":
+    if action == "link_conflict":
+        knowledge_ids = sorted(operation.get("knowledge_ids", []))
+        if len(knowledge_ids) != 2 or len(set(knowledge_ids)) != 2:
+            raise ContextSystemError("link_conflict requires exactly two distinct knowledge IDs")
+        by_id = {item["knowledge_id"]: item for item in items}
+        if any(knowledge_id not in by_id for knowledge_id in knowledge_ids):
+            raise ContextSystemError(f"conflict knowledge record not found: {knowledge_ids}")
+        expected_hashes = operation.get("expected_record_hashes", {})
+        for knowledge_id in knowledge_ids:
+            actual_hash = sha256_text(canonical_json(by_id[knowledge_id]))
+            if expected_hashes.get(knowledge_id) != actual_hash:
+                raise ContextSystemError(f"knowledge conflict hash mismatch: {knowledge_id}")
+        relation_id = f"relation.{stable_slug(knowledge_ids[0])}.contradicted-by.{stable_slug(knowledge_ids[1])}"
+        if any(relation.get("relation_id") == relation_id for relation in relations):
+            raise ContextSystemError(f"conflict relation already exists: {relation_id}")
+        references: dict[tuple[str, str], dict[str, str]] = {}
+        for knowledge_id in knowledge_ids:
+            for reference in by_id[knowledge_id].get("source_refs", []):
+                references[(reference["source_id"], reference["locator"])] = reference
+        relation = {
+            "schema_version": SCHEMA_VERSION,
+            "record_kind": "relation",
+            "relation_id": relation_id,
+            "relation_type": "contradicted_by",
+            "source_record_id": knowledge_ids[0],
+            "target_record_id": knowledge_ids[1],
+            "status": "active",
+            "review_status": "verified",
+            "source_refs": [references[key] for key in sorted(references)],
+            "retrieval_eligible": True,
+        }
+        relation_hash = sha256_text(canonical_json(relation))
+        relations.append(relation)
+        _append_revision_record(
+            revisions, relation_id, "relation", None, 1, operation["actor"],
+            operation["timestamp"], operation["reason"], None, relation_hash,
+        )
+        _append_review_record(
+            reviews, relation_id, "relation", action, "verified", operation["actor"],
+            operation["timestamp"], operation["reason"], None, relation_hash,
+            sorted({reference["source_id"] for reference in relation["source_refs"]}),
+        )
+        changed_ids.append(relation_id)
+    elif action == "create_candidate":
         record = dict(operation.get("record") or {})
         knowledge_id = record.get("knowledge_id")
         if not knowledge_id or any(item["knowledge_id"] == knowledge_id for item in items):
@@ -2862,6 +3162,732 @@ def evaluate_retrieval(root: Path, evaluation_path: str, output_path: str) -> di
     return result
 
 
+def _acceptance_copy_project(source: Path, destination: Path) -> None:
+    """Copy only globally governed, non-protected files into an isolated cold-start root."""
+    for relative in iter_project_files(source):
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source / relative, target)
+
+
+def _acceptance_write_fixture(
+    root: Path,
+    name: str,
+    task_id: str,
+    actions: list[str],
+    targets: list[dict[str, Any]],
+    operations: list[dict[str, Any]],
+    *,
+    request_extra: dict[str, Any] | None = None,
+    protected_file_manifest: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    (root / "context/work").mkdir(parents=True, exist_ok=True)
+    (root / "context/payloads").mkdir(parents=True, exist_ok=True)
+    request_hash = sha256_text(f"{task_id}:{name}")
+    payload_relative = f"context/payloads/{name}.json"
+    context_relative = f"context/work/{name}.json"
+    context = {
+        "schema_version": SCHEMA_VERSION,
+        "context_id": f"context.{task_id}",
+        "request": {"task_id": task_id, "write_payload_path": payload_relative, **(request_extra or {})},
+        "request_hash": request_hash,
+        "protected_file_manifest": protected_file_manifest or [],
+        "write_contract": {
+            "schema_version": SCHEMA_VERSION,
+            "contract_id": f"contract.{task_id}",
+            "request_hash": request_hash,
+            "allowed_actions": actions,
+            "targets": targets,
+            "selected_rule_ids": [],
+            "validators": sorted({validator for target in targets for validator in target.get("validators", [])}),
+            "required_updates": ["event"],
+        },
+    }
+    write_json_atomic(root / context_relative, context)
+    write_json_atomic(root / payload_relative, {"operations": operations})
+    return write_fixture(root, context_relative, payload_relative)
+
+
+def _acceptance_contract_target(
+    root: Path,
+    path: str,
+    status: str,
+    *,
+    owner: str = "test",
+    authority: str = "fixture",
+) -> dict[str, Any]:
+    full_path = root / path
+    return {
+        "file_id": f"file.fixture.{stable_slug(path)}",
+        "path": path,
+        "status": status,
+        "before_file_hash": sha256_file(full_path) if status == "active" else None,
+        "unit_ids": [],
+        "before_unit_hashes": {},
+        "owner": owner,
+        "authority": authority,
+        "write_when": ["acceptance_fixture"],
+        "validators": ["validate.content_hash"],
+    }
+
+
+def _acceptance_knowledge_record(
+    knowledge_id: str,
+    statement: str,
+    source_id: str,
+    timestamp: str,
+    *,
+    status: str = "candidate",
+    task_tags: list[str] | None = None,
+) -> dict[str, Any]:
+    verified = status == "verified"
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "record_kind": "knowledge",
+        "knowledge_id": knowledge_id,
+        "title": knowledge_id,
+        "language": "en",
+        "classification": "fact",
+        "statement": statement,
+        "created_at": timestamp,
+        "updated_at": timestamp,
+        "author": "r5-acceptance",
+        "status": status,
+        "confidence": "medium",
+        "confidence_basis": "R-5 fixed operational fixture",
+        "validated_by": "r5-acceptance" if verified else "",
+        "validated_at": timestamp if verified else "",
+        "source_refs": [{"source_id": source_id, "locator": "R-5 fixture"}],
+        "relation_ids": [],
+        "validity_scope": "R-5 acceptance only",
+        "last_checked_at": timestamp,
+        "review_policy": "event_driven",
+        "review_due_at": None,
+        "review_triggers": ["source_change", "conflict"],
+        "revision": 1,
+        "retrieval_eligible": verified,
+        "task_tags": task_tags or ["r5", "fixture"],
+    }
+
+
+def _scenario_file_lifecycle(expected: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        path = "artifact.txt"
+        states: list[str] = []
+        _acceptance_write_fixture(
+            root, "create", "task.r5.lifecycle.create", ["create"],
+            [_acceptance_contract_target(root, path, "planned")],
+            [{"target_path": path, "operation": "replace_file", "content": "created\n"}],
+        )
+        states.append("created")
+        _acceptance_write_fixture(
+            root, "modify", "task.r5.lifecycle.modify", ["write"],
+            [_acceptance_contract_target(root, path, "active")],
+            [{"target_path": path, "operation": "replace_file", "content": "modified\n"}],
+        )
+        states.append("modified")
+        moved = "moved.txt"
+        _acceptance_write_fixture(
+            root, "move", "task.r5.lifecycle.move", ["move"],
+            [_acceptance_contract_target(root, path, "active"), _acceptance_contract_target(root, moved, "planned")],
+            [{"target_path": path, "destination_path": moved, "operation": "move_file"}],
+        )
+        states.append("moved")
+        _acceptance_write_fixture(
+            root, "delete", "task.r5.lifecycle.delete", ["delete"],
+            [_acceptance_contract_target(root, moved, "active")],
+            [{"target_path": moved, "operation": "delete_file"}],
+        )
+        states.append("deleted")
+        events = load_jsonl(root / "records/work/events.jsonl")
+        evidence = {
+            "states": states,
+            "final_file_exists": (root / moved).exists(),
+            "success_events": sum(event["result"] == "success" for event in events),
+            "event_types": [event["event_type"] for event in events],
+        }
+        passed = (
+            evidence["states"] == expected["states"]
+            and evidence["final_file_exists"] is expected["final_file_exists"]
+            and evidence["success_events"] >= expected["minimum_success_events"]
+        )
+        return passed, evidence
+
+
+def _scenario_source_review(root_source: Path, expected: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        (root / "knowledge").mkdir()
+        (root / "schemas").mkdir()
+        shutil.copy2(root_source / "schemas/knowledge.schema.json", root / "schemas/knowledge.schema.json")
+        source_path = root / "source.md"
+        source_path.write_text("before\n", encoding="utf-8")
+        timestamp = "2026-07-21T03:00:00+09:00"
+        source = {
+            "source_id": "source.r5.fixture", "record_kind": "source", "source_type": "project_document",
+            "locator": "source.md", "status": "active", "retrieval_eligible": True,
+            "content_sha256": sha256_file(source_path),
+        }
+        item = _acceptance_knowledge_record(
+            "knowledge.r5.source-dependent", "Source dependent fixture.", source["source_id"], timestamp,
+            status="verified",
+        )
+        write_jsonl_atomic(root / SOURCE_STORE_PATH, [source])
+        write_jsonl_atomic(root / "knowledge/items.jsonl", [item])
+        for relative in (REVIEW_STORE_PATH, REVISION_STORE_PATH, RELATION_STORE_PATH):
+            (root / relative).write_text("", encoding="utf-8")
+        source_path.write_text("after\n", encoding="utf-8")
+        check_source_hashes(root, "task.r5.source.detect")
+        detected_source = load_jsonl(root / SOURCE_STORE_PATH)[0]
+        detected_item = load_jsonl(root / "knowledge/items.jsonl")[0]
+        source_operation = {
+            "operation_id": "op.r5.source.accept", "task_id": "task.r5.source.review",
+            "source_id": source["source_id"],
+            "expected_record_hash": sha256_text(canonical_json(detected_source)),
+            "actor": "r5-acceptance", "timestamp": timestamp,
+            "reason": "R-5 reviewed the changed source hash.", "outcome": "accept_current_hash",
+        }
+        write_json_atomic(root / "source_review.json", source_operation)
+        maintain_source(root, "source_review.json")
+        item_operation = {
+            "operation_id": "op.r5.knowledge.reverify", "task_id": "task.r5.source.review",
+            "action": "review", "outcome": "verified", "knowledge_id": detected_item["knowledge_id"],
+            "expected_record_hash": sha256_text(canonical_json(detected_item)),
+            "expected_revision": detected_item["revision"], "actor": "r5-acceptance",
+            "timestamp": timestamp, "reason": "R-5 reverified dependent knowledge.",
+        }
+        write_json_atomic(root / "knowledge_review.json", item_operation)
+        maintain_knowledge(root, "knowledge_review.json")
+        reviewed_source = load_jsonl(root / SOURCE_STORE_PATH)[0]
+        reviewed_item = load_jsonl(root / "knowledge/items.jsonl")[0]
+        evidence = {
+            "detected_source_status": detected_source["status"],
+            "detected_knowledge_status": detected_item["status"],
+            "reviewed_source_status": reviewed_source["status"],
+            "reviewed_knowledge_status": reviewed_item["status"],
+            "review_records": len(load_jsonl(root / REVIEW_STORE_PATH)),
+            "revision_records": len(load_jsonl(root / REVISION_STORE_PATH)),
+        }
+        return all(evidence[key] == value for key, value in expected.items()), evidence
+
+
+def _scenario_conflict_supersession(root_source: Path, expected: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        for relative in ("knowledge", "schemas", "operations"):
+            (root / relative).mkdir(parents=True, exist_ok=True)
+        shutil.copy2(root_source / "schemas/knowledge.schema.json", root / "schemas/knowledge.schema.json")
+        source = {"source_id": "source.r5.fixture", "record_kind": "source"}
+        write_jsonl_atomic(root / SOURCE_STORE_PATH, [source])
+        for relative in ("knowledge/items.jsonl", REVIEW_STORE_PATH, REVISION_STORE_PATH, RELATION_STORE_PATH):
+            (root / relative).write_text("", encoding="utf-8")
+        timestamp = "2026-07-21T03:05:00+09:00"
+        for suffix, statement in (("alpha", "Value is alpha."), ("beta", "Value is beta.")):
+            record = _acceptance_knowledge_record(f"knowledge.r5.{suffix}", statement, source["source_id"], timestamp)
+            operation = {
+                "operation_id": f"op.r5.create.{suffix}", "task_id": "task.r5.conflict",
+                "action": "create_candidate", "actor": "r5-acceptance", "timestamp": timestamp,
+                "reason": "R-5 conflicting fixture.", "record": record,
+            }
+            path = root / f"operations/create_{suffix}.json"
+            write_json_atomic(path, operation)
+            maintain_knowledge(root, path.relative_to(root).as_posix())
+            current = next(item for item in load_jsonl(root / "knowledge/items.jsonl") if item["knowledge_id"] == record["knowledge_id"])
+            review = {
+                "operation_id": f"op.r5.verify.{suffix}", "task_id": "task.r5.conflict",
+                "action": "review", "outcome": "verified", "knowledge_id": record["knowledge_id"],
+                "expected_record_hash": sha256_text(canonical_json(current)), "expected_revision": current["revision"],
+                "actor": "r5-acceptance", "timestamp": timestamp, "reason": "Verify both conflicting claims independently.",
+            }
+            review_path = root / f"operations/review_{suffix}.json"
+            write_json_atomic(review_path, review)
+            maintain_knowledge(root, review_path.relative_to(root).as_posix())
+        items = {item["knowledge_id"]: item for item in load_jsonl(root / "knowledge/items.jsonl")}
+        conflict = {
+            "operation_id": "op.r5.link-conflict", "task_id": "task.r5.conflict", "action": "link_conflict",
+            "knowledge_ids": ["knowledge.r5.alpha", "knowledge.r5.beta"],
+            "expected_record_hashes": {item_id: sha256_text(canonical_json(items[item_id])) for item_id in ("knowledge.r5.alpha", "knowledge.r5.beta")},
+            "actor": "r5-acceptance", "timestamp": timestamp, "reason": "Preserve both contradictory claims.",
+        }
+        write_json_atomic(root / "operations/conflict.json", conflict)
+        maintain_knowledge(root, "operations/conflict.json")
+        items = {item["knowledge_id"]: item for item in load_jsonl(root / "knowledge/items.jsonl")}
+        replacement = _acceptance_knowledge_record("knowledge.r5.gamma", "Value is gamma.", source["source_id"], timestamp)
+        supersede = {
+            "operation_id": "op.r5.supersede-alpha", "task_id": "task.r5.conflict", "action": "supersede",
+            "knowledge_id": "knowledge.r5.alpha",
+            "expected_record_hash": sha256_text(canonical_json(items["knowledge.r5.alpha"])),
+            "expected_revision": items["knowledge.r5.alpha"]["revision"], "actor": "r5-acceptance",
+            "timestamp": timestamp, "reason": "Preserve the old claim beside its replacement.",
+            "replacement_record": replacement,
+        }
+        write_json_atomic(root / "operations/supersede.json", supersede)
+        maintain_knowledge(root, "operations/supersede.json")
+        final_items = {item["knowledge_id"]: item for item in load_jsonl(root / "knowledge/items.jsonl")}
+        relations = load_jsonl(root / RELATION_STORE_PATH)
+        evidence = {
+            "knowledge_ids": sorted(final_items),
+            "relation_types": sorted({relation["relation_type"] for relation in relations}),
+            "superseded_status": final_items["knowledge.r5.alpha"]["status"],
+            "replacement_status": final_items["knowledge.r5.gamma"]["status"],
+            "conflicting_record_preserved": "knowledge.r5.beta" in final_items,
+        }
+        passed = (
+            evidence["knowledge_ids"] == sorted(expected["knowledge_ids"])
+            and evidence["relation_types"] == sorted(expected["relation_types"])
+            and evidence["superseded_status"] == expected["superseded_status"]
+            and evidence["replacement_status"] == expected["replacement_status"]
+            and evidence["conflicting_record_preserved"]
+        )
+        return passed, evidence
+
+
+def _scenario_partial_failure(expected: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        (root / "context/work").mkdir(parents=True)
+        (root / "context/payloads").mkdir(parents=True)
+        for name in ("a.txt", "b.txt"):
+            (root / name).write_text(f"{name[0]}-before\n", encoding="utf-8")
+        targets = [_acceptance_contract_target(root, name, "active") for name in ("a.txt", "b.txt")]
+        operations = [
+            {"target_path": name, "operation": "replace_file", "content": f"{name[0]}-after\n"}
+            for name in ("a.txt", "b.txt")
+        ]
+        original_commit = globals()["_commit_operation"]
+        calls = {"count": 0}
+
+        def fail_second(*args: Any, **kwargs: Any) -> None:
+            calls["count"] += 1
+            if calls["count"] == 2:
+                raise OSError("R-5 simulated second-operation failure")
+            original_commit(*args, **kwargs)
+
+        globals()["_commit_operation"] = fail_second
+        try:
+            try:
+                _acceptance_write_fixture(
+                    root, "partial", "task.r5.partial", ["write"], targets, operations,
+                )
+            except ContextSystemError:
+                pass
+        finally:
+            globals()["_commit_operation"] = original_commit
+        failed_event = load_jsonl(root / "records/work/events.jsonl")[-1]
+        rollback_contents = [(root / name).read_text(encoding="utf-8").strip() for name in ("a.txt", "b.txt")]
+        payload_path = root / "context/payloads/partial.json"
+        payload = load_json(payload_path)
+        payload["retry_of_event_id"] = failed_event["event_id"]
+        write_json_atomic(payload_path, payload)
+        retry = write_fixture(root, "context/work/partial.json", "context/payloads/partial.json")
+        retry_event = next(event for event in load_jsonl(root / "records/work/events.jsonl") if event["event_id"] == retry["event_id"])
+        final_contents = [(root / name).read_text(encoding="utf-8").strip() for name in ("a.txt", "b.txt")]
+        evidence = {
+            "rollback": failed_event["details"]["rollback"],
+            "rollback_contents": rollback_contents,
+            "retry_event_type": retry_event["event_type"],
+            "retry_of_event_id": retry_event["details"]["retry_of_event_id"],
+            "final_contents": final_contents,
+        }
+        passed = (
+            evidence["rollback"] == expected["rollback"]
+            and rollback_contents == ["a-before", "b-before"]
+            and evidence["retry_event_type"] == expected["retry_event_type"]
+            and evidence["retry_of_event_id"] == failed_event["event_id"]
+            and evidence["final_contents"] == expected["final_contents"]
+        )
+        return passed, evidence
+
+
+def _acceptance_task_request(
+    task_id: str,
+    *,
+    target_paths: list[str],
+    target_kinds: list[str],
+    include_scopes: list[str],
+    task_tags: list[str],
+    target_record_ids: list[str] | None = None,
+    actions: list[str] | None = None,
+    phase: str = "read",
+    output_audience: str = "agent",
+    authorized_protected_scopes: list[str] | None = None,
+    write_payload_path: str | None = None,
+    record_filters: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    request: dict[str, Any] = {
+        "schema_version": SCHEMA_VERSION,
+        "task_id": task_id,
+        "requested_by": "r5-acceptance",
+        "intent": f"R-5 fixed acceptance request for {task_id}.",
+        "actions": actions or ["read"],
+        "phase": phase,
+        "target_paths": target_paths,
+        "target_file_ids": [],
+        "target_unit_ids": [],
+        "target_record_ids": target_record_ids or [],
+        "target_record_kinds": [],
+        "target_kinds": target_kinds,
+        "output_audience": output_audience,
+        "include_scopes": include_scopes,
+        "exclude_scopes": ["backup", "inputs", "outputs"],
+        "task_tags": task_tags,
+        "as_of": "2026-07-21T03:10:00+09:00",
+        "context_budget": 12000,
+    }
+    if authorized_protected_scopes:
+        request["authorized_protected_scopes"] = authorized_protected_scopes
+    if write_payload_path:
+        request["write_payload_path"] = write_payload_path
+    if record_filters:
+        request["record_filters"] = record_filters
+    return request
+
+
+def _scenario_cold_rebuild(root_source: Path, expected: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory) / "project"
+        root.mkdir()
+        _acceptance_copy_project(root_source, root)
+        recorded = load_json(root / "evaluation/retrieval/r4_baseline_result.json")
+        before = evaluate_retrieval(
+            root, "evaluation/retrieval/r4_queries.json", "evaluation/retrieval/r4_baseline_result.json"
+        )
+        removed: list[str] = []
+        for relative in expected["deleted_projections"]:
+            path = root / relative
+            if path.exists():
+                path.unlink()
+                removed.append(relative)
+        absent_before_rebuild = all(not (root / relative).exists() for relative in expected["deleted_projections"])
+        sync_catalog(root)
+        after = evaluate_retrieval(
+            root, "evaluation/retrieval/r4_queries.json", "evaluation/retrieval/r4_baseline_result.json"
+        )
+        physical_indexes = sum(
+            Path(relative).suffix.lower() in {".db", ".sqlite", ".sqlite3"}
+            for relative in iter_project_files(root)
+        )
+        evidence = {
+            "recorded_r4_logical_result_hash": recorded["logical_result_hash"],
+            "before_rebuild_logical_result_hash": before["logical_result_hash"],
+            "after_rebuild_logical_result_hash": after["logical_result_hash"],
+            "fts_decision": after["fts_decision"],
+            "physical_search_indexes": physical_indexes,
+            "deleted_projections": removed,
+            "absent_before_rebuild": absent_before_rebuild,
+            "rebuilt_projections_exist": all((root / relative).exists() for relative in expected["deleted_projections"]),
+            "query_differences": {
+                item_before["query_id"]: [
+                    sha256_text(canonical_json(item_before)),
+                    sha256_text(canonical_json(item_after)),
+                ]
+                for item_before, item_after in zip(before["queries"], after["queries"])
+                if item_before != item_after
+            },
+        }
+        passed = (
+            evidence["recorded_r4_logical_result_hash"] == expected["logical_result_hash"]
+            and evidence["before_rebuild_logical_result_hash"] == evidence["after_rebuild_logical_result_hash"]
+            and evidence["fts_decision"] == expected["fts_decision"]
+            and evidence["physical_search_indexes"] == expected["physical_search_indexes"]
+            and evidence["deleted_projections"] == expected["deleted_projections"]
+            and evidence["absent_before_rebuild"]
+            and evidence["rebuilt_projections_exist"]
+        )
+        return passed, evidence
+
+
+def _scenario_new_session(root_source: Path, expected: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    with tempfile.TemporaryDirectory() as directory:
+        base = Path(directory)
+        contexts: list[dict[str, Any]] = []
+        for suffix in ("one", "two"):
+            root = base / suffix
+            root.mkdir()
+            _acceptance_copy_project(root_source, root)
+            contexts.append(
+                resolve_request(root, expected["request_path"], f"context/work/r5_cold_{suffix}.json")
+            )
+        evidence = {
+            "same_revision_manifest": contexts[0]["revision_manifest"] == contexts[1]["revision_manifest"],
+            "same_selection_ids": contexts[0]["selection_ids"] == contexts[1]["selection_ids"],
+            "same_selection_fingerprint": contexts[0]["selection_fingerprint"] == contexts[1]["selection_fingerprint"],
+            "selection_fingerprint": contexts[0]["selection_fingerprint"],
+            "revision_differences": {
+                key: [contexts[0]["revision_manifest"].get(key), contexts[1]["revision_manifest"].get(key)]
+                for key in sorted(set(contexts[0]["revision_manifest"]) | set(contexts[1]["revision_manifest"]))
+                if contexts[0]["revision_manifest"].get(key) != contexts[1]["revision_manifest"].get(key)
+            },
+        }
+        passed = all(evidence[key] is expected[key] for key in (
+            "same_revision_manifest", "same_selection_ids", "same_selection_fingerprint"
+        ))
+        return passed, evidence
+
+
+def _scenario_protected_namespace(root_source: Path, expected: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory) / "project"
+        root.mkdir()
+        _acceptance_copy_project(root_source, root)
+        authorized_target = root / expected["authorized_target"]
+        unauthorized_target = root / expected["unauthorized_target"]
+        authorized_target.parent.mkdir(parents=True)
+        unauthorized_target.parent.mkdir(parents=True)
+        authorized_target.write_bytes(b"R5-video-before")
+        unauthorized_target.write_bytes(b"R5-secret-never-read")
+        request_relative = "context/requests/r5_protected.json"
+        context_relative = "context/work/r5_protected.json"
+        payload_relative = "context/payloads/r5_protected.json"
+        request = _acceptance_task_request(
+            "task.r5.protected", target_paths=[expected["authorized_target"]], target_kinds=["video"],
+            include_scopes=[expected["authorized_scope"]], task_tags=["video", "protected"],
+            actions=["read", "write"], authorized_protected_scopes=[expected["authorized_scope"]],
+            write_payload_path=payload_relative,
+        )
+        write_json_atomic(root / request_relative, request)
+        context = resolve_request(root, request_relative, context_relative)
+        write_json_atomic(
+            root / payload_relative,
+            {"operations": [{
+                "target_path": expected["authorized_target"], "operation": "write_binary",
+                "content_base64": base64.b64encode(b"R5-video-after").decode("ascii"),
+            }]},
+        )
+        write_fixture(root, context_relative, payload_relative)
+        close_result = close_protected_context(root, context_relative)
+        try:
+            write_fixture(root, context_relative, payload_relative)
+            reuse_after_close = "accepted"
+        except ContextSystemError:
+            reuse_after_close = "rejected"
+        unauthorized_request = _acceptance_task_request(
+            "task.r5.protected.escape", target_paths=[expected["unauthorized_target"]], target_kinds=["video"],
+            include_scopes=[expected["authorized_scope"]], task_tags=["video", "protected"],
+            authorized_protected_scopes=[expected["authorized_scope"]],
+        )
+        write_json_atomic(root / "context/requests/r5_protected_escape.json", unauthorized_request)
+        try:
+            resolve_request(root, "context/requests/r5_protected_escape.json", "context/work/r5_protected_escape.json")
+            unauthorized_rejected = False
+        except ContextSystemError:
+            unauthorized_rejected = True
+        global_entries = [
+            record["path"] for record in load_file_catalog(root)
+            if PurePosixPath(record["path"]).parts and PurePosixPath(record["path"]).parts[0] in {"inputs", "outputs"}
+        ]
+        manifest_paths = [record["path"] for record in context["protected_file_manifest"]]
+        evidence = {
+            "authorized_manifest_paths": manifest_paths,
+            "unauthorized_rejected": unauthorized_rejected,
+            "global_catalog_entries": len(global_entries),
+            "reuse_after_close": reuse_after_close,
+            "scope_close_event": close_result["event_id"],
+            "data_deleted": not authorized_target.exists(),
+            "authorized_content_hash": sha256_file(authorized_target),
+        }
+        passed = (
+            manifest_paths == [expected["authorized_target"]]
+            and unauthorized_rejected
+            and evidence["global_catalog_entries"] == expected["global_catalog_entries"]
+            and evidence["reuse_after_close"] == expected["reuse_after_close"]
+            and not evidence["data_deleted"]
+        )
+        return passed, evidence
+
+
+def _scenario_real_task_leakage(root_source: Path, expected: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory) / "project"
+        root.mkdir()
+        _acceptance_copy_project(root_source, root)
+        protected_path = root / "inputs/r5-video-task/source.mp4"
+        protected_path.parent.mkdir(parents=True)
+        protected_path.write_bytes(b"R5-video")
+        requests = {
+            "report": _acceptance_task_request(
+                "task.r5.leakage.report",
+                target_paths=["docs/reports/2026-07-21_R-4_검색_평가_결과.md"],
+                target_kinds=["report"], include_scopes=["docs/reports"], task_tags=["report"],
+            ),
+            "knowledge": _acceptance_task_request(
+                "task.r5.leakage.knowledge", target_paths=["knowledge/items.jsonl"],
+                target_kinds=["knowledge"], include_scopes=["knowledge"], task_tags=["knowledge"],
+                target_record_ids=["knowledge.context.shared-work-context"],
+            ),
+            "video": _acceptance_task_request(
+                "task.r5.leakage.video", target_paths=["inputs/r5-video-task/source.mp4"],
+                target_kinds=["video"], include_scopes=["inputs/r5-video-task"], task_tags=["video"],
+                authorized_protected_scopes=["inputs/r5-video-task"],
+            ),
+        }
+        expected_by_label = {task["task_label"]: task for task in expected["tasks"]}
+        task_evidence: list[dict[str, Any]] = []
+        total_leakage = 0
+        exact = True
+        for label in ("report", "knowledge", "video"):
+            request_path = f"context/requests/r5_leakage_{label}.json"
+            context_path = f"context/work/r5_leakage_{label}.json"
+            write_json_atomic(root / request_path, requests[label])
+            context = resolve_request(root, request_path, context_path)
+            actual_rules = sorted(context["selection_ids"]["rules"])
+            actual_files = sorted(item["path"] for item in context["read_manifest"])
+            expected_rules = sorted(expected_by_label[label]["expected_rule_ids"])
+            expected_files = sorted(expected_by_label[label]["expected_file_paths"])
+            unexpected_rules = sorted(set(actual_rules) - set(expected_rules))
+            unexpected_files = sorted(set(actual_files) - set(expected_files))
+            missing_rules = sorted(set(expected_rules) - set(actual_rules))
+            missing_files = sorted(set(expected_files) - set(actual_files))
+            leakage = len(unexpected_rules) + len(unexpected_files)
+            total_leakage += leakage
+            exact = exact and not (unexpected_rules or unexpected_files or missing_rules or missing_files)
+            task_evidence.append({
+                "task_label": label, "selected_rule_ids": actual_rules, "selected_file_paths": actual_files,
+                "unexpected_rule_ids": unexpected_rules, "unexpected_file_paths": unexpected_files,
+                "missing_rule_ids": missing_rules, "missing_file_paths": missing_files, "leakage": leakage,
+            })
+        evidence = {"tasks": task_evidence, "rule_file_leakage": total_leakage, "exact_selection": exact}
+        passed = exact and total_leakage <= expected["maximum_rule_file_leakage"]
+        return passed, evidence
+
+
+def _scenario_feedback_next_context(root_source: Path, expected: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory) / "project"
+        root.mkdir()
+        _acceptance_copy_project(root_source, root)
+        timestamp = "2026-07-21T03:15:00+09:00"
+        source_id = "source.repo.project-rules"
+        candidate = _acceptance_knowledge_record(
+            expected["knowledge_id"], "R-5 feedback must reach the next context.", source_id,
+            timestamp, task_tags=["r5-feedback"],
+        )
+        create_path = "context/payloads/r5_feedback_create.json"
+        write_json_atomic(root / create_path, {
+            "operation_id": "op.r5.feedback.create", "task_id": "task.r5.feedback",
+            "action": "create_candidate", "actor": "r5-acceptance", "timestamp": timestamp,
+            "reason": "R-5 event-to-candidate fixture.", "record": candidate,
+        })
+        maintain_knowledge(root, create_path)
+        filters = {"kinds": ["knowledge"], "statuses": ["verified"], "task_tags": ["r5-feedback"], "retrieval_eligible": True}
+        pre_request = _acceptance_task_request(
+            "task.r5.feedback.pre", target_paths=[], target_kinds=["knowledge"],
+            include_scopes=["knowledge"], task_tags=["knowledge"], record_filters=filters,
+        )
+        write_json_atomic(root / "context/requests/r5_feedback_pre.json", pre_request)
+        pre_context = resolve_request(root, "context/requests/r5_feedback_pre.json", "context/work/r5_feedback_pre.json")
+        pre_selected = expected["knowledge_id"] in pre_context["selection_ids"]["records"]
+        current = next(item for item in load_jsonl(root / "knowledge/items.jsonl") if item["knowledge_id"] == expected["knowledge_id"])
+        review_path = "context/payloads/r5_feedback_review.json"
+        write_json_atomic(root / review_path, {
+            "operation_id": "op.r5.feedback.review", "task_id": "task.r5.feedback",
+            "action": "review", "outcome": "verified", "knowledge_id": expected["knowledge_id"],
+            "expected_record_hash": sha256_text(canonical_json(current)), "expected_revision": current["revision"],
+            "actor": "r5-acceptance", "timestamp": timestamp,
+            "reason": "R-5 reviewed the feedback candidate.",
+        })
+        maintain_knowledge(root, review_path)
+        post_request = _acceptance_task_request(
+            "task.r5.feedback.post", target_paths=[], target_kinds=["knowledge"],
+            include_scopes=["knowledge"], task_tags=["knowledge"], record_filters=filters,
+        )
+        write_json_atomic(root / "context/requests/r5_feedback_post.json", post_request)
+        post_context = resolve_request(root, "context/requests/r5_feedback_post.json", "context/work/r5_feedback_post.json")
+        post_selected = expected["knowledge_id"] in post_context["selection_ids"]["records"]
+        event_types = [event["event_type"] for event in load_jsonl(root / "records/work/events.jsonl")]
+        evidence = {
+            "pre_review_selected": pre_selected,
+            "post_review_selected": post_selected,
+            "required_event_types_present": sorted(set(expected["event_types"]) & set(event_types)),
+            "selected_record_ids": post_context["selection_ids"]["records"],
+        }
+        passed = (
+            pre_selected is expected["pre_review_selected"]
+            and post_selected is expected["post_review_selected"]
+            and set(expected["event_types"]) <= set(event_types)
+        )
+        return passed, evidence
+
+
+def evaluate_operational_acceptance(root: Path, evaluation_path: str, output_path: str) -> dict[str, Any]:
+    evaluation_relative = assert_allowed_path(evaluation_path, root)
+    output_relative = assert_allowed_path(output_path, root)
+    evaluation = load_json(root / evaluation_relative)
+    missing = validate_required(evaluation, root / "schemas/operational_acceptance.schema.json")
+    if missing:
+        raise ContextSystemError(f"operational acceptance missing fields: {missing}")
+    scenario_ids = [scenario["scenario_id"] for scenario in evaluation["scenarios"]]
+    scenario_kinds = [scenario["scenario_kind"] for scenario in evaluation["scenarios"]]
+    if len(scenario_ids) != 9 or len(set(scenario_ids)) != 9 or len(set(scenario_kinds)) != 9:
+        raise ContextSystemError("R-5 acceptance requires nine unique scenario IDs and kinds")
+    handlers = {
+        "file_lifecycle": lambda expected: _scenario_file_lifecycle(expected),
+        "source_review_transition": lambda expected: _scenario_source_review(root, expected),
+        "conflict_supersession_coexistence": lambda expected: _scenario_conflict_supersession(root, expected),
+        "partial_failure_resume": lambda expected: _scenario_partial_failure(expected),
+        "index_delete_cold_rebuild": lambda expected: _scenario_cold_rebuild(root, expected),
+        "new_session_cold_start": lambda expected: _scenario_new_session(root, expected),
+        "protected_namespace_isolation": lambda expected: _scenario_protected_namespace(root, expected),
+        "real_task_leakage": lambda expected: _scenario_real_task_leakage(root, expected),
+        "feedback_next_context": lambda expected: _scenario_feedback_next_context(root, expected),
+    }
+    scenario_results: list[dict[str, Any]] = []
+    for scenario in evaluation["scenarios"]:
+        try:
+            passed, evidence = handlers[scenario["scenario_kind"]](scenario["expected"])
+            error = None
+        except Exception as exc:  # noqa: BLE001 - every scenario must report its failure independently
+            passed, evidence, error = False, {}, f"{type(exc).__name__}: {exc}"
+        scenario_results.append({
+            "scenario_id": scenario["scenario_id"],
+            "scenario_kind": scenario["scenario_kind"],
+            "passed": passed,
+            "evidence": evidence,
+            "error": error,
+        })
+    leakage = sum(
+        result["evidence"].get("rule_file_leakage", 0)
+        for result in scenario_results
+    )
+    summary = {
+        "scenarios": len(scenario_results),
+        "passed": sum(result["passed"] for result in scenario_results),
+        "failed": sum(not result["passed"] for result in scenario_results),
+        "rule_file_leakage": leakage,
+    }
+    thresholds = evaluation["thresholds"]
+    ok = (
+        summary["scenarios"] == thresholds["required_scenarios"]
+        and summary["failed"] <= thresholds["maximum_failed"]
+        and leakage <= thresholds["maximum_rule_file_leakage"]
+    )
+    result = {
+        "schema_version": SCHEMA_VERSION,
+        "evaluation_id": evaluation["evaluation_id"],
+        "evaluated_at": now_iso(),
+        "source_evaluation_path": evaluation_relative,
+        "source_evaluation_sha256": sha256_file(root / evaluation_relative),
+        "scenarios": scenario_results,
+        "logical_result_hash": sha256_text(canonical_json(scenario_results)),
+        "summary": summary,
+        "ok": ok,
+    }
+    before_hash = sha256_file(root / output_relative) if (root / output_relative).exists() else None
+    write_json_atomic(root / output_relative, result)
+    event = append_event(
+        root, "operational_acceptance_evaluated", "task.r5.evaluate",
+        [evaluation_relative, output_relative],
+        {evaluation_relative: sha256_file(root / evaluation_relative), output_relative: before_hash},
+        {evaluation_relative: sha256_file(root / evaluation_relative), output_relative: sha256_file(root / output_relative)},
+        "success" if ok else "failed",
+        {"evaluation_id": evaluation["evaluation_id"], "summary": summary},
+    )
+    if (root / "catalog/bootstrap.json").exists():
+        sync_catalog(root)
+    return {**result, "event_id": event["event_id"]}
+
+
 def cli() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -2885,9 +3911,14 @@ def cli() -> int:
     source_parser.add_argument("--task-id", default="task.source.hash-check")
     source_review_parser = subparsers.add_parser("maintain-source")
     source_review_parser.add_argument("--operation", required=True)
+    close_protected_parser = subparsers.add_parser("close-protected-context")
+    close_protected_parser.add_argument("--context", required=True)
     evaluation_parser = subparsers.add_parser("evaluate-retrieval")
     evaluation_parser.add_argument("--evaluation", required=True)
     evaluation_parser.add_argument("--output", required=True)
+    acceptance_parser = subparsers.add_parser("evaluate-operations")
+    acceptance_parser.add_argument("--evaluation", required=True)
+    acceptance_parser.add_argument("--output", required=True)
     args = parser.parse_args()
     root = Path(args.root).resolve()
     try:
@@ -2909,8 +3940,12 @@ def cli() -> int:
             result = check_source_hashes(root, args.task_id)
         elif args.command == "maintain-source":
             result = maintain_source(root, args.operation)
+        elif args.command == "close-protected-context":
+            result = close_protected_context(root, args.context)
         elif args.command == "evaluate-retrieval":
             result = evaluate_retrieval(root, args.evaluation, args.output)
+        elif args.command == "evaluate-operations":
+            result = evaluate_operational_acceptance(root, args.evaluation, args.output)
         else:  # pragma: no cover
             raise ContextSystemError(f"unsupported command: {args.command}")
     except ContextSystemError as exc:

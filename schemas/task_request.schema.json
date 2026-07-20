@@ -21,6 +21,7 @@
     "output_audience": {"enum": ["agent", "user", "machine"]},
     "include_scopes": {"type": "array", "items": {"type": "string"}},
     "exclude_scopes": {"type": "array", "items": {"type": "string"}},
+    "authorized_protected_scopes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
     "task_tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
     "as_of": {"type": "string"},
     "context_budget": {"type": "integer", "minimum": 1},

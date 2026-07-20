@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.0.0",
+  "evaluation_id": "evaluation.r5.operational-v1",
+  "design_source": "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md#105-r-5--운영-폐루프-최종-검증",
+  "thresholds": {
+    "required_scenarios": 9,
+    "maximum_failed": 0,
+    "maximum_rule_file_leakage": 0
+  },
+  "scenarios": [
+    {
+      "scenario_id": "r5.01.file-lifecycle",
+      "scenario_kind": "file_lifecycle",
+      "expected": {
+        "states": ["created", "modified", "moved", "deleted"],
+        "final_file_exists": false,
+        "minimum_success_events": 4
+      }
+    },
+    {
+      "scenario_id": "r5.02.source-review-transition",
+      "scenario_kind": "source_review_transition",
+      "expected": {
+        "detected_source_status": "needs_review",
+        "detected_knowledge_status": "needs_review",
+        "reviewed_source_status": "active",
+        "reviewed_knowledge_status": "verified"
+      }
+    },
+    {
+      "scenario_id": "r5.03.conflict-supersession-coexistence",
+      "scenario_kind": "conflict_supersession_coexistence",
+      "expected": {
+        "knowledge_ids": ["knowledge.r5.alpha", "knowledge.r5.beta", "knowledge.r5.gamma"],
+        "relation_types": ["contradicted_by", "supersedes"],
+        "superseded_status": "superseded",
+        "replacement_status": "candidate"
+      }
+    },
+    {
+      "scenario_id": "r5.04.partial-failure-resume",
+      "scenario_kind": "partial_failure_resume",
+      "expected": {
+        "rollback": "success",
+        "retry_event_type": "write_retried",
+        "final_contents": ["a-after", "b-after"]
+      }
+    },
+    {
+      "scenario_id": "r5.05.index-delete-cold-rebuild",
+      "scenario_kind": "index_delete_cold_rebuild",
+      "expected": {
+        "fts_decision": "not_needed_baseline_passed",
+        "physical_search_indexes": 0,
+        "deleted_projections": ["catalog/rules.jsonl", "catalog/records.jsonl", "catalog/units.jsonl", "evaluation/retrieval/r4_baseline_result.json"],
+        "logical_result_hash": "006bd8f314be6dbf9ff620a0c7764054a1704f2deb59b424bc61f48ac24d213d"
+      }
+    },
+    {
+      "scenario_id": "r5.06.new-session-cold-start",
+      "scenario_kind": "new_session_cold_start",
+      "expected": {
+        "request_path": "context/requests/r3_metadata_retrieval.json",
+        "same_revision_manifest": true,
+        "same_selection_ids": true,
+        "same_selection_fingerprint": true
+      }
+    },
+    {
+      "scenario_id": "r5.07.protected-namespace-isolation",
+      "scenario_kind": "protected_namespace_isolation",
+      "expected": {
+        "authorized_scope": "inputs/r5-video-task",
+        "authorized_target": "inputs/r5-video-task/source.mp4",
+        "unauthorized_target": "inputs/r5-other/secret.mp4",
+        "global_catalog_entries": 0,
+        "reuse_after_close": "rejected"
+      }
+    },
+    {
+      "scenario_id": "r5.08.real-task-leakage",
+      "scenario_kind": "real_task_leakage",
+      "expected": {
+        "maximum_rule_file_leakage": 0,
+        "tasks": [
+          {
+            "task_label": "report",
+            "expected_rule_ids": [
+              "rule.provenance.claim-classification",
+              "rule.provenance.preserve-source-language",
+              "rule.provenance.source-and-rationale",
+              "rule.retrieval.default-exclusions",
+              "rule.retrieval.direct-routing-first",
+              "rule.retrieval.minimum-context"
+            ],
+            "expected_file_paths": [
+              "PROJECT_RULES.md",
+              "docs/reports/2026-07-21_R-4_검색_평가_결과.md",
+              "rules/provenance.md",
+              "rules/retrieval.md"
+            ]
+          },
+          {
+            "task_label": "knowledge",
+            "expected_rule_ids": [
+              "rule.knowledge.confidence-is-not-verification",
+              "rule.knowledge.preserve-conflicts",
+              "rule.provenance.claim-classification",
+              "rule.provenance.source-and-rationale",
+              "rule.retrieval.default-exclusions",
+              "rule.retrieval.direct-routing-first",
+              "rule.retrieval.minimum-context"
+            ],
+            "expected_file_paths": [
+              "PROJECT_RULES.md",
+              "knowledge/items.jsonl",
+              "rules/knowledge.md",
+              "rules/provenance.md",
+              "rules/retrieval.md"
+            ]
+          },
+          {
+            "task_label": "video",
+            "expected_rule_ids": [
+              "rule.retrieval.default-exclusions",
+              "rule.retrieval.direct-routing-first",
+              "rule.retrieval.minimum-context"
+            ],
+            "expected_file_paths": [
+              "PROJECT_RULES.md",
+              "inputs/r5-video-task/source.mp4",
+              "rules/retrieval.md"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "r5.09.feedback-next-context",
+      "scenario_kind": "feedback_next_context",
+      "expected": {
+        "knowledge_id": "knowledge.r5.feedback",
+        "pre_review_selected": false,
+        "post_review_selected": true,
+        "event_types": ["record_lifecycle", "record_reviewed", "context_resolved"]
+      }
+    }
+  ]
+}

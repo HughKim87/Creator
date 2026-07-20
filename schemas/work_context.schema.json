@@ -33,6 +33,7 @@
         "relations": {"type": "array", "items": {"type": "object"}}
       }
     },
+    "protected_file_manifest": {"type": "array", "items": {"type": "object"}},
     "exclusions": {"type": "array", "items": {"type": "object"}},
     "write_contract": {"type": ["object", "null"]}
   }

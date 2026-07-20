@@ -1,0 +1,12 @@
+{
+  "operation_id": "op.r5.knowledge.governance.reverify",
+  "task_id": "task.r5.source-contract-review",
+  "action": "review",
+  "outcome": "verified",
+  "knowledge_id": "knowledge.governance.single-owner",
+  "expected_record_hash": "0359180bef9571c4c5131baea3ef4f8c23c1831513ad351598ab6904f6b11257",
+  "expected_revision": 4,
+  "actor": "project-agent",
+  "timestamp": "2026-07-21T02:50:00+09:00",
+  "reason": "Reverified single-owner workflow behavior after the R-5 operational acceptance additions."
+}

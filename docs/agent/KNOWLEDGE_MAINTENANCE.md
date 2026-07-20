@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-R-3 records contract-gated text, code, config, binary, move, and delete operations; restores all touched paths after a partial failure; and links a successful retry to the rejected or failed event. `maintain-knowledge` creates non-eligible candidates, performs hash-and-revision-gated reviews and revisions, and preserves superseded knowledge beside a replacement candidate and pending typed relation. `check-sources` compares registered project-document hashes, changes mismatched sources and dependent knowledge to `needs_review`, and appends review and revision evidence; `maintain-source` accepts a reviewed current hash only when the source has not changed again. Automated scheduling, case and decision lifecycle writers, review queues, and search reindexing remain unimplemented because they are outside R-3.
+R-3 records contract-gated text, code, config, binary, move, and delete operations; restores all touched paths after a partial failure; and links a successful retry to the rejected or failed event. `maintain-knowledge` creates non-eligible candidates, performs hash-and-revision-gated reviews and revisions, and preserves superseded knowledge beside a replacement candidate and pending typed relation. R-5 adds hash-gated `link_conflict`, which preserves both knowledge records and appends a verified `contradicted_by` relation with review and revision evidence. `check-sources` and `maintain-source` retain the explicit source-review loop. Automated scheduling, case and decision lifecycle writers, and review queues remain unimplemented.
 
 ## Review triggers
 
@@ -52,6 +52,8 @@ When a listed trigger occurs or the user asks for review, mark the item `needs_r
 
 Never overwrite a conflict to produce one apparently clean answer. Keep both records, their dates, scopes, sources, and relationship. A new record may supersede an old one only with an explicit reason and authority. Superseded records stay available for historical questions but are excluded from default current-context retrieval.
 
+`link_conflict` requires exactly two distinct existing knowledge IDs and the current hash of each. It creates one deterministic active `contradicted_by` relation; it does not change either claim's status. Supersession remains a separate action so conflict and replacement history can coexist.
+
 ## Maintenance outputs
 
 Each completed review must produce:
@@ -63,4 +65,4 @@ Each completed review must produce:
 - affected evaluation results;
 - a handoff update when the change affects current work.
 
-R-3 structured knowledge and source review operations must use the lifecycle commands and append-only history stores. Record kinds without an implemented lifecycle writer remain manual evidence in the active Korean report and [SESSION_HANDOFF.md](../../SESSION_HANDOFF.md); do not claim automated maintenance for those kinds.
+Structured knowledge, conflict, supersession, and source review operations must use the lifecycle commands and append-only history stores. Record kinds without an implemented lifecycle writer remain manual evidence in the active Korean report and [SESSION_HANDOFF.md](../../SESSION_HANDOFF.md); do not claim automated maintenance for those kinds.

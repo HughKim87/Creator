@@ -1,4 +1,4 @@
-"""Automated checks for the R-2A/R-2B deterministic context system."""
+"""Automated checks for the R-2A through R-5 deterministic context system."""
 
 from __future__ import annotations
 
@@ -385,6 +385,56 @@ class ContextSystemTests(unittest.TestCase):
             {result["item_id"] for result in first["results"]},
         )
         self.assertTrue(all(result["source_trace"] for result in first["results"]))
+
+    def test_r5_operational_acceptance_result_passes_all_nine_scenarios(self) -> None:
+        result = context_system.load_json(ROOT / "evaluation/operations/r5_acceptance_result.json")
+        self.assertTrue(result["ok"])
+        self.assertEqual(9, result["summary"]["scenarios"])
+        self.assertEqual(9, result["summary"]["passed"])
+        self.assertEqual(0, result["summary"]["failed"])
+        self.assertEqual(0, result["summary"]["rule_file_leakage"])
+        self.assertTrue(all(scenario["passed"] for scenario in result["scenarios"]))
+        self.assertEqual(
+            result["logical_result_hash"],
+            context_system.sha256_text(context_system.canonical_json(result["scenarios"])),
+        )
+
+    def test_r5_protected_scope_is_exact_and_never_globally_walked(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            authorized = root / "inputs/task-one/source.mp4"
+            unauthorized = root / "inputs/task-two/secret.mp4"
+            authorized.parent.mkdir(parents=True)
+            unauthorized.parent.mkdir(parents=True)
+            authorized.write_bytes(b"authorized")
+            unauthorized.write_bytes(b"unauthorized")
+            self.assertEqual(
+                "inputs/task-one/source.mp4",
+                context_system.assert_task_scoped_path(
+                    "inputs/task-one/source.mp4", root, ["inputs/task-one"]
+                ),
+            )
+            with self.assertRaises(context_system.ContextSystemError):
+                context_system.assert_task_scoped_path(
+                    "inputs/task-two/secret.mp4", root, ["inputs/task-one"]
+                )
+            self.assertEqual([], context_system.iter_project_files(root))
+
+    def test_r5_catalog_logical_revision_ignores_observation_self_hash(self) -> None:
+        first = [{"path": "catalog/files.jsonl", "runtime_hash": "a" * 64, "observed_at": "one", "status": "active"}]
+        second = [{"path": "catalog/files.jsonl", "runtime_hash": "b" * 64, "observed_at": "two", "status": "active"}]
+        self.assertEqual(
+            context_system._revision_hash(first, {"observed_at"}),
+            context_system._revision_hash(second, {"observed_at"}),
+        )
+
+    def test_r5_conflict_relation_type_matches_maintenance_contract(self) -> None:
+        schema = context_system.load_json(ROOT / "schemas/relation.schema.json")
+        allowed = schema["properties"]["relation_type"]["enum"]
+        self.assertIn("contradicted_by", allowed)
+        result = context_system.load_json(ROOT / "evaluation/operations/r5_acceptance_result.json")
+        scenario = next(item for item in result["scenarios"] if item["scenario_kind"] == "conflict_supersession_coexistence")
+        self.assertEqual(["contradicted_by", "supersedes"], scenario["evidence"]["relation_types"])
 
 
 if __name__ == "__main__":

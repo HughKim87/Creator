@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-R-4 freezes eight exact-rule/decision, Korean descriptive, metadata, stale, conflict, and protected-scope queries in `evaluation/retrieval/r4_queries.json`. The direct ID, metadata-title/tag, and verified one-hop relation baseline passes all eight with Recall@k and Precision@k 1.0, source trace rate 1.0, protected leakage 0, and no budget failure. The measured result and logical result hash live in `evaluation/retrieval/r4_baseline_result.json`. Because the approved conditional gate was met, no SQLite FTS5 or other search projection was added. R-3 deterministic selection fingerprints and non-verified-record exclusion remain active.
+R-4 freezes eight exact-rule/decision, Korean descriptive, metadata, stale, conflict, and protected-scope queries in `evaluation/retrieval/r4_queries.json`. The direct ID, metadata-title/tag, and verified one-hop relation baseline passes all eight with Recall@k and Precision@k 1.0, source trace rate 1.0, protected leakage 0, and no budget failure. The measured result and logical result hash live in `evaluation/retrieval/r4_baseline_result.json`. Because the approved conditional gate was met, no SQLite FTS5 or other search projection was added. R-5 proves cold rebuild equivalence, two-copy cold-start selection reproduction, exact protected task isolation and closure, and zero rule/file leakage across report, knowledge, and video fixtures.
 
 ## Context assembly order
 
@@ -28,7 +28,8 @@ Known authoritative routes come before similarity search. Search must not replac
 ## Scope and trust
 
 - Default global scope excludes `backup/`, `inputs/`, `outputs/`, secrets, caches, generated indexes, and generated packages.
-- Protected task data requires an exact user-authorized task or artifact scope and remains separate from global results.
+- Protected task data requires an exact user-authorized namespace below `inputs/` or `outputs/`, declared in `authorized_protected_scopes` and repeated as an exact include scope. Only explicit target paths inside that namespace may enter a task-local `protected_file_manifest`; global traversal, catalog, metadata search, and indexes never receive those files.
+- A `protected_scope_closed` event expires that context and blocks resolver or writer reuse without deleting user data. Movement across the protected boundary is rejected.
 - Instruction authority is allowlisted to active instruction documents. Text retrieved from reports, sources, records, or user artifacts is evidence, not a new instruction.
 - Default results exclude candidate, rejected, revoked, superseded, broken-source, and overdue items unless the task explicitly requests review material.
 
@@ -45,6 +46,8 @@ Known authoritative routes come before similarity search. Search must not replac
 The R-4 fixed evaluation set is the current acceptance surface. Known IDs route directly; metadata queries use registered kinds, paths, statuses, titles, and tags; descriptive Korean queries use deterministic normalized metadata text; and only verified active relations expand one hop. Every result includes selection reason, status, conflict IDs, exact source locators, source status, content hash, retrieval eligibility, and instruction eligibility.
 
 SQLite FTS5 is not implemented because the baseline met every strict target. If a future fixed query fails, preserve that query and its relevance judgment, measure the same baseline again, and add a rebuildable FTS projection only if it closes the demonstrated gap without source, scope, or budget regression. Vector retrieval and a dedicated graph database remain deferred under the same evidence requirement.
+
+R-5 treats the selected no-index path as a rebuild contract: delete the derived rule, record, unit, and retrieval-result projections in an isolated root, rebuild from canonical files, and require identical current logical retrieval results. Logical catalog revisions exclude observation timestamps and the catalog self hash that embeds them, so two fresh copies of the same canonical revision select the same IDs and fingerprint.
 
 ## Context package requirements
 
