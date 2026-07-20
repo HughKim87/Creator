@@ -65,6 +65,7 @@ an active destination, it is incomplete and must be reconstructed before the dep
 | Work claims and completion receipts | Duplicates state in a single-writer workflow | Concurrent framework edits repeatedly collide |
 | Mandatory hooks and CI | Installation and environment cost | A manual integrated check repeatedly fails to prevent the same regression |
 | Broad CLI wrapper | Adds indirection without functional value | Command discovery becomes a measured repeated cost |
+| Local semantic document analysis, including Ollama-backed options | Current direct routes and Obsidian Properties/Base select exact authorities without semantic inference; local-model indexing and inference add cost without a measured current benefit | Recurring queries cannot be resolved by direct routes or bounded Properties/Base discovery, the corpus has materially grown or contains substantial unclassified legacy content, and a same-corpus benchmark proves a candidate-only semantic fallback improves accuracy or total context; activation still requires separate approval and final authority verification through active document properties |
 
 ## Excluded capabilities
 
