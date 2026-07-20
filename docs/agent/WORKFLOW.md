@@ -54,7 +54,7 @@ The gate fails if another current proposal for the subject exists, if the new fi
 - Create a new report only for unique point-in-time evidence. Keep it to the stage delta, sources, actual validation, unresolved risk, and approval boundary; link to owners instead of repeating full rules, procedures, or designs.
 - Allow only one current proposal per subject. Mark a replaced proposal as superseded evidence and exclude it from default context; use verified Git commit, blob, and content hashes to preserve duplicate full text.
 - Record material commands, changed artifacts, failures, and verification results in the available project evidence surface.
-- Until the knowledge record system is implemented, the authoritative evidence surfaces are repository changes, Korean stage reports, and the current handoff. Do not claim that structured work-event logging exists.
+- R-2A context operations use the structured request → resolver → work context/write contract → Markdown writer path in `tools/context/context_system.py`. That path updates the universal catalog, unit projection, and append-only event evidence. General knowledge, decision, case, source, relation, and non-Markdown write-back remain unimplemented and must not be claimed from this thin slice.
 - When a repeated failure affects continuation, preserve the objective, attempt, confirmed cause, consecutive count, and next condition.
 
 ## 5. Validate
@@ -79,6 +79,8 @@ For document changes, also verify that every active document is registered, no s
 3. State exclusions, unimplemented work, risks, and approval status.
 4. Update [SESSION_HANDOFF.md](../../SESSION_HANDOFF.md) with verified current state, evidence paths, active failures, and the first unstarted action.
 5. If the stage requires approval, stop after the report and wait.
+
+For an R-2A registered Markdown write, the closure update must be authorized by the same work context and its before hashes. A direct manual edit is permitted only during the recorded initial bootstrap before the live writer fixture.
 
 A stage report may be delivered in the user response when no durable point-in-time artifact is required. Do not create another file merely to restate the same closure information.
 

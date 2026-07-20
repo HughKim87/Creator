@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-Direct document routing is active through the foundation documents. Automated record indexing, SQLite FTS5 retrieval, relation expansion, and generated context packages are specified but not implemented.
+R-2A direct routing is active through `catalog/files.jsonl`, deterministic artifact units, exact file/unit targets, conditional-rule predicates, one-hop declared file dependencies, and generated work contexts with explicit exclusions and selection reasons. Knowledge/case/decision retrieval, typed relation expansion, SQLite FTS5, vector retrieval, and a general search index remain unimplemented.
 
 ## Context assembly order
 

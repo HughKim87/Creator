@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "task.r2a.fixture.read",
+  "requested_by": "user",
+  "intent": "Read only the exact validation procedure heading from the active workflow using bounded project context.",
+  "actions": ["read"],
+  "phase": "read",
+  "target_paths": ["docs/agent/WORKFLOW.md"],
+  "target_file_ids": ["file.docs.agent.workflow"],
+  "target_unit_ids": ["unit.file.docs.agent.workflow.heading.common-work-workflow.5.-validate"],
+  "target_kinds": ["procedure"],
+  "output_audience": "agent",
+  "include_scopes": ["docs/agent/WORKFLOW.md"],
+  "exclude_scopes": ["backup", "inputs", "outputs"],
+  "task_tags": ["retrieval", "context", "validation"],
+  "as_of": "2026-07-20T23:40:00+09:00",
+  "context_budget": 8000
+}

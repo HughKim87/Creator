@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project://schemas/rule.schema.json",
+  "title": "Conditional rule record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "rule_id", "text", "authority", "priority", "status", "applies_when", "excludes_when", "phases", "task_tags", "source_refs", "validators"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "rule_id": {"type": "string", "pattern": "^rule\\.[a-z0-9.-]+$"},
+    "text": {"type": "string", "minLength": 1},
+    "authority": {"const": "project_rule"},
+    "priority": {"type": "integer"},
+    "status": {"enum": ["active", "superseded", "revoked"]},
+    "applies_when": {"$ref": "#/$defs/predicate"},
+    "excludes_when": {"type": "array", "items": {"$ref": "#/$defs/condition"}},
+    "phases": {"type": "array", "items": {"enum": ["discover", "plan", "read", "write", "validate", "close"]}, "minItems": 1, "uniqueItems": true},
+    "task_tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "source_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+    "validators": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true}
+    ,"pack_path": {"type": "string"}
+  },
+  "$defs": {
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "op", "value"],
+      "properties": {
+        "field": {"type": "string"},
+        "op": {"enum": ["eq", "in", "intersects", "nonempty"]},
+        "value": {}
+      }
+    },
+    "predicate": {
+      "type": "object",
+      "oneOf": [
+        {"required": ["any"], "properties": {"any": {"type": "array", "items": {"$ref": "#/$defs/condition"}, "minItems": 1}}, "additionalProperties": false},
+        {"required": ["all"], "properties": {"all": {"type": "array", "items": {"$ref": "#/$defs/condition"}, "minItems": 1}}, "additionalProperties": false}
+      ]
+    }
+  }
+}

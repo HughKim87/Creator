@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project://schemas/task_request.schema.json",
+  "title": "Immutable task request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_id", "requested_by", "intent", "actions", "phase", "target_paths", "target_file_ids", "target_unit_ids", "target_kinds", "output_audience", "include_scopes", "exclude_scopes", "task_tags", "as_of", "context_budget"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "task_id": {"type": "string", "pattern": "^task\\.[a-z0-9._-]+$"},
+    "requested_by": {"type": "string"},
+    "intent": {"type": "string", "minLength": 1},
+    "actions": {"type": "array", "items": {"enum": ["read", "create", "write", "validate", "close"]}, "minItems": 1, "uniqueItems": true},
+    "phase": {"enum": ["discover", "plan", "read", "write", "validate", "close"]},
+    "target_paths": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "target_file_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "target_unit_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "target_kinds": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "output_audience": {"enum": ["agent", "user", "machine"]},
+    "include_scopes": {"type": "array", "items": {"type": "string"}},
+    "exclude_scopes": {"type": "array", "items": {"type": "string"}},
+    "task_tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "as_of": {"type": "string"},
+    "context_budget": {"type": "integer", "minimum": 1},
+    "write_payload_path": {"type": "string"}
+  }
+}

@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-This file is an approved foundation contract, not a general implementation claim. One user-authorized manual case record exists at [case.project.document-authority-duplication](../../knowledge/cases/case.project.document-authority-duplication.md), and one user-requested closed manual [session record](../../records/sessions/session.2026-07-20.r1-r1.1-document-governance.md) preserves the current conversation and work history. Schemas, writers, automated validators, event stores, databases, and indexes do not yet exist; both records identify their manual bootstrap status.
+R-2A implements the project-file and task-context thin slice: rule, file, unit, task-request, work-context, write-contract, and event schemas; the universal file catalog; deterministic Markdown/JSON/JSONL units; an append-only R-2A event chain; and a contract-gated Markdown writer. One user-authorized manual case record and one closed manual session record remain outside the structured corpus. Knowledge, decision, case, source, relation, review-history migration and databases or search indexes are still unimplemented and belong to later approved stages.
 
 ## Canonical categories
 

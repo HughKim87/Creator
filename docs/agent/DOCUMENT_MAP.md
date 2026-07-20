@@ -39,6 +39,13 @@ Git history is the normal preservation surface for superseded full text. Do not 
 |---|---|---|---|---|
 | [AGENTS.md](../../AGENTS.md) | Router | Active router | `maintained-current`; mandatory | Every conversation start |
 | [PROJECT_RULES.md](../../PROJECT_RULES.md) | Policy | Active authority | `maintained-current`; mandatory | Every conversation start and throughout work |
+| [governance rules](../../rules/governance.md) | Policy pack | Active conditional authority | `maintained-current`; resolver-selected only | Staged work, ownership, or document-boundary predicates match |
+| [version-control rules](../../rules/version-control.md) | Policy pack | Active conditional authority | `maintained-current`; resolver-selected only | Backup, recovery, or version-control predicates match |
+| [documentation rules](../../rules/documentation.md) | Policy pack | Active conditional authority | `maintained-current`; resolver-selected only | Documentation, report, guide, or metadata predicates match |
+| [provenance rules](../../rules/provenance.md) | Policy pack | Active conditional authority | `maintained-current`; resolver-selected only | Claim, source, research, inference, or decision predicates match |
+| [knowledge rules](../../rules/knowledge.md) | Policy pack | Active conditional authority | `maintained-current`; resolver-selected only | Knowledge, confidence, conflict, or supersession predicates match |
+| [retrieval rules](../../rules/retrieval.md) | Policy pack | Active conditional authority | `maintained-current`; resolver-selected only | Routing, context, catalog, unit, or retrieval predicates match |
+| [validation rules](../../rules/validation.md) | Policy pack | Active conditional authority | `maintained-current`; resolver-selected only | Validation, reporting, failure, closure, or handoff predicates match |
 | [DOCUMENT_MAP.md](DOCUMENT_MAP.md) | Router and registry | Active authority for document ownership and routing | `maintained-current`; mandatory after startup | Selecting any task-specific document or creating, replacing, or preserving a document |
 | [SESSION_HANDOFF.md](../../SESSION_HANDOFF.md) | Current state | Active state owner | `maintained-current`; mandatory | Every conversation start and task resume |
 | [2026-07-20 R-1/R-1.1 and document-governance session](../../records/sessions/session.2026-07-20.r1-r1.1-document-governance.md) | Session record | Historical evidence only; current state remains in the handoff | `retained-evidence`; exact history route, not startup | Reviewing this session's conversation sequence, work, decisions, failures, or R-2A authorization history |
@@ -55,6 +62,7 @@ Git history is the normal preservation surface for superseded full text. Do not 
 | [R-1 design correction marker](../reports/2026-07-20_R-1_지식_시스템_설계_정정.md) | Report | Superseded proposal; no current design authority | `superseded-evidence`; preservation marker only | Exact comparison with the replaced 11/18 proposal |
 | [Pre-R-2 intent audit marker](../reports/2026-07-20_R-2_착수전_사용자_의도_정합성_검증.md) | Report | Evidence only | `retained-evidence`; preservation marker only | Auditing why R-1.1 was required |
 | [R-1.1 corrected design](../reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md) | Report and accepted decision source | Accepted D-01 through D-17 and R-2A implementation boundary | `retained-evidence`; exact R-2A route, not startup | Implementing or validating R-2A, or reviewing later R-2B-to-R-5 boundaries |
+| [R-2A context-system implementation result](../reports/2026-07-20_R-2A_컨텍스트_시스템_구현_결과.md) | Report | R-2A implementation and validation evidence; no policy authority | `retained-evidence`; exact R-2A audit route | Auditing the completed R-2A thin slice or deciding whether to approve R-2B |
 | [Document authority duplication case](../../knowledge/cases/case.project.document-authority-duplication.md) | Case record | Active resolved case evidence; prevention authority stays in the linked rules and workflow | `maintained-current`; task-routed, not startup | Creating or reviewing documents, reports, proposals, authority, preservation, or duplicate context behavior |
 
 ## Report routing and creation
@@ -66,6 +74,10 @@ Git history is the normal preservation surface for superseded full text. Do not 
 5. Only one `current-proposal` may exist for a subject. Replaced proposals become `superseded-evidence` immediately.
 6. When a superseded report substantially duplicates a current document, preserve its full committed snapshot by commit, blob, and content hash and keep only a short preservation marker in the working tree.
 7. Every maintained document creation must pass the mandatory [document creation gate](WORKFLOW.md#document-creation-gate). A file without a unique owner and registry row is invalid even when its content is correct.
+
+## Universal file catalog
+
+[`catalog/files.jsonl`](../../catalog/files.jsonl) is the R-2A canonical machine registry for every project-governed file, including non-Markdown artifacts and planned write targets. [`catalog/units.jsonl`](../../catalog/units.jsonl) and [`catalog/rules.jsonl`](../../catalog/rules.jsonl) are rebuildable projections. This document remains the human authority and routing registry for maintained documents; it does not duplicate file hashes, unit records, or write contracts owned by the universal catalog and work contexts.
 
 ## Document metadata contract
 

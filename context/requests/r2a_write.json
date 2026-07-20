@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "task_id": "task.r2a.fixture.write",
+  "requested_by": "user",
+  "intent": "Close R-2A by creating the Korean implementation report, activating its document-map row, and updating the sole current handoff through the contract-gated Markdown writer.",
+  "actions": ["create", "write", "close"],
+  "phase": "close",
+  "target_paths": [
+    "docs/reports/2026-07-20_R-2A_컨텍스트_시스템_구현_결과.md",
+    "docs/agent/DOCUMENT_MAP.md",
+    "SESSION_HANDOFF.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_kinds": ["report", "router_registry", "current_state"],
+  "output_audience": "user",
+  "include_scopes": [
+    "docs/reports/2026-07-20_R-2A_컨텍스트_시스템_구현_결과.md",
+    "docs/agent/DOCUMENT_MAP.md",
+    "SESSION_HANDOFF.md"
+  ],
+  "exclude_scopes": ["backup", "inputs", "outputs"],
+  "task_tags": ["stage", "approval", "documentation", "report", "provenance", "validation", "handoff", "closure", "agent_facing"],
+  "as_of": "2026-07-20T23:55:00+09:00",
+  "context_budget": 24000,
+  "write_payload_path": "context/payloads/r2a_write.json"
+}

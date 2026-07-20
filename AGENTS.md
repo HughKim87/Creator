@@ -8,11 +8,11 @@
 
 ## Mandatory startup
 
-1. Before any other project action, locate and read every `PROJECT_RULES.md` in each project folder within the authorized workspace scope, completely.
-2. Treat the root [PROJECT_RULES.md](PROJECT_RULES.md) as the active project's controlling rules.
-3. Treat rule files under `backup/` as historical sources: observe their access-safety constraints while inspecting those snapshots, but do not activate superseded procedures or edit them.
-4. Read [SESSION_HANDOFF.md](SESSION_HANDOFF.md) for the current checkpoint.
-5. Use [DOCUMENT_MAP.md](docs/agent/DOCUMENT_MAP.md) to select only the documents required for the task.
+1. Read the root [PROJECT_RULES.md](PROJECT_RULES.md) completely as the active project's eight-rule boot kernel.
+2. Do not discover or activate rule files under `backup/`, `inputs/`, or `outputs/`; `backup/` is historical evidence and the protected paths require exact user scope.
+3. Read [SESSION_HANDOFF.md](SESSION_HANDOFF.md) as the only current checkpoint.
+4. Read [DOCUMENT_MAP.md](docs/agent/DOCUMENT_MAP.md) to identify direct authorities.
+5. For execution, resolve a structured task request with [`tools/context/context_system.py`](tools/context/context_system.py) and apply only the conditional rule IDs selected in its work context. If the resolver is unavailable, use the exact direct route and record that fallback instead of broad-loading `rules/`.
 
 ## Routing
 

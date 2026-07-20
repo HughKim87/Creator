@@ -8,7 +8,7 @@
 
 ## Current implementation status
 
-This is the maintenance contract for the future knowledge system. Automated stale detection, review queues, revision history, and reindexing are not yet implemented.
+R-2A records task-context resolution and contract-gated Markdown writes in an append-only hash chain, then refreshes file and unit integrity evidence. Automated knowledge stale detection, review queues, case/decision revision history, relation maintenance, and search reindexing remain unimplemented.
 
 ## Review triggers
 
