@@ -101,12 +101,39 @@ class DocumentGovernanceTests(unittest.TestCase):
 
     def test_reports_are_not_registered_as_execution_authorities(self) -> None:
         registry = REGISTRY.read_text(encoding="utf-8")
-        for report in ("doc.structure_report", "doc.rebuild_report"):
+        for report in (
+            "doc.structure_report",
+            "doc.rebuild_report",
+            "doc.graphify_adoption_failure_report",
+        ):
             row = next(
                 line for line in registry.splitlines() if line.startswith(f"| `{report}` |")
             )
             self.assertIn("| report |", row)
             self.assertIn("| evidence |", row)
+
+    def test_graphify_is_excluded_from_active_routing(self) -> None:
+        for relative_path in (
+            ".graphifyignore",
+            "tools/knowledge_navigation.py",
+            "tools/route_task.ps1",
+            "tests/test_knowledge_navigation.py",
+        ):
+            self.assertFalse((ROOT / relative_path).exists(), relative_path)
+
+        agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertNotIn("Graphify", agents)
+        self.assertNotIn("route_task.ps1", agents)
+
+        reconstruction = (ROOT / "docs/agent/RECONSTRUCTION_MAP.md").read_text(
+            encoding="utf-8"
+        )
+        graphify_row = next(
+            line
+            for line in reconstruction.splitlines()
+            if line.startswith("| Graphify document discovery")
+        )
+        self.assertIn("| excluded |", graphify_row)
 
     def test_handoff_contains_no_dynamic_git_snapshot(self) -> None:
         handoff = (ROOT / "SESSION_HANDOFF.md").read_text(encoding="utf-8")

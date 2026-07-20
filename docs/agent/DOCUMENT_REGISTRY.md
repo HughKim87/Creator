@@ -55,6 +55,7 @@ The registry row supplies the stable ID, path, kind, lifecycle, authority class,
 | `doc.rebuild_report` | `docs/reports/REBUILD_EXECUTION_REPORT.md` | report | superseded | evidence | user / Korean | structure_validated | Explicit review of the discarded first rebuild | Superseded by `doc.rebuild_plan` and `doc.reconstruction` |
 | `doc.document_node_analysis` | `docs/reports/2026-07-19_문서_노드_구조_개선_분석.md` | report | historical | evidence | user / Korean | structure_validated | Document-node architecture review or implementation approval | Proposed L3 routing and context-budget refinement; not an execution authority |
 | `doc.obsidian_adoption_analysis` | `docs/reports/2026-07-19_옵시디언_도입_타당성_분석.md` | report | historical | evidence | user / Korean | structure_validated | Obsidian adoption decision or pilot approval | Evidence-based assessment; recommends a bounded L3 pilot, not full migration |
+| `doc.graphify_adoption_failure_report` | `docs/reports/2026-07-20_그래피파이_도입_실패_분석.md` | report | historical | evidence | user / Korean | tool_validated | Graphify cancellation review or future re-evaluation | Records measured failures, reporting defects, rollback scope, and exclusion decision; not an execution authority |
 
 Temporary migration-source documents are not registered as active and cannot override this registry.
 
@@ -100,7 +101,7 @@ Folder depth is not an authority mechanism. Add a subfolder only when a coherent
 - Split a document when content has a different authority, audience/language, lifecycle, read trigger, or independent write owner, or when unrelated sections are repeatedly loaded for separate task routes.
 - Keep sections together when they share all five attributes and are normally read and changed as one unit. Length alone is not a split reason.
 - Merge documents when they answer the same durable question for the same audience and lifecycle and one is only restating the other. Preserve the surviving stable ID and mark any retained predecessor as superseded evidence.
-- Before a split, merge, rename, or move, identify the surviving authority and affected route IDs. In the same change update this registry, `AGENTS.md`, inbound links, tests, and the derived route graph; do not leave compatibility copies as active authorities.
+- Before a split, merge, rename, or move, identify the surviving authority and affected route IDs. In the same change update this registry, `AGENTS.md`, inbound links, and tests; do not leave compatibility copies as active authorities.
 - Drafts are not execution inputs. Deprecation requires a replacement or explicit no-replacement decision. Historical and superseded documents remain available only through exact-name history routes.
 
 ## Navigation model
@@ -110,7 +111,7 @@ Navigation has two orthogonal indexes and no third hand-maintained catalog:
 1. `AGENTS.md` is the task-time index: stable route ID -> startup set -> exact read delta -> selector -> default exclusions, plus stable write ID -> authority.
 2. This registry is the document index: stable document ID -> purpose/classification/path -> read trigger -> relationships.
 
-Start with the task index and use it directly for known routes. Use the document index to resolve an affected authority, unknown route, lifecycle, or relationship, and invoke the derived graph only for ambiguity or large-set validation. Related links never expand the read set automatically. Search by route ID, document ID, exact path, or stable heading before using broad text search.
+Start with the task index and use its exact read delta directly. Use this index only to resolve an affected authority, lifecycle, or relationship after the route requires it. Related links never expand the read set automatically. Search by route ID, document ID, exact path, or stable heading before using broad text search.
 
 ## Reference protocol
 
@@ -119,20 +120,17 @@ Start with the task index and use it directly for known routes. Use the document
 - Reference code by active path and symbol, for example `tools/state_io.py::validate_reference_input`.
 - Do not link an active authority to a temporary migration-source path. Reconstruct retained content first and link its active destination.
 - State the relationship when ambiguity is possible: `normative`, `implements`, `evidence`, `derived-from`, or `supersedes`.
-- Use `routes_to`, `governed_by`, `implements`, `derived_from`, `evidence_for`, and `supersedes` as typed relationship labels in generated navigation data. Only `always_read`, `read_when_current_work`, and `requires` may select read documents.
+- Use `routes_to`, `governed_by`, `implements`, `derived_from`, `evidence_for`, and `supersedes` as relationship labels in the registry or explicit document links. Relationships describe provenance and ownership; only an `AGENTS.md` route selects read documents.
 - Do not persist branch divergence, dirty-worktree state, or other facts that Git can query. Historical reports may cite a commit as point-in-time evidence.
 - A moved document must update this registry, routed paths, internal links, and governance tests in the same change.
 
-## Derived Graphify route graph
+## Direct route maintenance
 
-- Generate the route graph from `AGENTS.md` and this registry; never hand-edit it or treat it as a third source of truth.
-- Store generated graphs, manifests, query results, and caches outside the repository. The graph contains document metadata and paths, not document bodies or protected user-data nodes.
-- Resolve exactly one route ID before traversal. Multi-intent work uses an explicit union of route IDs; free-form semantic similarity cannot choose extra documents.
-- Traverse at most one edge from a route or write node. Document-to-document traversal, generic `references` edges, community expansion, and unbounded BFS are prohibited for read selection.
-- Require exact hashes of both generating authorities. A stale hash, missing selector, unknown route, unexpected path, or non-whitelisted edge fails closed to the direct `AGENTS.md` route.
-- Return only selected paths, bounded headings/selectors, exclusions, and provenance. Open document contents through the normal project read path after selection.
-- Keep direct routing as the default while its exact path is known. A generated graph becomes default only after the same-task total context, including its compact result payload, is lower without an accuracy regression.
-- Adding unrelated registered documents must not change an existing route result. Adding or changing a route intentionally changes `AGENTS.md`, invalidates the derived graph, and requires routing tests.
+- Resolve exactly one route ID before reading. Multi-intent work uses an explicit union of route rows; wording similarity cannot choose extra documents.
+- Treat every selector as mandatory when the route declares one. If it is missing, ambiguous, or points across a protected boundary, stop and report the unresolved part.
+- Keep route selection independent of the number of registered documents. Adding an unrelated document must not change an existing route result.
+- Add or change a route only in `AGENTS.md`, then update affected registry relationships and routing tests in the same change.
+- Graphify and the removed compatible-format helper are excluded from active routing. The historical evidence and reopening conditions are recorded in `doc.graphify_adoption_failure_report`.
 
 ## Maintenance checks
 
@@ -142,5 +140,5 @@ Start with the task index and use it directly for known routes. Use the document
 - One durable domain has one normative authority.
 - Derived and evidence documents are not execution inputs.
 - Agent documents contain English prose; user and report documents contain Korean prose.
-- Generated route graphs contain zero protected paths, use only whitelisted one-hop selection edges, and fail closed when `AGENTS.md` or this registry changes.
+- Direct routes select only their declared documents and stop on missing selectors, ambiguity, or protected-path conflicts.
 - `AGENTS.md`, `PROJECT_RULES.md`, and `SESSION_HANDOFF.md` stay within their context budgets enforced by tests.

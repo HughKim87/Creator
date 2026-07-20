@@ -42,8 +42,9 @@ class DocumentRoutingTests(unittest.TestCase):
         state = route_cells("handle_video_task_state")
         self.assertIn("Exact designated task `state.json`", state[3])
         agents = AGENTS_PATH.read_text(encoding="utf-8")
-        self.assertIn("traverse one hop", agents)
-        self.assertIn("must never continue from document nodes", agents)
+        self.assertIn("Use the table directly", agents)
+        self.assertIn("stop the unresolved part and report it", agents)
+        self.assertIn("Do not expand from one selected document", agents)
 
     def test_resume_profile_reads_only_global_rules_and_current_state(self) -> None:
         cells = profile_cells("resume_current_work")

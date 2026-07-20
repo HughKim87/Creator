@@ -13,7 +13,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Obsidian per-user UI state; stable pilot settings remain reviewable.
+# Obsidian per-user UI state; stable local settings remain reviewable.
 .obsidian/workspace*.json
 .obsidian/appearance.json
 .obsidian/hotkeys.json

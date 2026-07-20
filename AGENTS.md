@@ -19,9 +19,9 @@
 
 1. Map the request to one stable route ID below. For independent intents, union only the applicable rows and deduplicate the result.
 2. Read the startup set, then the exact read delta. Resolve an `affected`, `named`, or `designated` selector to a document ID, bounded heading, or exact user-named item before opening it.
-3. A document link, registry relationship, Graphify semantic edge, or nearby folder is not a read trigger by itself.
-4. Use this table directly for a known route. Invoke the derived Graphify route graph only to resolve or validate ambiguity or a large affected set; when invoked, it may traverse one hop over `always_read`, `read_when_current_work`, or `requires` edges and must never continue from document nodes.
-5. If the route graph is stale, ambiguous, missing a selector, or disagrees with this table, use this table directly and fail closed on the unresolved part.
+3. A document link, registry relationship, similar wording, or nearby folder is not a read trigger by itself.
+4. Use the table directly. Do not expand from one selected document to another unless the same route row explicitly requires it.
+5. If the route is ambiguous, a required selector is missing, or a protected path would be crossed, stop the unresolved part and report it to the user; do not guess or silently substitute another route.
 6. If no route applies, use `docs/agent/DOCUMENT_REGISTRY.md` to identify the narrowest authority. Add a route only when the task type is expected to recur.
 
 ## Task routing
