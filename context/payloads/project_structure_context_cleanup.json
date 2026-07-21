@@ -1,0 +1,8 @@
+{
+  "operations": [
+    {
+      "target_path": "context/work-contexts/project_structure_next_work_analysis.json",
+      "operation": "delete_file"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.commands-1-4-requirements-reanalysis-write",
+  "requested_by": "user",
+  "intent": "Correct the existing Codex report so it audits the user's final goal, common principles, and Commands 1 through 4; register the corrected exact route; and replace the incorrect L0-to-L8 current checkpoint with the evidence-based partial-fulfillment checkpoint. Do not implement any identified gap.",
+  "actions": [
+    "write",
+    "validate",
+    "close"
+  ],
+  "phase": "close",
+  "target_paths": [
+    "docs/reports/codex_2026-07-22_프로젝트_구조_분석_및_다음_작업_제안.md",
+    "docs/agent/DOCUMENT_MAP.md",
+    "SESSION_HANDOFF.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": [
+    "report",
+    "router",
+    "current-state"
+  ],
+  "output_audience": "user",
+  "include_scopes": [
+    "docs/reports",
+    "docs/agent"
+  ],
+  "exclude_scopes": [
+    "backup",
+    "inputs",
+    "outputs"
+  ],
+  "task_tags": [
+    "write",
+    "analysis",
+    "requirements",
+    "commands-1-4",
+    "report",
+    "handoff",
+    "validation",
+    "closure"
+  ],
+  "as_of": "2026-07-22T00:00:00+09:00",
+  "context_budget": 24000,
+  "write_payload_path": "context/payloads/commands_1_4_requirements_reanalysis_write.json"
+}

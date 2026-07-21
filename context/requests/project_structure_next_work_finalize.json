@@ -1,0 +1,44 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.project-structure-next-work-finalize",
+  "requested_by": "user",
+  "intent": "Record the successful post-write regression and integrated validation in the Codex report and current handoff.",
+  "actions": [
+    "write",
+    "validate",
+    "close"
+  ],
+  "phase": "close",
+  "target_paths": [
+    "docs/reports/codex_2026-07-22_프로젝트_구조_분석_및_다음_작업_제안.md",
+    "SESSION_HANDOFF.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": [
+    "report",
+    "current-state"
+  ],
+  "output_audience": "user",
+  "include_scopes": [
+    "docs/reports"
+  ],
+  "exclude_scopes": [
+    "backup",
+    "inputs",
+    "outputs"
+  ],
+  "task_tags": [
+    "write",
+    "validation",
+    "report",
+    "handoff",
+    "closure",
+    "pre-l"
+  ],
+  "as_of": "2026-07-22T00:00:00+09:00",
+  "context_budget": 8000,
+  "write_payload_path": "context/payloads/project_structure_next_work_finalize.json"
+}

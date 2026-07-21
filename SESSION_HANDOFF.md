@@ -6,94 +6,116 @@
 - Language: English.
 - Location: Project root. Governed by [PROJECT_RULES.md](PROJECT_RULES.md), routed through [DOCUMENT_MAP.md](docs/agent/DOCUMENT_MAP.md), and executed through [WORKFLOW.md](docs/agent/WORKFLOW.md).
 
-## Current checkpoint
+## Read order
 
-The pre-L operational hardening requested after the Claude/Codex R0-through-R-5 cross-validation is complete. Findings F-1 through F-4 are now mitigated by bounded context projections, a Python 3.11-plus capability contract, historical-link isolation, and repository-level context-system serialization. The R knowledge/context system remains complete, while the pre-R L0-through-L8 production roadmap remains incomplete and must be reconnected before any L implementation.
+1. Read [PROJECT_RULES.md](PROJECT_RULES.md) completely.
+2. Read this file as the only current-state source.
+3. Read [DOCUMENT_MAP.md](docs/agent/DOCUMENT_MAP.md) before selecting any additional document.
+4. For the pending coverage question, read the exact retained audit [Commands 1-to-4 fulfillment reanalysis](docs/reports/codex_2026-07-22_프로젝트_구조_분석_및_다음_작업_제안.md).
+5. Before execution, create a structured task request and resolve only the selected conditional rules and exact evidence paths.
+
+## Current goal
+
+Close the current session after preserving the verified Commands 1-to-4 fulfillment audit. No implementation is active. The first unstarted action is to obtain user approval for a corpus coverage ledger that inventories what historical knowledge is migrated, missing, rejected with reason, not recoverable, or deferred.
+
+## Key terms
+
+| Term | Meaning in this checkpoint |
+|---|---|
+| Minimum system acceptance | The R-2A-through-R-5 file-based knowledge/context loop passed its bounded structural and automated acceptance surface. |
+| Corpus completeness | Every expected historical work, session, knowledge, decision, and failure candidate has an explicit mapped status and source evidence. This is not yet proven. |
+| Coverage ledger | The proposed analysis-only inventory that establishes corpus completeness before any migration or new lifecycle implementation. |
+| Current-state owner | This file alone. Reports and session records are retained evidence, not current state. |
+
+## Source inputs
+
+- `docs/reports/codex_2026-07-22_프로젝트_구조_분석_및_다음_작업_제안.md` — retained current audit; overall judgment is partial fulfillment.
+- `docs/reports/2026-07-20_기존_프로젝트_분석.md` — retained Command 1 evidence and the broad reusable-knowledge/failure inventory.
+- `docs/reports/2026-07-20_프로젝트_기반_및_지식_시스템_설계.md` and `docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md` — retained design and accepted execution-boundary evidence.
+- `docs/reports/2026-07-20_프로젝트_기본_기반_구축.md` — retained Command 3 evidence.
+- `docs/reports/2026-07-21_R-2B_기존_지식_코퍼스_이관_결과.md` and `docs/reports/2026-07-21_R-5_운영_인수_및_전체_완료_결과.md` — retained migration scope and bounded completion evidence.
+- `knowledge/`, `records/`, `context/`, and `catalog/` — current canonical stores and rebuildable execution evidence.
+- `evaluation/retrieval/r4_baseline_result.json` and `evaluation/operations/r5_acceptance_result.json` — derived fixed automated evidence.
+
+## Resume checkpoint
+
+The user's final goal, common principles, and Commands 1 through 4 have been re-audited against the original stage reports, approval wording, active contracts, canonical stores, and fixed R-4/R-5 evidence. Commands 1 and 3 are fulfilled; Command 2 is fulfilled after the accepted R-1.1 correction; Command 4 and the final goal are partially fulfilled. The project has a working LLM-independent minimum knowledge/context loop but not a comprehensive migration or coverage proof for all historical work experience, sessions, knowledge, and failure cases.
+
+The exact resume point is before coverage inventory. Do not migrate a record, reopen historical sources, or implement a lifecycle gap until the user approves the coverage-ledger stage and its exact evidence scope.
 
 ## Approval state
 
-The user authorized analysis and up to three pre-L improvement iterations based on the cross-validation findings. That hardening scope is complete. L implementation, broad refactoring, evaluation-set expansion, commit, push, deployment, publication, protected-data access, and external mutation remain unauthorized.
+The user authorized the requirements reanalysis, correction of the Codex report, and this handoff update. The user has not authorized the corpus coverage ledger itself, missing-corpus migration, backup reinspection, protected-data access, lifecycle expansion, scheduler or queue implementation, README/GUIDE refresh, commit, push, deployment, publication, or external mutation.
 
 ## Completed work
 
-- Reconciled the Codex 87.2 score and Claude 84.7 score to 86.8/100 in the existing single-owner score report.
-- Confirmed that the line-count difference was a blank-line measurement difference rather than conflicting file content.
-- Confirmed F-1 catalog growth, F-2 missing Python capability/version contract, F-3 33 backup-link validation dependencies, and F-4 absence of a process-level repository lock while separating reproduced facts from Claude-session observations.
-- Confirmed the observed catalog snapshot had 51,537 units, with 48,034 or 93.2 percent from context artifacts; this is a changing observation, not a permanent count.
-- Synchronized the catalog after Claude direct-route writes left an orphan report, a document-map hash mismatch, and a stale unit projection.
-- Kept `docs/reports/claude_2026-07-21_R0-R5_점수_교차검증.md` as the sole final score-reconciliation owner instead of creating another report.
-- Applied the `codex_` filename prefix only to the Codex-authored scored re-audit. Claude-authored reports use the separate `claude_` prefix and were not claimed as Codex documents.
-- Completed three bounded hardening iterations: F-1 context artifacts now produce one whole-file unit each with 5,000-unit and 8-MiB gates; F-2 requires Python 3.11+ with `tomllib`; F-3 historical `backup/` links no longer create active existence dependencies; F-4 serializes context-system commands with a cross-process repository lock and excludes internal temp files.
-- Closed the source-review loop for five changed project sources and reverified all four affected knowledge records at revision 9.
-- Preserved the unique implementation evidence in `docs/reports/codex_2026-07-22_L작업_전_운영_하드닝_개선_결과.md`; the earlier score reports remain unchanged evidence owners.
+- Re-audited the original Commands 1 through 4 using resolver-bounded active evidence.
+- Corrected the existing Codex report in place instead of creating a second owner.
+- Registered the corrected Commands 1-to-4 audit route in `docs/agent/DOCUMENT_MAP.md`.
+- Confirmed that Command 1 includes every requested analysis category and no implementation.
+- Confirmed that Command 2 includes official-source-backed design, the connected data flow, tool comparison, minimum plan, and expansion plan; R-1.1 owns the accepted corrected boundary.
+- Confirmed that Command 3 created the minimal rule/document foundation with separated owners and structural validation.
+- Confirmed that Command 4 implements canonical stores, deterministic task context, source traceability, write-back, review history, cold rebuild, and cold start within its bounded acceptance surface.
+- Confirmed the content-completeness gap: the current canonical corpus has 17 decisions, 4 verified knowledge records, 2 cases, 12 sources, 6 relations, and 1 immutable session summary.
+- Audited this handoff with the `handoff-manager` workflow and retained one current-state file only.
+- Left concurrent Claude-authored untracked reports untouched and did not claim their ownership.
 
 ## Verification state
 
-- All 35 context and runtime tests pass on Windows with the project launcher and Python 3.12.13.
-- Final catalog sync reports active files 205, planned files 0, units 3,724, and `catalog/units.jsonl` 2,589,798 bytes; final integrated validation returned `ok=true`, errors 0, and orphan files 0.
-- Two concurrently started context CLI sync processes both returned exit 0 with identical results; internal ghost catalog rows and temp files were 0.
-- The measured validator run in the original Windows workspace was 14.934 seconds; Claude's longer isolated measurements remain environment-specific observations.
-- R-4 and R-5 evaluation source SHA-256 values match their recorded results; R-4 remains 8/8 and R-5 remains 9/9.
-- No protected path was opened or traversed during this cross-validation.
-- The review is structural and automated, not video application validation or user content approval.
+- Stored R-4 evidence: 8/8, minimum recall 1.0, precision 1.0, source trace 1.0, protected leakage 0, budget failures 0.
+- Stored R-5 evidence: 9/9, failed 0, rule/file leakage 0.
+- The fixed evaluations prove the current small corpus and synthetic operational surface, not comprehensive historical coverage or all future real tasks.
+- Before this rewrite, integrated validation returned `ok=true`, errors 0, orphan files 0, active files 229, planned files 0, units 3,837, and events 213.
+- Full post-write regression passed all 35 context/runtime tests. Integrated validation returned `ok=true`, errors 0, and orphan files 0; required sections, UTF-8/NUL, local links, `git diff --check`, and the empty backup diff were confirmed.
+- Validation level is structural and automated only. No application validation or user content approval is claimed.
 
 ## Failure ledger
 
-- Pre-R checkpoint identification | Previous handoff | incorrectly named a Backrooms content task; corrected to the L0-through-L8 layer roadmap after Git and report cross-check | 0 after correction | reconstruct the exact L resume gate from nonprotected tracked evidence before implementation.
-- Python command discovery | R-2A and R-3, then later recurrence | bare python was absent from PATH; now resolved by tools/runtime/run_python.cmd, governing rule, and empty-PATH regression | 0 after verified fix | use only the public project launcher.
-- Audit resolver phase | Attempt 1 | unsupported phase review was rejected without mutation; changed to valid close phase and resolution succeeded | 0 after success | use schema-supported task phases.
-- Audit write contract | Attempts 1 and 2 | first the payload was not declared, then the broad read request made contract targets exceed payload targets; both writes were rejected without mutation, and a dedicated exact-target write request was created | 0 after success | separate broad audit reads from exact write contracts.
-- Post-write checkpoint review | Attempt 1 | the first handoff text retained pre-write planned counts; self-review replaced them with the post-write active 176 and planned 0 validation state | 0 after correction | record the final post-write validator state in current handoffs.
-- Git repository ownership check | Attempt 1 | sandbox user triggered dubious ownership; per-command exact safe.directory enabled read-only Git inspection | 0 after success | keep repository-scoped safe.directory on Git diagnostics.
-- Catalog atomic replacement | Earlier runtime task | transient Windows WinError 5 caused repeated replace failures; bounded retries, cleanup, and three regressions now pass | 0 after success | preserve bounded failure behavior and diagnostics.
-- Concurrent direct-route document write | First cross-validation regression | Claude-created report and document-map edits were not catalog-synchronized, causing one of 29 tests to fail with orphan, content-hash, and unit-projection errors | 0 after sync and 29/29 rerun | every direct-route fallback must be followed by sync and full validation.
-- Duplicate final-report plan | Attempt 1 | a new final report was planned before discovering the already-created single-owner reconciliation | 0 after exact planned-row cleanup and resync | keep the existing reconciliation as the sole owner; no duplicate file was created.
-- Report writer batching | Attempt 1 | the writer rejected multiple operations targeting one report without mutation | 0 after exact direct-route patch | use a single replacement operation or record and sync the exact fallback.
-- Cross-platform test reproduction | Claude isolated Linux/Python 3.10 | 29 tests did not complete because Windows launcher tests were inapplicable and validation was slow | Windows rerun succeeded; non-Windows remains unverified | define a supported runtime matrix before claiming portability.
-- Report filename attribution | Initial naming attempt and correction | the first move treated all three new reports as Codex-authored; the user narrowed scope to documents created by this agent, and concurrent Claude ownership changes made the attempted restore stale and hash-gated | 0 after final ownership check and resync | preserve `codex_` only on the scored re-audit and `claude_` on the two Claude-owned reports.
-- Concurrent catalog temporary-file discovery | Multiple resolver attempts | transient `catalog/tmp*` files disappeared between discovery and unit extraction, leaving two safe resolver failures and one stale temporary catalog row that was removed or superseded before retry | 0 after successful sync | F-4 remains a confirmed hardening risk; never bypass before-hash gates during concurrent writes.
-- Concurrent Claude naming request phase | First final regression | the request used unsupported phase `execute`, causing one structural test failure together with a stale unit projection; changed only the phase to supported `close`, resynced, and reran all tests | 0 after 29/29 rerun | use schema-supported phases for every request artifact.
-- Pre-L full regression | Improvement 1 | 33 of 34 tests passed; integrated validation rejected five changed registered source hashes | 0 after improvement 2 | run source detection, explicit source acceptance, and dependent knowledge review in the same authorized change.
-- Pre-L parallel sync proof | Validation commands 1 and 2 | PowerShell `Start-Process` failed before launch on sandbox `Path`/`PATH` duplication, then CMD stripped double quotes from inline Python and raised `NameError`; no sync child ran in either failed command | 0 after quote-safe subprocess proof | use launcher-selected Python subprocesses and CMD-safe single-quoted literals for this local proof.
-- Pre-L lock cleanup | Improvement 3 self-review | lock-file setup, unlock, or handle-close exceptions could leave the process-local guard unreleased | 0 after cleanup guarantee and 35/35 rerun | retain the setup/close-failure recovery regression.
+| Objective | Attempt/version | Result or confirmed cause | Consecutive count | Next condition |
+|---|---|---|---:|---|
+| Identify the requested audit scope | Initial attempt | Incorrectly narrowed the request to an L0-to-L8 resume gate; corrected by deriving the matrix directly from the user's final goal and Commands 1 through 4. | 0 after confirmed correction | Use the user's exact requirement list as the audit owner. |
+| Resolve the audit session record | First resolve | A guessed session filename was not registered; exact listing found the canonical path and the next resolve succeeded. | 0 after confirmed success | Use registered exact routes only. |
+| Read Git state in the sandbox | Earlier attempt | Sandbox identity triggered dubious ownership; repository-scoped `safe.directory` made read-only diagnostics succeed. | 0 after confirmed success | Do not change global Git configuration. |
+| Run project Python | Historical recurrence | Bare Python was absent from PATH; the public runtime launcher passed capability and regression checks. | 0 after confirmed success | Use `tools/runtime/run_python.cmd` only. |
+| Produce the current handoff | Current audit | Existing handoff was accurate but omitted explicit current-goal, key-term, source-input, and read-order sections required for fast resumption. The rewritten handoff passed full regression and structural validation. | 0 after confirmed final validation | Preserve these sections in future handoffs. |
 
-## Active risks and exclusions
+## Active blockers and risks
 
-- R-5 completed the approved knowledge/context system, not the full L0-through-L8 video-production roadmap.
-- The exact first unstarted L-layer scope and its L2/L4 dependencies are not yet restored into the current checkpoint; implementing L5 before that audit risks skipping prerequisites.
-- tools/context/context_system.py concentrates roughly 3,700 lines at the R-5 commit, increasing future change and review risk.
-- The R-4 eight-query set and R-5 nine synthetic scenarios are strong fixed baselines but do not replace real video-production application validation.
-- Decision/case lifecycle writers, an automatic review scheduler, and FTS/vector/graph/Obsidian remain outside the completed R scope; FTS and related search layers stay intentionally absent until a fixed query fails.
-- Current runtime-resilience and audit changes are uncommitted; commit, push, deployment, and external mutation remain unauthorized.
-- The repository lock covers context-system CLI operations and direct `sync_catalog()` users, not unauthorized external catalog edits; direct catalog editing remains prohibited.
-- The 5,000-unit and 8-MiB bounds are pre-L baseline gates. Legitimate canonical growth requires measured contract review before raising them.
-- Full launcher regression remains Windows-validated; other operating systems are not application-validated.
-- Historical `backup/` link existence is intentionally not checked. This preserves provenance locators without making backup an active dependency, but it does not approve the historical content.
+- Approval blocker: the coverage-ledger stage has not been authorized.
+- The Command 1 analysis identifies more reusable knowledge and failure cases than the current four knowledge records and two case documents represent.
+- Only one immutable session summary exists; later stages rely on reports and append-only events instead of one summary per completed session.
+- Work events begin at the R-2A bootstrap and are not a retrospective raw transcript of all earlier work.
+- Decision and case lifecycle writers, automated review scheduling, and review queues remain unimplemented by explicit contract.
+- `README.md` and `docs/user/GUIDE.md` are stale maintained projections: they still describe R-2A as the next step and must not override this handoff.
+- R-4's eight queries and R-5's nine scenarios cannot prove corpus completeness.
+- Existing context/report changes are uncommitted. Commit and push remain unauthorized.
 
 ## Important artifacts
 
-- docs/reports/codex_2026-07-21_R0-R5_재검토_점수_분석.md — active retained evidence for the scored audit and corrected completion boundary.
-- docs/reports/claude_2026-07-21_R0-R5_독립_교차검증_보고.md — Claude independent second-pass evidence.
-- docs/reports/claude_2026-07-21_R0-R5_점수_교차검증.md — single final cross-validation and 86.8 score owner.
-- docs/reports/codex_2026-07-22_L작업_전_운영_하드닝_개선_결과.md — active retained evidence for the three-iteration F-1-through-F-4 pre-L hardening and its verified result.
-- docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md — accepted R-2A-through-R-5 scope and completion criteria.
-- docs/reports/2026-07-21_R-5_운영_인수_및_전체_완료_결과.md — retained 9-scenario R-system completion evidence, not whole-project completion.
-- evaluation/retrieval/r4_baseline_result.json and evaluation/operations/r5_acceptance_result.json — retained fixed evaluation results.
-- tools/runtime/run_python.cmd — public project Python entrypoint for all future Python commands.
-- knowledge/cases/case.project.python-runtime-path-resolution.md — resolved PATH failure evidence.
-- SESSION_HANDOFF.md — sole current checkpoint; the older Backrooms identification is superseded by this verified state.
+| Path | Status | Role |
+|---|---|---|
+| `SESSION_HANDOFF.md` | active current state | Sole resumable checkpoint. |
+| `docs/agent/DOCUMENT_MAP.md` | active router | Exact authority and report routes. |
+| `docs/reports/codex_2026-07-22_프로젝트_구조_분석_및_다음_작업_제안.md` | retained evidence | Current Commands 1-to-4 fulfillment audit. |
+| `evaluation/retrieval/r4_baseline_result.json` | derived verified evidence | Fixed retrieval result. |
+| `evaluation/operations/r5_acceptance_result.json` | derived verified evidence | Fixed operational acceptance result. |
+| `README.md` | stale maintained projection | User overview; do not use for the current next-step boundary. |
+| `docs/user/GUIDE.md` | stale maintained projection | User guide; do not use for the current next-step boundary. |
+| `context/requests/session_handoff_update_2026_07_22.json` and `context/work/session_handoff_update_2026_07_22.json` | active execution evidence | Resolver-bounded handoff audit. |
+| `context/requests/session_handoff_update_2026_07_22_write.json`, `context/payloads/session_handoff_update_2026_07_22_write.json`, and `context/work/session_handoff_update_2026_07_22_write.json` | active execution evidence | Contract-gated handoff write. |
 
 ## Next actions
 
-- Use tools/runtime/run_python.cmd for every project Python command.
-- First project-planning action: reconstruct and confirm the pre-R L0-through-L8 roadmap, completed layers, first unstarted layer, and exact L2/L4 prerequisites; do not implement L5 yet.
-- Treat F-1 through F-4 as mitigated and reopen them only on a failed regression, exceeded deterministic budget, or new cross-platform evidence.
-- Do not implement L5 or another L layer, broaden refactoring, access protected data, commit, push, deploy, publish, or mutate external systems without explicit authority.
+1. Ask the user whether to approve the corpus coverage ledger only.
+2. If approved, use exact nonprotected evidence routes to map every reusable item from Command 1 sections 5 through 8, stage reports, existing sessions, events, and Git evidence to `migrated`, `missing`, `rejected-with-reason`, `not-recoverable`, or `deferred`.
+3. Report that inventory in Korean and stop for approval before migrating or implementing anything.
+4. Under later separate approvals, migrate missing records, complete required lifecycle operations, align README/GUIDE, and expand retrieval evaluation on the larger corpus.
+5. Do not re-open `backup/`, access `inputs/` or `outputs/`, add FTS/vector/graph/Obsidian, commit, push, deploy, publish, or mutate external systems by inference.
 
 ## Backup and deduplication
 
-No ad hoc backup was created; version history is the preservation surface and `backup/` remains immutable.
+No backup was created. Project rules use version control as the preservation surface and prohibit duplicate state owners; `backup/` remains immutable. The existing `SESSION_HANDOFF.md` was updated in place, and no `NEXT_SESSION_TASK.md` or second handoff was created.
 
 ## Next-session start prompt
 
-Read the boot kernel, this handoff, and the document map. Pre-L F-1-through-F-4 hardening is complete and recorded in `docs/reports/codex_2026-07-22_L작업_전_운영_하드닝_개선_결과.md`; the R-stage score remains 86.8/100 plus or minus 2 in the Claude score reconciliation. The R knowledge system is complete but the L0-through-L8 production roadmap is not. First reconstruct the exact L resume gate from nonprotected tracked evidence. Use `tools/runtime/run_python.cmd` and do not access protected paths or implement L work, commit, push, deploy, publish, refactor broadly, or mutate external systems without explicit authority.
+Read `PROJECT_RULES.md`, this handoff, and `docs/agent/DOCUMENT_MAP.md`. The Commands 1-to-4 audit is complete: Commands 1 and 3 are fulfilled, Command 2 is fulfilled after R-1.1, and Command 4 plus the final goal are only partially fulfilled because the working minimum knowledge/context system does not yet have comprehensive historical corpus and session coverage. The first unstarted action is user approval for the corpus coverage ledger only. Do not migrate records, reopen historical or protected paths, implement lifecycle gaps, update stale guides, commit, push, deploy, publish, or change external systems by inference.

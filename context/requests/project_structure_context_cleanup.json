@@ -1,0 +1,40 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.project-structure-context-cleanup",
+  "requested_by": "agent",
+  "intent": "Remove the accidentally generated duplicate work-context path after preserving the canonical context/work output.",
+  "actions": [
+    "delete",
+    "validate",
+    "close"
+  ],
+  "phase": "close",
+  "target_paths": [
+    "context/work-contexts/project_structure_next_work_analysis.json"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": [
+    "context-package"
+  ],
+  "output_audience": "machine",
+  "include_scopes": [
+    "context/work-contexts"
+  ],
+  "exclude_scopes": [
+    "backup",
+    "inputs",
+    "outputs"
+  ],
+  "task_tags": [
+    "cleanup",
+    "context",
+    "lifecycle",
+    "validation"
+  ],
+  "as_of": "2026-07-22T00:00:00+09:00",
+  "context_budget": 4000,
+  "write_payload_path": "context/payloads/project_structure_context_cleanup.json"
+}

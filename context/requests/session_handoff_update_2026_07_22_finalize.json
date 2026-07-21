@@ -1,0 +1,39 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.session-handoff-update-2026-07-22-finalize",
+  "requested_by": "user",
+  "intent": "Record the successful final handoff regression, integrated validation, structure, link, NUL, diff, and backup-diff checks and close the handoff failure-ledger entry as verified.",
+  "actions": [
+    "write",
+    "validate",
+    "close"
+  ],
+  "phase": "close",
+  "target_paths": [
+    "SESSION_HANDOFF.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": [
+    "current-state"
+  ],
+  "output_audience": "agent",
+  "include_scopes": [],
+  "exclude_scopes": [
+    "backup",
+    "inputs",
+    "outputs"
+  ],
+  "task_tags": [
+    "handoff",
+    "session",
+    "write",
+    "validation",
+    "closure"
+  ],
+  "as_of": "2026-07-22T00:00:00+09:00",
+  "context_budget": 8000,
+  "write_payload_path": "context/payloads/session_handoff_update_2026_07_22_finalize.json"
+}

@@ -1,0 +1,41 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.session-handoff-update-2026-07-22-write",
+  "requested_by": "user",
+  "intent": "Update the sole SESSION_HANDOFF.md in place with a concise, evidence-backed resume package: read order, current goal, key terms, source inputs, verified checkpoint, approval boundary, completed work, validation state, failure ledger, active gaps, artifact statuses, first unstarted action, backup policy, and next-session start prompt.",
+  "actions": [
+    "write",
+    "validate",
+    "close"
+  ],
+  "phase": "close",
+  "target_paths": [
+    "SESSION_HANDOFF.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": [
+    "current-state"
+  ],
+  "output_audience": "agent",
+  "include_scopes": [],
+  "exclude_scopes": [
+    "backup",
+    "inputs",
+    "outputs"
+  ],
+  "task_tags": [
+    "handoff",
+    "session",
+    "write",
+    "documentation",
+    "validation",
+    "closure",
+    "commands-1-4"
+  ],
+  "as_of": "2026-07-22T00:00:00+09:00",
+  "context_budget": 12000,
+  "write_payload_path": "context/payloads/session_handoff_update_2026_07_22_write.json"
+}
