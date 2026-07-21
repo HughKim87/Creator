@@ -1,0 +1,70 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.r0-r5.scored-review",
+  "requested_by": "user",
+  "intent": "Re-audit the R0 through R-5 rebuild program against its approved scope, commits, reports, tests, and current repository state; assign evidence-based scores and publish a Korean analysis report without expanding the original requirements.",
+  "actions": [
+    "read",
+    "review",
+    "validate",
+    "create",
+    "write"
+  ],
+  "phase": "close",
+  "target_paths": [
+    "docs/reports/2026-07-20_프로젝트_기본_기반_구축.md",
+    "docs/reports/2026-07-20_기존_프로젝트_분석.md",
+    "docs/reports/2026-07-20_프로젝트_기반_및_지식_시스템_설계.md",
+    "docs/reports/2026-07-20_R-1_지식_시스템_설계_정정.md",
+    "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md",
+    "docs/reports/2026-07-20_R-2_착수전_사용자_의도_정합성_검증.md",
+    "docs/reports/2026-07-20_R-2A_컨텍스트_시스템_구현_결과.md",
+    "docs/reports/2026-07-21_R-2B_기존_지식_코퍼스_이관_결과.md",
+    "docs/reports/2026-07-21_R-3_resolver_writer_일반화_결과.md",
+    "docs/reports/2026-07-21_R-4_검색_평가_결과.md",
+    "docs/reports/2026-07-21_R-5_운영_인수_및_전체_완료_결과.md",
+    "reports/최종_구축상태_교차검증보고.md",
+    "tools/context/context_system.py",
+    "tests/context/test_context_system.py",
+    "docs/agent/DOCUMENT_MAP.md",
+    "SESSION_HANDOFF.md",
+    "docs/reports/2026-07-21_R0-R5_재검토_점수_분석.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": [
+    "report",
+    "current-state",
+    "technical-contract",
+    "test",
+    "router"
+  ],
+  "output_audience": "user",
+  "include_scopes": [
+    "docs/reports",
+    "reports",
+    "docs/agent",
+    "tools/context",
+    "tests/context",
+    "context"
+  ],
+  "exclude_scopes": [
+    "backup",
+    "inputs",
+    "outputs"
+  ],
+  "task_tags": [
+    "review",
+    "audit",
+    "scoring",
+    "validation",
+    "context",
+    "knowledge",
+    "handoff"
+  ],
+  "as_of": "2026-07-21T12:00:00+09:00",
+  "context_budget": 30000,
+  "write_payload_path": "context/payloads/r0_r5_scored_review.json"
+}

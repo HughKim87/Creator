@@ -89,3 +89,22 @@ owner: user-approved, agent-maintained
   "validators": ["validate.handoff"]
 }
 ```
+
+## rule.validation.python-runtime-resolution
+
+```json
+{
+  "schema_version": "1.0.0",
+  "rule_id": "rule.validation.python-runtime-resolution",
+  "text": "For project Python commands, do not assume that python is on PATH. Use tools/runtime/run_python.cmd, or an exact interpreter path returned by the workspace dependency provider during launcher bootstrap; require Python 3.11 or newer with tomllib and reject missing, older, or incapable runtimes with a clear diagnostic.",
+  "authority": "project_rule",
+  "priority": 500,
+  "status": "active",
+  "applies_when": {"any": [{"field": "task_tags", "op": "intersects", "value": ["python", "runtime"]}, {"field": "target_kinds", "op": "intersects", "value": ["script", "test"]}]},
+  "excludes_when": [],
+  "phases": ["plan", "write", "validate", "close"],
+  "task_tags": ["validation", "python", "runtime"],
+  "source_refs": ["src.repo.workflow#python-runtime-entrypoint"],
+  "validators": ["validate.python_runtime_entrypoint"]
+}
+```

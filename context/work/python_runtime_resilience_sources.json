@@ -1,0 +1,1594 @@
+{
+  "schema_version": "1.0.0",
+  "context_id": "context.task.python-runtime-resilience.sources",
+  "request": {
+    "schema_version": "task-request-1.0.0",
+    "task_id": "task.python-runtime-resilience.sources",
+    "requested_by": "user",
+    "intent": "Register stable repository sources for the Python runtime failure case and refresh the changed workflow source hash.",
+    "actions": [
+      "read",
+      "write",
+      "review",
+      "validate"
+    ],
+    "phase": "write",
+    "target_paths": [
+      "knowledge/sources.jsonl"
+    ],
+    "target_file_ids": [],
+    "target_unit_ids": [],
+    "target_record_ids": [],
+    "target_record_kinds": [],
+    "target_kinds": [
+      "source_store"
+    ],
+    "output_audience": "agent",
+    "include_scopes": [],
+    "exclude_scopes": [
+      "backup",
+      "inputs",
+      "outputs"
+    ],
+    "task_tags": [
+      "python",
+      "runtime",
+      "knowledge",
+      "source",
+      "provenance",
+      "case",
+      "validation"
+    ],
+    "as_of": "2026-07-21T10:10:00+09:00",
+    "context_budget": 10000,
+    "write_payload_path": "context/payloads/python_runtime_resilience_sources.json"
+  },
+  "request_hash": "b2adb9f22e226851a0c3a7663b7abcf24950371ddcf910ff63901e757d991c0a",
+  "as_of": "2026-07-21T10:10:00+09:00",
+  "revision_manifest": {
+    "catalog": "c821f6fe8d184e044078a1d0d393ea568da6e2871d5a434aff73317638301059",
+    "rules": "cd4696346cc4a4ef8d5e43f857f9798dca18a2404fc27dc0bf2afa7fbbe965a2",
+    "units": "179f183cf24520ea5e1357cabcf721f3f6c58a1ca263e2eb61da81a6793ca52c",
+    "records": "577f22601bf8e6e8adfb8f42dfdb138e31c441080fe3204c1cd10b56aede5fc0",
+    "sources": "98532151fb9ac36160227fd1b3e292bc2ffed8929eafa5bc2a165520b1ea97fa",
+    "relations": "1db2b15bcc0fa8ffc0d4f3458386472e1461d6c1651b23cba7c84b7dbd81a2ca"
+  },
+  "selection_ids": {
+    "rules": [
+      "rule.documentation.required-metadata",
+      "rule.governance.single-owner",
+      "rule.knowledge.confidence-is-not-verification",
+      "rule.provenance.claim-classification",
+      "rule.provenance.preserve-source-language",
+      "rule.provenance.source-and-rationale",
+      "rule.retrieval.direct-routing-first",
+      "rule.validation.failure-record",
+      "rule.validation.proportional-verification",
+      "rule.validation.python-runtime-resolution"
+    ],
+    "files": [
+      "file.knowledge.sources",
+      "file.project-rules",
+      "file.rules.documentation",
+      "file.rules.governance",
+      "file.rules.knowledge",
+      "file.rules.provenance",
+      "file.rules.retrieval",
+      "file.rules.validation"
+    ],
+    "units": [
+      "unit.file.rules.documentation.heading.documentation-rules.rule.documentation.required-metadata",
+      "unit.file.rules.governance.heading.governance-rules.rule.governance.single-owner",
+      "unit.file.rules.knowledge.heading.knowledge-rules.rule.knowledge.confidence-is-not-verification",
+      "unit.file.rules.provenance.heading.provenance-rules.rule.provenance.claim-classification",
+      "unit.file.rules.provenance.heading.provenance-rules.rule.provenance.preserve-source-language",
+      "unit.file.rules.provenance.heading.provenance-rules.rule.provenance.source-and-rationale",
+      "unit.file.rules.retrieval.heading.retrieval-rules.rule.retrieval.direct-routing-first",
+      "unit.file.rules.validation.heading.validation-rules.rule.validation.failure-record",
+      "unit.file.rules.validation.heading.validation-rules.rule.validation.proportional-verification",
+      "unit.file.rules.validation.heading.validation-rules.rule.validation.python-runtime-resolution"
+    ],
+    "records": [],
+    "relations": []
+  },
+  "selection_fingerprint": "1361278235ea44788278e8c9edc8f675d9a56d2163710438801c07202690a531",
+  "authority": {
+    "user_scope": {
+      "include": [],
+      "exclude": [
+        "backup",
+        "inputs",
+        "outputs"
+      ],
+      "authorized_protected_scopes": []
+    },
+    "kernel_rule_ids": [
+      "rule.core.authority-order",
+      "rule.core.scope-authority",
+      "rule.core.backup-boundary",
+      "rule.core.protected-route",
+      "rule.core.minimum-access",
+      "rule.core.secret-boundary",
+      "rule.core.instruction-trust",
+      "rule.core.external-mutation"
+    ],
+    "selected_conditional_rule_ids": [
+      "rule.documentation.required-metadata",
+      "rule.governance.single-owner",
+      "rule.knowledge.confidence-is-not-verification",
+      "rule.provenance.claim-classification",
+      "rule.provenance.preserve-source-language",
+      "rule.provenance.source-and-rationale",
+      "rule.retrieval.direct-routing-first",
+      "rule.validation.failure-record",
+      "rule.validation.proportional-verification",
+      "rule.validation.python-runtime-resolution"
+    ],
+    "predicate_evidence": {
+      "rule.documentation.agent-english": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          false
+        ],
+        "excluded": false,
+        "matched": false
+      },
+      "rule.documentation.required-metadata": {
+        "mode": "any",
+        "condition_results": [
+          true,
+          false
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.documentation.user-korean": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          false
+        ],
+        "excluded": false,
+        "matched": false
+      },
+      "rule.governance.document-boundaries": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          false
+        ],
+        "excluded": false,
+        "matched": false
+      },
+      "rule.governance.single-owner": {
+        "mode": "any",
+        "condition_results": [
+          true,
+          false
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.governance.stage-approval": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          false
+        ],
+        "excluded": false,
+        "matched": false
+      },
+      "rule.knowledge.confidence-is-not-verification": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          true
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.knowledge.preserve-conflicts": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          false
+        ],
+        "excluded": false,
+        "matched": false
+      },
+      "rule.provenance.claim-classification": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          true
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.provenance.current-primary-source": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          false
+        ],
+        "excluded": false,
+        "matched": false
+      },
+      "rule.provenance.preserve-source-language": {
+        "mode": "any",
+        "condition_results": [
+          true,
+          false
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.provenance.source-and-rationale": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          true
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.retrieval.default-exclusions": {
+        "phase": "write",
+        "allowed_phases": [
+          "discover",
+          "read",
+          "plan",
+          "validate"
+        ],
+        "matched": false
+      },
+      "rule.retrieval.direct-routing-first": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          true
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.retrieval.minimum-context": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          false
+        ],
+        "excluded": false,
+        "matched": false
+      },
+      "rule.retrieval.projections-not-authority": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          false
+        ],
+        "excluded": false,
+        "matched": false
+      },
+      "rule.validation.failure-record": {
+        "mode": "any",
+        "condition_results": [
+          true,
+          false
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.validation.no-overclaim": {
+        "phase": "write",
+        "allowed_phases": [
+          "validate",
+          "close"
+        ],
+        "matched": false
+      },
+      "rule.validation.proportional-verification": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          true
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.validation.python-runtime-resolution": {
+        "mode": "any",
+        "condition_results": [
+          true,
+          false
+        ],
+        "excluded": false,
+        "matched": true
+      },
+      "rule.validation.update-handoff": {
+        "phase": "write",
+        "allowed_phases": [
+          "validate",
+          "close"
+        ],
+        "matched": false
+      },
+      "rule.version-control.no-ad-hoc-backup": {
+        "mode": "any",
+        "condition_results": [
+          false,
+          false
+        ],
+        "excluded": false,
+        "matched": false
+      }
+    }
+  },
+  "read_manifest": [
+    {
+      "file_id": "file.knowledge.sources",
+      "path": "knowledge/sources.jsonl",
+      "status": "active",
+      "expected_hash": "b2376d1964c7b71a658f5bb2b6da8fc0dd23df21fb54e769b73bc677856f530a",
+      "selection_reason": "exact_target",
+      "units": []
+    },
+    {
+      "file_id": "file.project-rules",
+      "path": "PROJECT_RULES.md",
+      "status": "active",
+      "expected_hash": "285edcc8fa65786d35ba44c32cc232b69a19ba76b04d8580879fd9ce7715d00f",
+      "selection_reason": "kernel",
+      "units": []
+    },
+    {
+      "file_id": "file.rules.documentation",
+      "path": "rules/documentation.md",
+      "status": "active",
+      "expected_hash": "45041833f52101ac37ac61d59894b1991b0506745a87acfcae7769990ce44ade",
+      "selection_reason": "selected_rule:rule.documentation.required-metadata",
+      "units": [
+        {
+          "unit_id": "unit.file.rules.documentation.heading.documentation-rules.rule.documentation.required-metadata",
+          "locator": "heading:Documentation Rules > rule.documentation.required-metadata",
+          "unit_hash": "57c7a46a8b297863609b656e4de14a536e6c3a28a1d33bf550b56b349e839f8b",
+          "selection_reason": "selected_rule:rule.documentation.required-metadata"
+        }
+      ]
+    },
+    {
+      "file_id": "file.rules.governance",
+      "path": "rules/governance.md",
+      "status": "active",
+      "expected_hash": "1466d5013adb288102659835a45cce09974181f80bbfb218bbc3c727b6a42d71",
+      "selection_reason": "selected_rule:rule.governance.single-owner",
+      "units": [
+        {
+          "unit_id": "unit.file.rules.governance.heading.governance-rules.rule.governance.single-owner",
+          "locator": "heading:Governance Rules > rule.governance.single-owner",
+          "unit_hash": "94a591d6f1c7af5c70fd7dc4f1c57c766cc18998809bfd595e3fce1e9e66c492",
+          "selection_reason": "selected_rule:rule.governance.single-owner"
+        }
+      ]
+    },
+    {
+      "file_id": "file.rules.knowledge",
+      "path": "rules/knowledge.md",
+      "status": "active",
+      "expected_hash": "75a5922aab402698d0840b4d5a6068ec6b20e8c6f4fcc016d93327c608139e2f",
+      "selection_reason": "selected_rule:rule.knowledge.confidence-is-not-verification",
+      "units": [
+        {
+          "unit_id": "unit.file.rules.knowledge.heading.knowledge-rules.rule.knowledge.confidence-is-not-verification",
+          "locator": "heading:Knowledge Rules > rule.knowledge.confidence-is-not-verification",
+          "unit_hash": "c22ffe199372256526c2d1d2a51707c6d1b3e5c2533ba5b5c1c5eff917c092bf",
+          "selection_reason": "selected_rule:rule.knowledge.confidence-is-not-verification"
+        }
+      ]
+    },
+    {
+      "file_id": "file.rules.provenance",
+      "path": "rules/provenance.md",
+      "status": "active",
+      "expected_hash": "9bde82806527d7380fee8b1b856c9104e635eff26f0534b48213cf4e779c5ff3",
+      "selection_reason": "selected_rule:rule.provenance.source-and-rationale",
+      "units": [
+        {
+          "unit_id": "unit.file.rules.provenance.heading.provenance-rules.rule.provenance.claim-classification",
+          "locator": "heading:Provenance Rules > rule.provenance.claim-classification",
+          "unit_hash": "e1d5a1e0b8c65680f4cf352c96e51033c0f9e7ccc94f5055166eb355f6d25b7b",
+          "selection_reason": "selected_rule:rule.provenance.claim-classification"
+        },
+        {
+          "unit_id": "unit.file.rules.provenance.heading.provenance-rules.rule.provenance.preserve-source-language",
+          "locator": "heading:Provenance Rules > rule.provenance.preserve-source-language",
+          "unit_hash": "f6773055eb72939bcff50e342e16cd1f45152c857856f4f6fce9fdc1d18b15b2",
+          "selection_reason": "selected_rule:rule.provenance.preserve-source-language"
+        },
+        {
+          "unit_id": "unit.file.rules.provenance.heading.provenance-rules.rule.provenance.source-and-rationale",
+          "locator": "heading:Provenance Rules > rule.provenance.source-and-rationale",
+          "unit_hash": "17e15c33ccb68fd8100982c68225c33a726222feb6128c20a834533280874b33",
+          "selection_reason": "selected_rule:rule.provenance.source-and-rationale"
+        }
+      ]
+    },
+    {
+      "file_id": "file.rules.retrieval",
+      "path": "rules/retrieval.md",
+      "status": "active",
+      "expected_hash": "09f621aa4967cb03e987b5c2d82d6e5519f58689351b094916baf40a01a85d81",
+      "selection_reason": "selected_rule:rule.retrieval.direct-routing-first",
+      "units": [
+        {
+          "unit_id": "unit.file.rules.retrieval.heading.retrieval-rules.rule.retrieval.direct-routing-first",
+          "locator": "heading:Retrieval Rules > rule.retrieval.direct-routing-first",
+          "unit_hash": "e808b9ebf47ac836973643ac20c1a7c82855d55008115aa170a58af7fa66a298",
+          "selection_reason": "selected_rule:rule.retrieval.direct-routing-first"
+        }
+      ]
+    },
+    {
+      "file_id": "file.rules.validation",
+      "path": "rules/validation.md",
+      "status": "active",
+      "expected_hash": "31e5eed8665e4efa7bca9483efb8847f6a06c85f0a0dc9804412d4e39abfe681",
+      "selection_reason": "selected_rule:rule.validation.python-runtime-resolution",
+      "units": [
+        {
+          "unit_id": "unit.file.rules.validation.heading.validation-rules.rule.validation.failure-record",
+          "locator": "heading:Validation Rules > rule.validation.failure-record",
+          "unit_hash": "e313340167c1c8d8b43fe11e8ec354945e92f04fc81e79a9a91e56b4b765f57e",
+          "selection_reason": "selected_rule:rule.validation.failure-record"
+        },
+        {
+          "unit_id": "unit.file.rules.validation.heading.validation-rules.rule.validation.proportional-verification",
+          "locator": "heading:Validation Rules > rule.validation.proportional-verification",
+          "unit_hash": "bcb17f29dabac5351e590eb63e3ae4b8aea16eeb3a36e3d3f51c0265b0357f25",
+          "selection_reason": "selected_rule:rule.validation.proportional-verification"
+        },
+        {
+          "unit_id": "unit.file.rules.validation.heading.validation-rules.rule.validation.python-runtime-resolution",
+          "locator": "heading:Validation Rules > rule.validation.python-runtime-resolution",
+          "unit_hash": "5f48d5c8f782b0ca01256f2d4efbb4ab216f3dc84def28c590eb9b08cf3c27af",
+          "selection_reason": "selected_rule:rule.validation.python-runtime-resolution"
+        }
+      ]
+    }
+  ],
+  "record_manifest": {
+    "records": [],
+    "relations": []
+  },
+  "protected_file_manifest": [],
+  "exclusions": [
+    {
+      "kind": "rule",
+      "id": "rule.documentation.agent-english",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.documentation.user-korean",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.governance.document-boundaries",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.governance.stage-approval",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.knowledge.preserve-conflicts",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.provenance.current-primary-source",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.retrieval.default-exclusions",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.retrieval.minimum-context",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.retrieval.projections-not-authority",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.validation.no-overclaim",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.validation.update-handoff",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "rule",
+      "id": "rule.version-control.no-ad-hoc-backup",
+      "reason": "predicate_not_matched"
+    },
+    {
+      "kind": "record",
+      "id": "case.project.document-authority-duplication",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "case.project.python-runtime-path-resolution",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d01",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d02",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d03",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d04",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d05",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d06",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d07",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d08",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d09",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d10",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d11",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d12",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d13",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d14",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d15",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d16",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "decision.r1.1.d17",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "knowledge.context.shared-work-context",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "knowledge.governance.single-owner",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "knowledge.routing.direct-first",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "knowledge.safety.protected-prefilter",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "source.git.r2b-baseline",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "source.history.overview",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "source.official.json-schema-2020-12-core",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "source.repo.context-retrieval",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "source.repo.project-rules",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "source.repo.r1.1",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "record",
+      "id": "source.repo.workflow",
+      "reason": "outside_exact_or_one_hop_scope"
+    },
+    {
+      "kind": "relation",
+      "id": "relation.case.document-authority.resolved-by.knowledge.single-owner",
+      "reason": "outside_one_hop_scope"
+    },
+    {
+      "kind": "relation",
+      "id": "relation.decision.d08.supported-by.knowledge.routing-direct-first",
+      "reason": "outside_one_hop_scope"
+    },
+    {
+      "kind": "relation",
+      "id": "relation.decision.d09.supported-by.knowledge.safety-protected-prefilter",
+      "reason": "outside_one_hop_scope"
+    },
+    {
+      "kind": "relation",
+      "id": "relation.decision.d14.supported-by.knowledge.context-shared-work-context",
+      "reason": "outside_one_hop_scope"
+    },
+    {
+      "kind": "relation",
+      "id": "relation.decision.d16.supported-by.knowledge.safety-protected-prefilter",
+      "reason": "outside_one_hop_scope"
+    },
+    {
+      "kind": "relation",
+      "id": "relation.history.overview.related-to.case.document-authority",
+      "reason": "candidate_not_active"
+    },
+    {
+      "kind": "file",
+      "id": "file.agents",
+      "path": "AGENTS.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.catalog.bootstrap",
+      "path": "catalog/bootstrap.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.catalog.files",
+      "path": "catalog/files.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.catalog.records",
+      "path": "catalog/records.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.catalog.rules",
+      "path": "catalog/rules.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.catalog.tmp373czc5g",
+      "path": "catalog/tmp373czc5g",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.catalog.units",
+      "path": "catalog/units.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.python-runtime-resilience",
+      "path": "context/payloads/python_runtime_resilience.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.python-runtime-resilience-cmd-fix",
+      "path": "context/payloads/python_runtime_resilience_cmd_fix.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.python-runtime-resilience-cmd-write",
+      "path": "context/payloads/python_runtime_resilience_cmd_write.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.python-runtime-resilience-sources",
+      "path": "context/payloads/python_runtime_resilience_sources.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.python-runtime-resilience-validation-fix",
+      "path": "context/payloads/python_runtime_resilience_validation_fix.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r2a-write",
+      "path": "context/payloads/r2a_write.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r2b-close",
+      "path": "context/payloads/r2b_close.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r2b-contract-alignment",
+      "path": "context/payloads/r2b_contract_alignment.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r2b-handoff-audit",
+      "path": "context/payloads/r2b_handoff_audit.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r3-close",
+      "path": "context/payloads/r3_close.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r3-review-knowledge-context",
+      "path": "context/payloads/r3_review_knowledge_context.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r3-review-knowledge-governance",
+      "path": "context/payloads/r3_review_knowledge_governance.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r3-review-knowledge-routing",
+      "path": "context/payloads/r3_review_knowledge_routing.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r3-review-knowledge-safety",
+      "path": "context/payloads/r3_review_knowledge_safety.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r3-review-source-context-retrieval",
+      "path": "context/payloads/r3_review_source_context_retrieval.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r3-review-source-workflow",
+      "path": "context/payloads/r3_review_source_workflow.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r4-close",
+      "path": "context/payloads/r4_close.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r4-review-knowledge-context",
+      "path": "context/payloads/r4_review_knowledge_context.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r4-review-knowledge-routing",
+      "path": "context/payloads/r4_review_knowledge_routing.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r4-review-knowledge-safety",
+      "path": "context/payloads/r4_review_knowledge_safety.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r4-review-source-context-retrieval",
+      "path": "context/payloads/r4_review_source_context_retrieval.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r5-close",
+      "path": "context/payloads/r5_close.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r5-review-knowledge-context",
+      "path": "context/payloads/r5_review_knowledge_context.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r5-review-knowledge-governance",
+      "path": "context/payloads/r5_review_knowledge_governance.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r5-review-knowledge-routing",
+      "path": "context/payloads/r5_review_knowledge_routing.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r5-review-knowledge-safety",
+      "path": "context/payloads/r5_review_knowledge_safety.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r5-review-source-context-retrieval",
+      "path": "context/payloads/r5_review_source_context_retrieval.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.payloads.r5-review-source-workflow",
+      "path": "context/payloads/r5_review_source_workflow.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.python-runtime-resilience",
+      "path": "context/requests/python_runtime_resilience.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.python-runtime-resilience-cmd-fix",
+      "path": "context/requests/python_runtime_resilience_cmd_fix.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.python-runtime-resilience-cmd-write",
+      "path": "context/requests/python_runtime_resilience_cmd_write.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.python-runtime-resilience-cmd-write-v2",
+      "path": "context/requests/python_runtime_resilience_cmd_write_v2.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.python-runtime-resilience-cmd-write-v3",
+      "path": "context/requests/python_runtime_resilience_cmd_write_v3.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.python-runtime-resilience-sources",
+      "path": "context/requests/python_runtime_resilience_sources.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.python-runtime-resilience-validation-fix",
+      "path": "context/requests/python_runtime_resilience_validation_fix.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.python-runtime-resilience-write",
+      "path": "context/requests/python_runtime_resilience_write.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r2a-read",
+      "path": "context/requests/r2a_read.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r2a-write",
+      "path": "context/requests/r2a_write.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r2b-case-resolution",
+      "path": "context/requests/r2b_case_resolution.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r2b-close",
+      "path": "context/requests/r2b_close.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r2b-contract-alignment",
+      "path": "context/requests/r2b_contract_alignment.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r2b-decision-evidence",
+      "path": "context/requests/r2b_decision_evidence.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r2b-handoff-audit",
+      "path": "context/requests/r2b_handoff_audit.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r2b-start",
+      "path": "context/requests/r2b_start.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r3-close",
+      "path": "context/requests/r3_close.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r3-metadata-retrieval",
+      "path": "context/requests/r3_metadata_retrieval.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r3-start",
+      "path": "context/requests/r3_start.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r4-close",
+      "path": "context/requests/r4_close.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r4-start",
+      "path": "context/requests/r4_start.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r5-close",
+      "path": "context/requests/r5_close.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.requests.r5-start",
+      "path": "context/requests/r5_start.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.python-runtime-resilience",
+      "path": "context/work/python_runtime_resilience.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.python-runtime-resilience-cmd-fix",
+      "path": "context/work/python_runtime_resilience_cmd_fix.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.python-runtime-resilience-cmd-write-v3",
+      "path": "context/work/python_runtime_resilience_cmd_write_v3.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.python-runtime-resilience-validation-fix",
+      "path": "context/work/python_runtime_resilience_validation_fix.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.python-runtime-resilience-write",
+      "path": "context/work/python_runtime_resilience_write.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r2a-read",
+      "path": "context/work/r2a_read.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r2a-write",
+      "path": "context/work/r2a_write.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r2b-case-resolution",
+      "path": "context/work/r2b_case_resolution.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r2b-close",
+      "path": "context/work/r2b_close.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r2b-contract-alignment",
+      "path": "context/work/r2b_contract_alignment.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r2b-decision-evidence",
+      "path": "context/work/r2b_decision_evidence.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r2b-handoff-audit",
+      "path": "context/work/r2b_handoff_audit.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r2b-start",
+      "path": "context/work/r2b_start.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r3-close",
+      "path": "context/work/r3_close.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r3-metadata-retrieval",
+      "path": "context/work/r3_metadata_retrieval.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r3-start",
+      "path": "context/work/r3_start.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r4-close",
+      "path": "context/work/r4_close.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r4-start",
+      "path": "context/work/r4_start.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r5-close",
+      "path": "context/work/r5_close.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.context.work.r5-start",
+      "path": "context/work/r5_start.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.agent.context-retrieval",
+      "path": "docs/agent/CONTEXT_RETRIEVAL.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.agent.document-map",
+      "path": "docs/agent/DOCUMENT_MAP.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.agent.knowledge-maintenance",
+      "path": "docs/agent/KNOWLEDGE_MAINTENANCE.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.agent.knowledge-system",
+      "path": "docs/agent/KNOWLEDGE_SYSTEM.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.agent.workflow",
+      "path": "docs/agent/WORKFLOW.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20-r-1.1.id-7e64b9e3c0fe",
+      "path": "docs/reports/2026-07-20_R-1.1_지식_시스템_설계_보정.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20-r-1.id-49dd93d5e105",
+      "path": "docs/reports/2026-07-20_R-1_지식_시스템_설계_정정.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20-r-2.id-8bcd8a28b291",
+      "path": "docs/reports/2026-07-20_R-2_착수전_사용자_의도_정합성_검증.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20-r-2a.id-7a58b912b7d9",
+      "path": "docs/reports/2026-07-20_R-2A_컨텍스트_시스템_구현_결과.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20.id-1d4a536992b0",
+      "path": "docs/reports/2026-07-20_프로젝트_기반_및_지식_시스템_설계.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20.id-21229a5354b5",
+      "path": "docs/reports/2026-07-20_프로젝트_기본_기반_구축.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-20.id-5d22f87b8ded",
+      "path": "docs/reports/2026-07-20_기존_프로젝트_분석.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-21-r-2b.id-4c7f75d5c04e",
+      "path": "docs/reports/2026-07-21_R-2B_기존_지식_코퍼스_이관_결과.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-21-r-3-resolver-writer.id-d8a3c1e15a57",
+      "path": "docs/reports/2026-07-21_R-3_resolver_writer_일반화_결과.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-21-r-4.id-def911bf2b6b",
+      "path": "docs/reports/2026-07-21_R-4_검색_평가_결과.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.reports.2026-07-21-r-5.id-9052022cc1ed",
+      "path": "docs/reports/2026-07-21_R-5_운영_인수_및_전체_완료_결과.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.docs.user.guide",
+      "path": "docs/user/GUIDE.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.evaluation.operations.r5-acceptance",
+      "path": "evaluation/operations/r5_acceptance.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.evaluation.operations.r5-acceptance-result",
+      "path": "evaluation/operations/r5_acceptance_result.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.evaluation.retrieval.r4-baseline-result",
+      "path": "evaluation/retrieval/r4_baseline_result.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.evaluation.retrieval.r4-queries",
+      "path": "evaluation/retrieval/r4_queries.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.gitattributes",
+      "path": ".gitattributes",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.gitignore",
+      "path": ".gitignore",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.knowledge.cases.case.project.document-authority-duplication",
+      "path": "knowledge/cases/case.project.document-authority-duplication.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.knowledge.cases.case.project.python-runtime-path-resolution",
+      "path": "knowledge/cases/case.project.python-runtime-path-resolution.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.knowledge.decisions",
+      "path": "knowledge/decisions.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.knowledge.items",
+      "path": "knowledge/items.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.knowledge.relations",
+      "path": "knowledge/relations.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.knowledge.reviews",
+      "path": "knowledge/reviews.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.knowledge.revisions",
+      "path": "knowledge/revisions.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.readme",
+      "path": "README.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.records.sessions.session.2026-07-20.r1-r1.1-document-governance",
+      "path": "records/sessions/session.2026-07-20.r1-r1.1-document-governance.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.records.work.events",
+      "path": "records/work/events.jsonl",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.reports.id-e3339a806212",
+      "path": "reports/최종_구축상태_교차검증보고.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.rules.version-control",
+      "path": "rules/version-control.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.case.schema",
+      "path": "schemas/case.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.decision.schema",
+      "path": "schemas/decision.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.event.schema",
+      "path": "schemas/event.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.file.schema",
+      "path": "schemas/file.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.knowledge.schema",
+      "path": "schemas/knowledge.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.operational-acceptance-result.schema",
+      "path": "schemas/operational_acceptance_result.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.operational-acceptance.schema",
+      "path": "schemas/operational_acceptance.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.relation.schema",
+      "path": "schemas/relation.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.retrieval-evaluation.schema",
+      "path": "schemas/retrieval_evaluation.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.retrieval-result.schema",
+      "path": "schemas/retrieval_result.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.review.schema",
+      "path": "schemas/review.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.revision.schema",
+      "path": "schemas/revision.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.rule.schema",
+      "path": "schemas/rule.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.source.schema",
+      "path": "schemas/source.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.task-request.schema",
+      "path": "schemas/task_request.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.unit.schema",
+      "path": "schemas/unit.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.work-context.schema",
+      "path": "schemas/work_context.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.schemas.write-contract.schema",
+      "path": "schemas/write_contract.schema.json",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.session-handoff",
+      "path": "SESSION_HANDOFF.md",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.tests.context.test-context-system",
+      "path": "tests/context/test_context_system.py",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.tests.context.test-python-runtime-launcher",
+      "path": "tests/context/test_python_runtime_launcher.py",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.tools.context.context-system",
+      "path": "tools/context/context_system.py",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.tools.runtime.run-python",
+      "path": "tools/runtime/run_python.ps1",
+      "reason": "outside_exact_or_dependency_scope"
+    },
+    {
+      "kind": "file",
+      "id": "file.tools.runtime.run-python.cmd",
+      "path": "tools/runtime/run_python.cmd",
+      "reason": "outside_exact_or_dependency_scope"
+    }
+  ],
+  "write_contract": {
+    "schema_version": "1.0.0",
+    "contract_id": "contract.task.python-runtime-resilience.sources",
+    "request_hash": "b2adb9f22e226851a0c3a7663b7abcf24950371ddcf910ff63901e757d991c0a",
+    "allowed_actions": [
+      "write"
+    ],
+    "targets": [
+      {
+        "file_id": "file.knowledge.sources",
+        "path": "knowledge/sources.jsonl",
+        "status": "active",
+        "before_file_hash": "b2376d1964c7b71a658f5bb2b6da8fc0dd23df21fb54e769b73bc677856f530a",
+        "unit_ids": [
+          "unit.file.knowledge.sources.record.source.git.r2b-baseline",
+          "unit.file.knowledge.sources.record.source.history.overview",
+          "unit.file.knowledge.sources.record.source.official.json-schema-2020-12-core",
+          "unit.file.knowledge.sources.record.source.repo.context-retrieval",
+          "unit.file.knowledge.sources.record.source.repo.project-rules",
+          "unit.file.knowledge.sources.record.source.repo.r1.1",
+          "unit.file.knowledge.sources.record.source.repo.workflow"
+        ],
+        "before_unit_hashes": {
+          "unit.file.knowledge.sources.record.source.git.r2b-baseline": "6217a228c6e68cdf755ca1a3cf116782346cc589879845632406a105f54d0705",
+          "unit.file.knowledge.sources.record.source.history.overview": "a99ed4e83f4529b41d18d046b0df601c2e07f6bddb62b36ee05400c443f94fe2",
+          "unit.file.knowledge.sources.record.source.official.json-schema-2020-12-core": "8eab6f3e62deb42d0ac4cb02d0d5e908d9ffdef2073ad056fe28506752432ecb",
+          "unit.file.knowledge.sources.record.source.repo.context-retrieval": "785ed0faf4de4e417d45c39dbfaa54d6a3cb980b8aef49fca6e7b2297994f231",
+          "unit.file.knowledge.sources.record.source.repo.project-rules": "73a878f31c73981df020a30378c2d31b3cb94c5ae384215b827c2772b9bd63c1",
+          "unit.file.knowledge.sources.record.source.repo.r1.1": "309b48fd0a79d97f2ad6a354266fafe5d8a7e37fe7b2a7d8f84f5b08995fef69",
+          "unit.file.knowledge.sources.record.source.repo.workflow": "b9743df5aa5e30bf80fcfe49033f004e2e177a5a8066af711b994d051cc0bd7c"
+        },
+        "owner": "project_agents",
+        "authority": "canonical",
+        "write_when": [
+          "authorized_source_review"
+        ],
+        "validators": [
+          "validate.utf8",
+          "validate.nul",
+          "validate.jsonl"
+        ]
+      }
+    ],
+    "selected_rule_ids": [
+      "rule.documentation.required-metadata",
+      "rule.governance.single-owner",
+      "rule.knowledge.confidence-is-not-verification",
+      "rule.provenance.claim-classification",
+      "rule.provenance.preserve-source-language",
+      "rule.provenance.source-and-rationale",
+      "rule.retrieval.direct-routing-first",
+      "rule.validation.failure-record",
+      "rule.validation.proportional-verification",
+      "rule.validation.python-runtime-resolution"
+    ],
+    "validators": [
+      "validate.jsonl",
+      "validate.nul",
+      "validate.utf8"
+    ],
+    "required_updates": [
+      "catalog",
+      "units",
+      "event"
+    ]
+  }
+}

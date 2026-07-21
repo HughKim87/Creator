@@ -1,0 +1,16 @@
+{
+  "operations": [
+    {
+      "target_path": "tools/context/context_system.py",
+      "operation": "replace_text",
+      "before": "def _replace_atomic(temporary: Path, path: Path, attempts: int = 5) -> None:\n    from time import sleep\n\n    try:\n        for attempt in range(attempts):\n            try:\n                os.replace(temporary, path)\n                return\n            except PermissionError:\n                if attempt == attempts - 1:\n                    raise\n                sleep(0.05 * (2**attempt))\n    finally:\n        try:\n            temporary.unlink(missing_ok=True)\n        except OSError:\n            pass\n",
+      "after": "def _replace_atomic(temporary: Path, path: Path, attempts: int = 5) -> None:\n    from time import sleep\n\n    if attempts < 1:\n        raise ValueError(\"atomic replace attempts must be positive\")\n    try:\n        for attempt in range(attempts):\n            try:\n                os.replace(temporary, path)\n                return\n            except PermissionError:\n                if attempt == attempts - 1:\n                    raise\n                sleep(0.05 * (2**attempt))\n    except Exception as replace_error:\n        try:\n            temporary.unlink(missing_ok=True)\n        except OSError as cleanup_error:\n            raise ContextSystemError(\n                f\"atomic replace failed for {path}: {replace_error}; \"\n                f\"temporary cleanup failed for {temporary}: {cleanup_error}\"\n            ) from replace_error\n        raise\n"
+    },
+    {
+      "target_path": "tests/context/test_context_system.py",
+      "operation": "replace_text",
+      "before": "    def test_planned_file_id_distinguishes_same_stem_extensions(self) -> None:\n",
+      "after": "    def test_atomic_write_reports_secondary_cleanup_failure(self) -> None:\n        with tempfile.TemporaryDirectory() as directory:\n            root = Path(directory)\n            temporary = root / \"temporary.jsonl\"\n            temporary.write_text(\"blocked\\n\", encoding=\"utf-8\")\n            target = root / \"projection.jsonl\"\n            with (\n                mock.patch.object(\n                    context_system.os,\n                    \"replace\",\n                    side_effect=PermissionError(5, \"simulated persistent replace denial\"),\n                ),\n                mock.patch.object(\n                    Path,\n                    \"unlink\",\n                    side_effect=OSError(5, \"simulated cleanup denial\"),\n                ),\n            ):\n                with self.assertRaises(context_system.ContextSystemError) as raised:\n                    context_system._replace_atomic(temporary, target, attempts=1)\n\n            self.assertIn(\"temporary cleanup failed\", str(raised.exception))\n            self.assertIsInstance(raised.exception.__cause__, PermissionError)\n\n    def test_planned_file_id_distinguishes_same_stem_extensions(self) -> None:\n"
+    }
+  ]
+}

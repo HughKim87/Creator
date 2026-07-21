@@ -1,0 +1,10 @@
+{
+  "operation_id": "operation.source.python-runtime-launcher-test.accept-current",
+  "task_id": "task.python-runtime-resilience.source-review",
+  "source_id": "source.repo.python-runtime-launcher-test",
+  "expected_record_hash": "197d497a501d95c312da5005ab1b1d64576e172915e9f956d0e329bbbddebd0c",
+  "actor": "codex",
+  "timestamp": "2026-07-21T10:35:00+09:00",
+  "reason": "Reviewed the added -m argument-forwarding regression and accepted the current passing test source hash.",
+  "outcome": "accept_current_hash"
+}

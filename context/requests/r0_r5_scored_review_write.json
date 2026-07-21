@@ -1,0 +1,49 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.r0-r5.scored-review.write",
+  "requested_by": "user",
+  "intent": "Publish the evidence-based R0-through-R-5 scored audit, register its exact route, and correct the current handoff completion boundary.",
+  "actions": [
+    "create",
+    "write",
+    "validate",
+    "close"
+  ],
+  "phase": "close",
+  "target_paths": [
+    "docs/reports/2026-07-21_R0-R5_재검토_점수_분석.md",
+    "docs/agent/DOCUMENT_MAP.md",
+    "SESSION_HANDOFF.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": [
+    "report",
+    "router",
+    "current-state"
+  ],
+  "output_audience": "user",
+  "include_scopes": [
+    "docs/reports",
+    "docs/agent"
+  ],
+  "exclude_scopes": [
+    "backup",
+    "inputs",
+    "outputs"
+  ],
+  "task_tags": [
+    "review",
+    "audit",
+    "scoring",
+    "validation",
+    "documentation",
+    "handoff",
+    "closure"
+  ],
+  "as_of": "2026-07-21T12:30:00+09:00",
+  "context_budget": 16000,
+  "write_payload_path": "context/payloads/r0_r5_scored_review.json"
+}

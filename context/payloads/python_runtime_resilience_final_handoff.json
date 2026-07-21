@@ -1,0 +1,65 @@
+{
+  "operations": [
+    {
+      "target_path": "knowledge/cases/case.project.python-runtime-path-resolution.md",
+      "operation": "replace_text",
+      "before": "| Python compile and unit regression | Three launcher tests and all 26 context tests pass |",
+      "after": "| Python compile and unit regression | All 28 project tests pass, including three launcher and two atomic-write regressions |"
+    },
+    {
+      "target_path": "SESSION_HANDOFF.md",
+      "operation": "render_handoff",
+      "data": {
+        "checkpoint": "R-2A through R-5 remain complete. The user-authorized Python runtime resilience task is complete: project commands use a tested CMD entrypoint that does not depend on a bare Python command or direct PowerShell script permission, and the resolved failure is preserved as a task-routed case. Historical evidence identifies the pre-R content work as the Escape the Backrooms video planning task, but no protected task artifact was reopened.",
+        "approval_state": "The user approved the local launcher, governing rule or procedure changes as needed, regression coverage, and a case document. Commit, push, deployment, publication, global PATH changes, protected-data access, and external mutation are not authorized.",
+        "completed": [
+          "Added public tools/runtime/run_python.cmd and internal run_python.ps1 with validated precedence: PROJECT_PYTHON, project .venv, bundled Codex runtimes, then system launchers.",
+          "Preserved arbitrary Python options through the CMD-to-PowerShell boundary, including -m, and propagated the selected child exit code.",
+          "Added three launcher regressions for empty PATH, -m forwarding, and invalid exact override, plus deterministic same-stem catalog file IDs.",
+          "Added bounded atomic-replace retries and temporary-file cleanup after repeated Windows WinError 5 failures, with transient and terminal-failure regressions.",
+          "Added rule.validation.python-runtime-resolution and the owned WORKFLOW.md#python-runtime-entrypoint procedure.",
+          "Created, source-traced, registered, and exactly resolved case.project.python-runtime-path-resolution."
+        ],
+        "validation": [
+          "Python compilation passed for the context system and both related test modules.",
+          "Full discovery from tests/context passed all 28 tests, including all prior R-2A-through-R-5 regressions, three launcher tests, and two atomic-write cleanup tests.",
+          "Exact case resolution selected the case plus six active supporting sources, including the CMD launcher and PowerShell resolver.",
+          "Final source check reported changed sources 0 and changed knowledge 0 after explicit workflow-source and dependent-knowledge review.",
+          "Integrated validation passed with ok=true, errors 0, orphan files 0, 8 kernel rules, 22 live conditional rules, 2 cases, and 12 sources.",
+          "No catalog temporary file remained; protected paths and backup stayed excluded."
+        ],
+        "failure_ledger": [
+          "Python command discovery | Attempt 1 | bare python was absent from PATH although a bundled runtime existed | resolved by the repository launcher and empty-PATH regression.",
+          "Launcher entrypoint | Attempt 1 | direct .ps1 invocation was blocked by PowerShell execution policy | resolved by the SystemRoot CMD shim with explicit bypass.",
+          "Launcher argument forwarding | Attempt 1 | -m was bound as a PowerShell parameter | resolved by unbound automatic argument capture and a dedicated regression.",
+          "Catalog file identity | Attempt 1 | .ps1 and .cmd plans shared a stem-derived file ID | resolved by deterministic extension fallback and test.",
+          "Catalog projection replace | Attempts 1 and 2 | Windows os.replace returned transient WinError 5 and left temporary files | resolved by five bounded exponential retries plus finally cleanup and two regressions.",
+          "Deleted temp catalog state | Attempt 1 | direct removal left an active catalog row and blocked the resolver | resolved through the exact direct-route fallback by marking only that row deleted, then successful sync.",
+          "Test discovery | Attempt 1 | starting at tests ran zero tests because the context directory was not recursively discovered | corrected the maintained command to start at tests/context, which passed 28 tests."
+        ],
+        "risks": [
+          "The public launcher is Windows CMD because this project runs in a Windows workspace; another OS must use its exact workspace-provided interpreter while preserving the no-bare-command rule.",
+          "Atomic replacement retries are deliberately bounded; a persistent permission failure still raises after cleanup instead of hiding the error.",
+          "No user or system PATH or execution policy was modified.",
+          "The exact current state under outputs/SESSION_HANDOFF.md remains protected and unread; resuming the historical Backrooms task requires explicit task and artifact authorization.",
+          "R-5 exclusions remain unchanged: no FTS, vector, graph, Obsidian, case or decision lifecycle writer, or automatic review scheduler was added."
+        ],
+        "artifacts": [
+          "tools/runtime/run_python.cmd — public project Python launcher.",
+          "tools/runtime/run_python.ps1 — internal validated runtime resolver and argument forwarder.",
+          "tests/context/test_python_runtime_launcher.py — empty-PATH, module-option, and invalid-override regressions.",
+          "tools/context/context_system.py and tests/context/test_context_system.py — same-stem file IDs and bounded atomic-write resilience.",
+          "rules/validation.md#rule.validation.python-runtime-resolution — active prevention policy.",
+          "docs/agent/WORKFLOW.md#python-runtime-entrypoint — active execution procedure.",
+          "knowledge/cases/case.project.python-runtime-path-resolution.md — active resolved case evidence."
+        ],
+        "next_actions": [
+          "Use tools/runtime/run_python.cmd for all future project Python commands.",
+          "If the user wants to resume the pre-R Backrooms work, obtain exact authorization for its protected handoff or artifact and reconstruct that checkpoint before editing.",
+          "Wait for explicit authority before commit, push, deployment, protected-data access, or external mutation."
+        ],
+        "start_prompt": "Read the boot kernel, this handoff, and the document map. Use tools/runtime/run_python.cmd for Python commands; never assume a bare Python command is on PATH or call the internal .ps1 directly. R-2A through R-5 and the runtime resilience fix are complete. Do not open protected task data unless the user authorizes an exact Backrooms task artifact; do not commit, push, deploy, publish, or change external systems without explicit authority."
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0.0",
+  "operations": [
+    {
+      "target_path": "docs/reports/codex_2026-07-21_R0-R5_독립_교차검증_보고.md",
+      "destination_path": "docs/reports/2026-07-21_R0-R5_독립_교차검증_보고.md",
+      "operation": "move_file"
+    }
+  ]
+}

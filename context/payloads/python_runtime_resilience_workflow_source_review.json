@@ -1,0 +1,10 @@
+{
+  "operation_id": "operation.source.workflow.accept-runtime-command-fix",
+  "task_id": "task.python-runtime-resilience.workflow-source-review",
+  "source_id": "source.repo.workflow",
+  "expected_record_hash": "5b3cd386a53f10685cc6c5adf4991808b603b9e556a4365e1c4deb8b2bb27f21",
+  "actor": "codex",
+  "timestamp": "2026-07-21T10:55:00+09:00",
+  "reason": "Reviewed the corrected unittest discovery start directory; the workflow governance contract remains intact.",
+  "outcome": "accept_current_hash"
+}

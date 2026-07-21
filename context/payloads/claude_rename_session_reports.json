@@ -1,0 +1,14 @@
+{
+  "operations": [
+    {
+      "target_path": "docs/reports/codex_2026-07-21_R0-R5_독립_교차검증_보고.md",
+      "destination_path": "docs/reports/claude_2026-07-21_R0-R5_독립_교차검증_보고.md",
+      "operation": "move_file"
+    },
+    {
+      "target_path": "docs/reports/codex_2026-07-21_R0-R5_점수_교차검증.md",
+      "destination_path": "docs/reports/claude_2026-07-21_R0-R5_점수_교차검증.md",
+      "operation": "move_file"
+    }
+  ]
+}

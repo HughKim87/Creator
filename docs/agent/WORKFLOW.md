@@ -55,7 +55,21 @@ The gate fails if another current proposal for the subject exists, if the new fi
 - Allow only one current proposal per subject. Mark a replaced proposal as superseded evidence and exclude it from default context; use verified Git commit, blob, and content hashes to preserve duplicate full text.
 - Record material commands, changed artifacts, failures, and verification results in the available project evidence surface.
 - Context operations use the structured request → resolver → work context/write contract → transactional writer path in `tools/context/context_system.py`. The writer supports registered text, code, config, binary, move, and delete targets, verifies before-file and before-unit hashes, restores touched paths on partial failure, and updates catalog, unit, and event evidence. Exact protected namespaces use a task-local manifest and explicit closure event, never global discovery. Knowledge candidates, reviews, revisions, conflict links, and supersession use the dedicated lifecycle operation; source hash checks create review transitions. Decision and case lifecycle writers remain unimplemented and must not be claimed.
+- Every context-system CLI command holds the repository-local cross-process lock for its full operation. Nested catalog rebuilds reuse that lock, atomic-write temporary files and the lock file are excluded from discovery, and a missing active file is reported by validation instead of crashing projection rebuild. Do not bypass the lock with direct catalog edits.
 - When a repeated failure affects continuation, preserve the objective, attempt, confirmed cause, consecutive count, and next condition.
+
+### Python runtime entrypoint
+
+Project Python commands must not depend on a bare `python` or `python3` name being present on `PATH`. Invoke Python through `tools/runtime/run_python.cmd`; the CMD entrypoint calls the internal PowerShell implementation with `ExecutionPolicy Bypass`, and that implementation requires Python 3.11 or newer and verifies that `tomllib` imports before use. Runtime candidates are resolved in this order: explicit `PROJECT_PYTHON`, project `.venv`, bundled Codex runtimes, then validated system launchers. An invalid, older, or capability-incomplete explicit override fails immediately instead of silently selecting another interpreter.
+
+When a workspace dependency provider is available, its exact Python executable may bootstrap the launcher or be assigned to `PROJECT_PYTHON`; do not persist the returned personal absolute path in project files. If no runtime validates, stop and report the launcher's diagnostic instead of retrying a bare command. Do not call `run_python.ps1` directly because local PowerShell execution policy may reject it.
+
+PowerShell examples:
+
+```powershell
+& .\tools\runtime\run_python.cmd tools/context/context_system.py validate
+& .\tools\runtime\run_python.cmd -m unittest discover -s tests/context -p 'test_*.py'
+```
 
 ## 5. Validate
 

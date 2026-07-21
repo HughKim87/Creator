@@ -1,0 +1,10 @@
+{
+  "operation_id": "operation.pre-l.source.validation-rules.accept-runtime-contract",
+  "task_id": "task.pre-l.hardening.source-review",
+  "source_id": "source.repo.validation-rules",
+  "expected_record_hash": "b9a732e15df8a936785033afc6288e28ecce9ea384c9c5540f6369dcfa0e917a",
+  "actor": "codex",
+  "timestamp": "2026-07-22T00:10:00+09:00",
+  "reason": "Reviewed the explicit Python 3.11 and tomllib requirement added to the existing runtime-resolution policy.",
+  "outcome": "accept_current_hash"
+}

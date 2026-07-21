@@ -1,0 +1,10 @@
+{
+  "operation_id": "operation.pre-l.source.workflow.accept-hardening-contract",
+  "task_id": "task.pre-l.hardening.source-review",
+  "source_id": "source.repo.workflow",
+  "expected_record_hash": "1f58d77f7ff0b54a791f1bddfc772957800370bf4e6af7601e1005339e2c18eb",
+  "actor": "codex",
+  "timestamp": "2026-07-22T00:10:00+09:00",
+  "reason": "Reviewed repository-lock ownership, recoverable projection rebuild, and the strengthened Python capability entrypoint contract.",
+  "outcome": "accept_current_hash"
+}

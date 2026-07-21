@@ -1,0 +1,24 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.python-runtime-resilience.argument-fix",
+  "requested_by": "user",
+  "intent": "Preserve arbitrary Python command-line options, including -m, through the Windows CMD and PowerShell launcher boundary and cover the behavior with a regression test.",
+  "actions": ["read", "write", "validate"],
+  "phase": "write",
+  "target_paths": [
+    "tools/runtime/run_python.ps1",
+    "tests/context/test_python_runtime_launcher.py"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": ["code", "test"],
+  "output_audience": "agent",
+  "include_scopes": [],
+  "exclude_scopes": ["backup", "inputs", "outputs"],
+  "task_tags": ["python", "runtime", "launcher", "arguments", "regression", "validation"],
+  "as_of": "2026-07-21T10:30:00+09:00",
+  "context_budget": 8000,
+  "write_payload_path": "context/payloads/python_runtime_resilience_argument_fix.json"
+}

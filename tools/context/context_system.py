@@ -18,11 +18,14 @@ import re
 import shutil
 import sys
 import tempfile
+import threading
+import time
 import tomllib
 import unicodedata
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
-from typing import Any, Iterable
+from typing import Any, Iterable, Iterator
 from urllib.parse import unquote
 
 
@@ -31,6 +34,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PROTECTED_TOP_LEVEL = {"backup", "inputs", "outputs", ".git", ".agents", ".codex"}
 IGNORED_DIRS = {"__pycache__", ".pytest_cache"}
 IGNORED_SUFFIXES = {".pyc", ".pyo"}
+ATOMIC_TEMP_PREFIX = ".context-system-"
+ATOMIC_TEMP_SUFFIX = ".tmp"
+REPOSITORY_LOCK_NAME = ".context-system.lock"
+REPOSITORY_LOCK_TIMEOUT_SECONDS = 60.0
+CONTEXT_ARTIFACT_PREFIXES = ("context/requests/", "context/work/", "context/payloads/")
+MAX_UNIT_PROJECTION_COUNT = 5_000
+MAX_UNIT_PROJECTION_BYTES = 8 * 1024 * 1024
 CATALOG_PROJECTIONS = {
     "catalog/files.jsonl",
     "catalog/records.jsonl",
@@ -66,6 +76,9 @@ RULE_PACK_PATHS = [
     "rules/retrieval.md",
     "rules/validation.md",
 ]
+_PROCESS_LOCKS: dict[str, threading.RLock] = {}
+_PROCESS_LOCKS_GUARD = threading.Lock()
+_THREAD_LOCK_STATE = threading.local()
 
 
 class ContextSystemError(RuntimeError):
@@ -74,6 +87,101 @@ class ContextSystemError(RuntimeError):
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).astimezone().replace(microsecond=0).isoformat()
+
+
+def _process_lock_for(key: str) -> threading.RLock:
+    with _PROCESS_LOCKS_GUARD:
+        return _PROCESS_LOCKS.setdefault(key, threading.RLock())
+
+
+def _try_lock_file(handle: Any) -> bool:
+    handle.seek(0)
+    try:
+        if os.name == "nt":
+            import msvcrt
+
+            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return True
+    except OSError:
+        return False
+
+
+def _unlock_file(handle: Any) -> None:
+    handle.seek(0)
+    if os.name == "nt":
+        import msvcrt
+
+        msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+    else:
+        import fcntl
+
+        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+@contextmanager
+def repository_lock(
+    root: Path = PROJECT_ROOT,
+    timeout_seconds: float = REPOSITORY_LOCK_TIMEOUT_SECONDS,
+) -> Iterator[None]:
+    """Serialize context-system operations across threads and processes."""
+    root = root.resolve()
+    key = str(root)
+    process_lock = _process_lock_for(key)
+    if not process_lock.acquire(timeout=max(timeout_seconds, 0.0)):
+        raise ContextSystemError(f"repository lock timeout after {timeout_seconds:.1f}s: {root}")
+
+    held = getattr(_THREAD_LOCK_STATE, "held", set())
+    if key in held:
+        try:
+            yield
+        finally:
+            process_lock.release()
+        return
+
+    handle = None
+    acquired = False
+    try:
+        lock_path = root / "catalog" / REPOSITORY_LOCK_NAME
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        handle = lock_path.open("a+b")
+        handle.seek(0, os.SEEK_END)
+        if handle.tell() == 0:
+            handle.write(b"\0")
+            handle.flush()
+        deadline = time.monotonic() + max(timeout_seconds, 0.0)
+        while not (acquired := _try_lock_file(handle)):
+            if time.monotonic() >= deadline:
+                raise ContextSystemError(
+                    f"repository lock timeout after {timeout_seconds:.1f}s: {lock_path.relative_to(root).as_posix()}"
+                )
+            time.sleep(0.05)
+        held.add(key)
+        _THREAD_LOCK_STATE.held = held
+        yield
+    finally:
+        try:
+            if acquired and handle is not None:
+                held.discard(key)
+                _unlock_file(handle)
+        finally:
+            try:
+                if handle is not None:
+                    handle.close()
+            finally:
+                process_lock.release()
+
+
+def is_internal_transient_path(value: str | Path) -> bool:
+    path = PurePosixPath(normalize_path(value))
+    if path.name == REPOSITORY_LOCK_NAME:
+        return True
+    if path.name.startswith(ATOMIC_TEMP_PREFIX) and path.name.endswith(ATOMIC_TEMP_SUFFIX):
+        return True
+    return path.parent.as_posix() == "catalog" and path.name.startswith("tmp")
 
 
 def canonical_json(value: Any) -> str:
@@ -182,6 +290,8 @@ def iter_project_files(root: Path = PROJECT_ROOT) -> list[str]:
             if path.suffix.lower() in IGNORED_SUFFIXES:
                 continue
             normalized = path.relative_to(root).as_posix()
+            if is_internal_transient_path(normalized):
+                continue
             assert_allowed_path(normalized, root)
             results.append(normalized)
     return sorted(results)
@@ -197,25 +307,54 @@ def read_utf8(path: Path) -> str:
         raise ContextSystemError(f"invalid UTF-8: {path}") from exc
 
 
+def _replace_atomic(temporary: Path, path: Path, attempts: int = 5) -> None:
+    from time import sleep
+
+    if attempts < 1:
+        raise ValueError("atomic replace attempts must be positive")
+    try:
+        for attempt in range(attempts):
+            try:
+                os.replace(temporary, path)
+                return
+            except PermissionError:
+                if attempt == attempts - 1:
+                    raise
+                sleep(0.05 * (2**attempt))
+    except Exception as replace_error:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError as cleanup_error:
+            raise ContextSystemError(
+                f"atomic replace failed for {path}: {replace_error}; "
+                f"temporary cleanup failed for {temporary}: {cleanup_error}"
+            ) from replace_error
+        raise
+
+
 def write_text_atomic(path: Path, content: str) -> None:
     if "\x00" in content:
         raise ContextSystemError(f"refusing NUL content: {path}")
     content.encode("utf-8", errors="strict")
     path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(
-        "w", encoding="utf-8", newline="\n", dir=path.parent, delete=False
+        "w", encoding="utf-8", newline="\n", dir=path.parent, delete=False,
+        prefix=ATOMIC_TEMP_PREFIX, suffix=ATOMIC_TEMP_SUFFIX,
     ) as handle:
         handle.write(content)
         temporary = Path(handle.name)
-    os.replace(temporary, path)
+    _replace_atomic(temporary, path)
 
 
 def write_bytes_atomic(path: Path, content: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile("wb", dir=path.parent, delete=False) as handle:
+    with tempfile.NamedTemporaryFile(
+        "wb", dir=path.parent, delete=False,
+        prefix=ATOMIC_TEMP_PREFIX, suffix=ATOMIC_TEMP_SUFFIX,
+    ) as handle:
         handle.write(content)
         temporary = Path(handle.name)
-    os.replace(temporary, path)
+    _replace_atomic(temporary, path)
 
 
 def write_json_atomic(path: Path, value: Any) -> None:
@@ -417,6 +556,12 @@ def classify_file(
     else:
         unit_strategy = "whole_file"
         validators = ["validate.content_hash"]
+
+    if normalized.startswith(CONTEXT_ARTIFACT_PREFIXES):
+        # Requests, resolved work contexts, and write payloads are exact-route
+        # task evidence. One file-level unit preserves addressability without
+        # recursively projecting thousands of internal JSON pointers.
+        unit_strategy = "whole_file"
 
     relation_paths: dict[str, list[str]] = {
         "AGENTS.md": ["PROJECT_RULES.md", "SESSION_HANDOFF.md", "docs/agent/DOCUMENT_MAP.md"],
@@ -841,6 +986,10 @@ def extract_units_for_file(root: Path, file_record: dict[str, Any]) -> list[dict
     if file_record["status"] != "active" or file_record["path"] in CATALOG_PROJECTIONS:
         return []
     path = root / file_record["path"]
+    if not path.exists():
+        # Keep sync recoverable. Validation still reports a missing active file,
+        # but projection rebuild must not crash before it can produce that result.
+        return []
     strategy = file_record["unit_strategy"]
     if strategy == "binary_sidecar":
         return [binary_sidecar_unit(root, path, file_record)]
@@ -914,6 +1063,8 @@ def build_file_catalog(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
         for path in sorted(actual_paths)
     ]
     for record in existing:
+        if is_internal_transient_path(record["path"]):
+            continue
         if record["path"] in actual_paths:
             continue
         if record.get("status") in {"planned", "deleted", "moved"}:
@@ -944,19 +1095,21 @@ def build_unit_projection(root: Path = PROJECT_ROOT) -> list[dict[str, Any]]:
 
 
 def sync_catalog(root: Path = PROJECT_ROOT) -> dict[str, int]:
-    (root / "catalog").mkdir(parents=True, exist_ok=True)
-    build_rule_projection(root)
-    build_record_projection(root)
-    build_file_catalog(root)
-    build_unit_projection(root)
-    files = build_file_catalog(root)
-    return {
-        "files": len([record for record in files if record["status"] == "active"]),
-        "planned": len([record for record in files if record["status"] == "planned"]),
-        "records": len(load_jsonl(root / "catalog/records.jsonl")),
-        "rules": len(load_jsonl(root / "catalog/rules.jsonl")),
-        "units": len(load_jsonl(root / "catalog/units.jsonl")),
-    }
+    with repository_lock(root):
+        (root / "catalog").mkdir(parents=True, exist_ok=True)
+        build_rule_projection(root)
+        build_record_projection(root)
+        build_file_catalog(root)
+        build_unit_projection(root)
+        files = build_file_catalog(root)
+        return {
+            "files": len([record for record in files if record["status"] == "active"]),
+            "planned": len([record for record in files if record["status"] == "planned"]),
+            "records": len(load_jsonl(root / "catalog/records.jsonl")),
+            "rules": len(load_jsonl(root / "catalog/rules.jsonl")),
+            "units": len(load_jsonl(root / "catalog/units.jsonl")),
+            "unit_projection_bytes": (root / "catalog/units.jsonl").stat().st_size,
+        }
 
 
 def event_payload_hash(event: dict[str, Any]) -> str:
@@ -1031,7 +1184,13 @@ def plan_file(root: Path, path: str) -> dict[str, Any]:
     sync_catalog(root)
     records = load_file_catalog(root)
     records = [record for record in records if record["path"] != normalized]
-    records.append(classify_file(normalized, root, "planned"))
+    planned = classify_file(normalized, root, "planned")
+    occupied = {record["file_id"] for record in records}
+    if planned["file_id"] in occupied:
+        suffix = ascii_slug(PurePosixPath(normalized).suffix.lstrip(".")) or f"id-{sha256_text(normalized)[:12]}"
+        candidate = f"{planned['file_id']}.{suffix}"
+        planned["file_id"] = candidate if candidate not in occupied else f"{candidate}.id-{sha256_text(normalized)[:12]}"
+    records.append(planned)
     records = sorted(records, key=lambda item: item["file_id"])
     self_record = next(record for record in records if record["path"] == "catalog/files.jsonl")
     self_record["runtime_hash"] = None
@@ -1045,10 +1204,10 @@ def plan_file(root: Path, path: str) -> dict[str, Any]:
         {normalized: None},
         {normalized: None},
         "success",
-        {"status": "planned"},
+        {"status": "planned", "file_id": planned["file_id"]},
     )
     sync_catalog(root)
-    return {"file_id": file_id_for_path(normalized), "path": normalized, "event_id": event["event_id"]}
+    return {"file_id": planned["file_id"], "path": normalized, "event_id": event["event_id"]}
 
 
 def condition_matches(condition: dict[str, Any], request: dict[str, Any]) -> bool:
@@ -1503,9 +1662,13 @@ def validate_markdown_links(root: Path, paths: Iterable[str]) -> tuple[list[str]
             count += 1
             destination = ((root / relative).parent / target).resolve()
             try:
-                destination.relative_to(root.resolve())
+                destination_relative = destination.relative_to(root.resolve())
             except ValueError:
                 errors.append(f"link escapes project: {relative} -> {target}")
+                continue
+            if destination_relative.parts and destination_relative.parts[0] == "backup":
+                # Historical links are provenance locators, not active runtime
+                # dependencies. The immutable backup tree may be absent in a clone.
                 continue
             if not destination.exists():
                 errors.append(f"broken local link: {relative} -> {target}")
@@ -1677,10 +1840,12 @@ def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
     if kernel_ids != KERNEL_RULE_IDS:
         errors.append(f"kernel IDs/order mismatch: {kernel_ids}")
     parsed_rules = parse_rule_packs(root)
-    if len(parsed_rules) != 21 or len({rule["rule_id"] for rule in parsed_rules}) != 21:
-        errors.append("conditional rules are not 21 unique records")
-    if set(mapped_ids) != set(kernel_ids) | {rule["rule_id"] for rule in parsed_rules}:
-        errors.append("bootstrap rule mapping does not match live kernel and packs")
+    parsed_rule_ids = {rule["rule_id"] for rule in parsed_rules}
+    if len(parsed_rules) != len(parsed_rule_ids):
+        errors.append("conditional rules do not have unique IDs")
+    mapped_conditional_ids = set(mapped_ids) - set(kernel_ids)
+    if not mapped_conditional_ids <= parsed_rule_ids:
+        errors.append("bootstrap conditional rule baseline is missing from live packs")
     projected_rules = load_jsonl(root / "catalog/rules.jsonl")
     if projected_rules != parsed_rules:
         errors.append("rule projection differs from Markdown rule packs")
@@ -1729,6 +1894,15 @@ def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
             errors.append("catalog runtime hash mismatch")
 
     unit_records = load_jsonl(root / "catalog/units.jsonl")
+    unit_projection_bytes = (root / "catalog/units.jsonl").stat().st_size
+    if len(unit_records) > MAX_UNIT_PROJECTION_COUNT:
+        errors.append(
+            f"unit projection count exceeds budget: {len(unit_records)} > {MAX_UNIT_PROJECTION_COUNT}"
+        )
+    if unit_projection_bytes > MAX_UNIT_PROJECTION_BYTES:
+        errors.append(
+            f"unit projection size exceeds budget: {unit_projection_bytes} > {MAX_UNIT_PROJECTION_BYTES}"
+        )
     if len({record["unit_id"] for record in unit_records}) != len(unit_records):
         errors.append("duplicate unit ID")
     for record in unit_records:
@@ -1876,6 +2050,7 @@ def validate_project(root: Path = PROJECT_ROOT) -> dict[str, Any]:
             "active_files": len(active_records),
             "planned_files": len([record for record in file_records if record["status"] == "planned"]),
             "units": len(unit_records),
+            "unit_projection_bytes": unit_projection_bytes,
             "events": len(load_jsonl(root / "records/work/events.jsonl")),
             "retrieval_evaluations": len(retrieval_evaluations),
             "retrieval_results": len(retrieval_results),
@@ -3922,32 +4097,33 @@ def cli() -> int:
     args = parser.parse_args()
     root = Path(args.root).resolve()
     try:
-        if args.command == "bootstrap":
-            result = bootstrap(root)
-        elif args.command == "sync":
-            result = sync_catalog(root)
-        elif args.command == "validate":
-            result = validate_project(root)
-        elif args.command == "plan-file":
-            result = plan_file(root, args.path)
-        elif args.command == "resolve":
-            result = resolve_request(root, args.request, args.output)
-        elif args.command == "write-fixture":
-            result = write_fixture(root, args.context, args.payload)
-        elif args.command == "maintain-knowledge":
-            result = maintain_knowledge(root, args.operation)
-        elif args.command == "check-sources":
-            result = check_source_hashes(root, args.task_id)
-        elif args.command == "maintain-source":
-            result = maintain_source(root, args.operation)
-        elif args.command == "close-protected-context":
-            result = close_protected_context(root, args.context)
-        elif args.command == "evaluate-retrieval":
-            result = evaluate_retrieval(root, args.evaluation, args.output)
-        elif args.command == "evaluate-operations":
-            result = evaluate_operational_acceptance(root, args.evaluation, args.output)
-        else:  # pragma: no cover
-            raise ContextSystemError(f"unsupported command: {args.command}")
+        with repository_lock(root):
+            if args.command == "bootstrap":
+                result = bootstrap(root)
+            elif args.command == "sync":
+                result = sync_catalog(root)
+            elif args.command == "validate":
+                result = validate_project(root)
+            elif args.command == "plan-file":
+                result = plan_file(root, args.path)
+            elif args.command == "resolve":
+                result = resolve_request(root, args.request, args.output)
+            elif args.command == "write-fixture":
+                result = write_fixture(root, args.context, args.payload)
+            elif args.command == "maintain-knowledge":
+                result = maintain_knowledge(root, args.operation)
+            elif args.command == "check-sources":
+                result = check_source_hashes(root, args.task_id)
+            elif args.command == "maintain-source":
+                result = maintain_source(root, args.operation)
+            elif args.command == "close-protected-context":
+                result = close_protected_context(root, args.context)
+            elif args.command == "evaluate-retrieval":
+                result = evaluate_retrieval(root, args.evaluation, args.output)
+            elif args.command == "evaluate-operations":
+                result = evaluate_operational_acceptance(root, args.evaluation, args.output)
+            else:  # pragma: no cover
+                raise ContextSystemError(f"unsupported command: {args.command}")
     except ContextSystemError as exc:
         print(canonical_json({"ok": False, "error": str(exc)}))
         return 1

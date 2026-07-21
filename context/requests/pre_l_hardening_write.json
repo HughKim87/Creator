@@ -1,0 +1,75 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.pre-l.hardening-write",
+  "requested_by": "user",
+  "intent": "Implement and verify the approved pre-L hardening goals for concurrency, Python capability, context projection size, and historical link isolation, then record the result and handoff.",
+  "actions": [
+    "read",
+    "create",
+    "write",
+    "review",
+    "validate",
+    "close"
+  ],
+  "phase": "close",
+  "target_paths": [
+    ".gitignore",
+    "tools/context/context_system.py",
+    "tools/runtime/run_python.ps1",
+    "tests/context/test_context_system.py",
+    "tests/context/test_python_runtime_launcher.py",
+    "rules/validation.md",
+    "docs/agent/WORKFLOW.md",
+    "docs/agent/CONTEXT_RETRIEVAL.md",
+    "docs/agent/DOCUMENT_MAP.md",
+    "docs/reports/codex_2026-07-22_L작업_전_운영_하드닝_개선_결과.md",
+    "SESSION_HANDOFF.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": [
+    "config",
+    "code",
+    "test",
+    "rule-pack",
+    "procedure",
+    "technical-contract",
+    "router",
+    "report",
+    "current-state"
+  ],
+  "output_audience": "user",
+  "include_scopes": [
+    "tools/context",
+    "tools/runtime",
+    "tests/context",
+    "rules",
+    "docs/agent",
+    "docs/reports"
+  ],
+  "exclude_scopes": [
+    "backup",
+    "inputs",
+    "outputs"
+  ],
+  "task_tags": [
+    "write",
+    "hardening",
+    "concurrency",
+    "python",
+    "runtime",
+    "context",
+    "projection",
+    "validation",
+    "documentation",
+    "report",
+    "handoff",
+    "closure",
+    "pre-l"
+  ],
+  "as_of": "2026-07-22T00:05:00+09:00",
+  "context_budget": 24000,
+  "write_payload_path": "context/payloads/pre_l_hardening_write.json"
+}

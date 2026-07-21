@@ -1,0 +1,16 @@
+{
+  "operations": [
+    {
+      "target_path": "tools/runtime/run_python.ps1",
+      "operation": "replace_text",
+      "before": "param(\n    [Parameter(Position = 0, ValueFromRemainingArguments = $true)]\n    [string[]] $PythonArguments\n)\n\n",
+      "after": "$PythonArguments = @($args)\n\n"
+    },
+    {
+      "target_path": "tests/context/test_python_runtime_launcher.py",
+      "operation": "replace_text",
+      "before": "    def test_invalid_explicit_runtime_fails_without_path_fallback(self) -> None:\n",
+      "after": "    def test_module_option_is_forwarded_without_powershell_binding(self) -> None:\n        completed = self.run_launcher(sys.executable, \"-m\", \"site\", \"--user-site\")\n\n        self.assertEqual(completed.returncode, 0, completed.stderr)\n        self.assertTrue(completed.stdout.strip())\n\n    def test_invalid_explicit_runtime_fails_without_path_fallback(self) -> None:\n"
+    }
+  ]
+}

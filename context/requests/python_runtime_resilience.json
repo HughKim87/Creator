@@ -1,0 +1,57 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.python-runtime-resilience",
+  "requested_by": "user",
+  "intent": "Prevent project Python commands from failing when python is absent from PATH, add regression coverage and governing guidance, and record the resolved failure as a case.",
+  "actions": [
+    "read",
+    "create",
+    "write",
+    "review",
+    "validate",
+    "close"
+  ],
+  "phase": "write",
+  "target_paths": [
+    "tools/runtime/run_python.ps1",
+    "tests/context/test_python_runtime_launcher.py",
+    "rules/validation.md",
+    "docs/agent/WORKFLOW.md",
+    "docs/agent/DOCUMENT_MAP.md",
+    "knowledge/cases/case.project.python-runtime-path-resolution.md",
+    "SESSION_HANDOFF.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [
+    "case"
+  ],
+  "target_kinds": [
+    "script",
+    "test",
+    "policy",
+    "procedure",
+    "router",
+    "case",
+    "current-state"
+  ],
+  "output_audience": "agent",
+  "include_scopes": [],
+  "exclude_scopes": [
+    "backup",
+    "inputs",
+    "outputs"
+  ],
+  "task_tags": [
+    "python",
+    "runtime",
+    "validation",
+    "failure",
+    "case",
+    "documentation",
+    "handoff"
+  ],
+  "as_of": "2026-07-21T00:00:00+09:00",
+  "context_budget": 16000
+}

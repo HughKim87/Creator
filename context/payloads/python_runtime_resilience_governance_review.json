@@ -1,0 +1,12 @@
+{
+  "operation_id": "operation.knowledge.governance-single-owner.verify-after-workflow-command-fix",
+  "task_id": "task.python-runtime-resilience.governance-review",
+  "action": "review",
+  "outcome": "verified",
+  "knowledge_id": "knowledge.governance.single-owner",
+  "expected_record_hash": "8a57e68cfe46b069a136f5c80e0a4a4db81783f6219a7e6fae83f2f908ce6505",
+  "expected_revision": 6,
+  "actor": "codex",
+  "timestamp": "2026-07-21T10:55:00+09:00",
+  "reason": "The workflow change only corrected the Python test discovery path and does not alter the verified single-owner governance statement."
+}

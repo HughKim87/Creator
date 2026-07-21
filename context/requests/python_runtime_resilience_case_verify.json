@@ -1,0 +1,20 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.python-runtime-resilience.case-verify",
+  "requested_by": "user",
+  "intent": "Verify the Python runtime failure case and its registered sources after the durable launcher and rule changes.",
+  "actions": ["read", "validate"],
+  "phase": "validate",
+  "target_paths": ["knowledge/cases/case.project.python-runtime-path-resolution.md"],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": ["case.project.python-runtime-path-resolution"],
+  "target_record_kinds": ["case"],
+  "target_kinds": ["knowledge_case"],
+  "output_audience": "agent",
+  "include_scopes": [],
+  "exclude_scopes": ["backup", "inputs", "outputs"],
+  "task_tags": ["python", "runtime", "case", "source", "validation"],
+  "as_of": "2026-07-21T10:20:00+09:00",
+  "context_budget": 8000
+}

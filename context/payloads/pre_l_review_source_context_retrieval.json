@@ -1,0 +1,10 @@
+{
+  "operation_id": "operation.pre-l.source.context-retrieval.accept-hardening",
+  "task_id": "task.pre-l.hardening.source-review",
+  "source_id": "source.repo.context-retrieval",
+  "expected_record_hash": "5802cbed823877b8347923e2713bb97c67ff419e304ea7af5ec5c352ae4b66e7",
+  "actor": "codex",
+  "timestamp": "2026-07-22T00:10:00+09:00",
+  "reason": "Reviewed the bounded context-artifact projection, deterministic size gates, and historical backup-link isolation; the contract remains within the authorized pre-L hardening scope.",
+  "outcome": "accept_current_hash"
+}

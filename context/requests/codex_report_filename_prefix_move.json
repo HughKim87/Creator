@@ -1,0 +1,48 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.codex-report-filename-prefix.move",
+  "requested_by": "user",
+  "intent": "Prefix codex_ to every Markdown report created in the current session while preserving file lifecycle evidence.",
+  "actions": [
+    "read",
+    "move",
+    "validate",
+    "close"
+  ],
+  "phase": "close",
+  "target_paths": [
+    "docs/reports/2026-07-21_R0-R5_재검토_점수_분석.md",
+    "docs/reports/codex_2026-07-21_R0-R5_재검토_점수_분석.md",
+    "docs/reports/2026-07-21_R0-R5_독립_교차검증_보고.md",
+    "docs/reports/codex_2026-07-21_R0-R5_독립_교차검증_보고.md",
+    "docs/reports/2026-07-21_R0-R5_점수_교차검증.md",
+    "docs/reports/codex_2026-07-21_R0-R5_점수_교차검증.md"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": [
+    "report"
+  ],
+  "output_audience": "user",
+  "include_scopes": [
+    "docs/reports"
+  ],
+  "exclude_scopes": [
+    "backup",
+    "inputs",
+    "outputs"
+  ],
+  "task_tags": [
+    "documentation",
+    "report",
+    "lifecycle",
+    "naming",
+    "validation",
+    "closure"
+  ],
+  "as_of": "2026-07-21T15:00:00+09:00",
+  "context_budget": 6000,
+  "write_payload_path": "context/payloads/codex_report_filename_prefix_move.json"
+}

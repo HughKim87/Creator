@@ -5,7 +5,11 @@ from __future__ import annotations
 import importlib.util
 import json
 import shutil
+import subprocess
+import sys
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -28,6 +32,10 @@ class ContextSystemTests(unittest.TestCase):
         self.assertEqual(29, len({item["rule_id"] for item in mapping}))
         self.assertEqual(8, sum(item["destination"] == "PROJECT_RULES.md" for item in mapping))
         self.assertEqual(21, sum(item["destination"] != "PROJECT_RULES.md" for item in mapping))
+        live_rule_ids = {rule["rule_id"] for rule in context_system.parse_rule_packs(ROOT)}
+        mapped_conditional_ids = {item["rule_id"] for item in mapping if item["destination"] != "PROJECT_RULES.md"}
+        self.assertLessEqual(mapped_conditional_ids, live_rule_ids)
+        self.assertIn("rule.validation.python-runtime-resolution", live_rule_ids)
 
     def test_minimum_markdown_json_and_jsonl_unit_parsers(self) -> None:
         file_record = {
@@ -53,6 +61,227 @@ class ContextSystemTests(unittest.TestCase):
         for path in ("backup/item", "inputs/item", "outputs/item", ".git/config"):
             with self.assertRaises(context_system.ContextSystemError):
                 context_system.assert_allowed_path(path, ROOT)
+
+    def test_context_artifacts_use_one_whole_file_unit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            value = {"nested": [{"index": index, "value": {"deep": True}} for index in range(100)]}
+            for relative in (
+                "context/requests/request.json",
+                "context/work/work.json",
+                "context/payloads/payload.json",
+            ):
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(value), encoding="utf-8")
+                record = context_system.classify_file(relative, root)
+                units = context_system.extract_units_for_file(root, record)
+                self.assertEqual("whole_file", record["unit_strategy"])
+                self.assertEqual(1, len(units))
+
+    def test_historical_backup_links_are_not_active_dependencies(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            document = root / "docs/report.md"
+            document.parent.mkdir(parents=True)
+            document.write_text(
+                "[history](../backup/missing.md)\n[active](missing.md)\n",
+                encoding="utf-8",
+            )
+
+            errors, count = context_system.validate_markdown_links(root, ["docs/report.md"])
+
+            self.assertEqual(2, count)
+            self.assertEqual(["broken local link: docs/report.md -> missing.md"], errors)
+
+    def test_project_scan_excludes_context_system_transients(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog"
+            catalog.mkdir()
+            (catalog / "tmpghost").write_text("ghost", encoding="utf-8")
+            (catalog / f"{context_system.ATOMIC_TEMP_PREFIX}ghost{context_system.ATOMIC_TEMP_SUFFIX}").write_text(
+                "ghost", encoding="utf-8"
+            )
+            (catalog / context_system.REPOSITORY_LOCK_NAME).write_bytes(b"\0")
+            (catalog / "kept.json").write_text("{}", encoding="utf-8")
+
+            paths = context_system.iter_project_files(root)
+
+            self.assertEqual(["catalog/kept.json"], paths)
+
+    def test_repository_lock_blocks_a_second_process_and_recovers(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            ready = root / "ready"
+            child_script = """
+import importlib.util
+import pathlib
+import sys
+import time
+
+spec = importlib.util.spec_from_file_location("context_system_child", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+assert spec and spec.loader
+spec.loader.exec_module(module)
+with module.repository_lock(pathlib.Path(sys.argv[2]), timeout_seconds=5.0):
+    pathlib.Path(sys.argv[3]).write_text("ready", encoding="utf-8")
+    time.sleep(1.0)
+"""
+            process = subprocess.Popen(
+                [sys.executable, "-c", child_script, str(MODULE_PATH), str(root), str(ready)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            try:
+                deadline = time.monotonic() + 5.0
+                while not ready.exists() and time.monotonic() < deadline:
+                    time.sleep(0.05)
+                self.assertTrue(ready.exists(), "child process did not acquire repository lock")
+                with self.assertRaisesRegex(context_system.ContextSystemError, "repository lock timeout"):
+                    with context_system.repository_lock(root, timeout_seconds=0.1):
+                        pass
+                stdout, stderr = process.communicate(timeout=5)
+                self.assertEqual(0, process.returncode, stdout + stderr)
+                with context_system.repository_lock(root, timeout_seconds=0.5):
+                    pass
+            finally:
+                if process.poll() is None:
+                    process.kill()
+                    process.wait(timeout=5)
+
+    def test_repository_lock_releases_process_guard_when_setup_or_close_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+
+            def assert_another_thread_can_acquire() -> None:
+                entered = threading.Event()
+                failures = []
+
+                def acquire_after_failure() -> None:
+                    try:
+                        with context_system.repository_lock(root, timeout_seconds=0.5):
+                            entered.set()
+                    except Exception as exc:  # pragma: no cover - asserted through failures
+                        failures.append(exc)
+
+                thread = threading.Thread(target=acquire_after_failure)
+                thread.start()
+                thread.join(timeout=2)
+                self.assertTrue(entered.is_set(), failures)
+                self.assertEqual([], failures)
+
+            with mock.patch.object(Path, "open", side_effect=OSError("simulated lock-file open failure")):
+                with self.assertRaisesRegex(OSError, "simulated lock-file open failure"):
+                    with context_system.repository_lock(root, timeout_seconds=0.1):
+                        pass
+            assert_another_thread_can_acquire()
+
+            real_open = Path.open
+
+            class CloseFailureHandle:
+                def __init__(self, wrapped):
+                    self.wrapped = wrapped
+
+                def __getattr__(self, name):
+                    return getattr(self.wrapped, name)
+
+                def close(self):
+                    self.wrapped.close()
+                    raise OSError("simulated lock-file close failure")
+
+            def open_with_close_failure(path, *args, **kwargs):
+                return CloseFailureHandle(real_open(path, *args, **kwargs))
+
+            with mock.patch.object(Path, "open", autospec=True, side_effect=open_with_close_failure):
+                with self.assertRaisesRegex(OSError, "simulated lock-file close failure"):
+                    with context_system.repository_lock(root, timeout_seconds=0.1):
+                        pass
+            assert_another_thread_can_acquire()
+
+    def test_atomic_write_retries_transient_permission_error_and_cleans_temp(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "projection.jsonl"
+            real_replace = context_system.os.replace
+            calls = {"count": 0}
+
+            def transient_replace(source, destination):
+                calls["count"] += 1
+                if calls["count"] < 3:
+                    raise PermissionError(5, "simulated transient replace denial")
+                return real_replace(source, destination)
+
+            with mock.patch.object(context_system.os, "replace", side_effect=transient_replace):
+                context_system.write_text_atomic(target, "ok\n")
+
+            self.assertEqual(3, calls["count"])
+            self.assertEqual("ok\n", target.read_text(encoding="utf-8"))
+            self.assertEqual([], list(root.glob(f"{context_system.ATOMIC_TEMP_PREFIX}*")))
+
+    def test_atomic_write_terminal_failure_cleans_temp(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "projection.jsonl"
+            with mock.patch.object(
+                context_system.os,
+                "replace",
+                side_effect=PermissionError(5, "simulated persistent replace denial"),
+            ):
+                with self.assertRaises(PermissionError):
+                    context_system.write_text_atomic(target, "blocked\n")
+
+            self.assertFalse(target.exists())
+            self.assertEqual([], list(root.glob(f"{context_system.ATOMIC_TEMP_PREFIX}*")))
+
+    def test_atomic_write_reports_secondary_cleanup_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            temporary = root / "temporary.jsonl"
+            temporary.write_text("blocked\n", encoding="utf-8")
+            target = root / "projection.jsonl"
+            with (
+                mock.patch.object(
+                    context_system.os,
+                    "replace",
+                    side_effect=PermissionError(5, "simulated persistent replace denial"),
+                ),
+                mock.patch.object(
+                    Path,
+                    "unlink",
+                    side_effect=OSError(5, "simulated cleanup denial"),
+                ),
+            ):
+                with self.assertRaises(context_system.ContextSystemError) as raised:
+                    context_system._replace_atomic(temporary, target, attempts=1)
+
+            self.assertIn("temporary cleanup failed", str(raised.exception))
+            self.assertIsInstance(raised.exception.__cause__, PermissionError)
+
+    def test_planned_file_id_distinguishes_same_stem_extensions(self) -> None:
+        existing_path = "tools/runtime/run_python.ps1"
+        catalog_record = context_system.classify_file("catalog/files.jsonl", ROOT)
+        existing_record = context_system.classify_file(existing_path, ROOT)
+        records = [catalog_record, existing_record]
+        captured = {}
+
+        def capture_records(_path, value):
+            captured["records"] = value
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with (
+                mock.patch.object(context_system, "sync_catalog"),
+                mock.patch.object(context_system, "load_file_catalog", return_value=records),
+                mock.patch.object(context_system, "write_jsonl_atomic", side_effect=capture_records),
+                mock.patch.object(context_system, "append_event", return_value={"event_id": "event.catalog-sync.test"}),
+            ):
+                result = context_system.plan_file(root, "tools/runtime/run_python.cmd")
+
+        planned = next(record for record in captured["records"] if record["path"] == "tools/runtime/run_python.cmd")
+        self.assertEqual("file.tools.runtime.run-python.cmd", result["file_id"])
+        self.assertEqual(result["file_id"], planned["file_id"])
 
     def test_live_read_context_is_bounded_to_exact_heading(self) -> None:
         context = context_system.load_json(ROOT / "context/work/r2a_read.json")

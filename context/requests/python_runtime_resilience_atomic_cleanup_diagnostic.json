@@ -1,0 +1,24 @@
+{
+  "schema_version": "task-request-1.0.0",
+  "task_id": "task.python-runtime-resilience.atomic-cleanup-diagnostic",
+  "requested_by": "user",
+  "intent": "Report both the atomic replace failure and a secondary temporary cleanup failure instead of silently swallowing cleanup errors.",
+  "actions": ["read", "write", "validate"],
+  "phase": "write",
+  "target_paths": [
+    "tools/context/context_system.py",
+    "tests/context/test_context_system.py"
+  ],
+  "target_file_ids": [],
+  "target_unit_ids": [],
+  "target_record_ids": [],
+  "target_record_kinds": [],
+  "target_kinds": ["code", "test"],
+  "output_audience": "agent",
+  "include_scopes": [],
+  "exclude_scopes": ["backup", "inputs", "outputs"],
+  "task_tags": ["python", "runtime", "atomic-write", "cleanup", "diagnostic", "validation"],
+  "as_of": "2026-07-21T11:10:00+09:00",
+  "context_budget": 8000,
+  "write_payload_path": "context/payloads/python_runtime_resilience_atomic_cleanup_diagnostic.json"
+}
