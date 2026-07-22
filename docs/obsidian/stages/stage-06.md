@@ -3,6 +3,7 @@
 - 정본 계획: [Stage 06 — 지식 수명주기](../../build/stage-06-knowledge-lifecycle.md)
 - 현재 상태: [SESSION_HANDOFF](../../../SESSION_HANDOFF.md)
 - 적용 규칙: [단계](../../../rules/stage-work.md) · [문서](../../../rules/document-work.md) · [실패](../../../rules/failure-records.md)
+- 구현 계약: [지식 수명주기 계약과 사용법](../../KNOWLEDGE_LIFECYCLE_CONTRACT.md)
 
 ## 계획 내 바로가기
 

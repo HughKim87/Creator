@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:9a6755e79e66b6a77bc9c412414ef7be476d9f8ae6241c22e4776fcba8cb1c48",
+  "created_at": "2026-07-22T20:07:56Z",
+  "id": "f5d5ecd6-43bd-4dd7-8f3e-2e769be44493",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "docs/INFORMATION_ARCHITECTURE.md",
+    "observed_at": "2026-07-22T20:07:56Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:c873421f9a4b13aad481f7f7c95c930db5aba37db086b66b7fb5d0ceb0835803"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T20:07:56Z"
+}

@@ -2,8 +2,8 @@
 
 - 갱신일: 2026-07-23
 - 역할: 채팅 기억 없이 현재 검증 상태와 첫 다음 행동을 재구성하는 단일 활성 상태 정본
-- 현재 단계: Stage 05 지식 유형 순차 도입 — 97/100 완료 준비, 경계 커밋 대기
-- 이전 단계: Stage 04 작업 기록·현재 상태 98/100 완료, 경계 커밋 `519ff30`
+- 현재 단계: Stage 06 지식 수명주기 — 97/100 완료 준비, 경계 커밋 대기
+- 이전 단계: Stage 05 지식 유형 순차 도입 97/100 완료, 경계 커밋 `b9ef127`
 - 백업 정책: 별도 복제 없음. 활성 프로젝트는 Git 이력을 복구 근거로 사용한다.
 
 ## 1. 시작 순서와 권위
@@ -37,11 +37,11 @@
 
 ### 3.1 활성 구조화 작업 포인터
 
-- work ID: `5a15e0b1-7c4d-4f20-8a5b-93e2c6d70505`
+- work ID: `a8fed7c6-fe3d-4915-a972-af56f85fdfcc`
 - 상태: `completed`
-- snapshot: `data/records/5a15e0b1-7c4d-4f20-8a5b-93e2c6d70505.json`
+- snapshot: `data/records/a8fed7c6-fe3d-4915-a972-af56f85fdfcc.json`
 - event 정본: `data/events/work_events.jsonl`
-- snapshot hash: `sha256:f107a2d6a5bfc2a0344f8c89d60027cd86ec84f3bf0f6fd3a210afe282461aac`
+- snapshot hash: `sha256:2f98b2214201e7f40f190608f3f1d407d285cbe606d1d4758cc7c0d765114fb8`
 
 요청·승인·제외 범위와 완료 근거는 위 구조화 기록이 소유한다. 이 핸드오프는 프로젝트 단계와 첫 다음 행동만 요약한다.
 
@@ -55,7 +55,8 @@
 | Stage 02 | 98/100 완료 | JSON 공통 외피, UUIDv4 단일 주소, 엄격 검증, SHA-256, 원자 저장, 13개 회귀 테스트 구축. 누적 커밋 `0601489` |
 | Stage 03 | 98/100 완료 | RecordStore·UTF-8 JSON CLI, 기대 hash 갱신, 원자 JSONL append, 오류 상태 2~8, 25개 테스트. 커밋 `0601489` |
 | Stage 04 | 98/100 완료 | 작업 요청·event 원장·replay snapshot·상태 전이·세션 독립 재개, 실제 work 완료, 36개 테스트. 커밋 `519ff30` |
-| Stage 05 | 97/100 완료 준비 | source·knowledge·decision·failure projection 순차 도입, 55개 테스트, 48개 실제 record·21개 실패 정본 hash 검증. 경계 커밋 대기 |
+| Stage 05 | 97/100 완료 | source·knowledge·decision·failure projection 순차 도입, 55개 테스트, 48개 실제 record·21개 실패 정본 hash 검증. 커밋 `b9ef127` |
+| Stage 06 | 97/100 완료 준비 | event-first 수명주기, 승인 전이, drift·충돌·대체·폐기, 68개 테스트, 54개 snapshot·66개 event replay. 경계 커밋 대기 |
 
 Stage 05는 05A 출처 → 05B 지식 → 05C 결정 → 05D 실패 projection 순으로 각각 검증한 뒤 하나의 Stage 05 경계 커밋으로 닫는다.
 
@@ -79,6 +80,10 @@ Stage 05는 05A 출처 → 05B 지식 → 05C 결정 → 05D 실패 projection �
 - Stage 05 실제 데이터: source 23건, knowledge 1건, decision 1건, failure_knowledge 21건이며 전체 common-record 외피·참조·projection hash를 검증했다.
 - Stage 05 구조: 활성 Markdown 70개·실패 정본 21개·Python 11개·JSON Schema 8개, 지도·로컬 링크·보호 링크 오류 0건.
 - Stage 05 네 가지 확인 모두 통과, 미해결 실패 0건, 자체 점수 97/100. 상세는 `docs/build/stage-05-knowledge-types.md#9-사용자-결정-기록`.
+- Stage 06 기능: candidate/current/review_required/superseded/rejected/retired 상태, 승인 전이, 양방향 충돌, current 선택, event-first rebuild, 사건 기반 audit, failure projection 원본 보존 개정을 구현했다.
+- Stage 06 실제 데이터: 기존 46개 지식 record를 등록하고 drift·stale record 6건을 새 record로 대체했으며 candidate 1·current 47·superseded 6, 재감사 finding 0을 확인했다.
+- Stage 06 테스트·구조: 누적 68개 테스트, 54개 snapshot과 66개 event 전수 replay, 활성 Markdown 72개·링크 497개 오류 0, Python 8개 AST·JSON Schema 10개 파싱, 보호 변경 0건.
+- Stage 06 네 가지 확인 모두 통과, 미해결 실패 0건, 자체 점수 97/100. 상세는 `docs/build/stage-06-knowledge-lifecycle.md#9-사용자-결정-기록`.
 
 ## 6. 실패 원장
 
@@ -92,6 +97,7 @@ Stage 05는 05A 출처 → 05B 지식 → 05C 결정 → 05D 실패 projection �
 - Stage 04의 event 시각 역행, PowerShell JSON 인수 따옴표 손실, 패치 문맥 불일치는 각각 `failures/work-event-time-regression.md`, `failures/powershell-native-json-argument-quoting.md`, `failures/apply-patch-markdown-prefix.md`에 보존했다.
 - Stage 05의 진행 체크포인트 부재와 로컬 source 목록 실패 전파는 새 원인 문서로, export·patch 문맥·PowerShell pipe·고정 UTC fixture 재발은 기존 원인 문서에 병합했다.
 - Stage 05 경계 게이트의 Git 소유권 옵션·work service API·반환 hash 위치 가정은 최고 연속 실패 3회로 기존 Windows 검증 명령 사례에 병합했고, 실제 객체 선관찰 후 전체 게이트를 재개했다.
+- Stage 06의 Windows `rg` 경로 와일드카드와 PowerShell UTF-8 pipe 재발은 기존 원인 정본에 병합했고, decision fixture 계약 구조 가정은 새 원인 문서에 기록했다. 세 원인 모두 수정 후 68개 테스트와 통합 게이트를 통과했다.
 - 모든 장기 실패 지식의 탐색 정본은 `failures/README.md`다.
 
 ## 7. 활성 위험
@@ -101,17 +107,18 @@ Stage 05는 05A 출처 → 05B 지식 → 05C 결정 → 05D 실패 projection �
 - JSON Schema와 Python 실행 검증이 일부 제약을 이중 표현한다. 필드 집합은 회귀 검사하지만 정규식·교차 필드 의미의 완전한 자동 동기화는 아직 없다.
 - Stage 03 JSONL은 전체 원자 재작성 방식이라 큰 stream에서 비효율적이며 stale lock은 자동 삭제하지 않는다. Stage 08 전까지 승인된 잔여 위험이다.
 - 핸드오프의 활성 work ID·hash 연결과 Obsidian 활성 문서 지도는 Stage 08 자동화 전까지 수동 갱신한다.
-- source `51a05a01-1c72-4f66-91f6-c763d7f3050a`는 관찰 뒤 정본 문서가 갱신돼 explicit verify에서 예상대로 drift한다. 역사 record는 보존하며 Stage 06이 현재성·대체 상태를 모델링한다.
+- drift했던 source `51a05a01-1c72-4f66-91f6-c763d7f3050a`와 의존 지식은 역사 record로 보존하고 current replacement에 연결했다. 옛 source의 explicit verify 실패는 superseded 근거이며 기본 current 결과에서 제외된다.
+- lifecycle snapshot 탐색은 현재 record 수에 선형이고 다중 record 개정은 완전한 단일 트랜잭션이 아니다. event-first·사전 검증·idempotent 재개로 보완했으며 인덱스·일괄 유지보수는 Stage 08 범위다.
 
 ## 8. 정확한 재개 체크포인트
 
 첫 미착수 행동:
 
-1. `rules/version-control.md`에 따라 Stage 05 전체 diff와 보호 경로 0건을 다시 확인한다.
-2. Stage 05 독립 경계 커밋을 만들고 커밋 객체·포함 경로·커밋 후 작업트리를 검증한다.
-3. 성공한 커밋 hash를 완료 표에 반영하고 Stage 06 work를 새로 만든다.
-4. `docs/build/stage-06-knowledge-lifecycle.md`를 읽고 실제 source drift·projection stale 요구만 범위로 착수한다.
+1. `rules/version-control.md`에 따라 Stage 06 전체 diff와 보호 경로 0건을 다시 확인한다.
+2. Stage 06 독립 경계 커밋을 만들고 커밋 객체·포함 경로·커밋 후 작업트리를 검증한다.
+3. 성공한 커밋 hash를 완료 표에 반영하고 Stage 07 work를 새로 만든다.
+4. `docs/build/stage-07-context-retrieval.md`를 읽고 current record의 직접 선택·제한된 컨텍스트만 범위로 착수한다.
 
 ## 9. 다음 세션 시작 프롬프트
 
-> `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 새 세션 시작 시 한 번 읽고 현재 행동과 일치하는 `rules/*.md`만 선택하라. Stage 04 커밋은 `519ff30`이며 Stage 05는 97/100 성공 게이트를 통과해 독립 커밋만 남았다. work `5a15e0b1-7c4d-4f20-8a5b-93e2c6d70505`는 completed다. Stage 05 커밋을 검증한 뒤 실제 source drift와 failure projection stale 요구를 입력으로 Stage 06을 새 work에서 시작하라. 권장 선택과 성공 후 Stage 09까지 전환은 사전 승인됐다. 기능·검증·네 가지 확인·실패 지식·100점 평가를 생략하지 말고, 3회 실패 시 기록 후 방법을 바꿔 승인 범위 안에서 재개하라. 보호 데이터·설치·외부 게시·삭제·이동·실질적 범위 확대는 자동 승인 대상이 아니다.
+> `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 새 세션 시작 시 한 번 읽고 현재 행동과 일치하는 `rules/*.md`만 선택하라. Stage 05 커밋은 `b9ef127`이며 Stage 06은 97/100 성공 게이트를 통과해 독립 커밋만 남았다. work `a8fed7c6-fe3d-4915-a972-af56f85fdfcc`는 completed다. Stage 06 커밋을 검증한 뒤 current record의 직접 선택과 제한된 컨텍스트 요구만 입력으로 Stage 07을 새 work에서 시작하라. 권장 선택과 성공 후 Stage 09까지 전환은 사전 승인됐다. 기능·검증·네 가지 확인·실패 지식·100점 평가를 생략하지 말고, 3회 실패 시 기록 후 방법을 바꿔 승인 범위 안에서 재개하라. 보호 데이터·설치·외부 게시·삭제·이동·실질적 범위 확대는 자동 승인 대상이 아니다.

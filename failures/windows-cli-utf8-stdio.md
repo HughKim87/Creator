@@ -19,6 +19,7 @@ CLI가 한글 payload를 포함한 성공 JSON을 출력했지만 Windows 자식
 |---|---|---:|---|
 | Stage 03 첫 24개 테스트 | CLI 한글 성공 흐름에서 CP949 bytes를 UTF-8로 읽어 `UnicodeDecodeError` | 1 | CLI 시작 시 stdout·stderr를 UTF-8 strict와 LF로 재설정하고 전체 24개 테스트 성공 |
 | Stage 05 실패 문서 절 분석 | PowerShell here-string의 한글 정규식이 native Python stdin에서 `?`로 변형돼 정규식 컴파일 실패 | 1 | 파이프 전 `$OutputEncoding`을 UTF-8 without BOM으로 지정하고 같은 20개 문서 분석 성공 |
+| Stage 06 문서 통합 게이트 | here-string 안의 한글 저장소 절대 경로가 Python stdin에서 `?`로 변형돼 Git `safe.directory`가 무효화 | 별도 게이트 1 | 한글 절대 경로를 pipe로 전달하지 않고 Python의 `Path.cwd()`에서 계산하며 `$OutputEncoding`도 UTF-8로 고정해 71개 문서·489개 링크 검사 성공 |
 
 ## 해결과 검증
 

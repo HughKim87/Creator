@@ -14,7 +14,7 @@
 - 단계 문서나 핸드오프에 사례 본문을 복사하지 않고 이 정본을 연결한다.
 - 아직 원인을 확인하지 못했거나 해결 검증이 끝나지 않은 실패는 이 폴더로 승격하지 않는다.
 - 이 Markdown 구조가 사례 본문의 정본이다. Stage 05의 `failure_knowledge` record는 정본 경로·hash가 일치할 때만 유효한 기계 판독 projection이며 자동 수집·검색 인덱스는 아니다.
-- 구조화 관계와 stale 판정은 [지식 유형 계약](../docs/KNOWLEDGE_TYPES_CONTRACT.md)을 따른다.
+- 구조화 관계와 stale 판정은 [지식 유형 계약](../docs/KNOWLEDGE_TYPES_CONTRACT.md), 개정·대체는 [지식 수명주기 계약](../docs/KNOWLEDGE_LIFECYCLE_CONTRACT.md)을 따른다.
 
 ## 사례 목록
 
@@ -41,3 +41,4 @@
 - [PowerShell 외부 프로세스 JSON 인수의 따옴표 손실](powershell-native-json-argument-quoting.md)
 - [진행 중 작업의 체크포인트 전이 부재](in-progress-checkpoint-transition-gap.md)
 - [변경된 로컬 출처 한 건의 전체 목록 실패 전파](mutable-local-source-list-fanout.md)
+- [테스트 fixture의 payload 계약 구조 가정](test-fixture-contract-shape-assumption.md)

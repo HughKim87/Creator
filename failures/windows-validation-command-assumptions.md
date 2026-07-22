@@ -46,6 +46,7 @@
 | Stage 05 경계 게이트 1차 | Git 상태 조회에 검증된 고정 `safe.directory` 인수를 누락해 sandbox 소유권 검사에서 중단 | 1 | 이후 모든 Git 조회에 저장소 절대 경로의 호출별 옵션을 적용 |
 | Stage 05 경계 게이트 2차 | work service에 존재하지 않는 `rebuild` 축약 메서드를 호출 | 2 | 구현과 회귀 테스트에서 실제 공개 메서드 `rebuild_snapshot`을 확인해 호출 변경 |
 | Stage 05 경계 게이트 3차 | 재구축 record의 hash를 존재하지 않는 `integrity.content_hash`에서 조회 | 3 | 단언을 더 추측하지 않고 반환 객체의 key와 값을 먼저 관찰해 최상위 `content_hash`로 교정한 뒤 전체 게이트 재개 |
+| Stage 06 구현 파일 조사 | Windows `rg`에 `src/file_data/*.py` 경로 와일드카드를 직접 전달해 잘못된 경로 구문으로 중단 | 별도 조사 1 | 기존 재사용 규칙대로 검색 루트와 `-g '*.py'` 필터를 분리해 같은 조사를 성공 |
 
 ## 해결과 검증
 

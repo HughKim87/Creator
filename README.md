@@ -15,6 +15,7 @@
 | 공통 기록 I/O·사용법 | [docs/RECORD_IO_CONTRACT.md](docs/RECORD_IO_CONTRACT.md) |
 | 작업 기록·현재 상태 계약 | [docs/WORK_STATE_CONTRACT.md](docs/WORK_STATE_CONTRACT.md) |
 | 지식 유형 계약·사용법 | [docs/KNOWLEDGE_TYPES_CONTRACT.md](docs/KNOWLEDGE_TYPES_CONTRACT.md) |
+| 지식 수명주기 계약·사용법 | [docs/KNOWLEDGE_LIFECYCLE_CONTRACT.md](docs/KNOWLEDGE_LIFECYCLE_CONTRACT.md) |
 | Obsidian 검토 시작 | [docs/obsidian/START_HERE.md](docs/obsidian/START_HERE.md) |
 | 현재 요구사항 | [통합 요구사항 기준서](reports/2026-07-22_프로젝트_의도_통합_요구사항_기준서.md) |
 | 해결된 실패와 재발 방지 지식 | [failures/README.md](failures/README.md) |
@@ -32,7 +33,7 @@
 | `docs/build/` | 승인된 구축 순서와 단계별 계획 |
 | `docs/obsidian/` | 정본을 복제하지 않는 Obsidian 시작 화면·전체 지도·단계별 파생 보기 |
 | `schemas/` | 공통 기록과 승인된 작업·지식 유형의 기계 판독 payload 계약 |
-| `src/file_data/` | 도메인 중립 기록 검증·안전 I/O·작업 상태·지식 유형 구현 |
+| `src/file_data/` | 도메인 중립 기록 검증·안전 I/O·작업 상태·지식 유형·수명주기 구현 |
 | `tests/` | 유효·무효 fixture와 정상·실패 흐름 회귀 검증 |
 | `data/` | 승인된 공통 기록과 event의 프레임워크 데이터 루트. CLI·서비스만 읽고 쓰며 현재 단계별 work 기록을 보존 |
 | `reports/` | 특정 시점의 분석·검증 근거. 현재 실행 지시는 아님 |

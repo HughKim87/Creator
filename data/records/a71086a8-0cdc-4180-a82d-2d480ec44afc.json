@@ -1,0 +1,22 @@
+{
+  "content_hash": "sha256:693bad8063714c5df8eb4aafef5a844b07cdc14f71c6af98f66c25d1374e8138",
+  "created_at": "2026-07-22T20:07:19Z",
+  "id": "a71086a8-0cdc-4180-a82d-2d480ec44afc",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage06",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "83239a4b-7db5-44c2-80ae-4cc5eac82804",
+    "last_reason": "Stage 05 검증 상태를 보존한 최소 수명주기 등록",
+    "last_source_ids": [],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "2b9e5b42-9a41-4bd8-999f-1b4a5d54050b",
+    "target_type": "source"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T20:07:19Z"
+}

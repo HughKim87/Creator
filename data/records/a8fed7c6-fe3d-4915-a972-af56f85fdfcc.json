@@ -1,0 +1,101 @@
+{
+  "content_hash": "sha256:2f98b2214201e7f40f190608f3f1d407d285cbe606d1d4758cc7c0d765114fb8",
+  "created_at": "2026-07-22T19:56:03Z",
+  "id": "a8fed7c6-fe3d-4915-a972-af56f85fdfcc",
+  "payload": {
+    "blockers": [],
+    "completed_items": [
+      "Stage 05 ?? ?? b9ef127 ??",
+      "Stage 06 ??? ?? source drift ?? ??",
+      "?? ??????????? ?? ??",
+      "???? ???????? ??? 2? schema ??",
+      "?? ?? lifecycle event? ??? snapshot ??",
+      "????? ????????????audit?failure ?? CLI ??",
+      "66? ?? ?? ??? ??",
+      "?? 46? ?? record lifecycle ??",
+      "?? drift 4? review_required ??",
+      "? source?knowledge?failure projection ??? ? record 4? superseded",
+      "??? finding 0? ??",
+      "68? ?? ??? ??",
+      "54? lifecycle snapshot? 66? event ?? replay ??",
+      "current 47?candidate 1?superseded 6 ?? ??",
+      "?? drift?stale ?? ? audit finding 0",
+      "?? Markdown 72???? 497???? ?? 0",
+      "Python 8? AST?JSON schema 10? parse ??",
+      "?? ?? ?? 0",
+      "Stage 06 ?? ?? 97/100 ?? ??",
+      "Stage 06 ?? ?? 3? ?? ?? ?????? structured projection ??"
+    ],
+    "evidence_refs": [
+      "commit://b9ef127",
+      "docs/build/stage-06-knowledge-lifecycle.md",
+      "test://66-pass",
+      "gate://lifecycle-register-46",
+      "gate://lifecycle-drift-4",
+      "gate://lifecycle-post-audit-0",
+      "docs/KNOWLEDGE_LIFECYCLE_CONTRACT.md",
+      "test://68-pass",
+      "gate://lifecycle-replay-54",
+      "gate://lifecycle-events-66",
+      "gate://lifecycle-current-47",
+      "gate://stage06-markdown-72",
+      "gate://stage06-links-497",
+      "score://stage06-97"
+    ],
+    "last_event_id": "0d5a856f-aa66-4f4b-8317-43fb340ed479",
+    "next_action": null,
+    "related_record_ids": [
+      "f5d5ecd6-43bd-4dd7-8f3e-2e769be44493",
+      "bdbffc75-b328-4b22-a390-ea5ac7316653",
+      "aff1d799-7e79-45f2-9f13-d2b750e8e464",
+      "ef88600e-5cf6-491a-bcca-7f1e884a91f7",
+      "ca2b8928-2af8-41da-99a5-ae7495f764fb",
+      "26b60808-1f0d-4536-b596-7d634db506d6",
+      "625c61b6-f5a3-4b5d-afec-4f3fdf3c78da",
+      "61813ebc-00c6-40ae-a09e-f0ce06a9a95d"
+    ],
+    "request": {
+      "authorized_actions": [
+        "Stage 06 ??? ?? ??",
+        "???? ???????????CLI?fixture ??",
+        "?? source drift ?? ?? ??",
+        "?? ??? ? Stage 06 ??"
+      ],
+      "desired_outcome": "Stage 06?? ??? ??????????????? ??? ?? ?? ???? ????",
+      "excluded_scope": [
+        "LLM ?? ??",
+        "?? ?? ?? ??",
+        "?? ????",
+        "?? ??",
+        "?????? DB",
+        "backup ?? ??",
+        "??? ?? ?? ??",
+        "?? ??? ??",
+        "??? ?? ??"
+      ],
+      "input_refs": [
+        "docs/build/stage-06-knowledge-lifecycle.md",
+        "docs/KNOWLEDGE_TYPES_CONTRACT.md",
+        "source://51a05a01-1c72-4f66-91f6-c763d7f3050a"
+      ],
+      "protection_boundaries": [
+        "inputs",
+        "outputs",
+        "backup",
+        "secrets"
+      ],
+      "required_decisions": [],
+      "verification_levels": [
+        "lifecycle-contract",
+        "tool-tests",
+        "actual-drift",
+        "stage-self-review"
+      ]
+    },
+    "status": "completed",
+    "work_id": "a8fed7c6-fe3d-4915-a972-af56f85fdfcc"
+  },
+  "record_type": "work_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T20:23:37Z"
+}

@@ -3,7 +3,7 @@
 - 문서 유형: 단계 설계·구현 계획
 - 목적: 승인된 지식 유형이 시간이 지나면서 검토, 검증, 충돌, 대체, 폐기되는 과정을 데이터 손실 없이 관리한다.
 - 선행 단계: [Stage 05 — 지식 유형 순차 도입](stage-05-knowledge-types.md)
-- 상태: 계획 작성 완료, 사용자 결정 및 구현 미착수
+- 상태: 97/100 완료 준비, 성공 게이트 통과·경계 커밋 대기
 - 다음 단계: [Stage 07 — 선택적 읽기·컨텍스트](stage-07-context-retrieval.md)
 
 ## 1. 단계 목표
@@ -104,22 +104,65 @@
 - 사용자 승인 경계가 기술적으로 우회되지 않는다.
 - 사용자가 06단계 결과를 확인하고 완료를 승인한다.
 
-## 9. 사용자 결정 필요
+## 9. 사용자 결정 기록
 
-구현 전에 다음을 사용자에게 질문한다.
+사용자의 권장안 자동 선택과 단계 성공 후 전환 상시 승인에 따라 다음 최소 정책을 채택했다.
 
-1. 유형별 최소 상태와 사용자에게 표시할 용어는 무엇인가?
-2. 어떤 전이는 자동으로 가능하고 어떤 전이는 사용자 승인이 필요한가?
-3. 대체·거부·폐기 기록을 얼마나 오래 보존할 것인가?
-4. 충돌 시 현재 채택 기록을 누가 결정하는가?
-5. 검토를 사건 기반으로만 시작할지 주기 검토도 포함할지?
-6. 개정 이력에 보존할 세부 수준은 어디까지인가?
+| 항목 | 채택한 권장안 | 이유·경계 |
+|---|---|---|
+| 최소 상태 | candidate, current, review_required, superseded, rejected, retired | 검토 사건과 현재 결과를 분리하고 거부와 사용 종료를 구분 |
+| 검토됨 표현 | 별도 상태가 아니라 append-only review event | 상태 폭증 없이 actor·근거·결과를 이력으로 보존 |
+| agent 가능 전이 | 후보 등록, 검토 요청, 충돌 선언 | 관찰 사실은 기록하되 현재 채택은 대리하지 않음 |
+| 승인 필수 전이 | current 등록·승인, supersede, reject, retire | user 또는 standing_policy만 현재 선택을 바꿀 수 있음 |
+| 보존 기간 | 원본·event·snapshot 무기한 보존, 삭제 명령 없음 | 과거 판단과 복구 근거를 잃지 않음 |
+| 충돌 채택 | user 또는 standing_policy | 양쪽을 review_required로 보존하고 자동 병합 금지 |
+| 검토 트리거 | source drift·검증 실패·사용자 요청·충돌의 사건 기반 | 필요가 입증되지 않은 주기 스케줄러는 Stage 08까지 제외 |
+| 개정 세부 | 전후 record ID, 이유, actor, 시각, source, 결정, replacement | payload 덮어쓰기 없이 변경을 재구성할 최소 근거 |
+
+### 9.1 구현·실제 데이터 결과
+
+- `lifecycle_events` 추가 전용 원장과 `lifecycle_state` 재구축 projection을 구현했다.
+- 대상은 source·knowledge·decision·failure_knowledge 네 유형으로 제한했다.
+- Library와 10개 CLI에서 등록·조회·현재 선택·이력·전이·재구축·audit·실패 projection 개정을 제공한다.
+- 기존 Stage 05 record 46건을 등록했고 최초 상태는 candidate 1건, current 45건이었다.
+- 실제 drift audit는 source `51a05a01-1c72-4f66-91f6-c763d7f3050a`, 그 지식 `51b05b01-1c72-4f66-91f6-c763d7f3050b`, 실패 source `33810c76-fc27-4d14-9d2c-e6fe5d7cc22d`, 실패 projection `2e5deb97-ab06-4f89-8638-7138a4e86166` 네 건을 review_required로 만들었다.
+- 새 source `f5d5ecd6-43bd-4dd7-8f3e-2e769be44493`, 새 knowledge `bdbffc75-b328-4b22-a390-ea5ac7316653`, 새 실패 source `aff1d799-7e79-45f2-9f13-d2b750e8e464`, 새 failure_knowledge `ef88600e-5cf6-491a-bcca-7f1e884a91f7`를 current로 등록하고 옛 네 record를 superseded로 보존했다.
+- 문서 게이트의 UTF-8 pipe 재발을 반영하면서 새 실패 source `ca2b8928-2af8-41da-99a5-ae7495f764fb`와 새 failure_knowledge `26b60808-1f0d-4536-b596-7d634db506d6`를 같은 방식으로 current 등록하고 옛 두 record를 추가로 superseded 처리했다.
+- 새 fixture 계약 실패는 source `625c61b6-f5a3-4b5d-afec-4f3fdf3c78da`와 failure_knowledge `61813ebc-00c6-40ae-a09e-f0ce06a9a95d`로 처음 projection하고 current 등록했다.
+- 모든 개정 뒤 재감사는 finding 0건이며 상태 분포는 candidate 1, current 47, superseded 6, review_required·rejected·retired 0이다.
+
+### 9.2 네 가지 확인 판정
+
+| 확인 항목 | 판정 | 확인 근거 | 남은 위험·후속 조치 |
+|---|---|---|---|
+| 사용자 목적 정합성 | 통과 | 현재 지식과 과거·검토 필요 record를 구분하고 실제 drift를 원본 보존 방식으로 개정 | 자동 승인·삭제 없음 |
+| 실제 기능 작동 | 통과 | 누적 68개 테스트, 54개 lifecycle snapshot 전수 replay, 실제 drift·stale 전환과 재감사 0건 | 대규모 성능·주기 실행은 Stage 08 |
+| 미래 단계 선행 유입 방지 | 통과 | 검색·랭킹·컨텍스트·스케줄러·비용 관측·도메인 필드 미도입 | current 선택 결과만 Stage 07에 인계 |
+| 과거 실패 패턴 재발 방지 | 통과 | 기대 hash, event-first projection, 원본 불변, 양방향 충돌, 다중 작업 사전 검증, UTF-8 CLI | 다중 record 작업은 완전한 단일 트랜잭션이 아니므로 idempotent 재개 유지 |
+
+### 9.3 실패 지식 보존
+
+- Stage 06 파일 조사에서 Windows `rg`에 경로 와일드카드를 직접 전달한 재발은 [Windows 문서 검증 명령의 환경·문구 가정](../../failures/windows-validation-command-assumptions.md)에 병합했다.
+- 문서 통합 게이트에서 here-string의 한글 절대 경로가 native Python stdin에서 손상된 재발은 [Windows CLI 표준 입출력 인코딩 불일치](../../failures/windows-cli-utf8-stdio.md)에 병합했다.
+- decision 참조 테스트의 승인 필드 구조 가정은 새 원인 [테스트 fixture의 payload 계약 구조 가정](../../failures/test-fixture-contract-shape-assumption.md)에 기록했다.
+- 최고 연속 실패는 별도 조사 1회이며 `rg -g '*.py'`로 방법을 바꾼 뒤 같은 조사를 성공했다.
+- 이 개정으로 stale이 된 기존 실패 source·projection은 Stage 06 실제 lifecycle 개정으로 새 record에 대체했고 옛 record를 삭제하지 않았다.
+- 현재 미해결 실패는 0건이다.
 
 ## 10. 최종 자체 검토·점수 기록
 
 단계 구현·검증과 [마스터 계획 §6.3](MASTER_BUILD_PLAN.md#63-모든-단계의-네-가지-확인-규칙)을 마친 뒤, 완료 요청 전에 [§6.4 최종 자체 검토·점수 게이트](MASTER_BUILD_PLAN.md#64-최종-자체-검토점수-게이트)를 수행한다.
 
-현재는 계획 상태이므로 자체 검토를 수행하지 않았고 점수도 없다. 단계 종료 시 이 절에 실제 점수표, 발견·수정한 결함, 남은 감점, 완료 준비 판정을 기록한다. 이 안내문의 존재만으로 게이트를 통과한 것으로 간주하지 않는다.
+| 평가 항목 | 배점 | 자체 점수 | 근거 | 감점 원인·조치 |
+|---|---:|---:|---|---|
+| 사용자 목적·요구사항 정합성 | 20 | 20 | 현재·후보·검토 필요·과거 record를 구분하고 실제 drift와 실패 정본 개정을 원본 보존 방식으로 처리 | 없음 |
+| 실제 기능·검증 신뢰도 | 20 | 20 | 68개 테스트, 54개 snapshot 전수 replay, 66개 lifecycle event, current 유형별 수량, 재감사 0건 검증 | 없음 |
+| 단계 범위·안전 경계 | 20 | 20 | 승인 없는 current·대체·거부·폐기 차단, 삭제 없음, 보호 경로 0, 검색·자동화·도메인 기능 미도입 | 없음 |
+| 단일 정본·문서 일관성 | 20 | 19 | event 정본·snapshot projection·Stage 05 원본 책임과 failure Markdown 정본을 계약·스키마·지도에서 일치시킴 | Stage 08 자동 유지 전까지 새 record 유형 등록과 지도 갱신이 명시적이어서 1점 감점 |
+| 유지보수성·인지 복잡성 | 20 | 18 | event replay 복구, 기대 hash, 사전 검증, idempotent 등록·audit, 10개 CLI | snapshot 탐색이 현재 record 수에 선형이며 다중 record 개정은 완전한 단일 트랜잭션이 아니어서 2점 감점 |
+| **총점** | **100** | **97** | 네 가지 확인 통과, 차단 결함 0, 미해결 실패 0 | **`완료 준비`** |
+
+자체 검토에서 충돌 상대 사전 검증, 과거 event 시각 역행, 자기 자신 replacement, 관련 decision ID 누락, 무권한 실패 개정의 쓰기 전 차단을 발견해 수정했다. 기존 event는 수정하지 않고 optional decision 참조를 하위 호환으로 읽은 뒤 54개 derived snapshot만 재구축했다. 남은 감점은 Stage 08이 소유할 인덱스·트랜잭션형 maintenance와 수동 문서 지도 부담이며 현재 단계 완료를 막는 결함은 아니다.
 
 ## 11. 다음 단계 인계 조건
 

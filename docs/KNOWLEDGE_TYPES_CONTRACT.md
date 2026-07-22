@@ -58,7 +58,7 @@
 
 import는 `failures/README.md`를 제외하고 상태에 `해결`이 있으며 `증상`, `확인된 원인`, `해결과 검증`, `재사용 규칙` 절이 모두 있는 사례만 받는다. `해결과 검증` 절의 첫 목록 항목을 해결, 나머지를 검증 근거로 projection한다. 읽을 때 정본 bytes hash, source record, 구조화 필드를 모두 다시 대조하며 하나라도 다르면 사용을 거부한다.
 
-정본 Markdown이 갱신되면 기존 projection은 즉시 stale이다. Stage 05에는 갱신·대체·삭제 기능이 없으며 Stage 06 수명주기가 검증되기 전에는 stale projection을 수정하거나 유효하다고 사용하지 않는다.
+정본 Markdown이 갱신되면 기존 projection은 즉시 stale이다. Stage 05 record 자체는 수정하지 않으며 [Stage 06 수명주기](KNOWLEDGE_LIFECYCLE_CONTRACT.md)가 새 source·projection을 만들고 옛 record를 `superseded`로 보존한다.
 
 ## 승인된 진입점
 
@@ -83,7 +83,7 @@ Stage 05 완료 시 검증된 실제 예시는 source 23건, knowledge 1건, dec
 
 ## Stage 05 제외와 후속
 
-- record 갱신·대체·폐기·충돌 판정·검토 큐는 Stage 06 범위다.
+- record 검토·대체·폐기·충돌·사건 기반 검토 트리거는 [Stage 06 수명주기](KNOWLEDGE_LIFECYCLE_CONTRACT.md)가 소유한다.
 - 검색·순위·관계 탐색·컨텍스트 조립은 Stage 07 범위다.
 - stale projection 재생성·일괄 유지보수는 Stage 08 범위다.
 - 도메인 전용 필드와 영상 제작 연결은 Stage 09 전까지 도입하지 않는다.

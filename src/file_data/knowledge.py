@@ -15,7 +15,7 @@ from .store import InputContractError, RecordIOError, RecordStore
 
 
 KNOWLEDGE_RECORD_TYPES = frozenset(
-    {"example", "work_state", "source", "knowledge", "decision", "failure_knowledge"}
+    {"example", "work_state", "source", "knowledge", "decision", "failure_knowledge", "lifecycle_state"}
 )
 KNOWLEDGE_STREAMS = frozenset({"example_events", "work_events"})
 SOURCE_KINDS = frozenset(
