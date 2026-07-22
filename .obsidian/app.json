@@ -1,0 +1,11 @@
+{
+  "defaultViewMode": "preview",
+  "showUnsupportedFiles": false,
+  "userIgnoreFilters": [
+    ".git/",
+    ".obsidian/",
+    "backup/",
+    "inputs/",
+    "outputs/"
+  ]
+}

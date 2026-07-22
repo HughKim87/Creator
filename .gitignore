@@ -4,3 +4,11 @@ outputs/
 
 # Context-system cross-process coordination
 catalog/.context-system.lock
+
+# Python runtime caches
+__pycache__/
+*.pyc
+
+# Obsidian local UI and workspace state; keep only the shared safety config
+.obsidian/*
+!.obsidian/app.json

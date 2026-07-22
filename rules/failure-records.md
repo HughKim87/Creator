@@ -8,6 +8,7 @@
 ## Rules
 
 - Keep unresolved attempts, the current consecutive count, the immediate risk, and the restart condition in `SESSION_HANDOFF.md` while work is active.
+- When the same objective reaches three consecutive failures, preserve the peak count and failure evidence, change the method based on the confirmed cause, and resume without a separate approval when the work remains inside the user's already authorized scope.
 - A failure becomes durable knowledge only after its cause and resolution are confirmed by a successful verification. Do not label a workaround or an unverified guess as resolved.
 - Store resolved failure knowledge under `failures/`. The originating stage or task is provenance, not the owner of the knowledge.
 - Search `failures/README.md` and the relevant case titles before creating a file. When the same root cause recurs, update the existing case with the new occurrence and verification instead of creating a duplicate.
@@ -16,4 +17,5 @@
 - At stage closure, reconcile every failure encountered during that stage. Every resolved failure must create or update a durable case; every unresolved failure must remain an active blocker in `SESSION_HANDOFF.md`.
 - If a stage had no failures, record that fact in the stage's final review; do not create an empty case file.
 - A stage cannot receive `완료 준비` while a resolved failure is omitted, a duplicate root-cause case is knowingly created, or an unresolved failure is described as solved.
+- Repeated failure never waives safety or authority boundaries. Pause only when the next meaningful action needs new permission, protected data, installation, external publication, or a material scope change.
 - After reconciliation, update the navigation index in `failures/README.md`, verify local links and strict UTF-8, and link the stage closure evidence to the index rather than copying case bodies into stage documents.

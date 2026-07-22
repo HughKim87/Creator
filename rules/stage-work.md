@@ -18,4 +18,5 @@
 - After those four checks and before the completion report, run the final self-review and scoring gate in `docs/build/MASTER_BUILD_PLAN.md#64-최종-자체-검토점수-게이트`.
 - Inspect the complete stage diff, evidence, unresolved risks, and cross-document consistency. Score every rubric dimension, explain every deduction, and fix any in-scope correctable defect before reassessing.
 - A score never overrides a critical defect, a failed required check, an unresolved deduction, or user approval. Report the score and readiness result explicitly.
-- Report the result and stop. Do not begin the next stage until the user approves the current result and separately authorizes the transition.
+- After `완료 준비`, apply the stage-boundary commit gate in `MASTER_BUILD_PLAN.md#65-단계-경계-커밋-게이트` and `rules/version-control.md`. A required commit must succeed and be verified before the next stage begins.
+- Do not begin the next stage without traceable transition approval. A user-approved standing transition policy may satisfy this condition when the current success gate and boundary commit both pass.

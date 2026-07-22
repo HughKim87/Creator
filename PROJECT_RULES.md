@@ -17,7 +17,7 @@
 
 - Follow the user's latest explicit instruction first, then this file, then `SESSION_HANDOFF.md`, then the task-specific authority it routes to.
 - Work only within the user's requested outcome and approved stage. Do not infer authority for a later stage or materially broader change.
-- Ask before delete, move, commit, push, publish, upload, install, permission changes, paid actions, external writes, or overwriting user originals.
+- Ask before delete, move, push, publish, upload, install, permission changes, paid actions, external writes, overwriting user originals, or any commit not covered by traceable explicit or standing user approval.
 - Reconfirm an approval when its target, scope, or risk materially changes, or when the original user response cannot be traced.
 
 ## Protected data and history
@@ -48,4 +48,4 @@
 - Preserve unrelated user changes.
 - Verify changes in proportion to risk and follow the exact checks in the selected task rules.
 - Distinguish generated, structure-validated, tool-validated, app-validated, and user-approved states. Unrun checks and unimplemented features are not passes.
-- Within one user execution request, stop after three consecutive failures of the same objective and report the cause, risk, and restart condition.
+- After three consecutive failures of the same objective, record the attempts, confirmed cause, peak count, risk, and restart condition; change the approach and continue within the already authorized scope without requesting separate approval. Stop only when safe progress is impossible or continuation requires new authority, protected data, installation, external publication, or another material scope expansion.

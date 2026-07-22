@@ -1,0 +1,16 @@
+# Stage 03 보기
+
+- 정본 계획: [Stage 03 — 공통 기록 읽기·쓰기](../../build/stage-03-record-io.md)
+- 구현 계약·사용법: [공통 기록 I/O 계약](../../RECORD_IO_CONTRACT.md)
+- 라이브러리 진입점: [`src/file_data/store.py`](../../../src/file_data/store.py)
+- CLI 진입점: [`python -m file_data`](../../../src/file_data/__main__.py)
+- 현재 상태: [SESSION_HANDOFF](../../../SESSION_HANDOFF.md)
+- 적용 규칙: [단계](../../../rules/stage-work.md) · [문서](../../../rules/document-work.md) · [실패](../../../rules/failure-records.md)
+
+## 계획 내 바로가기
+
+- [목표](../../build/stage-03-record-io.md#1-단계-목표) · [입력](../../build/stage-03-record-io.md#2-선행조건과-입력) · [산출물](../../build/stage-03-record-io.md#4-예상-산출물)
+- [제외 범위](../../build/stage-03-record-io.md#6-제외-범위) · [검증](../../build/stage-03-record-io.md#7-검증-계획) · [결정](../../build/stage-03-record-io.md#9-사용자-결정-필요)
+- [점수](../../build/stage-03-record-io.md#10-최종-자체-검토점수-기록) · [다음 인계](../../build/stage-03-record-io.md#11-다음-단계-인계-조건)
+
+이전: [Stage 02](stage-02.md) · 다음: [Stage 04](stage-04.md)
