@@ -1,0 +1,21 @@
+# Stage Work Rules
+
+- Purpose: govern implementation, review, validation, and closure of a numbered build stage.
+- Read when: before implementing, reviewing, or closing any stage in `docs/build/`.
+- Owner: user-approved policy; project agents maintain accepted wording.
+- Authority: task-specific; `PROJECT_RULES.md` remains higher authority.
+
+## Rules
+
+- Read `docs/build/MASTER_BUILD_PLAN.md` and only the current stage plan required for the task.
+- Confirm the prior stage gate, current scope, exclusions, protected inputs, and unresolved user decisions before implementation.
+- Ask the user before fixing an unresolved policy, technology, tool, or numerical value in implementation.
+- Implement only the current stage. Do not add a later-stage interface, dependency, data structure, or completion requirement early.
+- Report the planned change and exclusion boundary before writing.
+- Run the stage's consolidated verification at the completion checkpoint. If it fails, fix the cause and repeat the consolidated verification.
+- Record evidence for user-purpose alignment, actual operation, future-stage exclusion, and past-failure prevention.
+- At stage closure, also apply `rules/failure-records.md`: promote every verified resolved failure to the cross-stage `failures/` knowledge owner, retain unresolved failures as handoff blockers, and record a no-failure result when applicable.
+- After those four checks and before the completion report, run the final self-review and scoring gate in `docs/build/MASTER_BUILD_PLAN.md#64-최종-자체-검토점수-게이트`.
+- Inspect the complete stage diff, evidence, unresolved risks, and cross-document consistency. Score every rubric dimension, explain every deduction, and fix any in-scope correctable defect before reassessing.
+- A score never overrides a critical defect, a failed required check, an unresolved deduction, or user approval. Report the score and readiness result explicitly.
+- Report the result and stop. Do not begin the next stage until the user approves the current result and separately authorizes the transition.
