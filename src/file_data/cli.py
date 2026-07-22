@@ -10,6 +10,7 @@ from typing import Any
 
 from .record import RecordValidationError, UnsafePathError
 from .store import InputContractError, RecordIOError, RecordStore
+from .work_state import EVENT_OUTCOMES, WORK_STATUSES, WorkStateService
 
 
 class RecordArgumentParser(argparse.ArgumentParser):
@@ -27,6 +28,14 @@ def _payload(value: str) -> dict[str, Any]:
     return decoded
 
 
+def _json_input(inline: dict[str, Any] | None, use_stdin: bool) -> dict[str, Any]:
+    if use_stdin:
+        return _payload(sys.stdin.read())
+    if inline is None:
+        raise InputContractError("one JSON input source is required")
+    return inline
+
+
 def _emit(value: dict[str, Any], *, error: bool = False) -> None:
     stream = sys.stderr if error else sys.stdout
     stream.write(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
@@ -34,6 +43,9 @@ def _emit(value: dict[str, Any], *, error: bool = False) -> None:
 
 
 def _configure_utf8_stdio() -> None:
+    reconfigure_input = getattr(sys.stdin, "reconfigure", None)
+    if reconfigure_input is not None:
+        reconfigure_input(encoding="utf-8", errors="strict")
     for stream in (sys.stdout, sys.stderr):
         reconfigure = getattr(stream, "reconfigure", None)
         if reconfigure is not None:
@@ -49,7 +61,9 @@ def _parser() -> RecordArgumentParser:
 
     create = commands.add_parser("create", help="create one approved neutral record")
     create.add_argument("--type", required=True, dest="record_type")
-    create.add_argument("--payload-json", required=True, type=_payload)
+    create_payload = create.add_mutually_exclusive_group(required=True)
+    create_payload.add_argument("--payload-json", type=_payload)
+    create_payload.add_argument("--payload-stdin", action="store_true")
     create.add_argument("--id", dest="record_id")
 
     get = commands.add_parser("get", help="read one record by UUID")
@@ -60,28 +74,89 @@ def _parser() -> RecordArgumentParser:
 
     update = commands.add_parser("update", help="replace payload when the expected content hash matches")
     update.add_argument("--id", required=True, dest="record_id")
-    update.add_argument("--payload-json", required=True, type=_payload)
+    update_payload = update.add_mutually_exclusive_group(required=True)
+    update_payload.add_argument("--payload-json", type=_payload)
+    update_payload.add_argument("--payload-stdin", action="store_true")
     update.add_argument("--expected-hash", required=True)
 
     append = commands.add_parser("append", help="append one event through an atomic JSONL rewrite")
     append.add_argument("--stream", required=True)
-    append.add_argument("--payload-json", required=True, type=_payload)
+    append_payload = append.add_mutually_exclusive_group(required=True)
+    append_payload.add_argument("--payload-json", type=_payload)
+    append_payload.add_argument("--payload-stdin", action="store_true")
     append.add_argument("--expected-stream-hash")
     append.add_argument("--id", dest="event_id")
 
     event_list = commands.add_parser("list-events", help="read and validate one approved JSONL stream")
     event_list.add_argument("--stream", required=True)
+
+    work_create = commands.add_parser("work-create", help="append a work request and build its snapshot")
+    work_request = work_create.add_mutually_exclusive_group(required=True)
+    work_request.add_argument("--request-json", type=_payload)
+    work_request.add_argument("--request-stdin", action="store_true")
+    work_create.add_argument("--actor", required=True)
+    work_create.add_argument("--next-action", required=True)
+    work_create.add_argument("--id", dest="work_id")
+
+    work_show = commands.add_parser("work-show", help="read one validated work snapshot")
+    work_show.add_argument("--id", required=True, dest="work_id")
+
+    work_transition = commands.add_parser("work-transition", help="append and project one work transition")
+    work_transition.add_argument("--id", required=True, dest="work_id")
+    work_transition.add_argument("--expected-hash", required=True)
+    work_transition.add_argument("--actor", required=True)
+    work_transition.add_argument("--action", required=True)
+    work_transition.add_argument("--outcome", required=True, choices=sorted(EVENT_OUTCOMES))
+    work_transition.add_argument("--to-status", choices=sorted(WORK_STATUSES))
+    work_transition.add_argument("--completed-item", action="append", default=[])
+    work_transition.add_argument("--blocker", action="append", default=[])
+    work_transition.add_argument("--next-action")
+    work_transition.add_argument("--related-id", action="append", default=[])
+    work_transition.add_argument("--evidence", action="append", default=[])
+
+    work_rebuild = commands.add_parser("work-rebuild", help="rebuild a work snapshot from canonical events")
+    work_rebuild.add_argument("--id", required=True, dest="work_id")
     return parser
 
 
 def _run(namespace: argparse.Namespace) -> dict[str, Any]:
+    if namespace.command.startswith("work-"):
+        work = WorkStateService(namespace.root)
+        if namespace.command == "work-create":
+            state = work.create_work(
+                _json_input(namespace.request_json, namespace.request_stdin),
+                actor=namespace.actor,
+                next_action=namespace.next_action,
+                work_id=namespace.work_id,
+            )
+            return {"state": state, "path": f"data/records/{state['id']}.json"}
+        if namespace.command == "work-show":
+            return {"state": work.get_state(namespace.work_id)}
+        if namespace.command == "work-transition":
+            state = work.transition(
+                namespace.work_id,
+                expected_state_hash=namespace.expected_hash,
+                actor=namespace.actor,
+                action=namespace.action,
+                outcome=namespace.outcome,
+                to_status=namespace.to_status,
+                completed_items=namespace.completed_item,
+                blockers=namespace.blocker,
+                next_action=namespace.next_action,
+                related_record_ids=namespace.related_id,
+                evidence_refs=namespace.evidence,
+            )
+            return {"state": state}
+        if namespace.command == "work-rebuild":
+            return {"state": work.rebuild_snapshot(namespace.work_id)}
+        raise InputContractError(f"Unknown work command: {namespace.command}")
     store = RecordStore(namespace.root)
     if namespace.command == "init":
         return store.initialize()
     if namespace.command == "create":
         record = store.create_record(
             namespace.record_type,
-            namespace.payload_json,
+            _json_input(namespace.payload_json, namespace.payload_stdin),
             record_id=namespace.record_id,
         )
         return {
@@ -96,14 +171,14 @@ def _run(namespace: argparse.Namespace) -> dict[str, Any]:
     if namespace.command == "update":
         record = store.update_record(
             namespace.record_id,
-            namespace.payload_json,
+            _json_input(namespace.payload_json, namespace.payload_stdin),
             expected_content_hash=namespace.expected_hash,
         )
         return {"record": record}
     if namespace.command == "append":
         return store.append_event(
             namespace.stream,
-            namespace.payload_json,
+            _json_input(namespace.payload_json, namespace.payload_stdin),
             expected_stream_hash=namespace.expected_stream_hash,
             event_id=namespace.event_id,
         )

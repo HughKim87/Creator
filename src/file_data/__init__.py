@@ -28,6 +28,20 @@ from .store import (
     decode_stream,
     stream_content_hash,
 )
+from .work_state import (
+    ALLOWED_TRANSITIONS,
+    EVENT_FIELDS,
+    EVENT_OUTCOMES,
+    EXPECTED_OUTCOME_BY_STATUS,
+    REQUEST_FIELDS,
+    WORK_STATUSES,
+    InvalidTransitionError,
+    ProjectionPendingError,
+    WorkStateService,
+    project_work_state,
+    validate_event_payload,
+    validate_request,
+)
 
 __all__ = [
     "DuplicateRecordError",
@@ -54,4 +68,16 @@ __all__ = [
     "StoreNotInitializedError",
     "decode_stream",
     "stream_content_hash",
+    "ALLOWED_TRANSITIONS",
+    "EVENT_FIELDS",
+    "EVENT_OUTCOMES",
+    "EXPECTED_OUTCOME_BY_STATUS",
+    "REQUEST_FIELDS",
+    "WORK_STATUSES",
+    "InvalidTransitionError",
+    "ProjectionPendingError",
+    "WorkStateService",
+    "project_work_state",
+    "validate_event_payload",
+    "validate_request",
 ]

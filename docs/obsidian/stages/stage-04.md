@@ -1,6 +1,10 @@
 # Stage 04 보기
 
 - 정본 계획: [Stage 04 — 작업 기록·현재 상태](../../build/stage-04-work-state.md)
+- 구현 계약: [작업 기록·현재 상태 계약](../../WORK_STATE_CONTRACT.md)
+- 구조 스키마: [`work-request-payload-v1.schema.json`](../../../schemas/work-request-payload-v1.schema.json) · [`work-event-payload-v1.schema.json`](../../../schemas/work-event-payload-v1.schema.json) · [`work-state-payload-v1.schema.json`](../../../schemas/work-state-payload-v1.schema.json)
+- 실행 구현: [`WorkStateService`](../../../src/file_data/work_state.py)
+- 회귀 검증: [`tests/test_work_state.py`](../../../tests/test_work_state.py)
 - 현재 상태: [SESSION_HANDOFF](../../../SESSION_HANDOFF.md)
 - 적용 규칙: [단계](../../../rules/stage-work.md) · [문서](../../../rules/document-work.md) · [실패](../../../rules/failure-records.md)
 

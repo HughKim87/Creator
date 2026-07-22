@@ -13,6 +13,7 @@
 | 정보·문서 책임 구조 | [docs/INFORMATION_ARCHITECTURE.md](docs/INFORMATION_ARCHITECTURE.md) |
 | 파일 데이터 저장 계약 | [docs/FILE_DATA_CONTRACT.md](docs/FILE_DATA_CONTRACT.md) |
 | 공통 기록 I/O·사용법 | [docs/RECORD_IO_CONTRACT.md](docs/RECORD_IO_CONTRACT.md) |
+| 작업 기록·현재 상태 계약 | [docs/WORK_STATE_CONTRACT.md](docs/WORK_STATE_CONTRACT.md) |
 | Obsidian 검토 시작 | [docs/obsidian/START_HERE.md](docs/obsidian/START_HERE.md) |
 | 현재 요구사항 | [통합 요구사항 기준서](reports/2026-07-22_프로젝트_의도_통합_요구사항_기준서.md) |
 | 해결된 실패와 재발 방지 지식 | [failures/README.md](failures/README.md) |
@@ -32,7 +33,7 @@
 | `schemas/` | 파일 기반 공통 기록의 기계 판독 구조 계약 |
 | `src/file_data/` | 도메인 중립 기록 검증·안전 경로·원자 저장 구현 |
 | `tests/` | 유효·무효 fixture와 정상·실패 흐름 회귀 검증 |
-| `data/` | 승인된 공통 기록과 event의 프레임워크 데이터 루트. CLI `init` 전에는 생성되지 않음 |
+| `data/` | 승인된 공통 기록과 event의 프레임워크 데이터 루트. CLI·서비스만 읽고 쓰며 현재 단계별 work 기록을 보존 |
 | `reports/` | 특정 시점의 분석·검증 근거. 현재 실행 지시는 아님 |
 | `backup/` | 수정하거나 실행에 의존하지 않는 읽기 전용 역사 증거 |
 | `inputs/` | 사용자가 지정한 원본 자료. 정확한 대상과 목적 없이는 열람하지 않으며 Git에 저장하지 않음 |

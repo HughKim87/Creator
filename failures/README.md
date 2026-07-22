@@ -36,3 +36,5 @@
 - [쓰기 후 검증의 잠금 해제 경쟁 구간](post-write-verification-lock-window.md)
 - [저장된 기록 유형의 승인 우회](stored-type-approval-bypass.md)
 - [구현 폴더와 정보 구조 계약의 드리프트](structure-contract-folder-drift.md)
+- [작업 event 시각의 snapshot 역행](work-event-time-regression.md)
+- [PowerShell 외부 프로세스 JSON 인수의 따옴표 손실](powershell-native-json-argument-quoting.md)

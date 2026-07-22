@@ -44,6 +44,8 @@
 
 모든 CLI 성공은 stdout의 `{"ok":true,"result":...}`와 종료 상태 0, 실패는 stderr의 `{"ok":false,"error":...}`로 반환한다.
 
+Windows PowerShell처럼 외부 프로세스 인수의 JSON 따옴표를 다시 해석하는 shell에서는 `--payload-json` 대신 UTF-8 JSON을 stdin으로 보내고 `--payload-stdin`을 사용한다. 두 입력 방식은 상호 배타적이며 정확히 하나만 지정한다.
+
 | 종료 상태 | kind | 의미 | 자동 재시도 |
 |---:|---|---|---|
 | 0 | 성공 | 결과와 실제 파일의 사후 검증 완료 | 해당 없음 |
@@ -61,10 +63,10 @@
 
 ```powershell
 <python> -m file_data --root . init
-<python> -m file_data --root . create --type example --payload-json '{"message":"neutral"}'
+'{"message":"neutral"}' | <python> -m file_data --root . create --type example --payload-stdin
 <python> -m file_data --root . get --id <uuid>
-<python> -m file_data --root . update --id <uuid> --expected-hash <sha256:...> --payload-json '{"message":"revised"}'
-<python> -m file_data --root . append --stream example_events --payload-json '{"message":"event"}'
+'{"message":"revised"}' | <python> -m file_data --root . update --id <uuid> --expected-hash <sha256:...> --payload-stdin
+'{"message":"event"}' | <python> -m file_data --root . append --stream example_events --payload-stdin
 <python> -m file_data --root . list-events --stream example_events
 ```
 

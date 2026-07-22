@@ -202,7 +202,9 @@ class RecordStoreTests(unittest.TestCase):
 
 
 class RecordCliTests(unittest.TestCase):
-    def run_cli(self, root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
+    def run_cli(
+        self, root: Path, *arguments: str, input_text: str | None = None
+    ) -> subprocess.CompletedProcess[str]:
         environment = os.environ.copy()
         environment["PYTHONPATH"] = str(ROOT / "src")
         environment["PYTHONDONTWRITEBYTECODE"] = "1"
@@ -212,6 +214,7 @@ class RecordCliTests(unittest.TestCase):
             env=environment,
             text=True,
             encoding="utf-8",
+            input=input_text,
             capture_output=True,
             check=False,
         )
@@ -285,6 +288,24 @@ class RecordCliTests(unittest.TestCase):
             unapproved = self.run_cli(root, "list", "--type", "future_type")
             self.assertEqual(unapproved.returncode, 2)
             self.assertEqual(json.loads(unapproved.stderr)["error"]["kind"], "input_error")
+
+    def test_cli_accepts_utf8_json_from_stdin(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="stage03-cli-stdin-") as raw_root:
+            root = Path(raw_root)
+            self.assertEqual(self.run_cli(root, "init").returncode, 0)
+            created = self.run_cli(
+                root,
+                "create",
+                "--type",
+                "example",
+                "--id",
+                FIRST_ID,
+                "--payload-stdin",
+                input_text=json.dumps({"message": "PowerShell 안전 입력"}, ensure_ascii=False),
+            )
+            self.assertEqual(created.returncode, 0, created.stderr)
+            payload = json.loads(created.stdout)["result"]["record"]["payload"]
+            self.assertEqual(payload, {"message": "PowerShell 안전 입력"})
 
 
 if __name__ == "__main__":
