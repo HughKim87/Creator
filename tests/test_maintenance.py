@@ -65,6 +65,17 @@ class MaintenanceServiceTests(unittest.TestCase):
             self.assertTrue(status["matches"])
             self.assertEqual(target.read_text(encoding="utf-8"), first)
 
+    def test_inventory_includes_markdown_inside_untracked_nested_directory(self) -> None:
+        with self._root() as raw_root:
+            maintenance, _, _ = self._fixture(raw_root)
+            nested = Path(raw_root) / "docs" / "domain" / "youtube" / "contract.md"
+            nested.parent.mkdir(parents=True)
+            nested.write_text("# 새 도메인 계약\n", encoding="utf-8")
+            self.assertIn("docs/domain/youtube/contract.md", maintenance.document_refs())
+            self.assertFalse(maintenance.inventory_status()["matches"])
+            self.assertTrue(maintenance.write_inventory()["matches"])
+            self.assertIn("docs/domain/youtube/contract.md", maintenance.render_inventory())
+
     def test_scan_detects_drift_without_changing_lifecycle(self) -> None:
         with self._root() as raw_root:
             maintenance, source, claim = self._fixture(raw_root)
@@ -112,6 +123,18 @@ class MaintenanceServiceTests(unittest.TestCase):
             failed = maintenance.verify()
             self.assertFalse(failed["ok"])
             self.assertTrue(any(error.startswith("missing_link:") for error in failed["errors"]))
+
+    def test_verify_checks_python_in_separate_domain_package(self) -> None:
+        with self._root() as raw_root:
+            maintenance, _, _ = self._fixture(raw_root)
+            broken = Path(raw_root) / "src" / "youtube_domain" / "broken.py"
+            broken.parent.mkdir(parents=True)
+            broken.write_text("def broken(:\n", encoding="utf-8")
+            failed = maintenance.verify()
+            self.assertFalse(failed["ok"])
+            self.assertTrue(
+                any(error.startswith("python:src/youtube_domain/broken.py:") for error in failed["errors"])
+            )
 
     def test_context_evaluation_reruns_with_current_baseline(self) -> None:
         with self._root() as raw_root:

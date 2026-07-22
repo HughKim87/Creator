@@ -1,0 +1,62 @@
+{
+  "content_hash": "sha256:4dc1c144418469946407eb48dff878b61c94d7332f33b622bf5c305868a50f7e",
+  "created_at": "2026-07-22T21:24:02Z",
+  "id": "82dee601-21d1-400a-8d0e-98bc8f32c0ea",
+  "payload": {
+    "blockers": [],
+    "completed_items": [
+      "명시 example request와 current evidence ID 확인",
+      "current knowledge·source와 계약 문서 각 1개를 선택한 비영구 pack 생성",
+      "3,690자·6,028 bytes·98.83% 절감과 두 실행 완전 일치 검증",
+      "creative direction을 user 소유 review_required로 보존"
+    ],
+    "evidence_refs": [
+      "examples/youtube/stage09-foundation-evidence.request.json",
+      "fingerprint://sha256:b3785135d4ac6da210f22d177f084f63ac6878910a644521e415c9515cc040fc",
+      "context-fingerprint://sha256:2f50c1e3951d1bd85441a3d54eb1c59b525888c0f9839ea2238bf816e90c98cd"
+    ],
+    "last_event_id": "05d1c9d2-23aa-490c-a4bd-cf42526ffc98",
+    "next_action": null,
+    "related_record_ids": [
+      "57064cc7-5c0b-4737-be35-2813b2798619",
+      "01dbf7cc-b854-4fac-8932-e66fd3dabd3a"
+    ],
+    "request": {
+      "authorized_actions": [
+        "로컬 youtube_domain CLI 실행",
+        "비영구 JSON 결과 검증",
+        "fingerprint·선택 항목·비용·승인 게이트를 work 근거로 기록"
+      ],
+      "desired_outcome": "stage09 예시 요청에서 current 지식과 계약 문서를 선택한 비영구 유튜브 촬영 전 근거 패키지를 생성한다",
+      "excluded_scope": [
+        "creative direction 승인",
+        "대본·촬영·편집·게시",
+        "결과 파일 저장",
+        "외부 앱 호출",
+        "보호 데이터 접근"
+      ],
+      "input_refs": [
+        "examples/youtube/stage09-foundation-evidence.request.json",
+        "docs/CONTEXT_PACKAGE_CONTRACT.md",
+        "record://57064cc7-5c0b-4737-be35-2813b2798619"
+      ],
+      "protection_boundaries": [
+        "backup",
+        "inputs",
+        "outputs",
+        "secrets"
+      ],
+      "required_decisions": [],
+      "verification_levels": [
+        "tool",
+        "domain-result",
+        "traceability"
+      ]
+    },
+    "status": "completed",
+    "work_id": "82dee601-21d1-400a-8d0e-98bc8f32c0ea"
+  },
+  "record_type": "work_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:24:41Z"
+}

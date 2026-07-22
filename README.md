@@ -18,6 +18,7 @@
 | 지식 수명주기 계약·사용법 | [docs/KNOWLEDGE_LIFECYCLE_CONTRACT.md](docs/KNOWLEDGE_LIFECYCLE_CONTRACT.md) |
 | 선택적 읽기·컨텍스트 계약 | [docs/CONTEXT_PACKAGE_CONTRACT.md](docs/CONTEXT_PACKAGE_CONTRACT.md) |
 | 유지보수·검증 자동화 계약 | [docs/MAINTENANCE_AUTOMATION_CONTRACT.md](docs/MAINTENANCE_AUTOMATION_CONTRACT.md) |
+| 첫 유튜브 도메인 계약 | [docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md](docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md) |
 | Obsidian 검토 시작 | [docs/obsidian/START_HERE.md](docs/obsidian/START_HERE.md) |
 | 현재 요구사항 | [통합 요구사항 기준서](reports/2026-07-22_프로젝트_의도_통합_요구사항_기준서.md) |
 | 해결된 실패와 재발 방지 지식 | [failures/README.md](failures/README.md) |
@@ -33,9 +34,12 @@
 | `failures/` | 단계에 종속되지 않는 해결된 실패의 원인·해결·검증·재발 방지 지식 |
 | `docs/` | 활성 정보·문서 계약과 유지 설명 |
 | `docs/build/` | 승인된 구축 순서와 단계별 계획 |
+| `docs/domain/` | 공통 기반과 분리된 승인 도메인의 계약·사용 경계 |
 | `docs/obsidian/` | 정본을 복제하지 않는 Obsidian 시작 화면·전체 지도·단계별 파생 보기 |
 | `schemas/` | 공통 기록과 승인된 작업·지식 유형의 기계 판독 payload 계약 |
 | `src/file_data/` | 도메인 중립 기록 검증·안전 I/O·작업 상태·지식 유형·수명주기·선택 컨텍스트·유지보수 구현 |
+| `src/youtube_domain/` | 공통 기반을 소비하는 첫 유튜브 촬영 전 근거 패키지 adapter |
+| `examples/` | 보호 사용자 원본이 아닌 명시적·추적 가능한 실행 요청 예시 |
 | `tests/` | 유효·무효 fixture와 정상·실패 흐름 회귀 검증 |
 | `data/` | 승인된 공통 기록과 event의 프레임워크 데이터 루트. CLI·서비스만 읽고 쓰며 현재 단계별 work 기록을 보존 |
 | `reports/` | 특정 시점의 분석·검증 근거. 현재 실행 지시는 아님 |

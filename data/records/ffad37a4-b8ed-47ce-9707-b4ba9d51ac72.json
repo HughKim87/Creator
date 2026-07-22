@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:facedad94c6757ea77764e25baa935cb89d5da4854f989a387ee7e10eb1ddd74",
+  "created_at": "2026-07-22T21:32:43Z",
+  "id": "ffad37a4-b8ed-47ce-9707-b4ba9d51ac72",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "reports/2026-07-23_stage09_유튜브_근거_패키지_검증_보고서.md",
+    "observed_at": "2026-07-22T21:32:43Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:fe64a4eeb79031e0707e682dd35a933d1f3e351f341fbfae9f98d191a7bd617b"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:32:43Z"
+}

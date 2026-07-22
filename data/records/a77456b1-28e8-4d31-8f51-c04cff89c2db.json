@@ -1,0 +1,18 @@
+{
+  "content_hash": "sha256:7591cf51f9142d4ee486dcbce88cab26c26dafc21673dd449f1dc4d2389c39ab",
+  "created_at": "2026-07-22T21:32:44Z",
+  "id": "a77456b1-28e8-4d31-8f51-c04cff89c2db",
+  "payload": {
+    "classification": "procedure",
+    "scope": "youtube:evidence-pack",
+    "source_ids": [
+      "ffad37a4-b8ed-47ce-9707-b4ba9d51ac72"
+    ],
+    "statement": "유튜브 촬영 전 근거 패키지는 current 근거만 선택하고 작업 제목과 창작 방향을 사용자 review_required로 남긴다.",
+    "verification_status": "verified",
+    "verified_by": "agent:stage09-domain-validation"
+  },
+  "record_type": "knowledge",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:32:44Z"
+}

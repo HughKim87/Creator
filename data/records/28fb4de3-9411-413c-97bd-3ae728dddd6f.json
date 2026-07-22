@@ -1,0 +1,24 @@
+{
+  "content_hash": "sha256:7c2e5ca125cdd8dfee65b204b89224140e2fce70deeb91999e2d2918859cb4d9",
+  "created_at": "2026-07-22T21:32:45Z",
+  "id": "28fb4de3-9411-413c-97bd-3ae728dddd6f",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage09",
+    "last_approval_kind": "agent_in_scope",
+    "last_decision_id": null,
+    "last_event_id": "6461081b-7492-4bf2-97fc-a18b49b99092",
+    "last_reason": "첫 실제 도메인 실행에서 확인한 재사용 절차 candidate",
+    "last_source_ids": [
+      "ffad37a4-b8ed-47ce-9707-b4ba9d51ac72"
+    ],
+    "revision": 1,
+    "state": "candidate",
+    "superseded_by": null,
+    "target_id": "a77456b1-28e8-4d31-8f51-c04cff89c2db",
+    "target_type": "knowledge"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:32:45Z"
+}

@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:5d90e5a25c462125fde714dc2dbc31cff4f03cd3f31ebda00f596efc349f948f",
+  "created_at": "2026-07-22T21:29:00Z",
+  "id": "15fb7f7a-96eb-488d-b8f3-68e0f2eb31f8",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "failures/windows-validation-command-assumptions.md",
+    "observed_at": "2026-07-22T21:29:00Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:6d64b9b4bd392dec5ca6db4934787f8e15925936e9784c939d6e70ffef949616"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:29:00Z"
+}

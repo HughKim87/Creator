@@ -1,0 +1,22 @@
+{
+  "content_hash": "sha256:e98c2bf443ce43e9017307fabda2c0c586d87fcc28fe114fb8abc8092630c8cf",
+  "created_at": "2026-07-22T21:32:44Z",
+  "id": "51f4cbce-3c4d-4429-843b-16293187c36a",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage09",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "1ef39883-49c2-47e3-b600-b36821813849",
+    "last_reason": "Stage 09 실제 도메인 검증 보고 source",
+    "last_source_ids": [],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "ffad37a4-b8ed-47ce-9707-b4ba9d51ac72",
+    "target_type": "source"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:32:44Z"
+}

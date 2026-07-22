@@ -3,7 +3,7 @@
 - 목적: 보호·역사 경계를 제외한 활성 Markdown 경로를 정본에서 결정론적으로 재생성한다.
 - 상태: 파생물. 이 파일은 규칙·상태·결정을 소유하지 않는다.
 - 생성 명령: `python -m file_data maintenance-inventory --write`
-- 원본 문서 수: 77
+- 원본 문서 수: 79
 - 자기 재귀 방지: 이 생성 파일 자체는 원본 목록에서 제외한다.
 
 ## docs
@@ -28,6 +28,7 @@
 - [Stage 07 — 선택적 읽기·컨텍스트](../build/stage-07-context-retrieval.md) — `docs/build/stage-07-context-retrieval.md`
 - [Stage 08 — 유지보수·자동화](../build/stage-08-maintenance-automation.md) — `docs/build/stage-08-maintenance-automation.md`
 - [Stage 09 — 도메인 워크플로 확장](../build/stage-09-domain-integration.md) — `docs/build/stage-09-domain-integration.md`
+- [유튜브 촬영 전 근거 패키지 계약](../domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md) — `docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md`
 - [전체 활성 문서 지도](DOCUMENT_MAP.md) — `docs/obsidian/DOCUMENT_MAP.md`
 - [Obsidian 검토 환경 계약](OBSIDIAN_REVIEW_CONTRACT.md) — `docs/obsidian/OBSIDIAN_REVIEW_CONTRACT.md`
 - [Obsidian 시작 화면](START_HERE.md) — `docs/obsidian/START_HERE.md`
@@ -81,6 +82,7 @@
 - [프로젝트 의도 역추론 보고서](../../reports/2026-07-22_codex_프로젝트_의도_역추론_보고서.md) — `reports/2026-07-22_codex_프로젝트_의도_역추론_보고서.md`
 - [oh-my-codex 도입 리서치·분석 보고서](../../reports/2026-07-22_oh-my-codex_도입_리서치_분석_보고서.md) — `reports/2026-07-22_oh-my-codex_도입_리서치_분석_보고서.md`
 - [프로젝트 의도 통합 요구사항 기준서](../../reports/2026-07-22_프로젝트_의도_통합_요구사항_기준서.md) — `reports/2026-07-22_프로젝트_의도_통합_요구사항_기준서.md`
+- [Stage 09 유튜브 촬영 전 근거 패키지 검증 보고서](../../reports/2026-07-23_stage09_유튜브_근거_패키지_검증_보고서.md) — `reports/2026-07-23_stage09_유튜브_근거_패키지_검증_보고서.md`
 
 ## root
 

@@ -53,7 +53,7 @@ class MaintenanceService:
 
     def git_status_paths(self) -> list[str]:
         paths: list[str] = []
-        for line in self._git("status", "--short"):
+        for line in self._git("status", "--short", "--untracked-files=all"):
             if len(line) < 4:
                 continue
             path = line[3:].split(" -> ")[-1].replace("\\", "/")
@@ -267,7 +267,7 @@ class MaintenanceService:
         started = time.perf_counter()
         scan = self.scan()
         errors, links = self._document_errors()
-        for path in (self.root / "src" / "file_data").glob("*.py"):
+        for path in sorted((self.root / "src").rglob("*.py")):
             try:
                 ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
             except (SyntaxError, UnicodeDecodeError) as exc:
@@ -297,7 +297,7 @@ class MaintenanceService:
             "metrics": {
                 "documents": len(self.document_refs(include_generated=True)),
                 "links": links,
-                "python_files": len(list((self.root / "src" / "file_data").glob("*.py"))),
+                "python_files": len(list((self.root / "src").rglob("*.py"))),
                 "schemas": len(list((self.root / "schemas").glob("*.json"))),
                 "elapsed_ms": elapsed,
                 "runtime_warning": elapsed > RUNTIME_WARNING_MS,

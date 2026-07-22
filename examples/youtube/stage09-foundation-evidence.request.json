@@ -1,0 +1,23 @@
+{
+  "baseline_characters": 315497,
+  "char_limit": 12000,
+  "documents": [
+    {
+      "reason": "선택적 근거 구성의 현재 계약",
+      "ref": "docs/CONTEXT_PACKAGE_CONTRACT.md"
+    }
+  ],
+  "records": [
+    {
+      "id": "57064cc7-5c0b-4737-be35-2813b2798619",
+      "reason": "컨텍스트 패키지의 current 재생성 제약"
+    }
+  ],
+  "search": null,
+  "video": {
+    "audience": "반복 제작에서 AI 작업 기억의 비용을 줄이고 싶은 1인 크리에이터",
+    "goal": "전체 문서를 매번 읽지 않고 current 근거만 선택해 재현 가능한 작업 문맥을 만드는 방식을 설명한다.",
+    "id": "stage09-foundation-context",
+    "working_title": "AI 작업 기억을 가볍게 만드는 선택적 컨텍스트"
+  }
+}

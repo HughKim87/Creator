@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project://schemas/youtube-evidence-request-v1.schema.json",
+  "title": "YouTube pre-production evidence request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["video", "documents", "records", "search", "char_limit", "baseline_characters"],
+  "properties": {
+    "video": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "working_title", "audience", "goal"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$", "maxLength": 80},
+        "working_title": {"type": "string", "minLength": 1, "maxLength": 200},
+        "audience": {"type": "string", "minLength": 1, "maxLength": 500},
+        "goal": {"type": "string", "minLength": 1, "maxLength": 1000}
+      }
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ref", "reason"],
+        "properties": {
+          "ref": {"type": "string", "minLength": 1, "maxLength": 200},
+          "reason": {"type": "string", "minLength": 1, "maxLength": 500}
+        }
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "reason"],
+        "properties": {
+          "id": {"type": "string", "format": "uuid", "maxLength": 200},
+          "reason": {"type": "string", "minLength": 1, "maxLength": 500}
+        }
+      }
+    },
+    "search": {"type": ["string", "null"]},
+    "char_limit": {"type": "integer", "minimum": 1, "maximum": 12000},
+    "baseline_characters": {"type": "integer", "minimum": 1}
+  }
+}

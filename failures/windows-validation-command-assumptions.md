@@ -24,6 +24,8 @@
 - 오류 종료 상태가 모두 CLI 파일의 literal `return N`으로 구현될 것이라고 가정해 예외 클래스가 소유한 상태를 놓쳤다.
 - 완료된 work 재구축을 확인하는 임시 검사기에서 실제 service 메서드명과 반환 record 구조를 먼저 확인하지 않고 축약명과 중첩 hash 위치를 가정했다.
 - Stage 08 컨텍스트 평가 사전 검색에서 `context-search`의 실제 옵션을 확인하지 않고 내부 개념명에 가까운 `--query`를 CLI 인수로 가정했다.
+- Stage 09 첫 도메인 문서 추가 뒤 maintenance inventory가 Git의 기본 untracked 디렉터리 축약을 파일 목록으로 오인해 중첩된 새 Markdown을 놓쳤다.
+- Stage 09 candidate 거부 경로 검증에서 예상된 native stderr까지 `$ErrorActionPreference='Stop'`이 PowerShell 오류로 승격해 의도한 exit code 단언 전에 스크립트를 중단했다.
 
 ## 실패·해결 이력
 
@@ -49,6 +51,8 @@
 | Stage 05 경계 게이트 3차 | 재구축 record의 hash를 존재하지 않는 `integrity.content_hash`에서 조회 | 3 | 단언을 더 추측하지 않고 반환 객체의 key와 값을 먼저 관찰해 최상위 `content_hash`로 교정한 뒤 전체 게이트 재개 |
 | Stage 06 구현 파일 조사 | Windows `rg`에 `src/file_data/*.py` 경로 와일드카드를 직접 전달해 잘못된 경로 구문으로 중단 | 별도 조사 1 | 기존 재사용 규칙대로 검색 루트와 `-g '*.py'` 필터를 분리해 같은 조사를 성공 |
 | Stage 08 컨텍스트 평가 사전 검색 | `context-search --query`가 필수 `--text` 누락으로 입력 계약 오류 반환 | 별도 조회 1 | `context-search --help`의 공개 인수를 확인하고 `--text`로 재실행해 새 지식·실패 지식이 각각 정확히 1건 검색됨을 검증 |
+| Stage 09 중첩 도메인 문서 inventory | 기본 `git status --short`가 `?? docs/domain/`만 반환해 새 계약 파일을 개별 경로로 수집하지 못하고 오래된 inventory를 일치로 오판 | 별도 게이트 1 | `--untracked-files=all`을 명시하고 중첩 미추적 Markdown 회귀를 추가해 불일치 탐지→재생성→일치 검증 |
+| Stage 09 knowledge candidate 경계 검사 | noncurrent candidate의 CLI exit 2·구조화 stderr는 정상인데 전역 `ErrorActionPreference=Stop` 때문에 검증 스크립트 자체가 조기 중단 | 별도 검사 1 | 예상 비성공 구간에서는 native stderr와 `$LASTEXITCODE`를 직접 수집해 exit 2와 원인 문구를 단언하고 성공 |
 
 ## 해결과 검증
 
@@ -59,6 +63,8 @@
 - 신규 파일을 포함한 최종 패치 검증은 스테이징 뒤 `git diff --cached --check`로 수행한다.
 - 임시 검사기의 API명과 반환 구조는 구현·테스트 또는 실제 무변경 조회로 먼저 확인한 뒤 완료 단언을 작성한다.
 - CLI 하위 명령의 자연어 개념명과 공개 옵션명을 동일하다고 가정하지 않고, 처음 호출하기 전에 해당 하위 명령의 `--help`를 확인한다.
+- Git status를 파일 inventory로 사용할 때는 untracked 디렉터리 축약 정책을 기본값에 맡기지 않고 `--untracked-files=all`을 명시한다.
+- 실패 경로를 검증할 때 예상된 stderr를 예외로 취급하지 말고 native exit code·구조화 payload를 먼저 수집한 뒤 기대한 비성공인지 판정한다.
 
 ## 재사용 규칙
 

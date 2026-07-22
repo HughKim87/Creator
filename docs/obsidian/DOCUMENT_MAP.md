@@ -23,6 +23,7 @@
 - [지식 수명주기 계약과 사용법](../KNOWLEDGE_LIFECYCLE_CONTRACT.md) — 권위 정본 · 계약·사용 가이드
 - [선택적 읽기·컨텍스트 패키지 계약](../CONTEXT_PACKAGE_CONTRACT.md) — 권위 정본 · 계약·사용 가이드
 - [유지보수·검증 자동화 계약](../MAINTENANCE_AUTOMATION_CONTRACT.md) — 권위 정본 · 계약·사용 가이드
+- [유튜브 촬영 전 근거 패키지 계약](../domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md) — 권위 정본 · 도메인 계약·사용 가이드
 - [자동 생성 활성 문서 inventory](GENERATED_DOCUMENT_INVENTORY.md) — 파생 표현 · 자동 재생성 목록
 - [마스터 구축 계획](../build/MASTER_BUILD_PLAN.md) — 권위 정본 · 단계 계획
 - [Stage 00](../build/stage-00-project-kernel.md)
@@ -72,6 +73,8 @@
 - [변경된 로컬 출처 한 건의 전체 목록 실패 전파](../../failures/mutable-local-source-list-fanout.md)
 - [테스트 fixture의 payload 계약 구조 가정](../../failures/test-fixture-contract-shape-assumption.md)
 - [Windows 텍스트 줄바꿈 변환과 실제 크기 측정 불일치](../../failures/windows-text-newline-size-measurement.md)
+- [기존 Python bytecode 캐시와 청결 게이트 불일치](../../failures/python-bytecode-cache-cleanliness.md)
+- [완료 작업에 다음 행동을 함께 남기는 상태 충돌](../../failures/completed-work-next-action-conflict.md)
 
 ## 시점 보고서
 

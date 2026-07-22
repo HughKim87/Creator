@@ -1,0 +1,22 @@
+{
+  "content_hash": "sha256:cbbbe8a067c15162098e60fc9380e1fba8c9559f2d900c2079d8a83ed90d7b4e",
+  "created_at": "2026-07-22T21:29:00Z",
+  "id": "60db0a03-54da-4694-9f9e-cfb5b313340d",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage09",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "abe58e79-d916-46dc-8b16-77c2abbfd9df",
+    "last_reason": "Stage 09 예상 native stderr 검증 조기 중단 재발 기록 반영",
+    "last_source_ids": [],
+    "revision": 2,
+    "state": "superseded",
+    "superseded_by": "ed527f88-35b0-4d19-8ffb-bb82034844ac",
+    "target_id": "3af15436-af8f-476a-9a65-df192203c202",
+    "target_type": "failure_knowledge"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:33:55Z"
+}
