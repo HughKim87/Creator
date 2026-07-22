@@ -2,8 +2,8 @@
 
 - 갱신일: 2026-07-23
 - 역할: 채팅 기억 없이 현재 검증 상태와 첫 다음 행동을 재구성하는 단일 활성 상태 정본
-- 현재 단계: Stage 07 선택적 읽기·컨텍스트 — 97/100 완료 준비, 경계 커밋 대기
-- 이전 단계: Stage 06 지식 수명주기 97/100 완료, 경계 커밋 `93c516e`
+- 현재 단계: Stage 08 유지보수·자동화 — work 완료·검증·97점 자체 검토 완료, 경계 커밋 대기
+- 이전 단계: Stage 07 선택적 읽기·컨텍스트 97/100 완료, 경계 커밋 `a383bbd`
 - 백업 정책: 별도 복제 없음. 활성 프로젝트는 Git 이력을 복구 근거로 사용한다.
 
 ## 1. 시작 순서와 권위
@@ -37,11 +37,11 @@
 
 ### 3.1 활성 구조화 작업 포인터
 
-- work ID: `52d329d3-2868-4e7c-900d-4979ea3a68f5`
+- work ID: `3c6681e5-2595-47a1-9d47-f056c4218031`
 - 상태: `completed`
-- snapshot: `data/records/52d329d3-2868-4e7c-900d-4979ea3a68f5.json`
+- snapshot: `data/records/3c6681e5-2595-47a1-9d47-f056c4218031.json`
 - event 정본: `data/events/work_events.jsonl`
-- snapshot hash: `sha256:e40ba73bd2824ff3ef2273cd331eef4e170afe34f8a4071a8fc1b6337b847a43`
+- snapshot hash: `sha256:efd51ef93859942a538314b126cccc0f8e71318c5493465c079371d1ec5ed1f7`
 
 요청·승인·제외 범위와 완료 근거는 위 구조화 기록이 소유한다. 이 핸드오프는 프로젝트 단계와 첫 다음 행동만 요약한다.
 
@@ -57,7 +57,8 @@
 | Stage 04 | 98/100 완료 | 작업 요청·event 원장·replay snapshot·상태 전이·세션 독립 재개, 실제 work 완료, 36개 테스트. 커밋 `519ff30` |
 | Stage 05 | 97/100 완료 | source·knowledge·decision·failure projection 순차 도입, 55개 테스트, 48개 실제 record·21개 실패 정본 hash 검증. 커밋 `b9ef127` |
 | Stage 06 | 97/100 완료 | event-first 수명주기, 승인 전이, drift·충돌·대체·폐기, 68개 테스트, 54개 snapshot·66개 event replay. 커밋 `93c516e` |
-| Stage 07 | 97/100 완료 준비 | 직접 선택·실제 필드 필터·current 문자열 후보·비영구 package, 79개 테스트, 대표 평가 3건 96% 이상 절감. 경계 커밋 대기 |
+| Stage 07 | 97/100 완료 | 직접 선택·실제 필드 필터·current 문자열 후보·비영구 package, 79개 테스트, 대표 평가 3건 96% 이상 절감. 커밋 `a383bbd` |
+| Stage 08 | 97/100 완료 준비 | 수동 read-only scan·fail-closed verify·결정론 inventory·입력 기반 재평가, 누적 87개 테스트. 경계 커밋 대기 |
 
 Stage 05는 05A 출처 → 05B 지식 → 05C 결정 → 05D 실패 projection 순으로 각각 검증한 뒤 하나의 Stage 05 경계 커밋으로 닫는다.
 
@@ -89,6 +90,10 @@ Stage 05는 05A 출처 → 05B 지식 → 05C 결정 → 05D 실패 projection �
 - Stage 07 실제 평가: 활성 Markdown 74개 기준선에서 기존 지식·새 지식·실패 재사용 package가 각각 필수 2/2, 금지·무관 0, 12,000자 이하, 96% 이상 절감, 재실행 일치를 통과했다.
 - Stage 07 테스트·구조: 누적 79개 테스트, lifecycle 65개 snapshot·91개 event replay, current 실패 23건 전수 검증, Markdown 74개·링크 510개 오류 0, Python 9개 AST·JSON Schema 11개 파싱, 보호 변경 0건.
 - Stage 07 네 가지 확인 모두 통과, 미해결 실패 0건, 자체 점수 97/100. 상세는 `docs/build/stage-07-context-retrieval.md#9-사용자-결정-기록`.
+- Stage 08 기능: `maintenance-scan/verify/inventory/evaluate`를 구현하고 Hook·CI·예약·자동 병합·삭제·current 변경은 제외했다.
+- Stage 08 실제 결과: drift·중복·구조 오류 0, inventory 10,130 bytes 일치, scan 약 1.9초, 활성 Markdown 78개·링크 607개·Python 10개·schema 11개, 누적 87개 테스트 성공.
+- Stage 08 컨텍스트 재평가: 315,486자 기준선에서 기존·신규·실패 package가 10,203자·3,690자·4,418자, 96.77%·98.83%·98.60% 절감, 필수 1·금지/무관 0·재현성 통과.
+- Stage 08 네 가지 확인 모두 통과, 미해결 실패 0건, 자체 점수 97/100. 상세는 `docs/build/stage-08-maintenance-automation.md#9-사용자-결정-기록`.
 
 ## 6. 실패 원장
 
@@ -104,28 +109,30 @@ Stage 05는 05A 출처 → 05B 지식 → 05C 결정 → 05D 실패 projection �
 - Stage 05 경계 게이트의 Git 소유권 옵션·work service API·반환 hash 위치 가정은 최고 연속 실패 3회로 기존 Windows 검증 명령 사례에 병합했고, 실제 객체 선관찰 후 전체 게이트를 재개했다.
 - Stage 06의 Windows `rg` 경로 와일드카드와 PowerShell UTF-8 pipe 재발은 기존 원인 정본에 병합했고, decision fixture 계약 구조 가정은 새 원인 문서에 기록했다. 세 원인 모두 수정 후 68개 테스트와 통합 게이트를 통과했다.
 - Stage 07의 PowerShell UTF-8 pipe 재발은 손상 knowledge를 lifecycle로 보존·대체한 뒤 기존 원인 정본에 병합했고, Windows 줄바꿈 크기 측정 불일치는 새 원인 문서로 기록했다. 두 원인 모두 수정 후 79개 테스트와 대표 평가를 통과했다.
+- Stage 08의 `context-search --query` 공개 옵션 가정은 기존 Windows 검증 명령 사례에 병합했다. `--help` 확인 뒤 실제 `--text`로 새 지식·실패 지식을 각각 1건 검색했고 failure projection을 새 hash로 교체했다.
+- Stage 08 통합 게이트 1차는 기존 Python bytecode cache 1개를 발견해 실패 처리했다. 경계 확인 후 cache만 정리하고 같은 환경에서 재생성 0과 전체 게이트 성공을 확인해 새 실패 정본에 보존했다.
+- Stage 08 work 완료 전이에 `next_action`을 함께 보낸 1회 계약 실패는 새 실패 정본에 보존했다. 실패 전후 hash 불변을 확인하고 `next_action`을 제거한 전이로 work를 `completed` 상태로 닫았다.
 - 모든 장기 실패 지식의 탐색 정본은 `failures/README.md`다.
 
 ## 7. 활성 위험
 
 - Obsidian의 사용자 직접 마우스 탐색은 독립 관찰하지 않았고 URI 기반 실제 앱 이동과 창 상태로 검증했다.
-- 활성 문서 지도 갱신은 Stage 08 자동화 전까지 수동이다. 각 단계 종료 시 새 활성 문서 수록과 전체 링크 검사를 반복한다.
+- 사람이 분류한 문서 지도는 수동 검토 화면으로 유지하고, 전체 활성 경로 inventory는 Stage 08 결정론 파생 명령으로 재생성한다. verify는 둘의 핵심 연결과 전체 로컬 링크를 검사한다.
 - JSON Schema와 Python 실행 검증이 일부 제약을 이중 표현한다. 필드 집합은 회귀 검사하지만 정규식·교차 필드 의미의 완전한 자동 동기화는 아직 없다.
 - Stage 03 JSONL은 전체 원자 재작성 방식이라 큰 stream에서 비효율적이며 stale lock은 자동 삭제하지 않는다. Stage 08 전까지 승인된 잔여 위험이다.
-- 핸드오프의 활성 work ID·hash 연결과 Obsidian 활성 문서 지도는 Stage 08 자동화 전까지 수동 갱신한다.
+- 핸드오프의 활성 work ID·hash와 단계 경계 설명은 여전히 사람이 명시적으로 갱신하며 verify는 경로 연결만 검사한다.
 - drift했던 source `51a05a01-1c72-4f66-91f6-c763d7f3050a`와 의존 지식은 역사 record로 보존하고 current replacement에 연결했다. 옛 source의 explicit verify 실패는 superseded 근거이며 기본 current 결과에서 제외된다.
-- lifecycle snapshot 탐색은 현재 record 수에 선형이고 다중 record 개정은 완전한 단일 트랜잭션이 아니다. event-first·사전 검증·idempotent 재개로 보완했으며 인덱스·일괄 유지보수는 Stage 08 범위다.
-- context의 current record·활성 문서 선택도 현재 선형 순회이며 검색 필드는 유형별 명시 분기다. 대표 평가에는 충분했지만 비용 관측·인덱스·자동 재평가는 Stage 08 범위다.
+- lifecycle snapshot 탐색과 maintenance scan은 현재 record·문서 수에 선형이고 다중 record 개정은 완전한 단일 트랜잭션이 아니다. event-first·사전 검증·보존 대체로 보완했고 실제 scan 약 1.7초라 5초 경고 전에는 인덱스를 도입하지 않는다.
+- context의 current record·활성 문서 선택은 선형 순회이고 검색 필드는 유형별 명시 분기다. Stage 08 evaluate가 고정 payload 재평가를 자동화했지만 평가 정의 자체는 호출자가 명시한다.
 
 ## 8. 정확한 재개 체크포인트
 
 첫 미착수 행동:
 
-1. `rules/version-control.md`에 따라 Stage 07 전체 diff와 보호 경로 0건을 다시 확인한다.
-2. Stage 07 독립 경계 커밋을 만들고 커밋 객체·포함 경로·커밋 후 작업트리를 검증한다.
-3. 성공한 커밋 hash를 완료 표에 반영하고 Stage 08 work를 새로 만든다.
-4. `docs/build/stage-08-maintenance-automation.md`를 읽고 실제 수동 병목·drift·재평가 요구만 범위로 착수한다.
+1. Stage 08 최종 문서와 파생 inventory를 포함한 통합 게이트를 한 번 더 확인한다.
+2. Stage 08 변경만 스테이징해 캐시 검증 후 경계 커밋한다.
+3. 커밋 존재·worktree clean을 확인한 뒤에만 Stage 09 계획을 처음 읽고 착수한다.
 
 ## 9. 다음 세션 시작 프롬프트
 
-> `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 새 세션 시작 시 한 번 읽고 현재 행동과 일치하는 `rules/*.md`만 선택하라. Stage 06 커밋은 `93c516e`이며 Stage 07은 97/100 성공 게이트를 통과해 독립 커밋만 남았다. work `52d329d3-2868-4e7c-900d-4979ea3a68f5`는 completed다. Stage 07 커밋을 검증한 뒤 실제 수동 drift·문서 목록·컨텍스트 재평가 병목만 입력으로 Stage 08을 새 work에서 시작하라. 권장 선택과 성공 후 Stage 09까지 전환은 사전 승인됐다. 기능·검증·네 가지 확인·실패 지식·100점 평가를 생략하지 말고, 3회 실패 시 기록 후 방법을 바꿔 승인 범위 안에서 재개하라. 보호 데이터·설치·외부 게시·삭제·이동·실질적 범위 확대는 자동 승인 대상이 아니다.
+> `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 새 세션 시작 시 한 번 읽고 현재 행동과 일치하는 `rules/*.md`만 선택하라. Stage 07 커밋은 `a383bbd`이고 Stage 08 work `3c6681e5-2595-47a1-9d47-f056c4218031`는 `completed`·97점 자체 검토를 마쳐 경계 커밋 대기다. 최종 통합 게이트와 캐시 검증 후 Stage 08을 커밋하고 worktree clean을 확인한 뒤에만 Stage 09 계획을 읽어라. 권장 선택과 성공 후 Stage 09까지 전환은 사전 승인됐다. 기능·검증·네 가지 확인·실패 지식·100점 평가·단계별 커밋을 생략하지 말고, 3회 실패 시 기록 후 방법을 바꿔 승인 범위 안에서 재개하라. 보호 데이터·설치·외부 게시·삭제·이동·실질적 범위 확대는 자동 승인 대상이 아니다.

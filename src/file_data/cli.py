@@ -21,6 +21,7 @@ from .knowledge import (
 )
 from .lifecycle import APPROVAL_KINDS, LIFECYCLE_STATES, TARGET_TYPES, LifecycleService
 from .context import ContextService
+from .maintenance import MaintenanceService
 
 
 class RecordArgumentParser(argparse.ArgumentParser):
@@ -242,10 +243,36 @@ def _parser() -> RecordArgumentParser:
     context_filter.add_argument("--role", choices=sorted(SOURCE_EVIDENCE_ROLES), dest="evidence_role")
     context_baseline = commands.add_parser("context-baseline", help="measure exact active document refs")
     context_baseline.add_argument("--document", action="append", required=True, dest="documents")
+
+    commands.add_parser("maintenance-scan", help="read-only drift, duplicate, inventory and cost scan")
+    commands.add_parser("maintenance-verify", help="fail-closed project structure verification")
+    maintenance_inventory = commands.add_parser(
+        "maintenance-inventory", help="check or regenerate the derived Obsidian document inventory"
+    )
+    maintenance_inventory.add_argument("--write", action="store_true")
+    maintenance_evaluate = commands.add_parser(
+        "maintenance-evaluate", help="rerun fixed context evaluations from explicit JSON input"
+    )
+    maintenance_input = maintenance_evaluate.add_mutually_exclusive_group(required=True)
+    maintenance_input.add_argument("--request-json", type=_payload)
+    maintenance_input.add_argument("--request-stdin", action="store_true")
     return parser
 
 
 def _run(namespace: argparse.Namespace) -> dict[str, Any]:
+    if namespace.command.startswith("maintenance-"):
+        maintenance = MaintenanceService(namespace.root)
+        if namespace.command == "maintenance-scan":
+            return maintenance.scan()
+        if namespace.command == "maintenance-verify":
+            return maintenance.verify()
+        if namespace.command == "maintenance-inventory":
+            return maintenance.write_inventory() if namespace.write else maintenance.inventory_status()
+        if namespace.command == "maintenance-evaluate":
+            return maintenance.evaluate_context(
+                _json_input(namespace.request_json, namespace.request_stdin)
+            )
+        raise InputContractError(f"Unknown maintenance command: {namespace.command}")
     if namespace.command.startswith("context-"):
         context = ContextService(namespace.root)
         if namespace.command == "context-build":

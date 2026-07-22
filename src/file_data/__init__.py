@@ -91,6 +91,13 @@ from .context import (
     ContextLimitError,
     ContextService,
 )
+from .maintenance import (
+    GENERATED_INVENTORY_REF,
+    PROTECTED_SEGMENTS as MAINTENANCE_PROTECTED_SEGMENTS,
+    RUNTIME_WARNING_MS,
+    MaintenanceError,
+    MaintenanceService,
+)
 
 __all__ = [
     "DuplicateRecordError",
@@ -172,4 +179,9 @@ __all__ = [
     "ContextError",
     "ContextLimitError",
     "ContextService",
+    "GENERATED_INVENTORY_REF",
+    "MAINTENANCE_PROTECTED_SEGMENTS",
+    "RUNTIME_WARNING_MS",
+    "MaintenanceError",
+    "MaintenanceService",
 ]

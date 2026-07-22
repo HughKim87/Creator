@@ -22,6 +22,8 @@
 - [지식 유형 계약과 사용법](../KNOWLEDGE_TYPES_CONTRACT.md) — 권위 정본 · 계약·사용 가이드
 - [지식 수명주기 계약과 사용법](../KNOWLEDGE_LIFECYCLE_CONTRACT.md) — 권위 정본 · 계약·사용 가이드
 - [선택적 읽기·컨텍스트 패키지 계약](../CONTEXT_PACKAGE_CONTRACT.md) — 권위 정본 · 계약·사용 가이드
+- [유지보수·검증 자동화 계약](../MAINTENANCE_AUTOMATION_CONTRACT.md) — 권위 정본 · 계약·사용 가이드
+- [자동 생성 활성 문서 inventory](GENERATED_DOCUMENT_INVENTORY.md) — 파생 표현 · 자동 재생성 목록
 - [마스터 구축 계획](../build/MASTER_BUILD_PLAN.md) — 권위 정본 · 단계 계획
 - [Stage 00](../build/stage-00-project-kernel.md)
 - [Stage 01](../build/stage-01-information-architecture.md)

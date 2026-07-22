@@ -1,0 +1,24 @@
+{
+  "content_hash": "sha256:2e2bc0faac3c5e6f4b745c2073960f1539abd0a637bfe307caa30fa603c315a9",
+  "created_at": "2026-07-22T21:12:41Z",
+  "id": "7a5742aa-e814-47a7-a510-290547956700",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage08",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "2e390ab0-4b70-4436-a1e4-0f1014042983",
+    "last_reason": "Stage 08 terminal work next_action 충돌 해결 지식",
+    "last_source_ids": [
+      "cb2c35b5-cbf8-4d80-a020-0ccb87e24c22"
+    ],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "fe469495-f4e3-40da-bff1-790f8cd44f29",
+    "target_type": "failure_knowledge"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:12:41Z"
+}

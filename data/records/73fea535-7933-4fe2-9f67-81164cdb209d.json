@@ -1,0 +1,24 @@
+{
+  "content_hash": "sha256:8f27963ad6b6b09fb7cd59607fdb7f3634a93cc5e35c782bc6b64b1303121761",
+  "created_at": "2026-07-22T21:02:46Z",
+  "id": "73fea535-7933-4fe2-9f67-81164cdb209d",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage08",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "9f1207f6-7ef8-474d-9f51-5ef2cbb83a30",
+    "last_reason": "Stage 08 CLI 공개 옵션 오인 재발 기록 반영",
+    "last_source_ids": [
+      "79d659dd-e006-4b92-ad82-07ffba26e859"
+    ],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "66476d3e-0c5b-4e79-9077-58dcaa204d3d",
+    "target_type": "failure_knowledge"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:02:46Z"
+}

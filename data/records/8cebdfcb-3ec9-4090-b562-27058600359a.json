@@ -1,0 +1,22 @@
+{
+  "content_hash": "sha256:03048f7b3c892a4380f921af5888cff8ea25f01837fbcd08a89fa8b4f5a7ff76",
+  "created_at": "2026-07-22T21:12:40Z",
+  "id": "8cebdfcb-3ec9-4090-b562-27058600359a",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage08",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "37791767-21b6-4ca9-ac58-f25ce8b7a150",
+    "last_reason": "Stage 08 terminal work next_action 충돌 source",
+    "last_source_ids": [],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "cb2c35b5-cbf8-4d80-a020-0ccb87e24c22",
+    "target_type": "source"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:12:40Z"
+}

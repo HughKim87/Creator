@@ -1,0 +1,78 @@
+{
+  "content_hash": "sha256:efd51ef93859942a538314b126cccc0f8e71318c5493465c079371d1ec5ed1f7",
+  "created_at": "2026-07-22T20:52:01Z",
+  "id": "3c6681e5-2595-47a1-9d47-f056c4218031",
+  "payload": {
+    "blockers": [],
+    "completed_items": [
+      "Stage 07 경계 커밋 a383bbd 검증",
+      "Stage 08 계획과 실제 수동 drift·문서 목록·재평가 병목 확인",
+      "자동화 범위·임계값·수동 실행·무변경 정책 권장안 선택",
+      "읽기 전용 scan·fail-closed verify·결정론 inventory·입력 기반 context 평가 구현",
+      "전용 8개·누적 87개 테스트와 실제 세 평가 통과",
+      "source drift 보존 대체와 CLI 옵션 실패 지식 갱신",
+      "통합 게이트 재실행: drift·중복·오류·보호 변경·cache 0, 87개 테스트 성공",
+      "네 가지 확인 통과와 97/100 완료 준비 판정"
+    ],
+    "evidence_refs": [
+      "commit://a383bbd",
+      "docs/build/stage-08-maintenance-automation.md",
+      "score://stage07-97",
+      "docs/MAINTENANCE_AUTOMATION_CONTRACT.md",
+      "score://stage08-97",
+      "gate://stage08-pass",
+      "docs/build/stage-08-maintenance-automation.md#10-최종-자체-검토점수-기록"
+    ],
+    "last_event_id": "bd56d5bb-0c65-4ef4-8a98-8a4b1849d941",
+    "next_action": null,
+    "related_record_ids": [
+      "eb629d42-b9ad-4e7f-af05-57c80d8440cb",
+      "57064cc7-5c0b-4737-be35-2813b2798619",
+      "66476d3e-0c5b-4e79-9077-58dcaa204d3d",
+      "34a423af-b849-4026-aa41-b378bb192ff1"
+    ],
+    "request": {
+      "authorized_actions": [
+        "Stage 08 권장안 자동 선택",
+        "유지보수 계약·서비스·CLI·fixture 구축",
+        "Obsidian 파생 inventory 생성",
+        "대표 컨텍스트 재평가",
+        "성공 게이트 뒤 Stage 08 커밋"
+      ],
+      "desired_outcome": "Stage 08에서 실제 반복된 drift·중복·문서 검증·파생 inventory·컨텍스트 재평가 비용을 수동 fail-closed 명령으로 줄인다",
+      "excluded_scope": [
+        "Hook·CI·예약 실행",
+        "자동 병합·삭제·current 채택",
+        "외부 서비스·플러그인",
+        "DB·벡터·그래프 인프라",
+        "보호 데이터 색인",
+        "도메인 워크플로"
+      ],
+      "input_refs": [
+        "docs/build/stage-08-maintenance-automation.md",
+        "docs/KNOWLEDGE_LIFECYCLE_CONTRACT.md",
+        "docs/CONTEXT_PACKAGE_CONTRACT.md",
+        "docs/obsidian/DOCUMENT_MAP.md"
+      ],
+      "protection_boundaries": [
+        "inputs",
+        "outputs",
+        "backup",
+        "secrets"
+      ],
+      "required_decisions": [],
+      "verification_levels": [
+        "read-only-scan",
+        "regeneration",
+        "cost-observation",
+        "context-reevaluation",
+        "stage-self-review"
+      ]
+    },
+    "status": "completed",
+    "work_id": "3c6681e5-2595-47a1-9d47-f056c4218031"
+  },
+  "record_type": "work_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:11:46Z"
+}

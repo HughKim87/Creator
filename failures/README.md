@@ -43,3 +43,5 @@
 - [변경된 로컬 출처 한 건의 전체 목록 실패 전파](mutable-local-source-list-fanout.md)
 - [테스트 fixture의 payload 계약 구조 가정](test-fixture-contract-shape-assumption.md)
 - [Windows 텍스트 줄바꿈 변환과 실제 크기 측정 불일치](windows-text-newline-size-measurement.md)
+- [기존 Python bytecode 캐시와 청결 게이트 불일치](python-bytecode-cache-cleanliness.md)
+- [완료 작업에 다음 행동을 함께 남기는 상태 충돌](completed-work-next-action-conflict.md)

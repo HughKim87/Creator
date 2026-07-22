@@ -1,24 +1,24 @@
 {
-  "content_hash": "sha256:012a08f1cbd9766ba3ffe33c21c04ed79c6edf13d1f7622c36c911491ec2c10f",
+  "content_hash": "sha256:5f0298ee4ad86e5b99e0117bf05c569fbb0ef01e88390e6d7a4d6f3abcd08444",
   "created_at": "2026-07-22T20:37:26Z",
   "id": "cbfec3d0-fe6e-4f0c-bf91-0f303462e609",
   "payload": {
     "conflict_ids": [],
-    "last_actor": "agent:stage07",
+    "last_actor": "agent:stage08",
     "last_approval_kind": "standing_policy",
     "last_decision_id": null,
-    "last_event_id": "ea929ef8-e03f-4b79-85d7-2c598c07814a",
-    "last_reason": "UTF-8 statement를 검증한 Stage 07 새 지식",
+    "last_event_id": "7be8e999-8f97-4371-853d-87bde5c14f32",
+    "last_reason": "Stage 08 컨텍스트 평가 계약 개정 이전 knowledge 대체",
     "last_source_ids": [
-      "9f2d950b-eadf-4fb8-91fe-b955049ceef2"
+      "01dbf7cc-b854-4fac-8932-e66fd3dabd3a"
     ],
-    "revision": 1,
-    "state": "current",
-    "superseded_by": null,
+    "revision": 2,
+    "state": "superseded",
+    "superseded_by": "57064cc7-5c0b-4737-be35-2813b2798619",
     "target_id": "b8a02c4f-d198-4d2f-b4f6-eb6e2a616b7b",
     "target_type": "knowledge"
   },
   "record_type": "lifecycle_state",
   "schema_version": 1,
-  "updated_at": "2026-07-22T20:37:26Z"
+  "updated_at": "2026-07-22T21:00:18Z"
 }

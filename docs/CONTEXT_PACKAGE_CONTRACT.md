@@ -78,5 +78,5 @@ CLI build는 PowerShell에서 UTF-8 stdin과 `--request-stdin`을 사용한다. 
 ## 제외와 후속
 
 - 컨텍스트 package 저장·자동 지식 승격·보호 데이터 색인·보고서 기본 로딩은 금지한다.
-- 최신성·중복·재생성·비용 관측과 검증된 반복 실행은 Stage 08 범위다.
+- 최신성·중복·재생성·비용 관측과 검증된 반복 실행은 [Stage 08 유지보수 계약](MAINTENANCE_AUTOMATION_CONTRACT.md)이 소유한다.
 - 도메인 태그·추천·영상 제작 입력은 Stage 09 범위다.

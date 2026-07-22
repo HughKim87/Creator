@@ -1,0 +1,22 @@
+{
+  "content_hash": "sha256:94af87eedffff40d61981e3a2a9bab337621e62ef25a8877af90983f050bbfc9",
+  "created_at": "2026-07-22T21:00:15Z",
+  "id": "c0e0a928-6f16-41e4-b354-8276a3a0f05c",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage08",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "686b2b63-2a51-4c79-a207-600d6788fd90",
+    "last_reason": "Stage 08 컨텍스트 평가 계약 개정 새 source",
+    "last_source_ids": [],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "01dbf7cc-b854-4fac-8932-e66fd3dabd3a",
+    "target_type": "source"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:00:15Z"
+}

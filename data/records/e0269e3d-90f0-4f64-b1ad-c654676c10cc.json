@@ -1,22 +1,22 @@
 {
-  "content_hash": "sha256:9428da741f07126e0fde8824b620132ca8976444509373aa8299385e2f5e77cd",
+  "content_hash": "sha256:1331bb5e2bbe7edb3507e944817e00a8f8acc760670c5c95999cc699a8700ca5",
   "created_at": "2026-07-22T20:36:08Z",
   "id": "e0269e3d-90f0-4f64-b1ad-c654676c10cc",
   "payload": {
     "conflict_ids": [],
-    "last_actor": "agent:stage07",
+    "last_actor": "agent:stage08",
     "last_approval_kind": "standing_policy",
     "last_decision_id": null,
-    "last_event_id": "6c52c45f-3047-422a-bc15-0a591fd2b1df",
-    "last_reason": "Stage 07 정보 구조 계약 현재 bytes source",
+    "last_event_id": "4856eb4a-d1ae-486f-b665-715b2d316f82",
+    "last_reason": "Stage 08 정보 구조 계약 개정 이전 source 대체",
     "last_source_ids": [],
-    "revision": 1,
-    "state": "current",
-    "superseded_by": null,
+    "revision": 2,
+    "state": "superseded",
+    "superseded_by": "ce77cc84-68db-47bb-8203-daa0cefdf19f",
     "target_id": "737e4fbb-d8ff-4a00-b952-774ddbc47a19",
     "target_type": "source"
   },
   "record_type": "lifecycle_state",
   "schema_version": 1,
-  "updated_at": "2026-07-22T20:36:08Z"
+  "updated_at": "2026-07-22T21:00:14Z"
 }

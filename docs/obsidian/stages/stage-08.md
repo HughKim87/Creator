@@ -3,6 +3,7 @@
 - 정본 계획: [Stage 08 — 유지보수·자동화](../../build/stage-08-maintenance-automation.md)
 - 현재 상태: [SESSION_HANDOFF](../../../SESSION_HANDOFF.md)
 - 적용 규칙: [단계](../../../rules/stage-work.md) · [문서](../../../rules/document-work.md) · [실패](../../../rules/failure-records.md)
+- 구현 계약: [유지보수·검증 자동화 계약](../../MAINTENANCE_AUTOMATION_CONTRACT.md)
 
 ## 계획 내 바로가기
 

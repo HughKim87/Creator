@@ -1,0 +1,22 @@
+{
+  "content_hash": "sha256:b3fe4e6bcf091e6470c2fcb72914835f53a6a0d0c004b0422b9abc5ea1fc1209",
+  "created_at": "2026-07-22T21:00:12Z",
+  "id": "30ecc5b5-f4cd-4391-8deb-df396b91a8b6",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage08",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "c0a10333-0545-446f-ba38-1419b196dc3e",
+    "last_reason": "Stage 08 정보 구조 계약 개정 새 source",
+    "last_source_ids": [],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "ce77cc84-68db-47bb-8203-daa0cefdf19f",
+    "target_type": "source"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T21:00:12Z"
+}
