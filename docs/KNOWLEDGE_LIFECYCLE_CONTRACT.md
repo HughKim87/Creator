@@ -82,7 +82,7 @@
 
 ## 제외와 후속
 
-- 검색 점수·랭킹·컨텍스트 package는 Stage 07 범위다.
+- current record의 직접 선택·구조화 필터·제한된 컨텍스트 package는 [Stage 07 계약](CONTEXT_PACKAGE_CONTRACT.md)이 소유한다.
 - 주기 실행·중복 탐지·비용 관측·일괄 재생성은 Stage 08 범위다.
 - 도메인 전용 상태와 영상 제작 연결은 Stage 09 범위다.
 - 보호 데이터, `backup/` 전체 이관, 사용자 승인 없는 삭제는 계속 제외한다.

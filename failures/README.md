@@ -42,3 +42,4 @@
 - [진행 중 작업의 체크포인트 전이 부재](in-progress-checkpoint-transition-gap.md)
 - [변경된 로컬 출처 한 건의 전체 목록 실패 전파](mutable-local-source-list-fanout.md)
 - [테스트 fixture의 payload 계약 구조 가정](test-fixture-contract-shape-assumption.md)
+- [Windows 텍스트 줄바꿈 변환과 실제 크기 측정 불일치](windows-text-newline-size-measurement.md)

@@ -1,0 +1,35 @@
+{
+  "content_hash": "sha256:9a27538009656fcb15a58ed9a1a1c734d5e15c14afe911a4bb21f414af7fea30",
+  "created_at": "2026-07-22T20:36:10Z",
+  "id": "23bfee42-22be-450e-97ec-8889cef7cc58",
+  "payload": {
+    "canonical_doc_ref": "failures/windows-cli-utf8-stdio.md",
+    "conditions": [
+      "Windows 자식 프로세스, JSON CLI, 한글 stdout·stderr, UTF-8 계약"
+    ],
+    "confirmed_cause": "파일 인코딩만 UTF-8로 고정하고 프로세스 표준 출력·오류의 `TextIOWrapper` 인코딩은 운영체제 기본값에 맡겼다. `json.dumps(..., ensure_ascii=False)`가 실제 한글 문자를 쓰면서 플랫폼 차이가 드러났다.",
+    "document_hash": "sha256:5ac9caeec14d8966cb1dc0a392e4f3b402584aa111d8c3be7a0fc58409fcc2e2",
+    "prevention": [
+      "파일 UTF-8 계약과 CLI pipe 인코딩 계약을 별도로 검증한다.",
+      "Windows subprocess 통합 테스트는 ASCII만 사용하지 말고 실제 Unicode 값을 포함한다.",
+      "PowerShell에서 한글 스크립트·JSON을 native process stdin으로 보낼 때는 `$OutputEncoding`도 UTF-8로 명시한다.",
+      "JSON을 사람이 읽는 문자로 출력하면 stdout·stderr 인코딩을 운영체제 기본값에 맡기지 않는다."
+    ],
+    "projected_at": "2026-07-22T20:36:10Z",
+    "projected_by": "agent:stage07",
+    "projection_status": "resolved",
+    "resolution": [
+      "CLI의 stdout과 stderr가 `reconfigure`를 지원하면 `encoding=\"utf-8\"`, `errors=\"strict\"`, `newline=\"\\n\"`을 명시한다."
+    ],
+    "source_id": "300f33fc-27a0-4477-a20c-f8d234eeb8a1",
+    "symptom": "CLI가 한글 payload를 포함한 성공 JSON을 출력했지만 Windows 자식 프로세스 stdout이 기본 CP949 바이트를 사용했다. UTF-8 계약대로 읽는 통합 테스트의 reader thread가 디코딩 오류로 중단돼 stdout 결과가 사라졌다.",
+    "title": "Windows CLI 표준 입출력 인코딩 불일치",
+    "verification": [
+      "성공과 오류 JSON은 각각 stdout과 stderr에 한 줄 UTF-8로 출력한다.",
+      "한글 create·get·update CLI 흐름과 구조화 오류 흐름을 subprocess가 UTF-8로 읽어 검증했다."
+    ]
+  },
+  "record_type": "failure_knowledge",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T20:36:10Z"
+}

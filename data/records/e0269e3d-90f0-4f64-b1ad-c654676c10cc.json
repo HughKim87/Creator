@@ -1,0 +1,22 @@
+{
+  "content_hash": "sha256:9428da741f07126e0fde8824b620132ca8976444509373aa8299385e2f5e77cd",
+  "created_at": "2026-07-22T20:36:08Z",
+  "id": "e0269e3d-90f0-4f64-b1ad-c654676c10cc",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage07",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "6c52c45f-3047-422a-bc15-0a591fd2b1df",
+    "last_reason": "Stage 07 정보 구조 계약 현재 bytes source",
+    "last_source_ids": [],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "737e4fbb-d8ff-4a00-b952-774ddbc47a19",
+    "target_type": "source"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T20:36:08Z"
+}

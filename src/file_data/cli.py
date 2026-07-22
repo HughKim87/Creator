@@ -20,6 +20,7 @@ from .knowledge import (
     KnowledgeService,
 )
 from .lifecycle import APPROVAL_KINDS, LIFECYCLE_STATES, TARGET_TYPES, LifecycleService
+from .context import ContextService
 
 
 class RecordArgumentParser(argparse.ArgumentParser):
@@ -224,10 +225,54 @@ def _parser() -> RecordArgumentParser:
         "--approval-kind", required=True, choices=["user", "standing_policy"]
     )
     lifecycle_refresh.add_argument("--reason", required=True)
+
+    context_build = commands.add_parser("context-build", help="build one non-persistent context package")
+    context_request = context_build.add_mutually_exclusive_group(required=True)
+    context_request.add_argument("--request-json", type=_payload)
+    context_request.add_argument("--request-stdin", action="store_true")
+    context_search = commands.add_parser("context-search", help="find current records by plain substring")
+    context_search.add_argument("--text", required=True)
+    context_search.add_argument("--type", choices=sorted(TARGET_TYPES), dest="record_type")
+    context_search.add_argument("--scope")
+    context_search.add_argument("--role", choices=sorted(SOURCE_EVIDENCE_ROLES), dest="evidence_role")
+    context_filter = commands.add_parser("context-filter", help="filter lifecycle records by existing fields")
+    context_filter.add_argument("--state", choices=sorted(LIFECYCLE_STATES))
+    context_filter.add_argument("--type", choices=sorted(TARGET_TYPES), dest="record_type")
+    context_filter.add_argument("--scope")
+    context_filter.add_argument("--role", choices=sorted(SOURCE_EVIDENCE_ROLES), dest="evidence_role")
+    context_baseline = commands.add_parser("context-baseline", help="measure exact active document refs")
+    context_baseline.add_argument("--document", action="append", required=True, dest="documents")
     return parser
 
 
 def _run(namespace: argparse.Namespace) -> dict[str, Any]:
+    if namespace.command.startswith("context-"):
+        context = ContextService(namespace.root)
+        if namespace.command == "context-build":
+            return {
+                "package": context.build_package(
+                    _json_input(namespace.request_json, namespace.request_stdin)
+                )
+            }
+        filters = {
+            key: value
+            for key, value in {
+                "record_type": getattr(namespace, "record_type", None),
+                "state": getattr(namespace, "state", None),
+                "scope": getattr(namespace, "scope", None),
+                "evidence_role": getattr(namespace, "evidence_role", None),
+            }.items()
+            if value is not None
+        }
+        if namespace.command == "context-search":
+            matches = context.search(namespace.text, filters)
+            return {"matches": matches, "count": len(matches)}
+        if namespace.command == "context-filter":
+            records = context.filter_records(filters)
+            return {"records": records, "count": len(records)}
+        if namespace.command == "context-baseline":
+            return context.measure_documents(namespace.documents)
+        raise InputContractError(f"Unknown context command: {namespace.command}")
     if namespace.command.startswith("lifecycle-"):
         lifecycle = LifecycleService(namespace.root)
         if namespace.command == "lifecycle-register":

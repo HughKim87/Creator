@@ -1,0 +1,22 @@
+{
+  "content_hash": "sha256:11fdd02a22acd0ab23efa6b7fe8e5ec2f1cc985e1d4ae0a62c5c1413574c5d3b",
+  "created_at": "2026-07-22T20:36:10Z",
+  "id": "4423d241-c8b0-4d9a-87a9-50bd087071d2",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage07",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "e8c65b1c-4d27-4197-be8b-acadc4176b2f",
+    "last_reason": "Stage 07 UTF-8 지식 손상 재발 이력을 반영한 실패 정본 개정",
+    "last_source_ids": [],
+    "revision": 3,
+    "state": "superseded",
+    "superseded_by": "b45a5a8a-135f-4254-9d2b-c429600e4432",
+    "target_id": "23bfee42-22be-450e-97ec-8889cef7cc58",
+    "target_type": "failure_knowledge"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T20:37:28Z"
+}

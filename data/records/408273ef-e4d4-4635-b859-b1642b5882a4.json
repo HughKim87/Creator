@@ -1,0 +1,35 @@
+{
+  "content_hash": "sha256:bcc9c3af86f11ab2aab866136c43de6326303683d9e38c1e09ca46b1d41e0dcb",
+  "created_at": "2026-07-22T20:38:24Z",
+  "id": "408273ef-e4d4-4635-b859-b1642b5882a4",
+  "payload": {
+    "canonical_doc_ref": "failures/windows-text-newline-size-measurement.md",
+    "conditions": [
+      "Windows text I/O, CRLF, Unicode 문자 수, UTF-8 byte 기준선"
+    ],
+    "confirmed_cause": "- Windows text mode로 fixture를 쓸 때 세 개의 LF가 디스크에서 CRLF로 기록됐다.\n- `Path.read_text()`는 universal newline 변환으로 CRLF를 다시 LF로 읽어 실제 디스크 문자 수와 다른 기대값을 만들었다.\n- 서비스는 원본 bytes를 strict UTF-8로 decode해 CR과 LF를 각각 세므로 승인된 실제 저장 크기 계약을 정확히 따르고 있었다.",
+    "document_hash": "sha256:3e40c18c6e1f73885db8e8e1615eeb731c19dea8fc416a0cd0d1949e02bf0835",
+    "prevention": [
+      "줄바꿈 자체가 측정 대상이면 `read_text()`의 universal newline 변환을 기준선으로 사용하지 않는다.",
+      "논리 문장 길이와 실제 저장 문자·byte 크기를 구분하고 측정 계약에 맞는 한쪽만 단언한다.",
+      "Windows·Linux 간 결과를 비교할 때 newline 정규화 여부를 명시한다.",
+      "무결성 hash와 저장 비용은 원본 bytes, 사용자 표시용 논리 텍스트는 필요한 경우 별도 정규화한다."
+    ],
+    "projected_at": "2026-07-22T20:38:24Z",
+    "projected_by": "agent:stage07",
+    "projection_status": "resolved",
+    "resolution": [
+      "저장 비용·무결성 기준선은 text mode로 정규화된 문자열이 아니라 실제 file bytes에서 계산한다."
+    ],
+    "source_id": "7097a2a5-b044-4879-953d-77e6aa45602f",
+    "symptom": "한 문서의 선택 읽기 기준선을 실제 bytes에서 측정한 서비스 결과가 테스트의 `read_text()` 기대값보다 문자와 byte 각각 3만큼 컸다.",
+    "title": "Windows 텍스트 줄바꿈 변환과 실제 크기 측정 불일치",
+    "verification": [
+      "테스트 기대값을 `read_bytes()`의 길이와 그 bytes를 strict UTF-8로 decode한 문자 길이로 바꿨다.",
+      "CRLF fixture의 문자 수와 UTF-8 byte 수가 서비스 결과와 일치하고 전체 컨텍스트 테스트가 성공했다."
+    ]
+  },
+  "record_type": "failure_knowledge",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T20:38:24Z"
+}

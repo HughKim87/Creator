@@ -3,6 +3,7 @@
 - 정본 계획: [Stage 07 — 선택적 읽기·컨텍스트](../../build/stage-07-context-retrieval.md)
 - 현재 상태: [SESSION_HANDOFF](../../../SESSION_HANDOFF.md)
 - 적용 규칙: [단계](../../../rules/stage-work.md) · [문서](../../../rules/document-work.md) · [실패](../../../rules/failure-records.md)
+- 구현 계약: [선택적 읽기·컨텍스트 패키지 계약](../../CONTEXT_PACKAGE_CONTRACT.md)
 
 ## 계획 내 바로가기
 

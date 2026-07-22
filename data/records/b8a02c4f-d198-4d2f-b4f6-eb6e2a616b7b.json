@@ -1,0 +1,18 @@
+{
+  "content_hash": "sha256:3062c6ab7c72f7746439236b093901e18d2c7fa1f1a320cdec713813bff616f1",
+  "created_at": "2026-07-22T20:37:26Z",
+  "id": "b8a02c4f-d198-4d2f-b4f6-eb6e2a616b7b",
+  "payload": {
+    "classification": "constraint",
+    "scope": "project-foundation",
+    "source_ids": [
+      "9f2d950b-eadf-4fb8-91fe-b955049ceef2"
+    ],
+    "statement": "컨텍스트 패키지는 정본이 아니며 같은 정본·요청·설정에서 결정론적으로 재생성한다",
+    "verification_status": "verified",
+    "verified_by": "agent:stage07-standing-policy"
+  },
+  "record_type": "knowledge",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T20:37:26Z"
+}

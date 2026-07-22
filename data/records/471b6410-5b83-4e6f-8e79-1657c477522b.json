@@ -1,0 +1,22 @@
+{
+  "content_hash": "sha256:620012ccefdf6a1c75010deb1563d9764bc480ad7687b0978581b9cd10a652b2",
+  "created_at": "2026-07-22T20:38:25Z",
+  "id": "471b6410-5b83-4e6f-8e79-1657c477522b",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage07",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "c58f6b48-c460-4fe6-8a67-44cfc4a265d1",
+    "last_reason": "Stage 07에서 해결·회귀 검증된 새 실패 지식 등록",
+    "last_source_ids": [],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "7097a2a5-b044-4879-953d-77e6aa45602f",
+    "target_type": "source"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T20:38:25Z"
+}

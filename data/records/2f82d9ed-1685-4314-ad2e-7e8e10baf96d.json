@@ -1,0 +1,24 @@
+{
+  "content_hash": "sha256:d4a4217962a3bf2b59f406f9afcf2b065482bbcfa84a0e590cfd874b9f97c6d3",
+  "created_at": "2026-07-22T20:36:08Z",
+  "id": "2f82d9ed-1685-4314-ad2e-7e8e10baf96d",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage07",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "7535baf8-f8a3-41e7-9a33-b20b755d7fa6",
+    "last_reason": "Stage 07 정보 구조 source 개정 반영 지식",
+    "last_source_ids": [
+      "737e4fbb-d8ff-4a00-b952-774ddbc47a19"
+    ],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "92bba166-73ca-4909-a82c-0ff8fe7d1f2c",
+    "target_type": "knowledge"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T20:36:08Z"
+}

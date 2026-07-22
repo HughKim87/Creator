@@ -1,0 +1,22 @@
+{
+  "content_hash": "sha256:a32e612587a0ddec23efa54aa35606ec4ce0a0893a9c9c118eed831a474c4b75",
+  "created_at": "2026-07-22T20:34:21Z",
+  "id": "0a5f0fee-2f48-4b8c-85c0-89d2f7f99b4c",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage07",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "1e804d29-b28a-4271-9542-a9cc4a26fedb",
+    "last_reason": "인코딩 손상 지식을 정확한 UTF-8 지식으로 대체",
+    "last_source_ids": [],
+    "revision": 3,
+    "state": "superseded",
+    "superseded_by": "b8a02c4f-d198-4d2f-b4f6-eb6e2a616b7b",
+    "target_id": "303f4141-cd17-43ac-8c75-97ca9142829c",
+    "target_type": "knowledge"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T20:37:26Z"
+}

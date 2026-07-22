@@ -1,0 +1,22 @@
+{
+  "content_hash": "sha256:366eff5ecc6bac51399d9c5ac57c4f33d977890343dd4690c687001e7a886b60",
+  "created_at": "2026-07-22T20:34:21Z",
+  "id": "a580e171-62c2-47ff-9f5f-4cbcd9a0a1ce",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:stage07",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "742b9567-16da-4227-8441-8cb403252de7",
+    "last_reason": "Stage 07 ???? ?? ?? source",
+    "last_source_ids": [],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "9f2d950b-eadf-4fb8-91fe-b955049ceef2",
+    "target_type": "source"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T20:34:21Z"
+}
