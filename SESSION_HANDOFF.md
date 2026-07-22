@@ -2,8 +2,8 @@
 
 - 갱신일: 2026-07-23
 - 역할: 채팅 기억 없이 현재 검증 상태와 첫 다음 행동을 재구성하는 단일 활성 상태 정본
-- 현재 단계: Stage 09 도메인 워크플로 확장 — work·통합 검증·97점 자체 검토 완료, 경계 커밋 대기
-- 이전 단계: Stage 08 유지보수·자동화 97/100 완료, 경계 커밋 `73c9435`
+- 현재 단계: Stage 00~09 구축·최종 복기 완료 — 최종 보고 독립 커밋 대기
+- 이전 단계: Stage 09 도메인 워크플로 확장 97/100 완료, 경계 커밋 `825e9ab`
 - 백업 정책: 별도 복제 없음. 활성 프로젝트는 Git 이력을 복구 근거로 사용한다.
 
 ## 1. 시작 순서와 권위
@@ -37,11 +37,11 @@
 
 ### 3.1 활성 구조화 작업 포인터
 
-- work ID: `2e73adee-1cce-4090-8808-9aa1738bd13e`
+- work ID: `763e0e85-d729-43a4-b83f-8b218b5b661d`
 - 상태: `completed`
-- snapshot: `data/records/2e73adee-1cce-4090-8808-9aa1738bd13e.json`
+- snapshot: `data/records/763e0e85-d729-43a4-b83f-8b218b5b661d.json`
 - event 정본: `data/events/work_events.jsonl`
-- snapshot hash: `sha256:c6e8f62346beb88e90e0ffa0eee7b02a8203221a09b46083746dc69674bdb093`
+- snapshot hash: `sha256:c083e8e05bcc8cf9b368c023ce92adfd343863be8269b82453de2d0cd468c7e5`
 
 요청·승인·제외 범위와 완료 근거는 위 구조화 기록이 소유한다. 이 핸드오프는 프로젝트 단계와 첫 다음 행동만 요약한다.
 
@@ -59,7 +59,7 @@
 | Stage 06 | 97/100 완료 | event-first 수명주기, 승인 전이, drift·충돌·대체·폐기, 68개 테스트, 54개 snapshot·66개 event replay. 커밋 `93c516e` |
 | Stage 07 | 97/100 완료 | 직접 선택·실제 필드 필터·current 문자열 후보·비영구 package, 79개 테스트, 대표 평가 3건 96% 이상 절감. 커밋 `a383bbd` |
 | Stage 08 | 97/100 완료 | 수동 read-only scan·fail-closed verify·결정론 inventory·입력 기반 재평가, 누적 87개 테스트. 커밋 `73c9435` |
-| Stage 09 | 97/100 완료 준비 | 별도 유튜브 evidence pack adapter, 실제 domain work·candidate 환류, 누적 95개 테스트. 경계 커밋 대기 |
+| Stage 09 | 97/100 완료 | 별도 유튜브 evidence pack adapter, 실제 domain work·candidate 환류, 누적 95개 테스트. 커밋 `825e9ab` |
 
 Stage 05는 05A 출처 → 05B 지식 → 05C 결정 → 05D 실패 projection 순으로 각각 검증한 뒤 하나의 Stage 05 경계 커밋으로 닫는다.
 
@@ -100,6 +100,7 @@ Stage 05는 05A 출처 → 05B 지식 → 05C 결정 → 05D 실패 projection �
 - Stage 09 승인·환류: 창작 방향은 user `review_required`, knowledge `a77456b1-28e8-4d31-8f51-c04cff89c2db`는 candidate이며 current 검색 0·도메인 입력 exit 2를 확인했다.
 - Stage 09 테스트·구조: 누적 95개 성공, 활성 Markdown 80개·링크 628개·Python 14개·schema 13개, drift·중복·오류 0, inventory 10,521 bytes. 외부 앱은 해당 없음, 사용자 창작 확인은 미수행으로 분리 보고했다.
 - Stage 09 네 가지 확인 모두 통과, 미해결 실패 0건, 자체 점수 97/100. 상세는 `docs/build/stage-09-domain-integration.md#9-사용자-결정-기록`.
+- 최종 복기 보고서는 11개 단계의 결정·구현·실패·점수·경계 커밋·잔여 위험·다음 선택을 교차 정리했다. 최종 보고 변경 후 81개 문서·636개 링크·14개 Python·13개 schema, drift·중복·오류 0, 누적 95개 테스트를 통과했다.
 
 ## 6. 실패 원장
 
@@ -120,6 +121,7 @@ Stage 05는 05A 출처 → 05B 지식 → 05C 결정 → 05D 실패 projection �
 - Stage 08 work 완료 전이에 `next_action`을 함께 보낸 1회 계약 실패는 새 실패 정본에 보존했다. 실패 전후 hash 불변을 확인하고 `next_action`을 제거한 전이로 work를 `completed` 상태로 닫았다.
 - Stage 09의 중첩 미추적 Markdown inventory 누락과 예상 native stderr 조기 중단은 기존 Windows 검증 명령 사례에 병합했다. `--untracked-files=all`과 exit code 직접 판정으로 각각 회귀 검증했다.
 - Stage 09의 별도 `src/youtube_domain` AST 검증 누락은 구현 폴더·정보 구조 드리프트 사례에 병합하고 Python 검증을 `src/**/*.py`로 일반화했다.
+- 최종 보고 교차검사기의 literal `Stage 01.5` 가정은 기존 Windows 검증 명령 사례에 병합했다. 실제 표 행 pattern과 단계 점수 행 11개 count로 보정해 성공했다.
 - 모든 장기 실패 지식의 탐색 정본은 `failures/README.md`다.
 
 ## 7. 활성 위험
@@ -140,10 +142,10 @@ Stage 05는 05A 출처 → 05B 지식 → 05C 결정 → 05D 실패 projection �
 
 첫 미착수 행동:
 
-1. Stage 09 최종 문서와 work hash를 포함한 scan·verify를 재확인한다.
-2. Stage 09 변경을 스테이징해 캐시 검증 후 경계 커밋한다.
-3. 커밋 존재·worktree clean을 확인한 뒤 Stage 00~09 전체 복기 최종 보고서를 작성한다.
+1. 최종 보고 변경을 스테이징해 캐시 검증 후 독립 커밋한다.
+2. 커밋 존재와 worktree clean을 확인한다.
+3. 새 기능·단계를 자동 시작하지 않고 사용자의 다음 선택을 기다린다.
 
 ## 9. 다음 세션 시작 프롬프트
 
-> `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 새 세션 시작 시 한 번 읽고 현재 행동과 일치하는 `rules/*.md`만 선택하라. Stage 08 커밋은 `73c9435`이고 Stage 09 work `2e73adee-1cce-4090-8808-9aa1738bd13e`는 `completed`·97점 자체 검토를 마쳐 경계 커밋 대기다. 최종 scan·verify와 캐시 검증 후 Stage 09을 커밋하고 worktree clean을 확인한 뒤 Stage 00~09 전체 복기 보고서를 작성하라. 기능·검증·네 가지 확인·실패 지식·100점 평가·단계별 커밋을 생략하지 말고, 3회 실패 시 기록 후 방법을 바꿔 승인 범위 안에서 재개하라. 보호 데이터·설치·외부 게시·삭제·이동·실질적 범위 확대는 자동 승인 대상이 아니다.
+> `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 새 세션 시작 시 한 번 읽어라. Stage 09 커밋은 `825e9ab`이고 최종 복기 보고서는 `reports/2026-07-23_stage00-09_프로젝트_구축_최종_복기_보고서.md`, work `763e0e85-d729-43a4-b83f-8b218b5b661d`는 `completed`다. Stage 00~09 구축은 완료됐으므로 새 기능·단계를 자동 시작하지 말고 사용자의 다음 선택을 기다려라. 보호 데이터·설치·외부 게시·삭제·이동·실질적 범위 확대는 새 승인 없이는 수행하지 않는다.

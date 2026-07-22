@@ -26,6 +26,7 @@
 - Stage 08 컨텍스트 평가 사전 검색에서 `context-search`의 실제 옵션을 확인하지 않고 내부 개념명에 가까운 `--query`를 CLI 인수로 가정했다.
 - Stage 09 첫 도메인 문서 추가 뒤 maintenance inventory가 Git의 기본 untracked 디렉터리 축약을 파일 목록으로 오인해 중첩된 새 Markdown을 놓쳤다.
 - Stage 09 candidate 거부 경로 검증에서 예상된 native stderr까지 `$ErrorActionPreference='Stop'`이 PowerShell 오류로 승격해 의도한 exit code 단언 전에 스크립트를 중단했다.
+- 최종 복기 보고서 교차검사에서 단계 표의 `01.5` 행을 구조로 세지 않고 literal `Stage 01.5` 문구가 반드시 존재한다고 가정했다.
 
 ## 실패·해결 이력
 
@@ -53,6 +54,7 @@
 | Stage 08 컨텍스트 평가 사전 검색 | `context-search --query`가 필수 `--text` 누락으로 입력 계약 오류 반환 | 별도 조회 1 | `context-search --help`의 공개 인수를 확인하고 `--text`로 재실행해 새 지식·실패 지식이 각각 정확히 1건 검색됨을 검증 |
 | Stage 09 중첩 도메인 문서 inventory | 기본 `git status --short`가 `?? docs/domain/`만 반환해 새 계약 파일을 개별 경로로 수집하지 못하고 오래된 inventory를 일치로 오판 | 별도 게이트 1 | `--untracked-files=all`을 명시하고 중첩 미추적 Markdown 회귀를 추가해 불일치 탐지→재생성→일치 검증 |
 | Stage 09 knowledge candidate 경계 검사 | noncurrent candidate의 CLI exit 2·구조화 stderr는 정상인데 전역 `ErrorActionPreference=Stop` 때문에 검증 스크립트 자체가 조기 중단 | 별도 검사 1 | 예상 비성공 구간에서는 native stderr와 `$LASTEXITCODE`를 직접 수집해 exit 2와 원인 문구를 단언하고 성공 |
+| Stage 00~09 최종 보고 교차검사 | 표에 `| 01.5 | 98 |` 행이 있지만 literal `Stage 01.5`가 없다는 이유로 검사기만 실패 | 별도 검사 1 | 실제 Markdown 표 행 정규식과 단계 점수 행 11개 count로 보정해 교차검사 성공 |
 
 ## 해결과 검증
 
@@ -65,6 +67,7 @@
 - CLI 하위 명령의 자연어 개념명과 공개 옵션명을 동일하다고 가정하지 않고, 처음 호출하기 전에 해당 하위 명령의 `--help`를 확인한다.
 - Git status를 파일 inventory로 사용할 때는 untracked 디렉터리 축약 정책을 기본값에 맡기지 않고 `--untracked-files=all`을 명시한다.
 - 실패 경로를 검증할 때 예상된 stderr를 예외로 취급하지 말고 native exit code·구조화 payload를 먼저 수집한 뒤 기대한 비성공인지 판정한다.
+- 구조화 표의 의미를 검증할 때 임의의 주변 문구를 요구하지 말고 header와 행 pattern·개수를 직접 단언한다.
 
 ## 재사용 규칙
 
