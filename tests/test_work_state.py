@@ -135,6 +135,37 @@ class WorkStateServiceTests(unittest.TestCase):
             rebuilt = service.rebuild_snapshot(WORK_ID)
             self.assertEqual(rebuilt["payload"], completed["payload"])
 
+    def test_in_progress_checkpoint_updates_progress_without_closing_work(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="stage04-progress-") as raw_root:
+            service = self.make_service(Path(raw_root))
+            requested = self.create(service)
+            started = service.transition(
+                WORK_ID,
+                expected_state_hash=requested["content_hash"],
+                actor="agent",
+                action="start",
+                outcome="success",
+                to_status="in_progress",
+                next_action="첫 소단계",
+                timestamp=datetime(2026, 7, 23, 3, 1, tzinfo=UTC),
+            )
+            checkpoint = service.transition(
+                WORK_ID,
+                expected_state_hash=started["content_hash"],
+                actor="agent",
+                action="substage checkpoint",
+                outcome="success",
+                to_status="in_progress",
+                completed_items=["첫 소단계"],
+                next_action="다음 소단계",
+                evidence_refs=["test://substage"],
+                timestamp=datetime(2026, 7, 23, 3, 2, tzinfo=UTC),
+            )
+            self.assertEqual(checkpoint["payload"]["status"], "in_progress")
+            self.assertEqual(checkpoint["payload"]["completed_items"], ["첫 소단계"])
+            self.assertEqual(checkpoint["payload"]["next_action"], "다음 소단계")
+            self.assertEqual(service.rebuild_snapshot(WORK_ID)["payload"], checkpoint["payload"])
+
     def test_blocked_state_requires_blocker(self) -> None:
         with tempfile.TemporaryDirectory(prefix="stage04-blocked-") as raw_root:
             service = self.make_service(Path(raw_root))

@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:7946d0657a831dfdb133b31a0b46dc33b25f426e48bcf6f8f3dba926278a5c54",
+  "created_at": "2026-07-22T19:41:24Z",
+  "id": "34da1298-3b04-4254-a9f8-913167f6a193",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "failures/stored-type-approval-bypass.md",
+    "observed_at": "2026-07-22T19:41:24Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:a3e048b4bef97929335fb357f999ba20be7e20c41878e8ed59c6c00935dbb468"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:41:24Z"
+}

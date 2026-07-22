@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:bc062e87ffbf6cb45c4fdbec130a737165294d131ff7ba9a3dd3d4c9397c8e30",
+  "created_at": "2026-07-22T19:30:10Z",
+  "id": "51c05c00-1c72-4f66-91f6-c763d7f3050c",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "request://stage05-recommended-auto-selection",
+    "observed_at": "2026-07-22T19:30:10Z",
+    "source_kind": "user_statement",
+    "verification_status": "observed",
+    "version_or_hash": null
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:30:10Z"
+}

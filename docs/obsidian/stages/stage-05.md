@@ -1,6 +1,10 @@
 # Stage 05 보기
 
 - 정본 계획: [Stage 05 — 지식 유형 순차 도입](../../build/stage-05-knowledge-types.md)
+- 구현 계약: [지식 유형 계약과 사용법](../../KNOWLEDGE_TYPES_CONTRACT.md)
+- 구조 스키마: [`source`](../../../schemas/source-payload-v1.schema.json) · [`knowledge`](../../../schemas/knowledge-payload-v1.schema.json) · [`decision`](../../../schemas/decision-payload-v1.schema.json) · [`failure_knowledge`](../../../schemas/failure-knowledge-payload-v1.schema.json)
+- 실행 구현: [`KnowledgeService`](../../../src/file_data/knowledge.py)
+- 회귀 검증: [`tests/test_knowledge_types.py`](../../../tests/test_knowledge_types.py)
 - 현재 상태: [SESSION_HANDOFF](../../../SESSION_HANDOFF.md)
 - 적용 규칙: [단계](../../../rules/stage-work.md) · [문서](../../../rules/document-work.md) · [실패](../../../rules/failure-records.md)
 

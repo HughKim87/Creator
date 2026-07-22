@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:b97145580374f38b2be92d5a4660052691c3736a49c1849d13df626bb715ac65",
+  "created_at": "2026-07-22T19:41:25Z",
+  "id": "a59e4133-4a84-4785-8a91-77b4b980d8f2",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "failures/windows-cli-utf8-stdio.md",
+    "observed_at": "2026-07-22T19:41:25Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:2899b7490eaff98388888a9b0acf13b35c14fc526ad4e4800c00c5cefb0d2ab7"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:41:25Z"
+}

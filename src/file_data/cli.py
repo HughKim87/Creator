@@ -11,6 +11,14 @@ from typing import Any
 from .record import RecordValidationError, UnsafePathError
 from .store import InputContractError, RecordIOError, RecordStore
 from .work_state import EVENT_OUTCOMES, WORK_STATUSES, WorkStateService
+from .knowledge import (
+    KNOWLEDGE_CLASSES,
+    KNOWLEDGE_VERIFICATION_STATUSES,
+    SOURCE_EVIDENCE_ROLES,
+    SOURCE_KINDS,
+    SOURCE_VERIFICATION_STATUSES,
+    KnowledgeService,
+)
 
 
 class RecordArgumentParser(argparse.ArgumentParser):
@@ -116,10 +124,124 @@ def _parser() -> RecordArgumentParser:
 
     work_rebuild = commands.add_parser("work-rebuild", help="rebuild a work snapshot from canonical events")
     work_rebuild.add_argument("--id", required=True, dest="work_id")
+
+    source_create = commands.add_parser("source-create", help="create one explicit source record")
+    source_create.add_argument("--kind", required=True, choices=sorted(SOURCE_KINDS), dest="source_kind")
+    source_create.add_argument("--locator", required=True)
+    source_create.add_argument("--role", required=True, choices=sorted(SOURCE_EVIDENCE_ROLES), dest="evidence_role")
+    source_create.add_argument("--verification-status", choices=sorted(SOURCE_VERIFICATION_STATUSES))
+    source_create.add_argument("--version-or-hash")
+    source_create.add_argument("--id", dest="record_id")
+
+    source_show = commands.add_parser("source-show", help="read and verify one source record")
+    source_show.add_argument("--id", required=True, dest="record_id")
+    commands.add_parser("source-list", help="list and verify source records")
+    source_verify = commands.add_parser("source-verify", help="verify one source locator and integrity")
+    source_verify.add_argument("--id", required=True, dest="record_id")
+
+    knowledge_create = commands.add_parser("knowledge-create", help="create one explicit knowledge claim")
+    knowledge_create.add_argument("--statement", required=True)
+    knowledge_create.add_argument("--classification", required=True, choices=sorted(KNOWLEDGE_CLASSES))
+    knowledge_create.add_argument("--scope", required=True)
+    knowledge_create.add_argument("--source-id", action="append", required=True, dest="source_ids")
+    knowledge_create.add_argument(
+        "--verification-status", required=True, choices=sorted(KNOWLEDGE_VERIFICATION_STATUSES)
+    )
+    knowledge_create.add_argument("--verified-by")
+    knowledge_create.add_argument("--id", dest="record_id")
+    knowledge_show = commands.add_parser("knowledge-show", help="read one validated knowledge claim")
+    knowledge_show.add_argument("--id", required=True, dest="record_id")
+    commands.add_parser("knowledge-list", help="list validated knowledge claims")
+
+    decision_create = commands.add_parser("decision-create", help="create one explicit decision record")
+    decision_input = decision_create.add_mutually_exclusive_group(required=True)
+    decision_input.add_argument("--payload-json", type=_payload)
+    decision_input.add_argument("--payload-stdin", action="store_true")
+    decision_create.add_argument("--id", dest="record_id")
+    decision_show = commands.add_parser("decision-show", help="read one validated decision record")
+    decision_show.add_argument("--id", required=True, dest="record_id")
+    commands.add_parser("decision-list", help="list validated decision records")
+
+    failure_import = commands.add_parser("failure-import", help="project one resolved failure Markdown document")
+    failure_import.add_argument("--doc", required=True, dest="canonical_doc_ref")
+    failure_import.add_argument("--projected-by", required=True)
+    failure_import.add_argument("--id", dest="record_id")
+    failure_import.add_argument("--source-id")
+    failure_show = commands.add_parser("failure-show", help="read one hash-verified failure projection")
+    failure_show.add_argument("--id", required=True, dest="record_id")
+    commands.add_parser("failure-list", help="list hash-verified failure projections")
     return parser
 
 
 def _run(namespace: argparse.Namespace) -> dict[str, Any]:
+    if namespace.command.startswith("failure-"):
+        knowledge = KnowledgeService(namespace.root)
+        if namespace.command == "failure-import":
+            return knowledge.import_failure_knowledge(
+                namespace.canonical_doc_ref,
+                projected_by=namespace.projected_by,
+                record_id=namespace.record_id,
+                source_id=namespace.source_id,
+            )
+        if namespace.command == "failure-show":
+            return {"record": knowledge.get_failure_knowledge(namespace.record_id)}
+        if namespace.command == "failure-list":
+            records = knowledge.list_failure_knowledge()
+            return {"records": records, "count": len(records)}
+        raise InputContractError(f"Unknown failure command: {namespace.command}")
+    if namespace.command.startswith("decision-"):
+        knowledge = KnowledgeService(namespace.root)
+        if namespace.command == "decision-create":
+            record = knowledge.create_decision(
+                _json_input(namespace.payload_json, namespace.payload_stdin),
+                record_id=namespace.record_id,
+            )
+            return {"record": record, "path": f"data/records/{record['id']}.json"}
+        if namespace.command == "decision-show":
+            return {"record": knowledge.get_decision(namespace.record_id)}
+        if namespace.command == "decision-list":
+            records = knowledge.list_decisions()
+            return {"records": records, "count": len(records)}
+        raise InputContractError(f"Unknown decision command: {namespace.command}")
+    if namespace.command.startswith("knowledge-"):
+        knowledge = KnowledgeService(namespace.root)
+        if namespace.command == "knowledge-create":
+            record = knowledge.create_knowledge(
+                statement=namespace.statement,
+                classification=namespace.classification,
+                scope=namespace.scope,
+                source_ids=namespace.source_ids,
+                verification_status=namespace.verification_status,
+                verified_by=namespace.verified_by,
+                record_id=namespace.record_id,
+            )
+            return {"record": record, "path": f"data/records/{record['id']}.json"}
+        if namespace.command == "knowledge-show":
+            return {"record": knowledge.get_knowledge(namespace.record_id)}
+        if namespace.command == "knowledge-list":
+            records = knowledge.list_knowledge()
+            return {"records": records, "count": len(records)}
+        raise InputContractError(f"Unknown knowledge command: {namespace.command}")
+    if namespace.command.startswith("source-"):
+        knowledge = KnowledgeService(namespace.root)
+        if namespace.command == "source-create":
+            record = knowledge.create_source(
+                source_kind=namespace.source_kind,
+                locator=namespace.locator,
+                evidence_role=namespace.evidence_role,
+                verification_status=namespace.verification_status,
+                version_or_hash=namespace.version_or_hash,
+                record_id=namespace.record_id,
+            )
+            return {"record": record, "path": f"data/records/{record['id']}.json"}
+        if namespace.command == "source-show":
+            return {"record": knowledge.get_source(namespace.record_id)}
+        if namespace.command == "source-list":
+            records = knowledge.list_sources()
+            return {"records": records, "count": len(records)}
+        if namespace.command == "source-verify":
+            return knowledge.verify_source(namespace.record_id)
+        raise InputContractError(f"Unknown source command: {namespace.command}")
     if namespace.command.startswith("work-"):
         work = WorkStateService(namespace.root)
         if namespace.command == "work-create":

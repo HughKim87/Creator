@@ -3,7 +3,7 @@
 - 상태: 해결·회귀 검증 완료
 - 최초 확인: 2026-07-23 Stage 04 첫 통합 테스트
 - 마지막 검증: 2026-07-23
-- 적용 범위: 작업 event, snapshot `updated_at`, 고정 fixture 시각, append 전 검증
+- 적용 범위: 작업 event, 결정 기록, snapshot `updated_at`, 고정 fixture 시각, 쓰기 전 검증
 
 ## 증상
 
@@ -19,6 +19,7 @@ event 구조와 상태 전이는 append 전에 검사했지만 새 event 시각�
 |---|---|---:|---|
 | Stage 04 첫 31개 테스트 | blocked 전이 event append 후 snapshot 시간 순서 검증 실패 | 1 | 전이 시각을 UTC 초 정밀도로 정규화하고 현재 `updated_at`보다 이르면 append 전에 거부 |
 | Stage 04 입력 선검증 보강 테스트 | 고정 생성 시각 뒤의 호출에 실행 시점 기본값을 사용해 기대한 형식 오류보다 시각 회귀 오류가 먼저 발생 | 1 | 후속 호출 시각을 `03:01Z`로 고정하고 기대 예외도 `InputContractError`로 좁혀 33개 테스트 통과 |
+| Stage 05 결정 시각 순서 보강 | KST 현재 날짜를 UTC 고정값으로 사용한 fixture가 실제 record 생성 시각보다 미래여서 library·CLI 결정 테스트 2개 실패 | 1 | 일반 fixture 결정 시각을 명확한 과거 UTC로 바꾸고 미래 결정 거부 사례는 별도 2099 fixture로 유지 |
 
 ## 해결과 검증
 
@@ -31,6 +32,7 @@ event 구조와 상태 전이는 append 전에 검사했지만 새 event 시각�
 - event 정본을 먼저 쓰는 구조에서는 projection만이 아니라 event 자체의 시간 단조성을 append 전에 검사한다.
 - 고정 시각 fixture와 실제 clock을 섞을 때 순서를 명시한다.
 - 고정 시각으로 snapshot을 만드는 테스트의 후속 event에도 명시적 시각을 사용해 실행 시각 의존성을 없앤다.
+- 현재 clock과 비교하는 일반 fixture는 명확한 과거 시각을 사용하고, 시간 순서 실패 검증만 의도적인 미래 값을 사용한다.
 - projection 실패로 뒤늦게 발견할 수 있는 조건은 가능한 한 원장 쓰기 전 계약으로 승격한다.
 
 ## 근거

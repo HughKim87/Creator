@@ -18,6 +18,7 @@ CLI가 한글 payload를 포함한 성공 JSON을 출력했지만 Windows 자식
 | 시점·문맥 | 시도·결과 | 최고 연속 횟수 | 해결·검증 |
 |---|---|---:|---|
 | Stage 03 첫 24개 테스트 | CLI 한글 성공 흐름에서 CP949 bytes를 UTF-8로 읽어 `UnicodeDecodeError` | 1 | CLI 시작 시 stdout·stderr를 UTF-8 strict와 LF로 재설정하고 전체 24개 테스트 성공 |
+| Stage 05 실패 문서 절 분석 | PowerShell here-string의 한글 정규식이 native Python stdin에서 `?`로 변형돼 정규식 컴파일 실패 | 1 | 파이프 전 `$OutputEncoding`을 UTF-8 without BOM으로 지정하고 같은 20개 문서 분석 성공 |
 
 ## 해결과 검증
 
@@ -29,6 +30,7 @@ CLI가 한글 payload를 포함한 성공 JSON을 출력했지만 Windows 자식
 
 - 파일 UTF-8 계약과 CLI pipe 인코딩 계약을 별도로 검증한다.
 - Windows subprocess 통합 테스트는 ASCII만 사용하지 말고 실제 Unicode 값을 포함한다.
+- PowerShell에서 한글 스크립트·JSON을 native process stdin으로 보낼 때는 `$OutputEncoding`도 UTF-8로 명시한다.
 - JSON을 사람이 읽는 문자로 출력하면 stdout·stderr 인코딩을 운영체제 기본값에 맡기지 않는다.
 
 ## 근거

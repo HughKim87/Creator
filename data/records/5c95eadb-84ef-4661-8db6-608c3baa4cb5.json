@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:0aec4c76b2aad52ad08571df2d1aafc711e28b51f4c1582d74b62cc1b84f9da9",
+  "created_at": "2026-07-22T19:41:23Z",
+  "id": "5c95eadb-84ef-4661-8db6-608c3baa4cb5",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "failures/historical-scope-expansion.md",
+    "observed_at": "2026-07-22T19:41:23Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:03960470eb3219674a494f74b5e85398c0f25eccaee7a3d8b8e4f60c0b9993da"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:41:23Z"
+}

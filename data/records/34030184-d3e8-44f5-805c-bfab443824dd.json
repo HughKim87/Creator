@@ -1,0 +1,35 @@
+{
+  "content_hash": "sha256:e425b62aae9c4f08a4775262bc51167c47e0256b142f1225b7523aebe9c7bdad",
+  "created_at": "2026-07-22T19:41:23Z",
+  "id": "34030184-d3e8-44f5-805c-bfab443824dd",
+  "payload": {
+    "canonical_doc_ref": "failures/obsidian-protected-path-link-leakage.md",
+    "conditions": [
+      "Obsidian 볼트, 활성 Markdown, `backup/`·`inputs/`·`outputs/` 보호 경계"
+    ],
+    "confirmed_cause": "폴더 제외 설정과 문서 연결 그래프를 별개로 검증하지 않았다. 제외 폴더의 파일 본문은 읽히지 않더라도 활성 문서의 링크가 보호 경로 이름과 노드를 검토 화면에 노출할 수 있었다.",
+    "document_hash": "sha256:5d6d9630886a0741f88be0a25cbb8bea01b23065a750537098f277cbd4b00a40",
+    "prevention": [
+      "보호 경계 검증은 앱 제외 설정, 활성 문서 링크, 전체 지도 수록 여부를 각각 확인한다.",
+      "역사 출처를 남겨야 하면 보호 파일을 클릭 가능한 링크로 만들지 말고 비링크 코드 경로로 표시한다.",
+      "보호 폴더의 내용을 읽지 않고도 활성 문서가 그 경로를 연결하는지는 검사할 수 있다."
+    ],
+    "projected_at": "2026-07-22T19:41:23Z",
+    "projected_by": "agent:stage05d-gate",
+    "projection_status": "resolved",
+    "resolution": [
+      "보고서의 역사 출처명과 프로젝트 상대 경로는 보존했다."
+    ],
+    "source_id": "247158de-00c8-443b-a220-06cd4b40db13",
+    "symptom": "Obsidian 제외 필터는 보호 폴더를 색인하지 않도록 설정됐지만, 활성 시점 보고서에 `backup/` 내부 파일로 향하는 클릭 가능한 Markdown 링크 26개가 남아 있었다.",
+    "title": "Obsidian 보호 경로 링크 노출",
+    "verification": [
+      "클릭 가능한 링크만 코드 경로 표기로 바꿔 보고서의 시점 증거 내용은 유지했다.",
+      "활성 Markdown 전체의 링크를 다시 해석해 `backup/`, `inputs/`, `outputs/`로 향하는 링크가 0개임을 확인했다.",
+      "`.obsidian/app.json`의 다섯 제외 필터와 문서 링크 검사를 서로 다른 단언으로 유지했다."
+    ]
+  },
+  "record_type": "failure_knowledge",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:41:23Z"
+}

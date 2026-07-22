@@ -11,6 +11,7 @@
 - When the same objective reaches three consecutive failures, preserve the peak count and failure evidence, change the method based on the confirmed cause, and resume without a separate approval when the work remains inside the user's already authorized scope.
 - A failure becomes durable knowledge only after its cause and resolution are confirmed by a successful verification. Do not label a workaround or an unverified guess as resolved.
 - Store resolved failure knowledge under `failures/`. The originating stage or task is provenance, not the owner of the knowledge.
+- Keep each `failures/*.md` case as the human-readable canonical body. A Stage 05 `failure_knowledge` record is only a hash-pinned machine projection and must never silently replace or override its Markdown owner.
 - Search `failures/README.md` and the relevant case titles before creating a file. When the same root cause recurs, update the existing case with the new occurrence and verification instead of creating a duplicate.
 - Each case must state the symptom, context, failed attempts and peak consecutive count when known, confirmed cause, resolution, verification level and evidence, prevention or reuse rule, recurrence history, and safe source references.
 - Do not copy secrets, protected `inputs/` or `outputs/` content, user originals, or unnecessary raw output into a failure case. Record only the minimum safe evidence needed to reproduce the reasoning.
@@ -19,3 +20,4 @@
 - A stage cannot receive `완료 준비` while a resolved failure is omitted, a duplicate root-cause case is knowingly created, or an unresolved failure is described as solved.
 - Repeated failure never waives safety or authority boundaries. Pause only when the next meaningful action needs new permission, protected data, installation, external publication, or a material scope change.
 - After reconciliation, update the navigation index in `failures/README.md`, verify local links and strict UTF-8, and link the stage closure evidence to the index rather than copying case bodies into stage documents.
+- When a projected failure Markdown file changes, treat its existing structured projection as stale immediately. Do not read it as valid until an approved lifecycle operation revalidates or replaces it.

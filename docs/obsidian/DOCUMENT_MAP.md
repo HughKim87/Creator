@@ -19,6 +19,7 @@
 - [파일 데이터 저장 계약](../FILE_DATA_CONTRACT.md) — 권위 정본 · 계약
 - [공통 기록 I/O 계약](../RECORD_IO_CONTRACT.md) — 권위 정본 · 계약·사용 가이드
 - [작업 기록·현재 상태 계약](../WORK_STATE_CONTRACT.md) — 권위 정본 · 계약
+- [지식 유형 계약과 사용법](../KNOWLEDGE_TYPES_CONTRACT.md) — 권위 정본 · 계약·사용 가이드
 - [마스터 구축 계획](../build/MASTER_BUILD_PLAN.md) — 권위 정본 · 단계 계획
 - [Stage 00](../build/stage-00-project-kernel.md)
 - [Stage 01](../build/stage-01-information-architecture.md)
@@ -63,6 +64,8 @@
 - [구현 폴더와 정보 구조 계약의 드리프트](../../failures/structure-contract-folder-drift.md)
 - [작업 event 시각의 snapshot 역행](../../failures/work-event-time-regression.md)
 - [PowerShell 외부 프로세스 JSON 인수의 따옴표 손실](../../failures/powershell-native-json-argument-quoting.md)
+- [진행 중 작업의 체크포인트 전이 부재](../../failures/in-progress-checkpoint-transition-gap.md)
+- [변경된 로컬 출처 한 건의 전체 목록 실패 전파](../../failures/mutable-local-source-list-fanout.md)
 
 ## 시점 보고서
 

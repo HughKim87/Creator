@@ -1,0 +1,34 @@
+{
+  "content_hash": "sha256:147f0b74843cd8e1cf9ba1132aebf9403c0b772d1f5d1b28f9d344ba32f9bc1e",
+  "created_at": "2026-07-22T19:41:23Z",
+  "id": "f5802001-80ac-40d6-97f7-ccd5ed88b557",
+  "payload": {
+    "canonical_doc_ref": "failures/historical-scope-expansion.md",
+    "conditions": [
+      "`backup/` 조사, 과거 지식 선별, 활성 프로젝트 이관"
+    ],
+    "confirmed_cause": "역사 증거와 활성 실행 지시의 역할을 분리하지 않았고, 보존 가치가 있다는 사실을 현재 작업에 모두 필요하다는 의미로 해석했다.",
+    "document_hash": "sha256:03960470eb3219674a494f74b5e85398c0f25eccaee7a3d8b8e4f60c0b9993da",
+    "prevention": [
+      "역사 자료를 읽기 전에 확인할 사실과 필요한 정확한 범위를 먼저 정한다.",
+      "읽은 자료는 채택·제외·보류로 나누되 활성 프로젝트로 자동 이관하지 않는다.",
+      "현재 실행에 필요한 정본은 활성 경로에 새로 명시하고 역사 경로를 직접 의존하지 않는다."
+    ],
+    "projected_at": "2026-07-22T19:41:23Z",
+    "projected_by": "agent:stage05d-gate",
+    "projection_status": "resolved",
+    "resolution": [
+      "`backup/`은 활성 지시나 런타임 의존성이 아닌 역사 증거로 분리했다."
+    ],
+    "source_id": "5c95eadb-84ef-4661-8db6-608c3baa4cb5",
+    "symptom": "현재 목적에 필요한 근거만 확인해야 하는 상황에서 과거 자료 전체를 읽거나 활성 프로젝트로 이관해야 하는 것으로 범위가 확대됐다.",
+    "title": "역사 지식 범위의 무제한 확대",
+    "verification": [
+      "정확한 사용자 승인 목적에 필요한 자료만 좁게 읽도록 상시 규칙을 두었다.",
+      "Stage 00 검증에서 `backup/` 변경 0건과 활성 시작 경로의 백업 의존성 0건을 확인했다."
+    ]
+  },
+  "record_type": "failure_knowledge",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:41:23Z"
+}

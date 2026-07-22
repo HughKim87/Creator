@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:dc0baa0345b9589801f879eacdbb143dbee373b42fd6de2eb6486cd2d2ca8db2",
+  "created_at": "2026-07-22T19:41:23Z",
+  "id": "8cc7c2e4-553d-4f84-918d-763a6e11cdd0",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "failures/post-write-verification-lock-window.md",
+    "observed_at": "2026-07-22T19:41:23Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:ba39ff6de6c5e7b9773fa7e1319a6956bab22f666de60fb3fc68d35f8c281f53"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:41:23Z"
+}

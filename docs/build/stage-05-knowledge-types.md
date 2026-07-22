@@ -3,7 +3,7 @@
 - 문서 유형: 단계 설계·구현 계획
 - 목적: 작업 기록과 분리된 장기 재사용 데이터를 출처, 지식, 결정 순으로 도입하고, 기존 Markdown 실패 지식을 승인된 공통 데이터 계약으로 구조화한다.
 - 선행 단계: [Stage 04 — 작업 기록·현재 상태](stage-04-work-state.md)
-- 상태: 계획 작성 완료, 사용자 결정 및 구현 미착수
+- 상태: 97/100 완료 준비, 네 소단계 독립 게이트 통과·경계 커밋 대기
 - 다음 단계: [Stage 06 — 지식 수명주기](stage-06-knowledge-lifecycle.md)
 
 ## 1. 단계 목표
@@ -128,34 +128,70 @@ Stage 00에서 도입한 `failures/` Markdown 사례를 새 정본과 중복시�
 - 실제 작업 기록 전체를 지식으로 복제하지 않는다.
 - 사용자가 05단계 결과를 확인하고 완료를 승인한다.
 
-## 9. 사용자 결정 필요
+## 9. 사용자 결정 기록
 
-05A 착수 전에:
+사용자의 권장안 자동 선택과 각 소단계 성공 후 전환 상시 승인에 따라 다음을 적용했다.
 
-1. 허용할 출처 유형과 권위 수준은 무엇인가?
-2. 로컬 파일의 무결성을 어떤 방식으로 확인할 것인가?
+| 소단계·항목 | 채택한 권장안 | 채택 이유·경계 |
+|---|---|---|
+| 05A 출처 종류 | local document/data, command result, web page, user statement | 현재 필요한 중립 증거 역할만 표현하고 도메인 유형 제외 |
+| 05A 확인·역할 | observed/verified/unavailable, primary/supporting/contextual | 권위 점수 대신 관찰 상태와 증거 역할을 분리 |
+| 05A 로컬 무결성 | 프로젝트 상대 경로와 SHA-256 | 원문 복사 없이 변경·소실 탐지, 보호 경로 거부 |
+| 05B 첫 지식 범위 | 프로젝트 기반의 재사용 가능한 사실·추론·절차·제약 | 영상 도메인·작업 전문·모든 event 지식화 제외 |
+| 05B 항목·상태 | 한 줄 한 주장, candidate/verified | 복수 주장을 막고 검증 주체가 있는 항목만 verified |
+| 05B 승인 | 현재 성공 게이트 권한 actor가 명시적 생성 | 자동 추출·자동 승격 없음 |
+| 05C 정본 | common-record v1의 `decision` payload | 문제부터 승인·시각까지 한 record에서 재구성 |
+| 05C 사용자 승인 | 안전 경계·범위·비용·외부 변경과 사용자 정책 결정 | requires flag가 참이면 user/standing policy만 허용 |
+| 05D 정본 | `failures/*.md` Markdown 유지 | 사용자가 요구한 별도 실패 문서와 가독성 보존 |
+| 05D 구조화 | 정본 경로·SHA-256에 고정된 `failure_knowledge` projection | hash·필드 불일치 시 거부해 복수 정본 위험 제한 |
+| 05D 승격 조건 | 상태에 해결 포함, 필수 네 절과 해결·검증 목록 존재 | 원인 미확인·임시 해결은 projection하지 않음 |
 
-05B 착수 전에:
+### 9.1 소단계별 구현·검증 결과
 
-3. 첫 지식 범위와 보존 목적은 무엇인가?
-4. 사실·추론·절차·제약 외 추가 분류가 필요한가?
-5. 지식 후보와 검증 지식을 누가 구분·승인하는가?
+| 소단계 | 판정 | 실제 결과·근거 | 다음 유형 전환 조건 |
+|---|---|---|---|
+| 05A 출처 | 통과 | source 계약·스키마·service·CLI, 로컬 SHA-256·보호 경로·변조 검출, 누적 42개 테스트와 실제 source 생성 | create/show/list/explicit verify 확인 뒤 05B 전환 |
+| 05B 지식 | 통과 | 한 줄 한 주장, 4분류, candidate/verified, source 존재·상태 확인, 누적 47개 테스트와 실제 verified constraint 생성 | source 역추적·승인 주체 확인 뒤 05C 전환 |
+| 05C 결정 | 통과 | 문제·요구·선택지·선택·이유·영향·source·승인·시각, 누적 51개 테스트와 실제 standing-policy 결정 생성 | 사용자 필수 승인 경계·선택지 정합성 확인 뒤 05D 전환 |
+| 05D 실패 | 통과 | Markdown 정본 parser, source·문서 hash·필드 재대조, 누적 55개 테스트와 해결 사례 21건 전수 projection | 21건 failure-list hash 검증 뒤 전체 게이트 진행 |
 
-05C 착수 전에:
+실제 예시 record는 source 23건, knowledge 1건, decision 1건, failure_knowledge 21건이다. 첫 05A 로컬 source가 같은 단계 문서 갱신으로 drift한 실제 사례는 역사 조회와 현재 verify의 책임을 분리하게 했고 Stage 06 수명주기 입력으로 보존했다.
 
-6. 결정 기록의 정본 형식은 무엇인가?
-7. 어떤 결정이 사용자 승인을 반드시 요구하는가?
+Stage 05 work `5a15e0b1-7c4d-4f20-8a5b-93e2c6d70505`는 네 소단계와 전체 게이트를 event로 누적한 뒤 `completed`로 닫혔고 최종 snapshot hash는 `sha256:f107a2d6a5bfc2a0344f8c89d60027cd86ec84f3bf0f6fd3a210afe282461aac`다.
 
-05D 착수 전에:
+### 9.2 네 가지 확인 판정
 
-8. 기존 `failures/` Markdown 사례와 구조화된 실패 데이터 중 무엇을 정본과 사용자 보기로 둘 것인가?
-9. 기존 사례를 어떤 최소 조건에서 구조화된 데이터로 승격하며, 원인 미확인·임시 해결 사례는 어떤 상태로 둘 것인가?
+| 확인 항목 | 판정 | 확인 근거 | 남은 위험·후속 조치 |
+|---|---|---|---|
+| 사용자 목적 정합성 | 통과 | source→knowledge→decision→failure projection을 순서대로 독립 검증하고 기존 실패 Markdown 정본 보존 | 자동 승격 없이 명시적 생성·import만 허용 |
+| 실제 기능 작동 | 통과 | 55개 단위·subprocess 테스트, 실제 46개 지식 계열 record 생성·목록·역추적, 21개 실패 hash 재검증 | source 현재성은 explicit verify, 수명주기는 Stage 06 |
+| 미래 단계 선행 유입 방지 | 통과 | 갱신·대체·폐기·충돌·검토 큐·검색·관계·자동 유지·도메인 필드 없음 | stale source·projection 요구만 Stage 06에 인계 |
+| 과거 실패 패턴 재발 방지 | 통과 | strict UTF-8 stdin, 쓰기 전 의미 검증, source 보호 경로, 단일 주소, projection hash·필드 fail-closed | 새 failure 문서 추가 시 Stage 06 전까지 기존 projection 자동 갱신 없음 |
+
+### 9.3 실패 지식 보존
+
+- 다단계 work의 진행 체크포인트 부재는 [진행 중 작업의 체크포인트 전이 부재](../../failures/in-progress-checkpoint-transition-gap.md)에 기록했다.
+- 결정 export 삽입 위치 오류와 실제 표 문맥 불일치 패치는 [`apply_patch`와 Markdown 목록 기호 충돌](../../failures/apply-patch-markdown-prefix.md)에 병합했다.
+- PowerShell here-string 한글 손상은 [Windows CLI 표준 입출력 인코딩 불일치](../../failures/windows-cli-utf8-stdio.md)에 병합했다.
+- KST 날짜를 UTC fixture로 오해한 결정 시각 실패는 [작업 event 시각의 snapshot 역행](../../failures/work-event-time-regression.md)의 고정 시각·clock 혼용 재발로 병합했다.
+- 변경된 로컬 source 한 건이 전체 목록을 차단한 결함은 [변경된 로컬 출처 한 건의 전체 목록 실패 전파](../../failures/mutable-local-source-list-fanout.md)에 기록했다.
+- 경계 게이트 검사기의 Git 소유권 옵션·work service 메서드명·반환 hash 위치 가정은 [Windows 문서 검증 명령의 환경·문구 가정](../../failures/windows-validation-command-assumptions.md)에 최고 연속 실패 3회 재발로 병합하고, 실제 API·반환 객체 선관찰 방식으로 전환했다.
+- 모든 원인은 수정 후 전체 55개 테스트와 실제 데이터 검증을 통과했다. 최고 연속 실패는 3, 현재 미해결 실패는 0이다.
 
 ## 10. 최종 자체 검토·점수 기록
 
 단계 구현·검증과 [마스터 계획 §6.3](MASTER_BUILD_PLAN.md#63-모든-단계의-네-가지-확인-규칙)을 마친 뒤, 완료 요청 전에 [§6.4 최종 자체 검토·점수 게이트](MASTER_BUILD_PLAN.md#64-최종-자체-검토점수-게이트)를 수행한다.
 
-현재는 계획 상태이므로 자체 검토를 수행하지 않았고 점수도 없다. 단계 종료 시 이 절에 실제 점수표, 발견·수정한 결함, 남은 감점, 완료 준비 판정을 기록한다. 이 안내문의 존재만으로 게이트를 통과한 것으로 간주하지 않는다.
+| 평가 항목 | 배점 | 자체 점수 | 근거 | 감점 원인·조치 |
+|---|---:|---:|---|---|
+| 사용자 목적·요구사항 정합성 | 20 | 20 | 네 유형 순차 도입, 기존 실패 문서 보존, 실제 예시·전수 projection | 없음 |
+| 실제 기능·검증 신뢰도 | 20 | 20 | 정상·무효·참조·승인·drift·중복·CLI 흐름 55개와 실제 record 전수 검증 | 없음 |
+| 단계 범위·안전 경계 | 20 | 20 | 보호 경로 차단, 원문 미복제, lifecycle·검색·자동화·도메인 기능 미도입 | 없음 |
+| 단일 정본·문서 일관성 | 20 | 19 | failure Markdown 정본과 hash 고정 projection 책임 명시, 지도·계약 연결 | 정본 변경 시 projection을 수동으로 stale 취급해야 해 1점 감점 |
+| 유지보수성·인지 복잡성 | 20 | 18 | 한 service·CLI와 4개 payload 스키마, 참조·hash fail-closed | 유형·CLI 등록이 명시적 목록이고 해결/검증 분리가 기존 목록 순서 규약에 의존해 2점 감점 |
+| **총점** | **100** | **97** | 네 가지 확인·네 소단계 게이트 통과, 차단 결함 0, 미해결 실패 0 | **`완료 준비`** |
+
+자체 검토에서 진행 체크포인트 부재, export 위치, 미래 결정 시각, import 전 입력 검증, source 조회와 현재 검증의 결합을 발견해 수정했다. 경계 검증 중에는 같은 검사 목표가 환경·API 구조 가정으로 3회 연속 실패해 실제 객체 선관찰로 방법을 바꾸고 기존 실패 정본에 병합했다. 남은 감점은 Stage 06·08이 소유할 수명주기·자동 유지 요구와 기존 실패 Markdown 구조를 보존하기 위한 명시적 parser 규약이며, 다음 단계 기능을 앞당겨 숨기지 않는다.
 
 ## 11. 다음 단계 인계 조건
 

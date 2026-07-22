@@ -1,0 +1,35 @@
+{
+  "content_hash": "sha256:e9fd37c31adcb641bd2af9b511b535578e7860126e35945d3a408b4fac475da8",
+  "created_at": "2026-07-22T19:41:23Z",
+  "id": "506406e7-04fc-437b-933c-92ba8d553810",
+  "payload": {
+    "canonical_doc_ref": "failures/authority-role-type-conflation.md",
+    "conditions": [
+      "정보 구조, 문서 분류, 정본·파생 판정"
+    ],
+    "confirmed_cause": "정본·파생·시점 증거라는 권위 역할과 정책·계약·현재 상태·보고서 같은 문서 유형을 하나의 평면 분류로 다뤘다. 문서 유형이 `현재 상태`라는 사실과 권위가 `정본`이라는 사실을 동시에 표현할 수 없었다.",
+    "document_hash": "sha256:5eb90825fd68a099fd08bce38594ae6d7d2e5d0782c5b011c4a31cceb8de0dbd",
+    "prevention": [
+      "`무엇을 소유하는가`와 `어떤 형식의 문서인가`를 같은 분류 항목으로 합치지 않는다.",
+      "정본 여부는 파일명이나 독자가 아니라 실제 갱신 책임과 소유 정보로 판정한다.",
+      "파생 화면이나 가이드는 원 정본 링크를 유지하고 현재 상태를 별도로 소유하지 않는다."
+    ],
+    "projected_at": "2026-07-22T19:41:23Z",
+    "projected_by": "agent:stage05d-gate",
+    "projection_status": "resolved",
+    "resolution": [
+      "권위 역할은 `권위 정본`, `파생 표현`, `시점 증거`로 구분했다."
+    ],
+    "source_id": "43161b29-d944-4514-a207-97aad1dc7a8e",
+    "symptom": "Stage 01 초안이 `SESSION_HANDOFF.md`를 파생 문서의 예시로 분류했지만, 활성 프로젝트에서는 이 문서가 현재 상태와 첫 다음 행동의 단일 정본이었다.",
+    "title": "권위 역할과 문서 유형의 혼합",
+    "verification": [
+      "문서 유형은 정책, 절차, 계약·참조, 단계 계획, 현재 상태, 사용자 가이드, 시점 보고서, 실패 지식 사례 등으로 별도 정의했다.",
+      "`SESSION_HANDOFF.md`를 `권위 정본 + 현재 상태`, `README.md`를 `파생 표현 + 사용자 가이드`, `reports/*.md`를 `시점 증거 + 보고서`로 판정했다.",
+      "대표 문서가 하나의 권위 역할과 하나의 문서 유형을 동시에 가질 수 있는지 계약 표로 검증했다."
+    ]
+  },
+  "record_type": "failure_knowledge",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:41:23Z"
+}

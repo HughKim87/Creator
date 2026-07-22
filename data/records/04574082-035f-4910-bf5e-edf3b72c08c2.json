@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:24a41ed1b50f5efb49b55093723e6ec9cb35fee3358ebd7c95bd1a22e1b2ea0a",
+  "created_at": "2026-07-22T19:41:24Z",
+  "id": "04574082-035f-4910-bf5e-edf3b72c08c2",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "failures/project-purpose-overreach.md",
+    "observed_at": "2026-07-22T19:41:24Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:16bcd9609f004e640bffc9bb98b2f8ef11a882c1483d6af7edb4c82158938ebd"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:41:24Z"
+}

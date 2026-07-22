@@ -1,0 +1,35 @@
+{
+  "content_hash": "sha256:6d4ec5a75e82ef3b0c2e474b5073916e9c39bb3a8607117abed4a8bdd127ccef",
+  "created_at": "2026-07-22T19:41:24Z",
+  "id": "c7630ea0-8b06-4a94-b151-0ebab6e09b8f",
+  "payload": {
+    "canonical_doc_ref": "failures/stale-handoff-state.md",
+    "conditions": [
+      "세션 재개, 현재 상태, 다음 행동, 문서 링크"
+    ],
+    "confirmed_cause": "현재 상태와 역사 서사를 한 문서에 계속 누적했고, 다른 문서에도 상태를 복제해 어느 값이 최신인지 판단하기 어려웠다.",
+    "document_hash": "sha256:cac2b45cf2bf393fa7cf888f52d607d2e5696511a82f8467aa40b6e970304a29",
+    "prevention": [
+      "중요한 상태가 바뀌면 같은 변경에서 핸드오프와 첫 다음 행동을 갱신한다.",
+      "구조 개수가 바뀌면 상태 문서의 설명·검증·완료 목록을 함께 검색해 오래된 수치를 제거한다.",
+      "Git 브랜치·ahead 수처럼 다시 조회할 수 있는 값은 장기 상태로 저장하지 않는다.",
+      "해결된 실패의 장문 역사는 핸드오프에 누적하지 않고 `failures/`로 이동한다."
+    ],
+    "projected_at": "2026-07-22T19:41:24Z",
+    "projected_by": "agent:stage05d-gate",
+    "projection_status": "resolved",
+    "resolution": [
+      "`SESSION_HANDOFF.md`가 현재 단계, 차단, 첫 다음 행동의 유일한 소유자가 됐다."
+    ],
+    "source_id": "3c7f2721-3dff-4c76-b40a-0087e6c250d6",
+    "symptom": "핸드오프에 이미 끝난 행동, 오래된 동적 Git 상태, 존재하지 않는 경로가 남아 새 세션이 잘못된 지점에서 재개할 위험이 생겼다.",
+    "title": "오래된 핸드오프 상태와 죽은 경로",
+    "verification": [
+      "README와 마스터 계획은 현재 값을 복제하지 않고 핸드오프를 연결한다.",
+      "활성 Markdown 링크와 참조 경로 검사를 수행했다."
+    ]
+  },
+  "record_type": "failure_knowledge",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:41:24Z"
+}

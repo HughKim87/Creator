@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:62cb6568de61638fed3ae45c4a4944ab84efa49d045a6924ccbcba5f332de39b",
+  "created_at": "2026-07-22T19:41:22Z",
+  "id": "a9bab567-d0e3-4ac3-9ce3-ec70f1bd5383",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "failures/apply-patch-markdown-prefix.md",
+    "observed_at": "2026-07-22T19:41:22Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:106596fa4224f560d34e9f7e6b6d9b860ca049a77b436840063322751c821ca2"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:41:22Z"
+}

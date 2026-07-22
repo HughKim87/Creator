@@ -36,13 +36,14 @@
 | 현재 | 허용 다음 상태 |
 |---|---|
 | `requested` | `in_progress`, `failed`, `blocked` |
-| `in_progress` | `completed`, `failed`, `blocked` |
+| `in_progress` | `in_progress` 진행 체크포인트, `completed`, `failed`, `blocked` |
 | `failed` | `in_progress`, `blocked` |
 | `blocked` | `in_progress`, `failed` |
 | `completed` | 없음 |
 
 - `blocked`는 blocker가 최소 1개 있어야 한다.
 - `completed`는 `next_action`이 없어야 한다.
+- `in_progress → in_progress`는 완료 항목·근거·첫 다음 행동을 갱신하는 성공 체크포인트에만 사용한다.
 - event 시각은 현재 snapshot 시각보다 이를 수 없다.
 - 기대 snapshot `content_hash`가 다르면 event를 append하지 않는다.
 - `rejected` outcome은 상태를 바꾸지 않으며 거부 사실만 남긴다.

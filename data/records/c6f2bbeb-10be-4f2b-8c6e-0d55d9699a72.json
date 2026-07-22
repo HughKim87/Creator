@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:5bba728a84b8d64e48a8c89e6449a139c28a00d36522cd5a7b240a8f6bbfc9fe",
+  "created_at": "2026-07-22T19:41:22Z",
+  "id": "c6f2bbeb-10be-4f2b-8c6e-0d55d9699a72",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "failures/active-document-link-rot.md",
+    "observed_at": "2026-07-22T19:41:22Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:82363de86cae0035796bc92d46ff0216e4ebb7dd17f47d18ad0be5319274b700"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:41:22Z"
+}

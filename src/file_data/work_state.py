@@ -30,7 +30,7 @@ EXPECTED_OUTCOME_BY_STATUS = {
 }
 ALLOWED_TRANSITIONS = {
     "requested": frozenset({"in_progress", "failed", "blocked"}),
-    "in_progress": frozenset({"completed", "failed", "blocked"}),
+    "in_progress": frozenset({"in_progress", "completed", "failed", "blocked"}),
     "failed": frozenset({"in_progress", "blocked"}),
     "blocked": frozenset({"in_progress", "failed"}),
     "completed": frozenset(),

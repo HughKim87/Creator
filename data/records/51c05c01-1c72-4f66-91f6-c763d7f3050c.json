@@ -1,0 +1,40 @@
+{
+  "content_hash": "sha256:03aa67e0f2b2990ad22cc72a3b4d4b07ee9e310f2c2b1350c556a420b2ea0e1a",
+  "created_at": "2026-07-22T19:30:10Z",
+  "id": "51c05c01-1c72-4f66-91f6-c763d7f3050c",
+  "payload": {
+    "approval_kind": "standing_policy",
+    "approved_by": "user:recommended-auto-selection",
+    "decided_at": "2026-07-22T19:29:00Z",
+    "impacts": [
+      "failures Markdown이 사례 본문의 정본을 계속 소유",
+      "failure_knowledge record는 canonical_doc_ref와 document_hash가 일치할 때만 유효",
+      "자동 재생성·수명주기는 Stage 08 전까지 도입하지 않음"
+    ],
+    "options": [
+      {
+        "impact": "구조화 데이터를 정본으로 바꾸고 Markdown을 파생 화면으로 전환",
+        "label": "structured_data_canonical"
+      },
+      {
+        "impact": "Markdown을 정본으로 유지하고 구조화 데이터는 문서 hash에 고정된 projection으로 사용",
+        "label": "markdown_canonical_hash_projection"
+      }
+    ],
+    "problem": "기존 실패 Markdown과 구조화 실패 데이터의 정본 관계",
+    "rationale": "기존 실패 문서의 영속성과 사용자 가독성을 유지하면서 hash 불일치 시 projection을 거부해 중복 정본 위험을 제한한다.",
+    "requirements": [
+      "사용자가 요구한 실패 문서 보존",
+      "복수 정본과 무통제 드리프트 방지",
+      "기계 판독 가능한 최소 구조 제공"
+    ],
+    "requires_user_approval": true,
+    "selected_option": "markdown_canonical_hash_projection",
+    "source_ids": [
+      "51c05c00-1c72-4f66-91f6-c763d7f3050c"
+    ]
+  },
+  "record_type": "decision",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:30:10Z"
+}

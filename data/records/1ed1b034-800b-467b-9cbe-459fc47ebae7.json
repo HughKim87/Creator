@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:0887084959596c6b6ace1363790cb5a0e10e06eb6f0504714944bd01318ebde3",
+  "created_at": "2026-07-22T19:41:22Z",
+  "id": "1ed1b034-800b-467b-9cbe-459fc47ebae7",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "failures/approval-without-impact-context.md",
+    "observed_at": "2026-07-22T19:41:22Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:fd4ed1e1b62bd520744b7db39f582f65ae18fcd8aafcabfe32bb9819978e7483"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:41:22Z"
+}

@@ -1,0 +1,18 @@
+{
+  "content_hash": "sha256:5d92df83455a5633c11bcec6dad5ff806e760b5dd4395a99f70d5218e371db4f",
+  "created_at": "2026-07-22T19:26:01Z",
+  "id": "51b05b01-1c72-4f66-91f6-c763d7f3050b",
+  "payload": {
+    "classification": "constraint",
+    "scope": "프로젝트 정보·문서 책임",
+    "source_ids": [
+      "51a05a01-1c72-4f66-91f6-c763d7f3050a"
+    ],
+    "statement": "활성 정보마다 단일 소유자를 둔다.",
+    "verification_status": "verified",
+    "verified_by": "agent:stage05b-gate"
+  },
+  "record_type": "knowledge",
+  "schema_version": 1,
+  "updated_at": "2026-07-22T19:26:01Z"
+}
