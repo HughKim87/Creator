@@ -1,0 +1,24 @@
+{
+  "content_hash": "sha256:5c5060abc0e46d25ddc759aa0f22458df35783c37932f0216f85d3ea6280008f",
+  "created_at": "2026-07-23T04:23:57Z",
+  "id": "cb47f0c5-fdf6-4a80-acd4-51d7eb52880d",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:codex-session",
+    "last_approval_kind": "user",
+    "last_decision_id": null,
+    "last_event_id": "6bc8c210-af39-4e39-9555-759b84aed693",
+    "last_reason": "User-approved PowerShell verification recurrence reconciliation",
+    "last_source_ids": [
+      "266dfb22-18ad-4ef6-9993-450ae15b161f"
+    ],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "205a4fee-eca6-407d-9ffb-6ae637934a89",
+    "target_type": "failure_knowledge"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-23T04:23:57Z"
+}

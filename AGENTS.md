@@ -13,6 +13,8 @@ Read these three files completely, in order:
 2. `PROJECT_RULES.md`
 3. `SESSION_HANDOFF.md`
 
+On Windows PowerShell, read each required startup file with `Get-Content -LiteralPath <path> -Raw -Encoding utf8`. Never use bare `Get-Content` for these files.
+
 ## Task-rule routing
 
 Before starting a task, classify the requested actions and read every matching rule file completely. For a task with multiple independent actions, take the union of matching rows and read each file once.

@@ -148,4 +148,13 @@ Stage 05는 05A 출처 → 05B 지식 → 05C 결정 → 05D 실패 projection �
 
 ## 9. 다음 세션 시작 프롬프트
 
-> `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 새 세션 시작 시 한 번 읽어라. Stage 09 커밋은 `825e9ab`, 최종 복기 보고서 최초 커밋은 `4a64391`, 보고서는 `reports/2026-07-23_stage00-09_프로젝트_구축_최종_복기_보고서.md`, work `763e0e85-d729-43a4-b83f-8b218b5b661d`는 `completed`다. Stage 00~09 구축은 완료됐으므로 새 기능·단계를 자동 시작하지 말고 사용자의 다음 선택을 기다려라. 보호 데이터·설치·외부 게시·삭제·이동·실질적 범위 확대는 새 승인 없이는 수행하지 않는다.
+> `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 새 세션 시작 시 한 번 읽어라. Stage 09 커밋은 `825e9ab`, 최종 복기 보고서 최초 커밋은 `4a64391`, 보고서는 `reports/2026-07-23_codex_stage00-09_프로젝트_구축_최종_복기_보고서.md`(사용자가 2026-07-23 `codex_` 접두어로 파일명 변경), work `763e0e85-d729-43a4-b83f-8b218b5b661d`는 `completed`다. Stage 00~09 구축은 완료됐으므로 새 기능·단계를 자동 시작하지 말고 사용자의 다음 선택을 기다려라. 보호 데이터·설치·외부 게시·삭제·이동·실질적 범위 확대는 새 승인 없이는 수행하지 않는다.
+
+## 10. 실패 지식 record 구조 검토 메모
+
+- 현재 실패 Markdown 한 사례를 개정해 projection을 교체하면 새 `source`, 새 `failure_knowledge`, 두 대상의 `lifecycle_state`가 생성되어 사례 개정당 `data/records/` JSON 네 개가 늘어난다. 별도의 전이 이력은 `data/events/lifecycle_events.jsonl`에도 추가된다.
+- 이 네 개 구조는 출처·구조화 해석·각 대상의 현재 상태를 독립적으로 감사하는 범용 지식 수명주기 모델의 결과이며, 실패 사례 하나에 본질적으로 필요한 최소 구조는 아니다.
+- 현재 실패 사례에서는 source와 failure projection이 함께 생성·전이되고, 문서 경로와 hash가 `failure_knowledge`에도 있으며, 전이 이력도 event 원장에 보존된다. 따라서 두 대상의 책임과 상태가 실질적으로 중복되는지 재검토할 가치가 있다.
+- 단순화 후보는 사례 개정당 하나의 복합 `failure_knowledge` record가 정본 경로·문서 hash·구조화된 증상·원인·해결·현재 상태·이전 및 대체 record ID를 함께 소유하고, 전이 이력은 기존 lifecycle event 원장에 남기는 방식이다.
+- 이 내용은 구조 개선 검토 메모이며 아직 승인되거나 구현된 계약이 아니다. 현재 `KNOWLEDGE_TYPES_CONTRACT.md`, `KNOWLEDGE_LIFECYCLE_CONTRACT.md`, 기존 record와 event 보존 정책은 그대로 유효하며 기존 JSON을 임의로 삭제하거나 병합하지 않는다.
+- 후속 구현은 별도 사용자 승인 아래 감사 가능성, event replay, drift 탐지, current 선택, 기존 data 이관, 회귀 테스트 영향을 먼저 설계·검증한 뒤 진행한다.

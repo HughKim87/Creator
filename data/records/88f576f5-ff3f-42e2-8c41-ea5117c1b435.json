@@ -1,22 +1,22 @@
 {
-  "content_hash": "sha256:a931ecce131fb44559de77805d17b4148ec81e56b2b2610b21d8e687c4a730c9",
+  "content_hash": "sha256:f2d601868fef044c84c9b788fecc1de7c7dc1583559b4b6df23f72da45af9ba5",
   "created_at": "2026-07-22T20:37:28Z",
   "id": "88f576f5-ff3f-42e2-8c41-ea5117c1b435",
   "payload": {
     "conflict_ids": [],
-    "last_actor": "agent:stage07",
-    "last_approval_kind": "standing_policy",
+    "last_actor": "agent:codex-session",
+    "last_approval_kind": "user",
     "last_decision_id": null,
-    "last_event_id": "2280142b-e412-4d16-83b0-23aa15c9f8c9",
-    "last_reason": "Stage 07 UTF-8 지식 손상 재발 이력을 반영한 실패 정본 개정",
+    "last_event_id": "f2471b83-f03b-459c-be12-efa136b85c76",
+    "last_reason": "User-approved UTF-8 recurrence record reconciliation",
     "last_source_ids": [],
-    "revision": 1,
-    "state": "current",
-    "superseded_by": null,
+    "revision": 2,
+    "state": "superseded",
+    "superseded_by": "de40d1b2-8d2a-4f01-8792-c6a92b1aa008",
     "target_id": "f929ee60-a214-4234-86d3-af614419e33b",
     "target_type": "source"
   },
   "record_type": "lifecycle_state",
   "schema_version": 1,
-  "updated_at": "2026-07-22T20:37:28Z"
+  "updated_at": "2026-07-23T04:18:37Z"
 }

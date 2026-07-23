@@ -27,6 +27,9 @@
 - Stage 09 첫 도메인 문서 추가 뒤 maintenance inventory가 Git의 기본 untracked 디렉터리 축약을 파일 목록으로 오인해 중첩된 새 Markdown을 놓쳤다.
 - Stage 09 candidate 거부 경로 검증에서 예상된 native stderr까지 `$ErrorActionPreference='Stop'`이 PowerShell 오류로 승격해 의도한 exit code 단언 전에 스크립트를 중단했다.
 - 최종 복기 보고서 교차검사에서 단계 표의 `01.5` 행을 구조로 세지 않고 literal `Stage 01.5` 문구가 반드시 존재한다고 가정했다.
+- 실패 projection 갱신 준비에서 `lifecycle-current --help`와 실제 조회를 병렬 실행해 도움말 결과를 확인하기 전에 존재하지 않는 `--target-type` 옵션을 추측했다.
+- lifecycle 교체 검증에서 `lifecycle-show`의 실제 반환이 `result.lifecycle.payload`와 `result.record`로 나뉘는지 먼저 관찰하지 않고 `result.payload`를 가정했다.
+- 최종 문서 검증에서 Windows PowerShell 5.1의 `foreach` 문 출력을 괄호나 변수 없이 바로 pipe할 수 있다고 가정했다.
 
 ## 실패·해결 이력
 
@@ -55,6 +58,9 @@
 | Stage 09 중첩 도메인 문서 inventory | 기본 `git status --short`가 `?? docs/domain/`만 반환해 새 계약 파일을 개별 경로로 수집하지 못하고 오래된 inventory를 일치로 오판 | 별도 게이트 1 | `--untracked-files=all`을 명시하고 중첩 미추적 Markdown 회귀를 추가해 불일치 탐지→재생성→일치 검증 |
 | Stage 09 knowledge candidate 경계 검사 | noncurrent candidate의 CLI exit 2·구조화 stderr는 정상인데 전역 `ErrorActionPreference=Stop` 때문에 검증 스크립트 자체가 조기 중단 | 별도 검사 1 | 예상 비성공 구간에서는 native stderr와 `$LASTEXITCODE`를 직접 수집해 exit 2와 원인 문구를 단언하고 성공 |
 | Stage 00~09 최종 보고 교차검사 | 표에 `| 01.5 | 98 |` 행이 있지만 literal `Stage 01.5`가 없다는 이유로 검사기만 실패 | 별도 검사 1 | 실제 Markdown 표 행 정규식과 단계 점수 행 11개 count로 보정해 교차검사 성공 |
+| 실패 projection 갱신 준비 | `lifecycle-current --help`와 `--target-type failure_knowledge` 조회를 병렬 실행해 조회가 입력 오류로 종료 | 별도 조회 1 | 도움말 출력을 먼저 확인한 뒤 실제 공개 옵션 `--type failure_knowledge`로 재실행해 current 실패 projection 25건과 대상 ID 2건을 정상 조회 |
+| lifecycle 교체 상태 검증 | 여덟 대상의 `lifecycle-show` 결과를 실제 한 건 관찰 없이 `result.payload`로 읽어 상태 표가 빈 값으로 출력됨 | 별도 검증 1 | 한 대상의 원시 JSON에서 `result.lifecycle.payload` 구조를 확인하고 그 경로로 상태·대체 ID 검증을 다시 구성 |
+| 최종 문서 검증 | `foreach (...) { ... } | Format-Table` 구문이 Windows PowerShell 5.1에서 빈 pipe 요소 파서 오류로 중단 | 별도 검증 1 | `foreach` 결과를 변수에 먼저 저장한 뒤 별도 문장에서 `Format-Table`로 전달하는 호환 구문으로 변경 |
 
 ## 해결과 검증
 
@@ -65,6 +71,9 @@
 - 신규 파일을 포함한 최종 패치 검증은 스테이징 뒤 `git diff --cached --check`로 수행한다.
 - 임시 검사기의 API명과 반환 구조는 구현·테스트 또는 실제 무변경 조회로 먼저 확인한 뒤 완료 단언을 작성한다.
 - CLI 하위 명령의 자연어 개념명과 공개 옵션명을 동일하다고 가정하지 않고, 처음 호출하기 전에 해당 하위 명령의 `--help`를 확인한다.
+- `--help` 조회와 첫 실제 호출을 병렬 실행하지 않는다. 도움말 출력을 확인한 뒤 그 결과로 실제 명령을 구성해야 사전 확인으로 인정한다.
+- `--help`는 인수 계약만 확인한다. 응답을 파싱하는 검증기는 실제 무변경 응답 한 건의 key와 중첩 구조를 관찰한 뒤 작성한다.
+- Windows PowerShell 5.1에서 statement 출력을 pipe로 넘길 때는 지원 여부를 추측하지 말고 결과를 변수에 저장한 뒤 별도 pipeline으로 전달한다.
 - Git status를 파일 inventory로 사용할 때는 untracked 디렉터리 축약 정책을 기본값에 맡기지 않고 `--untracked-files=all`을 명시한다.
 - 실패 경로를 검증할 때 예상된 stderr를 예외로 취급하지 말고 native exit code·구조화 payload를 먼저 수집한 뒤 기대한 비성공인지 판정한다.
 - 구조화 표의 의미를 검증할 때 임의의 주변 문구를 요구하지 말고 header와 행 pattern·개수를 직접 단언한다.
@@ -83,6 +92,9 @@
 - sandbox에서 Git 메타데이터 조회가 핵심 목적이 아니면 권위 설정 파일을 직접 검사한다. Git 실행이 필요하면 이미 검증된 고정 `safe.directory` 호출 형식을 사용한다.
 - 한 줄 진단문도 반복문·조건문의 여는 블록과 닫는 블록 수를 확인하고, 압축으로 블록 경계를 생략하지 않는다.
 - 계약 값 검증은 특정 파일·문법 모양을 가정하지 말고 실제 소유자와 dispatch 경로를 함께 확인한다.
+- 처음 사용하는 CLI는 완료된 `--help` 결과에 나온 옵션만 사용하며 내부 변수명이나 유사 명령의 옵션을 전용하지 않는다.
+- 구조화 응답을 일괄 파싱하기 전에 원시 응답 한 건에서 실제 경로를 확인하고, 필수 값이 비어 있으면 성공으로 보고하지 않는다.
+- 검증용 PowerShell은 현재 런타임에서 파싱 가능한 작은 문장으로 나누고, 한 문장에 statement와 pipeline을 압축하지 않는다.
 - 연속 검사 실패 시 추측을 한 번 더 덧붙이지 말고 실제 객체 구조를 출력하는 최소 무변경 관찰로 접근법을 전환한다.
 
 ## 근거

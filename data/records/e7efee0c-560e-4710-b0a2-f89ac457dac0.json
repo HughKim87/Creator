@@ -1,0 +1,38 @@
+{
+  "content_hash": "sha256:51283400d4253aa5cd0a869693e0fb830a7ffeb8c666a03b90495913a4c22db7",
+  "created_at": "2026-07-23T04:18:37Z",
+  "id": "e7efee0c-560e-4710-b0a2-f89ac457dac0",
+  "payload": {
+    "canonical_doc_ref": "failures/windows-cli-utf8-stdio.md",
+    "conditions": [
+      "Windows 파일 읽기·자식 프로세스, JSON CLI, 한글 stdout·stderr, UTF-8 계약"
+    ],
+    "confirmed_cause": "파일·pipe·프로세스 경계마다 UTF-8을 명시해야 하는데 일부 경계만 고정하고 나머지를 운영체제 기본값에 맡겼다. 최초 실패에서는 프로세스 표준 출력·오류의 `TextIOWrapper`가 기본 CP949를 사용했고, 이번 재발에서는 Windows PowerShell 5.1의 bare `Get-Content`가 BOM 없는 UTF-8 Markdown을 기본 코드 페이지로 해석했다. `json.dumps(..., ensure_ascii=False)`의 실제 한글 출력과 `SESSION_HANDOFF.md`의 한글 본문에서 같은 플랫폼 의존성이 드러났다.",
+    "document_hash": "sha256:0765a9124adfe0f33c3d190900abb753817157db942d95eaeba5df17fe1fdf09",
+    "prevention": [
+      "파일 UTF-8 계약과 CLI pipe 인코딩 계약을 별도로 검증한다.",
+      "Windows PowerShell에서 Markdown과 제어 문서를 읽을 때는 `-Encoding utf8`을 명시하며, 특히 세션 필수 시작 문서에 bare `Get-Content`를 사용하지 않는다.",
+      "Windows subprocess 통합 테스트는 ASCII만 사용하지 말고 실제 Unicode 값을 포함한다.",
+      "PowerShell에서 한글 스크립트·JSON을 native process stdin으로 보낼 때는 `$OutputEncoding`도 UTF-8로 명시한다.",
+      "JSON을 사람이 읽는 문자로 출력하면 stdout·stderr 인코딩을 운영체제 기본값에 맡기지 않는다."
+    ],
+    "projected_at": "2026-07-23T04:18:37Z",
+    "projected_by": "agent:codex-session",
+    "projection_status": "resolved",
+    "resolution": [
+      "CLI의 stdout과 stderr가 `reconfigure`를 지원하면 `encoding=\"utf-8\"`, `errors=\"strict\"`, `newline=\"\\n\"`을 명시한다."
+    ],
+    "source_id": "de40d1b2-8d2a-4f01-8792-c6a92b1aa008",
+    "symptom": "CLI가 한글 payload를 포함한 성공 JSON을 출력했지만 Windows 자식 프로세스 stdout이 기본 CP949 바이트를 사용했다. UTF-8 계약대로 읽는 통합 테스트의 reader thread가 디코딩 오류로 중단돼 stdout 결과가 사라졌다.",
+    "title": "Windows CLI 표준 입출력 인코딩 불일치",
+    "verification": [
+      "성공과 오류 JSON은 각각 stdout과 stderr에 한 줄 UTF-8로 출력한다.",
+      "한글 create·get·update CLI 흐름과 구조화 오류 흐름을 subprocess가 UTF-8로 읽어 검증했다.",
+      "Windows PowerShell 5.1.26100.8875와 BOM 없는 `SESSION_HANDOFF.md`를 확인하고, `Get-Content -LiteralPath <path> -Raw -Encoding utf8` 재읽기에서 한글 본문이 정상 복원됨을 검증했다.",
+      "`AGENTS.md`의 `Required startup`이 Windows PowerShell의 bare `Get-Content`를 금지하고 세 필수 시작 문서에 UTF-8 명시 읽기를 요구하는지 확인했다."
+    ]
+  },
+  "record_type": "failure_knowledge",
+  "schema_version": 1,
+  "updated_at": "2026-07-23T04:18:37Z"
+}

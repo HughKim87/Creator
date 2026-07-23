@@ -1,24 +1,22 @@
 {
-  "content_hash": "sha256:35f1b6e41d81513a1e0a7fbdc747242526231316c133b16204c45b310f8ed4a5",
+  "content_hash": "sha256:57861a51062e2a513666508aaab498e60c437715900b94b538aec6c2565e22a5",
   "created_at": "2026-07-22T21:48:25Z",
   "id": "6e36e7a6-42df-4736-8227-e74eb3b18635",
   "payload": {
     "conflict_ids": [],
-    "last_actor": "agent:final-retrospective",
-    "last_approval_kind": "standing_policy",
+    "last_actor": "agent:codex-session",
+    "last_approval_kind": "user",
     "last_decision_id": null,
-    "last_event_id": "2f9073f4-f891-4e4d-80ad-a9313e43af62",
-    "last_reason": "최종 보고 Stage 01.5 literal 문구 교차검사 재발 기록 반영",
-    "last_source_ids": [
-      "f56043e8-76ec-4877-a7e7-d065f00e1ea6"
-    ],
-    "revision": 1,
-    "state": "current",
-    "superseded_by": null,
+    "last_event_id": "5095c2c7-ceea-48bc-97ee-157ac673e60c",
+    "last_reason": "User-approved CLI option recurrence record reconciliation",
+    "last_source_ids": [],
+    "revision": 2,
+    "state": "superseded",
+    "superseded_by": "eb086c6a-2b9a-4ffa-a6ab-52da7ca8dc7c",
     "target_id": "81f287c7-2292-476e-a1eb-20047f98e1db",
     "target_type": "failure_knowledge"
   },
   "record_type": "lifecycle_state",
   "schema_version": 1,
-  "updated_at": "2026-07-22T21:48:25Z"
+  "updated_at": "2026-07-23T04:18:51Z"
 }

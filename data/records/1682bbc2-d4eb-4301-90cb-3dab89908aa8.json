@@ -1,0 +1,22 @@
+{
+  "content_hash": "sha256:9c7d2a631dc686b5a6c3517b3296f352092bdc91d09ec0276c0cc15808992dd3",
+  "created_at": "2026-07-23T04:18:51Z",
+  "id": "1682bbc2-d4eb-4301-90cb-3dab89908aa8",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:codex-session",
+    "last_approval_kind": "user",
+    "last_decision_id": null,
+    "last_event_id": "104e536c-5846-4d1a-8d14-ebe726cb0a46",
+    "last_reason": "User-approved lifecycle verification recurrence reconciliation",
+    "last_source_ids": [],
+    "revision": 2,
+    "state": "superseded",
+    "superseded_by": "bdfc4a85-ae44-4c16-9c0a-5ab7fd3a48e6",
+    "target_id": "6fb3ddf7-66ab-41f5-b629-efad5b1703c9",
+    "target_type": "source"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-23T04:20:56Z"
+}

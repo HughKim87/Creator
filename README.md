@@ -21,7 +21,7 @@
 | 첫 유튜브 도메인 계약 | [docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md](docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md) |
 | Obsidian 검토 시작 | [docs/obsidian/START_HERE.md](docs/obsidian/START_HERE.md) |
 | 현재 요구사항 | [통합 요구사항 기준서](reports/2026-07-22_프로젝트_의도_통합_요구사항_기준서.md) |
-| Stage 00~09 최종 복기 | [최종 복기 보고서](reports/2026-07-23_stage00-09_프로젝트_구축_최종_복기_보고서.md) |
+| Stage 00~09 최종 복기 | [최종 복기 보고서](reports/2026-07-23_codex_stage00-09_프로젝트_구축_최종_복기_보고서.md) |
 | 해결된 실패와 재발 방지 지식 | [failures/README.md](failures/README.md) |
 
 사용자는 이 표에서 목적, 현재 상태, 다음 결정을 한 화면 안에서 확인한다. 현재 단계와 다음 행동은 중복을 막기 위해 `SESSION_HANDOFF.md` 한 곳에서만 관리한다.
