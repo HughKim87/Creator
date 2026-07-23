@@ -70,6 +70,7 @@
 | Stage 10 문서 데이터 최종 검증 | `python -m file_data`를 `PYTHONPATH` 없이 실행해 `No module named file_data`로 중단 | 별도 검증 1 | `PYTHONPATH=src`를 명시해 document-data 6, artifact 20, legacy baseline, maintenance 전체를 재실행하고 성공 |
 | Stage 10 실패 정본 최종 검증 | `failure-validate --canonical-doc-ref`가 필수 `--doc` 누락으로 입력 오류 반환 | 별도 검증 1 | `failure-validate --help`를 먼저 확인하고 공개 옵션 `--doc`로 재실행해 canonical failure 검증 성공 |
 | Stage 10 후속 자체 재검토 Git 조회 | 저장소별 `safe.directory` 누락으로 첫 status·diff 조회 중단 | 별도 조회 1 | 저장소 절대 경로를 호출별 `-c safe.directory=...`로 고정해 branch·status·diff 조회 성공 |
+| Stage 11 계획·경계 Git 호출 | 첫 status·inventory는 `safe.directory` 누락, 첫 stage는 공백이 있는 설정값의 shell 인용 누락으로 각각 중단 | 목적별 별도 호출 각 1 | 저장소 절대 경로를 큰따옴표로 감싼 호출별 `-c "safe.directory=<path>"` 형식으로 조회와 stage를 재실행해 성공 |
 | Stage 10 후속 변경 파일 직접 검사 | `${name}` 없는 `"$name:"` parser 오류 → 잘못된 `[ `t]` 문자 클래스로 대량 거짓 양성 → binary mode의 `rg \\x00` 제약으로 NUL 검사 실패 | 3 | trailing whitespace는 `rg --pcre2 '[\\x20\\t]+$'`, strict UTF-8·NUL은 .NET strict decoder와 byte 검사로 분리해 대상 미추적 문서·Python 5개 오류 0 확인 |
 | Stage 10 High 1 집중 회귀 | `python -m unittest tests.test_record_io`는 `test_support`를 찾지 못했고, maintenance 단독 discovery는 `file_data`를 찾지 못함 | 목적별 별도 명령 각 1 | 파일 패턴 discover는 테스트의 실제 import 경계를 확인해 사용하고, 최종 권위 명령 `python -m unittest discover -s tests -v`로 120건 전체 성공 |
 | Stage 10 공식 종료 상태 확인 | 큰따옴표 pattern의 `\"next_action\"` 등이 PowerShell에서 분해돼 `rg`가 pattern 일부를 잘못된 파일 경로로 처리 | 별도 검증 1 | 각 문서의 pattern을 작은 단일 인용 명령으로 분리해 완료·commit·completed/null·자동 착수 금지 상태를 다시 확인 |

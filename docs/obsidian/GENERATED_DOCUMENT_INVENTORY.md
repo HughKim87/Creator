@@ -3,7 +3,7 @@
 - 목적: 보호·역사 경계를 제외한 활성 Markdown 경로를 정본에서 결정론적으로 재생성한다.
 - 상태: 파생물. 이 파일은 규칙·상태·결정을 소유하지 않는다.
 - 생성 명령: `python -m file_data maintenance-inventory --write`
-- 원본 문서 수: 88
+- 원본 문서 수: 89
 - 자기 재귀 방지: 이 생성 파일 자체는 원본 목록에서 제외한다.
 
 ## docs
@@ -29,6 +29,7 @@
 - [Stage 08 — 유지보수·자동화](../build/stage-08-maintenance-automation.md) — `docs/build/stage-08-maintenance-automation.md`
 - [Stage 09 — 도메인 워크플로 확장](../build/stage-09-domain-integration.md) — `docs/build/stage-09-domain-integration.md`
 - [Stage 10 — 에이전트 자율 운영·구조 최적화](../build/stage-10-agent-autonomy-structure-optimization.md) — `docs/build/stage-10-agent-autonomy-structure-optimization.md`
+- [Stage 11 — 운영 마찰·인지 복잡성 축소](../build/stage-11-operating-friction-reduction.md) — `docs/build/stage-11-operating-friction-reduction.md`
 - [유튜브 촬영 전 근거 패키지 계약](../domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md) — `docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md`
 - [전체 활성 문서 지도](DOCUMENT_MAP.md) — `docs/obsidian/DOCUMENT_MAP.md`
 - [Obsidian 검토 환경 계약](OBSIDIAN_REVIEW_CONTRACT.md) — `docs/obsidian/OBSIDIAN_REVIEW_CONTRACT.md`

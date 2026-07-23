@@ -59,6 +59,7 @@ Stage 02부터는 단계 시작과 종료 시 Obsidian 전체 지도와 단계�
 | 08 | 유지보수·자동화 | 최신성, 중복, 재생성, 비용 관측과 검증된 자동화 | 07 |
 | 09 | 도메인 워크플로 확장 | 사용자 선택 도메인을 공통 기반에 연결 | 08 |
 | 10 | 에이전트 자율 운영·구조 최적화 | 사람·에이전트 경계, 문서 생성 억제, 실패 정본 직접 재사용 | 09 |
+| 11 | 운영 마찰·인지 복잡성 축소 | 위험 비례 작업 등급, 필수 읽기·게이트·활성 문서 표면 경량화 | 10 |
 
 ## 4. 단계별 계획 문서
 
@@ -76,6 +77,7 @@ Stage 02부터는 단계 시작과 종료 시 Obsidian 전체 지도와 단계�
 | 08 | [stage-08-maintenance-automation.md](stage-08-maintenance-automation.md) |
 | 09 | [stage-09-domain-integration.md](stage-09-domain-integration.md) |
 | 10 | [stage-10-agent-autonomy-structure-optimization.md](stage-10-agent-autonomy-structure-optimization.md) |
+| 11 | [stage-11-operating-friction-reduction.md](stage-11-operating-friction-reduction.md) |
 
 ## 5. 공통 단계 문서 계약
 
