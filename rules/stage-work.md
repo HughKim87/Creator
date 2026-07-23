@@ -9,6 +9,7 @@
 - Read `docs/build/MASTER_BUILD_PLAN.md`, the exact current stage owner, and no completed or future stage owner unless a specific dependency requires it.
 - Confirm prior boundary, current outcome, scope, exclusions, protected inputs, unresolved decisions, and transition authority.
 - The stage owner defines its concrete success gate. Use one consolidated completion checkpoint rather than repeating unchanged full checks after every edit.
+- If only report or current-state wording changes after an executable gate passed, rerun the document, link, state, and diff checks covering that wording. Do not repeat an unchanged executable suite unless the evidence scope changed.
 - Resolve safe reversible details autonomously. Ask only when the outcome, protection boundary, external effect, irreversible cost, or material risk changes.
 - Implement only the current stage and report the planned change and exclusion boundary before writing.
 - At completion, compare the actual diff and representative operation with the user outcome, safety boundary, current state, and relevant past failure prevention.
