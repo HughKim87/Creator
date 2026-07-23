@@ -4,7 +4,7 @@
 - 목적: 실제 도메인 작업 전에 과도해진 필수 읽기, 승인·검증 게이트, 실패 기록, 활성 문서 표면을 줄여 안전 경계 안에서 에이전트가 더 빠르게 자율 작업하도록 만든다.
 - 읽는 시점: Stage 11 착수·단계 전환·성공 게이트·최종 보고·재개 시
 - 책임: 프로젝트 에이전트가 사용자의 2026-07-24 지시에 따라 계획·구현·검증·커밋한다.
-- 상태: **11A 완료 준비·경계 커밋 대기**
+- 상태: **11B 완료 준비·경계 커밋 대기**
 - 현재 상태 정본: [SESSION_HANDOFF](../../SESSION_HANDOFF.md)
 - 상위 순서: [마스터 구축 계획](MASTER_BUILD_PLAN.md)
 
@@ -193,6 +193,32 @@
 | 자체 finding | High 0·Medium 0·Low 0 |
 
 **11A 판정: 완료 준비.** 경계 커밋이 성공하기 전 11B를 시작하지 않는다.
+
+11A 경계 커밋은 `5c322cdfae6764080a29a0fd71679c92b26c6cc9`이며 포함 경로 5개, 보호 경로 0, 커밋 후 clean을 확인했다.
+
+### 11B 규칙·게이트 경량화
+
+- `AGENTS.md`와 상시 정책에 `quick / standard / controlled`를 도입하고 가장 낮은 충분 등급을 기본값으로 고정했다.
+- `quick`·`standard`에서는 번호 Stage, master, 점수, subagent, 별도 보고서, 경계 commit을 자동 요구하지 않는다.
+- 문서 검증은 file save마다가 아니라 logical batch checkpoint에서 수행하고 full maintenance는 controlled 구조 작업 또는 exact plan 요구로 제한했다.
+- failure 정본은 재발·안전/정확성 영향·비자명한 해결·실질 차단 중 하나를 충족할 때만 승격하며, 일회성 오타·인용·option·path 실수는 기본적으로 transient가 됐다.
+- master는 번호 controlled stage에만 적용하도록 20,438 bytes·255줄에서 8,968 bytes·137줄로 축약했다.
+- startup router·상시 정책·task rules 6개의 합계는 24,697 bytes·231줄에서 16,186 bytes·210줄로 줄었다. 안전 전용 `history-review`와 `user-data-work`는 변경하지 않았다.
+- 최신 요구 기준의 UR-12·16·17·19와 O-09·Stage 11 지도를 새 기본 경로에 맞췄다.
+
+11B 성공 게이트:
+
+| 확인 | 결과 |
+|---|---|
+| quick 대표 흐름 | 통과 — 안전한 로컬 문서 수정은 startup+`document-work`만으로 결정, master·score·subagent·commit 비강제 |
+| controlled 안전 흐름 | 통과 — 정책·삭제·보호·외부·복구 비용은 controlled 또는 사전 확인 |
+| 계약 정적 검사 | 통과 — 11개 자율성·batch·failure threshold·안전 assertion 전부 true |
+| 문서 데이터 | 통과 — 6 blocks, work 1과 kind count 일치 |
+| maintenance | 통과 — documents 90, links 657, errors·drift·duplicates 0, inventory 일치, runtime warning 없음 |
+| 범위 | 통과 — legacy data·보호 경로·외부 변경·코드 변경 0 |
+| 실패·자체 finding | material failure 없음, High 0·Medium 0·Low 0 |
+
+**11B 판정: 완료 준비.** 경계 커밋이 성공하기 전 11C를 시작하지 않는다.
 
 11A~11E의 이후 실제 변경, 검증 결과, 실패·판정, 커밋은 이 절에 계속 누적한다. 같은 사실을 별도 단계 보고서로 복제하지 않는다.
 

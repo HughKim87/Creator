@@ -2,8 +2,8 @@
 
 - 갱신일: 2026-07-24
 - 역할: 채팅 기억 없이 현재 목표·검증 상태·blocker·첫 다음 행동을 재구성하는 단일 활성 상태 정본
-- 현재 단계: Stage 11 `11A 진단·plan`
-- 현재 판정: 계획 문서 작성 완료, 11A 문서·inventory·Git 성공 게이트 검증 중
+- 현재 단계: Stage 11 `11B 규칙·게이트 경량화`
+- 현재 판정: 11A 커밋 `5c322cd` 통과, 11B 성공 게이트 통과·경계 커밋 대기
 - 직전 경계: Stage 10 완료, 커밋 `2853868e742cb51919f76de26e0f9d5f7fe5cd3f`
 
 ## 1. 현재 작업
@@ -39,13 +39,31 @@
           "docs/build/stage-11-operating-friction-reduction.md"
         ],
         "summary": "보호 경계를 제외한 기준선을 측정하고 구현보다 먼저 Stage 11 단일 plan owner를 작성했다."
+      },
+      {
+        "actor": "codex:primary",
+        "at": "2026-07-23T22:11:37Z",
+        "evidence_refs": [
+          "docs/build/stage-11-operating-friction-reduction.md"
+        ],
+        "summary": "11A 문서·inventory·Git 게이트와 경계 커밋 5c322cd, 보호 경로 0, clean 상태를 확인하고 11B로 전환했다."
+      },
+      {
+        "actor": "codex:primary",
+        "at": "2026-07-23T22:13:34Z",
+        "evidence_refs": [
+          "docs/build/stage-11-operating-friction-reduction.md"
+        ],
+        "summary": "작업 등급·batch 검증·durable failure threshold를 반영하고 quick·controlled 대표 흐름과 maintenance를 통과했다."
       }
     ],
     "completed_items": [
       "시작 규칙·현재 상태·관련 task rule 완독",
       "마스터·Stage 10·최신 요구 기준 확인",
       "활성 파일·Markdown·시작 문서·규칙 기준선 측정",
-      "지연 원인 C1~C6와 권장 작업 등급·단계·성공 게이트 확정"
+      "지연 원인 C1~C6와 권장 작업 등급·단계·성공 게이트 확정",
+      "11A 성공 게이트와 경계 커밋 5c322cd 검증",
+      "11B 규칙·게이트 경량화와 대표 흐름·maintenance 검증"
     ],
     "desired_outcome": "간단한 작업은 작은 문맥과 위험 비례 검증으로 빠르게 수행하고, 안전·보호·외부 경계가 필요한 작업만 강화된 통제를 사용한다.",
     "evidence_refs": [
@@ -62,7 +80,7 @@
       "docs/build/stage-11-operating-friction-reduction.md",
       "reports/2026-07-22_프로젝트_의도_통합_요구사항_기준서.md"
     ],
-    "next_action": "11A 문서·inventory·Git 게이트를 검증하고 첫 경계 커밋을 생성한다.",
+    "next_action": "11B 변경을 경계 커밋하고 객체·포함 경로·보호 경로 0·status를 검증한다.",
     "protection_boundaries": [
       "inputs·outputs는 사용자가 정확한 대상을 지정하기 전 접근 금지",
       "backup은 이번 작업에서 열람·수정하지 않음",
@@ -98,13 +116,13 @@
 
 | 단계 | 상태 | 다음 행동 |
 |---|---|---|
-| 11A 진단·plan | 검증 중 | 문서·inventory·Git 게이트 통과 뒤 경계 커밋 |
-| 11B 규칙·게이트 경량화 | 대기 | 11A 커밋 성공 뒤 관련 규칙 재독 |
+| 11A 진단·plan | 완료 | 커밋 `5c322cd` 검증 |
+| 11B 규칙·게이트 경량화 | 완료 준비 | 경계 커밋과 객체·경로 검증 |
 | 11C 활성 문서 표면 축소 | 대기 | 11B 커밋 성공 뒤 시작 |
 | 11D 통합 검증·최종 보고 | 대기 | 11C 커밋 성공 뒤 시작 |
 | 11E 세션 교훈 규칙 반영 | 대기 | 최종 보고 커밋 성공 뒤 시작 |
 
-정확한 첫 다음 행동은 **Stage 11 §7에 따라 11A 성공 게이트를 자체 재검증하고 첫 경계 커밋을 생성하는 것**이다.
+정확한 첫 다음 행동은 **11B 경계 커밋을 생성·검증하고 성공한 뒤에만 11C를 시작하는 것**이다.
 
 ## 4. 현재 실패·위험
 
