@@ -1,9 +1,9 @@
-# 지식 유형 계약과 사용법
+# 지식 유형·실패 정본 직접 재사용 계약
 
-- 목적: 작업 기록과 분리된 장기 재사용 데이터를 출처, 단일 지식 주장, 결정, 실패 지식 projection으로 명시적으로 생성·검증한다.
-- 읽는 시점: source·knowledge·decision·failure_knowledge record를 생성·조회·검증하거나 유형 간 책임을 판단할 때.
-- 책임: `src/file_data/knowledge.py`가 의미 검증과 참조 무결성, `schemas/*-payload-v1.schema.json`이 필드 구조, `failures/*.md`가 실패 사례 본문 정본을 소유한다.
-- 상태: Stage 05 활성 계약.
+- 목적: 작업 기록과 분리된 장기 재사용 데이터를 출처·단일 지식 주장·결정 record로 관리하고, 해결 실패는 canonical Markdown을 저장 projection 없이 직접 검증·재사용한다.
+- 읽는 시점: source·knowledge·decision record를 생성·조회·검증하거나 해결 실패 문서를 기록·검색할 때.
+- 책임: `src/file_data/knowledge.py`가 의미 검증과 참조 무결성, `schemas/*-payload-v1.schema.json`이 저장 record 구조, `failures/*.md`가 실패 사례의 사람·기계 공통 정본을 소유한다.
+- 상태: Stage 05 계약을 Stage 10에서 단순화.
 - 선행 계약: [공통 기록 I/O](RECORD_IO_CONTRACT.md), [작업 기록·현재 상태](WORK_STATE_CONTRACT.md).
 
 ## 유형과 정본 책임
@@ -13,9 +13,9 @@
 | `source` | 출처 종류·위치·관찰 시각·확인 상태·증거 역할·버전 또는 hash | 원문 전체, 보호 데이터 사본, 신뢰 점수 |
 | `knowledge` | 한 줄의 주요 주장 하나·분류·적용 범위·source 참조·검증 상태와 주체 | 작업 전문, 복수 주장, 태그·검색 점수·검토 일정 |
 | `decision` | 문제·요구조건·검토 선택지·선택·이유·영향·source·승인·결정 시각 | 현재 실행 상태, 승인되지 않은 대리 결정 |
-| `failure_knowledge` | `failures/*.md` 정본을 구조적으로 읽은 hash 고정 projection | 실패 사례 본문의 정본, 원인 미확인·임시 우회 사례 |
+| transient failure view | `failures/*.md` 정본을 실행 시 구조적으로 읽은 비저장 view | 별도 정본, lifecycle 대상, 장기 저장 projection |
 
-작업 요청·event·snapshot은 장기 지식 record로 복제하지 않는다. 지식은 명시적 create/import 명령에서만 생성되며 자동 추출·승격은 없다.
+작업 요청·event·snapshot은 장기 지식 record로 복제하지 않는다. 일반 지식은 명시적 create 명령에서만 생성되며 자동 추출·승격은 없다. 실패 view는 정본을 읽을 때만 메모리에서 만들어지고 저장하지 않는다.
 
 ## 05A 출처 기록
 
@@ -47,18 +47,20 @@
 - 결정 시각은 record 생성 시각보다 미래일 수 없다.
 - 설치·외부 게시·보호 데이터·삭제·이동·비용·실질적 범위 확대는 기존 상시 안전 경계를 그대로 따른다.
 
-## 05D 실패 지식 projection
+## 해결 실패 정본 직접 재사용
 
-사용자 요구에 따라 `failures/*.md`가 해결된 실패 사례 본문의 정본으로 계속 남는다. `failure_knowledge`는 이를 대체하지 않고 다음 필드를 구조화한 파생 record다.
+`failures/*.md`가 해결 실패 사례 본문과 현재 유효성의 유일한 정본이다. parser는 다음 필드를 실행 시 읽어 transient view를 만들며 파일로 저장하지 않는다.
 
 - 제목, 정본 문서 경로와 SHA-256
 - 증상, 적용 범위, 확인된 원인
 - 해결, 검증, 재사용 규칙
-- source ID, projection 주체·시각·`resolved` 상태
+- 정본 문서 자체의 해결 상태
 
-import는 `failures/README.md`를 제외하고 상태에 `해결`이 있으며 `증상`, `확인된 원인`, `해결과 검증`, `재사용 규칙` 절이 모두 있는 사례만 받는다. `해결과 검증` 절의 첫 목록 항목을 해결, 나머지를 검증 근거로 projection한다. 읽을 때 정본 bytes hash, source record, 구조화 필드를 모두 다시 대조하며 하나라도 다르면 사용을 거부한다.
+검증은 `failures/README.md`를 제외하고 상태에 `해결`이 있으며 `증상`, `확인된 원인`, `해결과 검증`, `재사용 규칙` 절이 모두 있는 사례만 받는다. `해결과 검증` 절의 첫 목록 항목을 해결, 나머지를 검증 근거로 읽는다. strict UTF-8, NUL 0, SHA-256과 필수 의미를 매번 정본 bytes에서 계산한다.
 
-정본 Markdown이 갱신되면 기존 projection은 즉시 stale이다. Stage 05 record 자체는 수정하지 않으며 [Stage 06 수명주기](KNOWLEDGE_LIFECYCLE_CONTRACT.md)가 새 source·projection을 만들고 옛 record를 `superseded`로 보존한다.
+정본 Markdown이 갱신되면 다음 읽기부터 새 내용이 즉시 사용된다. 별도 source·projection·lifecycle snapshot을 갱신하지 않는다. 파일 이력은 Git이, 재발·해결 이력은 Markdown 본문이 보존한다.
+
+기존 `failure_knowledge`·실패 전용 source·lifecycle record는 Stage 05~09의 legacy history다. 삭제하지 않고 `failure-show --id` 같은 명시 direct read만 지원하며 기본 목록·검색·maintenance current 판정에는 사용하지 않는다.
 
 ## 승인된 진입점
 
@@ -66,7 +68,8 @@ import는 `failures/README.md`를 제외하고 상태에 `해결`이 있으며 `
 - Source CLI: `source-create`, `source-show`, `source-list`, `source-verify`
 - Knowledge CLI: `knowledge-create`, `knowledge-show`, `knowledge-list`
 - Decision CLI: `decision-create`, `decision-show`, `decision-list`
-- Failure CLI: `failure-import`, `failure-show`, `failure-list`
+- Failure CLI: `failure-validate`, `failure-list`
+- Legacy compatibility: `failure-show --id`, 비저장 검증 alias `failure-import`
 
 복합 decision payload는 PowerShell에서 UTF-8 stdin과 `--payload-stdin`을 사용한다. 모든 record는 common-record v1 외피와 `data/records/<id>.json` 단일 주소를 재사용한다.
 
@@ -75,15 +78,15 @@ import는 `failures/README.md`를 제외하고 상태에 `해결`이 있으며 `
 - `schemas/source-payload-v1.schema.json`
 - `schemas/knowledge-payload-v1.schema.json`
 - `schemas/decision-payload-v1.schema.json`
-- `schemas/failure-knowledge-payload-v1.schema.json`
+- `schemas/failure-knowledge-payload-v1.schema.json` — legacy stored projection read compatibility
 
 Python 검증기가 구조 스키마보다 강한 교차 필드·참조·hash 검증을 수행한다. 테스트는 두 필드 집합과 enum이 일치하는지 확인한다.
 
-Stage 05 완료 시 검증된 실제 예시는 source 23건, knowledge 1건, decision 1건, failure_knowledge 21건이다. 이 개수는 완료 시점 근거이며 동적 현재 상태의 정본은 아니다.
+Stage 05 완료 시 source 23건, knowledge 1건, decision 1건, failure_knowledge 21건을 만들었다. Stage 10 이전 revision까지 늘어난 stored failure projection은 legacy 역사이며, 현재 해결 실패 수는 `failure-list`가 canonical Markdown에서 실행 시 계산한다.
 
 ## Stage 05 제외와 후속
 
-- record 검토·대체·폐기·충돌·사건 기반 검토 트리거는 [Stage 06 수명주기](KNOWLEDGE_LIFECYCLE_CONTRACT.md)가 소유한다.
+- source·knowledge·decision record 검토·대체·폐기·충돌·사건 기반 검토 트리거는 [Stage 06 수명주기](KNOWLEDGE_LIFECYCLE_CONTRACT.md)가 소유한다.
 - 검색·순위·관계 탐색·컨텍스트 조립은 Stage 07 범위다.
-- stale projection 재생성·일괄 유지보수는 Stage 08 범위다.
+- 실패 정본 직접 검증과 중복 제목 탐지는 [Stage 08 유지보수 계약](MAINTENANCE_AUTOMATION_CONTRACT.md)이 소유한다.
 - 도메인 전용 필드와 영상 제작 연결은 Stage 09 전까지 도입하지 않는다.

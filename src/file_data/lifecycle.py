@@ -6,11 +6,9 @@ from typing import Any, Mapping, Sequence
 from uuid import UUID, uuid4
 
 from .knowledge import (
-    FAILURE_KNOWLEDGE_FIELDS,
     KNOWLEDGE_RECORD_TYPES,
     KnowledgeService,
     SourceIntegrityError,
-    validate_failure_knowledge_payload,
 )
 from .store import ExpectationMismatchError, InputContractError, RecordStore
 
@@ -541,8 +539,6 @@ class LifecycleService:
         payload = record["payload"]
         if record["record_type"] in {"knowledge", "decision"}:
             return list(payload["source_ids"])
-        if record["record_type"] == "failure_knowledge":
-            return [payload["source_id"]]
         return []
 
     def audit(self, *, actor: str) -> list[dict[str, Any]]:
@@ -555,9 +551,12 @@ class LifecycleService:
             reason: str | None = None
             try:
                 if record["record_type"] == "source":
-                    self.knowledge.get_source(record["id"], verify_local=True)
-                elif record["record_type"] == "failure_knowledge":
-                    self.knowledge.get_failure_knowledge(record["id"])
+                    locator = record["payload"]["locator"]
+                    if not (
+                        record["payload"]["source_kind"] == "local_document"
+                        and locator.startswith("failures/")
+                    ):
+                        self.knowledge.get_source(record["id"], verify_local=True)
             except SourceIntegrityError as exc:
                 reason = str(exc)
                 if record["record_type"] == "source":
@@ -607,64 +606,15 @@ class LifecycleService:
         old_failure = self._base_record(old_failure_id)
         if old_failure["record_type"] != "failure_knowledge":
             raise LifecycleError("old_failure_id must reference failure_knowledge")
-        core = self.knowledge._failure_projection_core(old_failure["payload"]["canonical_doc_ref"])
-        if core["document_hash"] == old_failure["payload"]["document_hash"]:
-            raise LifecycleError("failure document has not changed")
-        old_failure_state = self.get_state(old_failure["id"])
-        old_source_id = old_failure["payload"]["source_id"]
-        old_source_state = self.get_state(old_source_id)
-        for state in (old_failure_state, old_source_state):
-            _transition_target("supersede", state["payload"]["state"], "superseded", str(uuid4()))
-        now = timestamp or datetime.now(UTC).replace(microsecond=0)
-        rendered = now.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-        source = self.knowledge.create_source(
-            source_kind="local_document",
-            locator=core["canonical_doc_ref"],
-            evidence_role="primary",
-            record_id=str(uuid4()),
-            timestamp=now,
+        core = self.knowledge.validate_failure_document(
+            old_failure["payload"]["canonical_doc_ref"]
         )
-        payload = validate_failure_knowledge_payload(
-            {
-                **core,
-                "source_id": source["id"],
-                "projection_status": "resolved",
-                "projected_by": actor,
-                "projected_at": rendered,
-            }
-        )
-        if set(payload) != FAILURE_KNOWLEDGE_FIELDS:
-            raise LifecycleError("failure projection payload field mismatch")
-        replacement = self.store.create_record(
-            "failure_knowledge", payload, record_id=str(uuid4()), timestamp=now
-        )
-        self.register(
-            source["id"],
-            initial_state="current",
-            actor=actor,
-            approval_kind=approval_kind,
-            reason=reason,
-            timestamp=now,
-        )
-        self.register(
-            replacement["id"],
-            initial_state="current",
-            actor=actor,
-            approval_kind=approval_kind,
-            reason=reason,
-            source_ids=[source["id"]],
-            timestamp=now,
-        )
-        for old_id, new_id in ((old_source_id, source["id"]), (old_failure["id"], replacement["id"])):
-            state = self.get_state(old_id)
-            self.transition(
-                old_id,
-                expected_state_hash=state["content_hash"],
-                action="supersede",
-                actor=actor,
-                approval_kind=approval_kind,
-                reason=reason,
-                replacement_id=new_id,
-                timestamp=now,
-            )
-        return {"source": source, "failure_knowledge": replacement}
+        return {
+            "failure_document": core,
+            "legacy_record_id": old_failure["id"],
+            "stored": False,
+            "message": (
+                "canonical failure Markdown is validated directly; "
+                "no source, projection, lifecycle snapshot, or event was created"
+            ),
+        }

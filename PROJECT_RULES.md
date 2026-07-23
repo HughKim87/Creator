@@ -5,6 +5,13 @@
 - Change authority: the user approves policy changes; project agents may maintain wording within an approved change.
 - Priority: security > user-data protection > accuracy > efficiency.
 
+## Project purpose and operating model
+
+- The project's top-level purpose is to maximize productive agent autonomy so work can proceed without human manual execution.
+- The file-based knowledge system is a means to let an agent reconstruct intent, scope, evidence, state, and methods accurately without chat memory; it is not the final purpose by itself.
+- The user owns goals, prohibitions, protected-data access, external or costly actions, irreversible choices, and result confirmation. Agents own in-scope research, reasonable reversible decisions, implementation, validation, failure recovery, and concise progress reporting.
+- Report material choices, scope effects, failures, gate results, and remaining risk. Request user input only when the answer changes the authorized outcome, crosses a protected or external boundary, creates material irreversible risk, or cannot be resolved by a safe reversible default.
+
 ## Rule classification
 
 - Always-on rules live only in this `PROJECT_RULES.md` and are read once at session start.
@@ -19,6 +26,8 @@
 - Work only within the user's requested outcome and approved stage. Do not infer authority for a later stage or materially broader change.
 - Ask before delete, move, push, publish, upload, install, permission changes, paid actions, external writes, overwriting user originals, or any commit not covered by traceable explicit or standing user approval.
 - Reconfirm an approval when its target, scope, or risk materially changes, or when the original user response cannot be traced.
+- Inside an approved outcome, choose safe reversible implementation details and recommended defaults autonomously. Record the reason and verification instead of turning ordinary implementation uncertainty into human manual work.
+- A standing approval may cover a precisely identified sequence of stages when every stage still passes its own success gate, reports the result, and stops if the scope or risk changes.
 
 ## Protected data and history
 
@@ -37,6 +46,7 @@
 - `inputs/` and `outputs/` remain outside framework version control. Do not promote task-specific facts into reusable project files.
 - Keep one active owner for each rule, state, plan, or decision. Link to the owner instead of copying its content.
 - Create a maintained file only when it has a unique durable purpose that an existing owner cannot serve.
+- For one improvement initiative, keep diagnosis, plan, execution evidence, scoring, and external read-only review in one stage owner unless an artifact has a distinct long-lived reader or authority.
 
 ## Context
 

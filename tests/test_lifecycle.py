@@ -308,35 +308,45 @@ class LifecycleTests(unittest.TestCase):
             self.assertEqual(len(lifecycle.history(source["id"])), history_lengths[source["id"]])
             self.assertEqual(len(lifecycle.history(claim["id"])), history_lengths[claim["id"]])
 
-    def test_stale_failure_projection_is_replaced_without_deletion(self) -> None:
+    def test_legacy_failure_refresh_validates_canonical_document_without_fanout(self) -> None:
         with self._root() as raw_root:
             root = Path(raw_root)
             (root / "failures").mkdir()
             failure_doc = root / "failures" / "case.md"
             failure_doc.write_text(FAILURE_TEXT, encoding="utf-8")
             knowledge, lifecycle = self._services(raw_root)
-            imported = knowledge.import_failure_knowledge(
+            imported = knowledge._import_legacy_failure_knowledge(
                 "failures/case.md", projected_by="agent:test", record_id=str(uuid4()), source_id=str(uuid4())
             )
             old_failure = imported["failure_knowledge"]
             old_source = imported["source"]
             lifecycle.register_existing(actor="agent:test", approval_kind="standing_policy")
+            before_records = {
+                path.name for path in (root / "data" / "records").glob("*.json")
+            }
+            before_events = (root / "data" / "events" / "lifecycle_events.jsonl").read_bytes()
+            before_failure_state = lifecycle.get_state(old_failure["id"])
+            before_source_state = lifecycle.get_state(old_source["id"])
             failure_doc.write_text(FAILURE_TEXT.replace("원인 A", "원인 A의 확정된 개정"), encoding="utf-8")
-            lifecycle.audit(actor="agent:audit")
-            replacement = lifecycle.refresh_failure_projection(
+            validated = lifecycle.refresh_failure_projection(
                 old_failure["id"], actor="agent:test", approval_kind="standing_policy",
                 reason="정본 실패 문서 개정 반영"
             )
-            self.assertEqual(lifecycle.get_state(old_failure["id"])["payload"]["state"], "superseded")
-            self.assertEqual(lifecycle.get_state(old_source["id"])["payload"]["state"], "superseded")
             self.assertEqual(
-                lifecycle.get_state(replacement["failure_knowledge"]["id"])["payload"]["state"], "current"
+                validated["failure_document"]["confirmed_cause"],
+                "- 원인 A의 확정된 개정",
+            )
+            self.assertFalse(validated["stored"])
+            self.assertEqual(
+                {path.name for path in (root / "data" / "records").glob("*.json")},
+                before_records,
             )
             self.assertEqual(
-                knowledge.get_failure_knowledge(replacement["failure_knowledge"]["id"]),
-                replacement["failure_knowledge"],
+                (root / "data" / "events" / "lifecycle_events.jsonl").read_bytes(),
+                before_events,
             )
-            self.assertEqual(len(lifecycle.store.list_records("failure_knowledge")), 2)
+            self.assertEqual(lifecycle.get_state(old_failure["id"]), before_failure_state)
+            self.assertEqual(lifecycle.get_state(old_source["id"]), before_source_state)
 
     def test_register_existing_preserves_stage05_candidate_status(self) -> None:
         with self._root() as raw_root:

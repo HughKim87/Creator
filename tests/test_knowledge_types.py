@@ -291,34 +291,35 @@ class DecisionRecordTests(unittest.TestCase):
 
 
 class FailureKnowledgeTests(unittest.TestCase):
-    def test_failure_schema_matches_runtime_contract(self) -> None:
+    def test_legacy_failure_schema_matches_runtime_contract(self) -> None:
         schema = json.loads(
             (ROOT / "schemas" / "failure-knowledge-payload-v1.schema.json").read_text(encoding="utf-8")
         )
         self.assertEqual(set(schema["required"]), FAILURE_KNOWLEDGE_FIELDS)
         self.assertEqual(set(schema["properties"]), FAILURE_KNOWLEDGE_FIELDS)
 
-    def test_failure_import_read_list_and_source_trace(self) -> None:
+    def test_failure_document_validates_and_lists_without_structured_files(self) -> None:
         with tempfile.TemporaryDirectory(prefix="stage05d-failure-") as raw_root:
             root = Path(raw_root)
             (root / "failures").mkdir()
             (root / "failures" / "neutral.md").write_text(failure_document(), encoding="utf-8")
             service = KnowledgeService(root)
             service.initialize()
-            imported = service.import_failure_knowledge(
-                "failures/neutral.md",
-                projected_by="agent:test",
-                record_id=FAILURE_ID,
-                source_id=FAILURE_SOURCE_ID,
+            before = list((root / "data" / "records").glob("*.json"))
+            validated = service.import_failure_knowledge(
+                "failures/neutral.md", projected_by="agent:test"
             )
-            failure = imported["failure_knowledge"]
-            self.assertEqual(failure["payload"]["source_id"], imported["source"]["id"])
-            self.assertEqual(failure["payload"]["resolution"], ["입력 계약을 쓰기 전에 검사했다."])
-            self.assertEqual(failure["payload"]["verification"], ["전체 회귀 테스트가 통과했다."])
-            self.assertEqual(service.get_failure_knowledge(FAILURE_ID), failure)
-            self.assertEqual(service.list_failure_knowledge(), [failure])
+            view = validated["failure_document"]
+            self.assertFalse(validated["stored"])
+            self.assertEqual(view["resolution"], ["입력 계약을 쓰기 전에 검사했다."])
+            self.assertEqual(view["verification"], ["전체 회귀 테스트가 통과했다."])
+            self.assertEqual(
+                service.list_failure_documents()[0]["canonical_doc_ref"],
+                "failures/neutral.md",
+            )
+            self.assertEqual(list((root / "data" / "records").glob("*.json")), before)
 
-    def test_failure_projection_rejects_unresolved_missing_section_duplicate_and_drift(self) -> None:
+    def test_failure_document_rejects_unresolved_missing_section_and_invalid_projection_ids(self) -> None:
         with tempfile.TemporaryDirectory(prefix="stage05d-invalid-") as raw_root:
             root = Path(raw_root)
             failures = root / "failures"
@@ -343,16 +344,30 @@ class FailureKnowledgeTests(unittest.TestCase):
                     "failures/prevalidation.md", projected_by="", record_id="not-a-uuid"
                 )
             self.assertEqual(list((root / "data" / "records").glob("*.json")), before)
-            target = failures / "neutral.md"
-            target.write_text(failure_document(), encoding="utf-8")
-            service.import_failure_knowledge(
-                "failures/neutral.md", projected_by="agent:test", record_id=FAILURE_ID
-            )
             with self.assertRaises(KnowledgeRecordError):
-                service.import_failure_knowledge("failures/neutral.md", projected_by="agent:test")
-            target.write_text(failure_document().replace("예상 결과", "변경된 결과"), encoding="utf-8")
-            with self.assertRaises(SourceIntegrityError):
-                service.get_failure_knowledge(FAILURE_ID)
+                service.import_failure_knowledge(
+                    "failures/prevalidation.md",
+                    projected_by="agent:test",
+                    record_id=FAILURE_ID,
+                )
+
+    def test_legacy_failure_projection_remains_readable_by_id(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="stage05d-legacy-") as raw_root:
+            root = Path(raw_root)
+            (root / "failures").mkdir()
+            (root / "failures" / "neutral.md").write_text(failure_document(), encoding="utf-8")
+            service = KnowledgeService(root)
+            service.initialize()
+            imported = service._import_legacy_failure_knowledge(
+                "failures/neutral.md",
+                projected_by="agent:test",
+                record_id=FAILURE_ID,
+                source_id=FAILURE_SOURCE_ID,
+            )
+            self.assertEqual(
+                service.get_failure_knowledge(FAILURE_ID),
+                imported["failure_knowledge"],
+            )
 
 
 class SourceCliTests(unittest.TestCase):
@@ -439,21 +454,20 @@ class SourceCliTests(unittest.TestCase):
             listed = self.run_cli(root, "decision-list")
             self.assertEqual(json.loads(listed.stdout)["result"]["count"], 1)
 
-    def test_failure_cli_import_show_and_list(self) -> None:
+    def test_failure_cli_validates_and_lists_without_record_creation(self) -> None:
         with tempfile.TemporaryDirectory(prefix="stage05d-cli-") as raw_root:
             root = Path(raw_root)
             (root / "failures").mkdir()
             (root / "failures" / "neutral.md").write_text(failure_document(), encoding="utf-8")
             self.assertEqual(self.run_cli(root, "init").returncode, 0)
-            imported = self.run_cli(
-                root, "failure-import", "--doc", "failures/neutral.md",
-                "--projected-by", "agent:test", "--id", FAILURE_ID, "--source-id", FAILURE_SOURCE_ID,
+            validated = self.run_cli(
+                root, "failure-validate", "--doc", "failures/neutral.md"
             )
-            self.assertEqual(imported.returncode, 0, imported.stderr)
-            shown = self.run_cli(root, "failure-show", "--id", FAILURE_ID)
-            self.assertEqual(json.loads(shown.stdout)["result"]["record"]["id"], FAILURE_ID)
+            self.assertEqual(validated.returncode, 0, validated.stderr)
+            self.assertFalse(json.loads(validated.stdout)["result"]["stored"])
             listed = self.run_cli(root, "failure-list")
             self.assertEqual(json.loads(listed.stdout)["result"]["count"], 1)
+            self.assertEqual(list((root / "data" / "records").glob("*.json")), [])
 
 
 if __name__ == "__main__":

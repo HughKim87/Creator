@@ -9,7 +9,7 @@
 
 - Read `docs/build/MASTER_BUILD_PLAN.md` and only the current stage plan required for the task.
 - Confirm the prior stage gate, current scope, exclusions, protected inputs, and unresolved user decisions before implementation.
-- Ask the user before fixing an unresolved policy, technology, tool, or numerical value in implementation.
+- Resolve safe, reversible implementation details with the narrowest reasonable default and record the rationale. Ask the user only when a policy, technology, tool, or numerical value changes the authorized outcome, protection boundary, material risk, external effect, or irreversible cost.
 - Implement only the current stage. Do not add a later-stage interface, dependency, data structure, or completion requirement early.
 - Report the planned change and exclusion boundary before writing.
 - Run the stage's consolidated verification at the completion checkpoint. If it fails, fix the cause and repeat the consolidated verification.
@@ -19,4 +19,4 @@
 - Inspect the complete stage diff, evidence, unresolved risks, and cross-document consistency. Score every rubric dimension, explain every deduction, and fix any in-scope correctable defect before reassessing.
 - A score never overrides a critical defect, a failed required check, an unresolved deduction, or user approval. Report the score and readiness result explicitly.
 - After `완료 준비`, apply the stage-boundary commit gate in `MASTER_BUILD_PLAN.md#65-단계-경계-커밋-게이트` and `rules/version-control.md`. A required commit must succeed and be verified before the next stage begins.
-- Do not begin the next stage without traceable transition approval. A user-approved standing transition policy may satisfy this condition when the current success gate and boundary commit both pass.
+- Do not begin the next stage without traceable transition authority. A user-approved standing policy may cover a precise stage sequence when each success gate and boundary commit passes and no scope or risk changes.

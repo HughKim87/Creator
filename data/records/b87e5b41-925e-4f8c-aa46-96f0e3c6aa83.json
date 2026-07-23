@@ -1,0 +1,24 @@
+{
+  "content_hash": "sha256:e2894c12df47ec8c3e52e680317bb129c62918a6ee1d3ac2d948ca7c1dc94938",
+  "created_at": "2026-07-23T06:33:26Z",
+  "id": "b87e5b41-925e-4f8c-aa46-96f0e3c6aa83",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "agent:codex",
+    "last_approval_kind": "standing_policy",
+    "last_decision_id": null,
+    "last_event_id": "53591c23-8a7e-4f9f-9660-dff82a7120a2",
+    "last_reason": "Stage 10 활성 계약 보정 후 검증된 current replacement",
+    "last_source_ids": [
+      "be8fb3b0-4eac-40a0-bb57-f743538c5932"
+    ],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "9cd29c01-06e9-42ab-bd05-87f4d83f6fab",
+    "target_type": "knowledge"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-23T06:33:26Z"
+}

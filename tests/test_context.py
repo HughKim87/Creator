@@ -14,6 +14,30 @@ from file_data.knowledge import KnowledgeService
 from file_data.lifecycle import LifecycleService
 
 
+FAILURE_TEXT = """# 컨텍스트 실패
+
+- 상태: 해결·회귀 검증 완료
+- 적용 범위: 테스트
+
+## 증상
+
+검색 결과가 비었다.
+
+## 확인된 원인
+
+canonical 실패 문서 검색 경로가 없었다.
+
+## 해결과 검증
+
+- 정본 직접 검색을 추가했다.
+- context package 회귀가 통과했다.
+
+## 재사용 규칙
+
+- 실패 정본을 별도 projection 없이 검색한다.
+"""
+
+
 class ContextServiceTests(unittest.TestCase):
     def _fixture(self, raw_root: str) -> tuple[ContextService, dict, dict]:
         root = Path(raw_root)
@@ -122,6 +146,53 @@ class ContextServiceTests(unittest.TestCase):
             self.assertEqual([item["id"] for item in matches], [claim["id"]])
             self.assertEqual(matches[0]["matched_fields"], ["statement"])
             self.assertEqual(context.search("존재하지 않는 문자열"), [])
+
+    def test_failure_search_uses_canonical_document_without_record_fanout(self) -> None:
+        with self._root() as raw_root:
+            context, _, _ = self._fixture(raw_root)
+            root = Path(raw_root)
+            failures = root / "failures"
+            failures.mkdir()
+            target = failures / "context-case.md"
+            target.write_text(FAILURE_TEXT, encoding="utf-8")
+            before_records = {
+                path.name for path in (root / "data" / "records").glob("*.json")
+            }
+            before_events = {
+                path.name: path.read_bytes()
+                for path in (root / "data" / "events").glob("*.jsonl")
+            }
+            matches = context.search(
+                "canonical 실패 문서", {"record_type": "failure_knowledge"}
+            )
+            self.assertEqual([item["ref"] for item in matches], ["failures/context-case.md"])
+            package = context.build_package(
+                {
+                    "purpose": "실패 재사용",
+                    "search": "canonical 실패 문서",
+                    "filters": {"record_type": "failure_knowledge"},
+                }
+            )
+            self.assertEqual(
+                [(item["kind"], item["ref"]) for item in package["selected"]],
+                [("document", "failures/context-case.md")],
+            )
+            target.write_text(
+                FAILURE_TEXT.replace("검색 경로가 없었다", "직접 검색 경로가 누락됐다"),
+                encoding="utf-8",
+            )
+            self.assertEqual(len(context.search("직접 검색 경로")), 1)
+            self.assertEqual(
+                {path.name for path in (root / "data" / "records").glob("*.json")},
+                before_records,
+            )
+            self.assertEqual(
+                {
+                    path.name: path.read_bytes()
+                    for path in (root / "data" / "events").glob("*.jsonl")
+                },
+                before_events,
+            )
 
     def test_search_never_returns_superseded_match(self) -> None:
         with self._root() as raw_root:

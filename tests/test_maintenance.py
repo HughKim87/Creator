@@ -15,6 +15,30 @@ from file_data.lifecycle import LifecycleService
 from file_data.maintenance import GENERATED_INVENTORY_REF, MaintenanceService
 
 
+FAILURE_TEXT = """# 유지보수 실패
+
+- 상태: 해결·회귀 검증 완료
+- 적용 범위: 테스트
+
+## 증상
+
+예상 결과와 달랐다.
+
+## 확인된 원인
+
+검증 경로가 없었다.
+
+## 해결과 검증
+
+- 직접 검증 경로를 추가했다.
+- 전체 회귀가 통과했다.
+
+## 재사용 규칙
+
+- canonical 문서를 직접 검증한다.
+"""
+
+
 class MaintenanceServiceTests(unittest.TestCase):
     def _root(self) -> tempfile.TemporaryDirectory[str]:
         return tempfile.TemporaryDirectory(prefix="stage08-maintenance-")
@@ -92,6 +116,111 @@ class MaintenanceServiceTests(unittest.TestCase):
             )
             self.assertEqual(len(lifecycle._events()[0]), before_events)
             self.assertEqual(lifecycle.get_state(source["id"]), before_source)
+
+    def test_scan_validates_canonical_failures_without_projection_records(self) -> None:
+        with self._root() as raw_root:
+            maintenance, _, _ = self._fixture(raw_root)
+            failures = Path(raw_root) / "failures"
+            failures.mkdir()
+            target = failures / "case.md"
+            target.write_text(FAILURE_TEXT, encoding="utf-8")
+            maintenance.write_inventory()
+            before_records = {
+                path.name for path in (Path(raw_root) / "data" / "records").glob("*.json")
+            }
+            passed = maintenance.scan()
+            self.assertTrue(passed["ok"], passed["drift"])
+            self.assertEqual(passed["costs"]["canonical_failure_documents"], 1)
+            self.assertEqual(
+                {path.name for path in (Path(raw_root) / "data" / "records").glob("*.json")},
+                before_records,
+            )
+            target.write_text(
+                FAILURE_TEXT.replace("- 상태: 해결·회귀 검증 완료", "- 상태: 원인 조사 중"),
+                encoding="utf-8",
+            )
+            failed = maintenance.scan()
+            self.assertFalse(failed["ok"])
+            self.assertEqual(failed["drift"][0]["target_id"], "failures/case.md")
+
+    def test_legacy_failure_coexists_without_default_search_or_drift_duplication(self) -> None:
+        with self._root() as raw_root:
+            maintenance, _, _ = self._fixture(raw_root)
+            root = Path(raw_root)
+            failures = root / "failures"
+            failures.mkdir()
+            target = failures / "case.md"
+            target.write_text(FAILURE_TEXT, encoding="utf-8")
+            knowledge = KnowledgeService(root)
+            legacy = knowledge._import_legacy_failure_knowledge(
+                "failures/case.md",
+                projected_by="agent:test",
+                record_id=str(uuid4()),
+                source_id=str(uuid4()),
+            )
+            lifecycle = LifecycleService(root)
+            lifecycle.register_existing(
+                actor="agent:test",
+                approval_kind="standing_policy",
+            )
+            maintenance.write_inventory()
+            before_records = {
+                path.name for path in (root / "data" / "records").glob("*.json")
+            }
+            before_events = {
+                path.name: path.read_bytes()
+                for path in (root / "data" / "events").glob("*.jsonl")
+            }
+
+            imported = knowledge.import_failure_knowledge(
+                "failures/case.md",
+                projected_by="agent:test",
+            )
+            self.assertFalse(imported["stored"])
+            target.write_text(
+                FAILURE_TEXT.replace(
+                    "canonical 문서를 직접 검증한다",
+                    "canonical 개정 문서를 직접 검증한다",
+                ),
+                encoding="utf-8",
+            )
+            refreshed = lifecycle.refresh_failure_projection(
+                legacy["failure_knowledge"]["id"],
+                actor="agent:test",
+                approval_kind="standing_policy",
+                reason="정본 개정 직접 검증",
+            )
+            self.assertFalse(refreshed["stored"])
+
+            context = ContextService(root)
+            filtered = context.filter_records({"record_type": "failure_knowledge"})
+            self.assertEqual(
+                [item["ref"] for item in filtered],
+                ["failures/case.md"],
+            )
+            searched = context.search(
+                "canonical 개정 문서를 직접 검증",
+                {"record_type": "failure_knowledge"},
+            )
+            self.assertEqual(
+                [item["ref"] for item in searched],
+                ["failures/case.md"],
+            )
+            report = maintenance.scan()
+            self.assertTrue(report["ok"], report["drift"])
+            self.assertEqual(report["drift"], [])
+            self.assertEqual(report["costs"]["canonical_failure_documents"], 1)
+            self.assertEqual(
+                {path.name for path in (root / "data" / "records").glob("*.json")},
+                before_records,
+            )
+            self.assertEqual(
+                {
+                    path.name: path.read_bytes()
+                    for path in (root / "data" / "events").glob("*.jsonl")
+                },
+                before_events,
+            )
 
     def test_scan_detects_exact_current_knowledge_duplicate(self) -> None:
         with self._root() as raw_root:

@@ -13,8 +13,8 @@
 - 증상, 확인된 원인, 실패 시도, 해결, 검증, 재발 방지 조건을 구분한다.
 - 단계 문서나 핸드오프에 사례 본문을 복사하지 않고 이 정본을 연결한다.
 - 아직 원인을 확인하지 못했거나 해결 검증이 끝나지 않은 실패는 이 폴더로 승격하지 않는다.
-- 이 Markdown 구조가 사례 본문의 정본이다. Stage 05의 `failure_knowledge` record는 정본 경로·hash가 일치할 때만 유효한 기계 판독 projection이며 자동 수집·검색 인덱스는 아니다.
-- 구조화 관계와 stale 판정은 [지식 유형 계약](../docs/KNOWLEDGE_TYPES_CONTRACT.md), 개정·대체는 [지식 수명주기 계약](../docs/KNOWLEDGE_LIFECYCLE_CONTRACT.md)을 따른다.
+- 이 Markdown 구조가 사람·기계 공통 정본이다. `failure-validate`, context 검색, maintenance가 정본을 실행 시 직접 파싱하며 사례별 source·projection·lifecycle 파일을 만들지 않는다.
+- Stage 05~09의 기존 `failure_knowledge` record와 관련 source·lifecycle은 legacy history로 보존하고 기본 검색·현재성 판단에는 사용하지 않는다. 세부 경계는 [지식 유형 계약](../docs/KNOWLEDGE_TYPES_CONTRACT.md)을 따른다.
 
 ## 사례 목록
 
@@ -45,3 +45,4 @@
 - [Windows 텍스트 줄바꿈 변환과 실제 크기 측정 불일치](windows-text-newline-size-measurement.md)
 - [기존 Python bytecode 캐시와 청결 게이트 불일치](python-bytecode-cache-cleanliness.md)
 - [완료 작업에 다음 행동을 함께 남기는 상태 충돌](completed-work-next-action-conflict.md)
+- [실패 정본의 파생 projection·lifecycle 파일 증식](derived-failure-projection-fanout.md)

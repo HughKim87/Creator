@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 from uuid import UUID
 
+from .knowledge import KnowledgeService
 from .lifecycle import LIFECYCLE_STATES, TARGET_TYPES, LifecycleError, LifecycleService
 from .record import UnsafePathError, resolve_project_path
 from .store import InputContractError
@@ -57,6 +58,31 @@ class ContextService:
     def __init__(self, project_root: Path | str) -> None:
         self.root = Path(project_root).resolve()
         self.lifecycle = LifecycleService(self.root)
+        self.knowledge = KnowledgeService(self.root)
+
+    @staticmethod
+    def _is_legacy_failure_source(record: Mapping[str, Any]) -> bool:
+        return (
+            record["record_type"] == "source"
+            and record["payload"]["source_kind"] == "local_document"
+            and record["payload"]["locator"].startswith("failures/")
+        )
+
+    @staticmethod
+    def _failure_candidate(view: Mapping[str, Any]) -> dict[str, Any]:
+        ref = view["canonical_doc_ref"]
+        return {
+            "ref": ref,
+            "record_type": "failure_knowledge",
+            "lifecycle_state": "current",
+            "sources": [
+                {
+                    "ref": ref,
+                    "evidence_role": "primary",
+                    "lifecycle_state": "current",
+                }
+            ],
+        }
 
     def _record_sources(self, record: Mapping[str, Any]) -> list[dict[str, str]]:
         payload = record["payload"]
@@ -156,6 +182,8 @@ class ContextService:
         records: list[dict[str, Any]] = []
         for lifecycle_state in self.lifecycle.list_states(state=state_filter):
             record = self.lifecycle.store.get_record(lifecycle_state["payload"]["target_id"])
+            if record["record_type"] == "failure_knowledge" or self._is_legacy_failure_source(record):
+                continue
             if normalized.get("record_type") not in {None, record["record_type"]}:
                 continue
             if "scope" in normalized:
@@ -174,7 +202,17 @@ class ContextService:
                     "sources": sources,
                 }
             )
-        return sorted(records, key=lambda item: item["id"])
+        if (
+            state_filter == "current"
+            and normalized.get("record_type") in {None, "failure_knowledge"}
+            and "scope" not in normalized
+            and normalized.get("evidence_role") in {None, "primary"}
+        ):
+            records.extend(
+                self._failure_candidate(view)
+                for view in self.knowledge.list_failure_documents()
+            )
+        return sorted(records, key=lambda item: item.get("id", item.get("ref", "")))
 
     def _search_fields(self, record: Mapping[str, Any]) -> dict[str, str]:
         payload = record["payload"]
@@ -204,9 +242,19 @@ class ContextService:
         candidates = self.filter_records({**self._normalized_filters(filters), "state": "current"})
         matches: list[dict[str, Any]] = []
         for candidate in candidates:
-            record = self.lifecycle.store.get_record(candidate["id"])
+            if "ref" in candidate:
+                view = self.knowledge.validate_failure_document(candidate["ref"])
+                fields = {
+                    "title": view["title"],
+                    "symptom": view["symptom"],
+                    "confirmed_cause": view["confirmed_cause"],
+                    "prevention": "\n".join(view["prevention"]),
+                }
+            else:
+                record = self.lifecycle.store.get_record(candidate["id"])
+                fields = self._search_fields(record)
             matched_fields = sorted(
-                field for field, value in self._search_fields(record).items() if needle in value.casefold()
+                field for field, value in fields.items() if needle in value.casefold()
             )
             if matched_fields:
                 matches.append({**candidate, "matched_fields": matched_fields})
@@ -291,7 +339,12 @@ class ContextService:
         else:
             candidates = []
         for candidate in candidates:
-                key = ("record", candidate["id"])
+                if "ref" in candidate:
+                    key = ("document", candidate["ref"])
+                    candidate_ref = candidate["ref"]
+                else:
+                    key = ("record", candidate["id"])
+                    candidate_ref = candidate["id"]
                 if key in direct_keys:
                     continue
                 reason = (
@@ -299,10 +352,14 @@ class ContextService:
                     if "matched_fields" in candidate
                     else "structured_filter"
                 )
-                item = self._record_item(candidate["id"], reason)
+                item = (
+                    self._document_item(candidate["ref"], reason)
+                    if "ref" in candidate
+                    else self._record_item(candidate["id"], reason)
+                )
                 projected = direct_characters + _content_size(item)[0]
                 if projected > char_limit:
-                    exclude(candidate["id"], "size_limit")
+                    exclude(candidate_ref, "size_limit")
                     continue
                 selected.append(item)
                 direct_keys.add(key)

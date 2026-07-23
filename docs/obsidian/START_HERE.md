@@ -18,8 +18,9 @@
 | 전체 구축 순서 | [MASTER_BUILD_PLAN](../build/MASTER_BUILD_PLAN.md) |
 | 현재 요구사항 | [통합 요구사항 기준서](../../reports/2026-07-22_프로젝트_의도_통합_요구사항_기준서.md) |
 | 해결된 실패 지식 | [실패 지식 색인](../../failures/README.md) |
-| 모든 활성 문서 | [전체 문서 지도](DOCUMENT_MAP.md) |
-| 단계별 보기 | [단계별 보기 색인](stages/README.md) |
+| 핵심 owner·범주 연결 | [전체 문서 지도](DOCUMENT_MAP.md) |
+| 모든 활성 문서 경로 | [자동 생성 inventory](GENERATED_DOCUMENT_INVENTORY.md) |
+| Stage 00~09 완료 시점 보기 | [단계별 보기 색인](stages/README.md) |
 
 현재 값은 이 화면에 복사하지 않는다. 항상 연결된 정본에서 확인한다.
 

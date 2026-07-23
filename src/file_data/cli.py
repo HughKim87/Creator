@@ -165,14 +165,18 @@ def _parser() -> RecordArgumentParser:
     decision_show.add_argument("--id", required=True, dest="record_id")
     commands.add_parser("decision-list", help="list validated decision records")
 
-    failure_import = commands.add_parser("failure-import", help="project one resolved failure Markdown document")
+    failure_validate = commands.add_parser(
+        "failure-validate", help="validate one resolved canonical failure Markdown document"
+    )
+    failure_validate.add_argument("--doc", required=True, dest="canonical_doc_ref")
+    failure_import = commands.add_parser(
+        "failure-import", help="deprecated alias: validate a failure Markdown document without storage"
+    )
     failure_import.add_argument("--doc", required=True, dest="canonical_doc_ref")
     failure_import.add_argument("--projected-by", required=True)
-    failure_import.add_argument("--id", dest="record_id")
-    failure_import.add_argument("--source-id")
-    failure_show = commands.add_parser("failure-show", help="read one hash-verified failure projection")
+    failure_show = commands.add_parser("failure-show", help="read one legacy stored failure projection")
     failure_show.add_argument("--id", required=True, dest="record_id")
-    commands.add_parser("failure-list", help="list hash-verified failure projections")
+    commands.add_parser("failure-list", help="list validated canonical failure Markdown documents")
 
     lifecycle_register = commands.add_parser("lifecycle-register", help="register one record lifecycle")
     lifecycle_register.add_argument("--id", required=True, dest="target_id")
@@ -218,7 +222,8 @@ def _parser() -> RecordArgumentParser:
     lifecycle_audit = commands.add_parser("lifecycle-audit", help="trigger reviews from current local drift")
     lifecycle_audit.add_argument("--actor", required=True)
     lifecycle_refresh = commands.add_parser(
-        "lifecycle-refresh-failure", help="replace one stale failure projection without deleting history"
+        "lifecycle-refresh-failure",
+        help="legacy alias: validate the canonical failure document without creating records",
     )
     lifecycle_refresh.add_argument("--id", required=True, dest="target_id")
     lifecycle_refresh.add_argument("--actor", required=True)
@@ -360,18 +365,23 @@ def _run(namespace: argparse.Namespace) -> dict[str, Any]:
         raise InputContractError(f"Unknown lifecycle command: {namespace.command}")
     if namespace.command.startswith("failure-"):
         knowledge = KnowledgeService(namespace.root)
+        if namespace.command == "failure-validate":
+            return {
+                "failure_document": knowledge.validate_failure_document(
+                    namespace.canonical_doc_ref
+                ),
+                "stored": False,
+            }
         if namespace.command == "failure-import":
             return knowledge.import_failure_knowledge(
                 namespace.canonical_doc_ref,
                 projected_by=namespace.projected_by,
-                record_id=namespace.record_id,
-                source_id=namespace.source_id,
             )
         if namespace.command == "failure-show":
             return {"record": knowledge.get_failure_knowledge(namespace.record_id)}
         if namespace.command == "failure-list":
-            records = knowledge.list_failure_knowledge()
-            return {"records": records, "count": len(records)}
+            documents = knowledge.list_failure_documents()
+            return {"failure_documents": documents, "count": len(documents)}
         raise InputContractError(f"Unknown failure command: {namespace.command}")
     if namespace.command.startswith("decision-"):
         knowledge = KnowledgeService(namespace.root)

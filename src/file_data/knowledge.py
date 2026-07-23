@@ -335,7 +335,7 @@ def parse_failure_document(data: bytes, canonical_doc_ref: str) -> dict[str, Any
     if title_match is None or status_match is None or condition_match is None:
         raise KnowledgeRecordError("failure document is missing title, status, or scope metadata")
     if "해결" not in status_match.group(1):
-        raise KnowledgeRecordError("unresolved failure documents cannot be projected")
+        raise KnowledgeRecordError("unresolved failure documents cannot be reused")
     solution_lines = _section_bullets(_failure_section(text, "해결과 검증"), "solution evidence")
     if len(solution_lines) < 2:
         raise KnowledgeRecordError("해결과 검증 section needs resolution and verification evidence")
@@ -508,6 +508,22 @@ class KnowledgeService:
             raise KnowledgeRecordError(f"failure document does not exist: {canonical_doc_ref}")
         return parse_failure_document(target.read_bytes(), canonical_doc_ref)
 
+    def failure_document_refs(self) -> list[str]:
+        directory = self.store.root / "failures"
+        if not directory.is_dir():
+            return []
+        return [
+            path.relative_to(self.store.root).as_posix()
+            for path in sorted(directory.glob("*.md"), key=lambda item: item.name)
+            if path.name != "README.md"
+        ]
+
+    def validate_failure_document(self, canonical_doc_ref: str) -> dict[str, Any]:
+        return self._failure_projection_core(canonical_doc_ref)
+
+    def list_failure_documents(self) -> list[dict[str, Any]]:
+        return [self.validate_failure_document(ref) for ref in self.failure_document_refs()]
+
     def import_failure_knowledge(
         self,
         canonical_doc_ref: str,
@@ -517,6 +533,33 @@ class KnowledgeService:
         source_id: str | None = None,
         timestamp: datetime | None = None,
     ) -> dict[str, Any]:
+        if record_id is not None or source_id is not None:
+            raise KnowledgeRecordError(
+                "per-case failure projection ids are no longer accepted; validate the canonical document"
+            )
+        projected_by = _non_empty(projected_by, "projected_by")
+        _, rendered_time = _render_time(timestamp)
+        core = self.validate_failure_document(canonical_doc_ref)
+        return {
+            "failure_document": {
+                **core,
+                "status": "resolved",
+                "validated_by": projected_by,
+                "validated_at": rendered_time,
+            },
+            "stored": False,
+        }
+
+    def _import_legacy_failure_knowledge(
+        self,
+        canonical_doc_ref: str,
+        *,
+        projected_by: str,
+        record_id: str | None = None,
+        source_id: str | None = None,
+        timestamp: datetime | None = None,
+    ) -> dict[str, Any]:
+        """Create a v1 stored projection for compatibility tests only."""
         projected_by = _non_empty(projected_by, "projected_by")
         failure_identifier = record_id or str(uuid4())
         source_identifier = source_id or str(uuid4())

@@ -20,16 +20,16 @@
 
 ## 정본과 파생 경계
 
-- `docs/obsidian/`의 시작 화면·지도·단계 보기는 파생 문서다.
+- `docs/obsidian/`의 시작 화면·owner router·자동 inventory·Stage 00~09 보기는 파생 문서다.
 - 현재 상태는 [SESSION_HANDOFF.md](../../SESSION_HANDOFF.md), 정책은 [PROJECT_RULES.md](../../PROJECT_RULES.md), 단계는 [마스터 계획](../build/MASTER_BUILD_PLAN.md)이 각각 소유한다.
-- 지도에는 경로·유형·권위·관계만 적고 정본 본문이나 동적 상태를 복사하지 않는다.
+- 수동 지도에는 핵심 owner·범주·관계만 적고, 모든 활성 경로의 완전 목록은 generated inventory가 소유한다. 정본 본문이나 동적 상태를 복사하지 않는다.
 - Obsidian을 닫거나 `.obsidian/`의 로컬 상태를 제거해도 Markdown 시작 경로와 모든 정본이 동작해야 한다.
 
 ## 사용자 시작 경로
 
 1. [Obsidian 시작 화면](START_HERE.md)
 2. [전체 문서 지도](DOCUMENT_MAP.md)
-3. [단계별 보기](stages/README.md)
+3. [자동 전체 문서 inventory](GENERATED_DOCUMENT_INVENTORY.md)
 4. 현재 상태가 필요할 때 [SESSION_HANDOFF.md](../../SESSION_HANDOFF.md)
 
 ## 편집 규칙
@@ -41,14 +41,14 @@
 
 ## Stage 02 이후 갱신
 
-- 단계 시작 시 전체 지도에서 현재 단계 계획, 적용 규칙, 선행 결과 링크를 확인한다.
-- 단계 종료 시 새 활성 문서의 링크와 유형을 지도에 추가하고 고립·끊어진 링크를 검사한다.
-- 단계별 보기는 정본 링크만 갱신하며 단계 결과 본문을 복제하지 않는다.
+- 단계 시작 시 수동 지도에서 owner를 확인하고 마스터 계획에서 현재 단계 계획·적용 규칙·선행 결과로 이동한다.
+- 단계 종료 시 generated inventory를 재생성하고 고립·끊어진 링크를 검사한다. 새 문서마다 수동 지도 행이나 단계 보기 파일을 만들지 않는다.
+- Stage 00~09 단계별 보기는 완료 시점 파생 화면으로 유지하며 Stage 10 이후 새 파일을 추가하지 않는다.
 
 ## 검증 과제
 
 1. 시작 화면에서 프로젝트 목적, 현재 단계, 적용 규칙, 첫 다음 행동으로 이동한다.
-2. 전체 지도에서 정책·절차·계약·계획·현재 상태·가이드·보고서·실패 지식 사례를 각각 찾는다.
+2. owner router와 generated inventory를 함께 사용해 정책·절차·계약·계획·현재 상태·가이드·보고서·실패 지식 사례를 각각 찾는다.
 3. Stage 01.5 보기에서 선행 Stage 01 계약과 후속 Stage 02 계획으로 이동한다.
 4. `backup/`, `inputs/`, `outputs/` 내부 파일이 탐색·지도·그래프에 나타나지 않는지 확인한다.
 5. Obsidian 없이 동일 Markdown 링크가 동작하는지 확인한다.

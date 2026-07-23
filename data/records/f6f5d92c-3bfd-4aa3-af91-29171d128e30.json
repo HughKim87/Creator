@@ -1,22 +1,22 @@
 {
-  "content_hash": "sha256:9b044d2430374578914d56aeb88d41a51a1363b41673ef4c8adc33e27d2b46c7",
+  "content_hash": "sha256:7537da2d5e0e2a12a6fad64140b96bba891c8057ad7923b0a05b6beb888851fe",
   "created_at": "2026-07-22T21:28:56Z",
   "id": "f6f5d92c-3bfd-4aa3-af91-29171d128e30",
   "payload": {
     "conflict_ids": [],
-    "last_actor": "agent:stage09",
+    "last_actor": "agent:codex",
     "last_approval_kind": "standing_policy",
     "last_decision_id": null,
-    "last_event_id": "77d280f6-836f-4684-9f58-30e887ec85d8",
-    "last_reason": "Stage 09 도메인 배치 계약 개정 source",
+    "last_event_id": "c29dbf7f-b6bb-43c5-b7c6-084f8c0dc7b5",
+    "last_reason": "Stage 10 계약 보정으로 검증된 current replacement 적용",
     "last_source_ids": [],
-    "revision": 1,
-    "state": "current",
-    "superseded_by": null,
+    "revision": 2,
+    "state": "superseded",
+    "superseded_by": "be8fb3b0-4eac-40a0-bb57-f743538c5932",
     "target_id": "6d182fc3-30bc-4818-91d9-1c748f04b5f7",
     "target_type": "source"
   },
   "record_type": "lifecycle_state",
   "schema_version": 1,
-  "updated_at": "2026-07-22T21:28:56Z"
+  "updated_at": "2026-07-23T06:34:18Z"
 }

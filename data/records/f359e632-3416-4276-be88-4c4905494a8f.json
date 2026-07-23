@@ -1,24 +1,22 @@
 {
-  "content_hash": "sha256:96ce203b97ad36d2fe7a12d3cd4a181b28707dfbb98d788ab3de6644d34f10e7",
+  "content_hash": "sha256:5a3ccc98d01c0b998d24357753260f1bfc5d26886864675f2e113c9ef5390fc3",
   "created_at": "2026-07-22T21:00:16Z",
   "id": "f359e632-3416-4276-be88-4c4905494a8f",
   "payload": {
     "conflict_ids": [],
-    "last_actor": "agent:stage08",
+    "last_actor": "agent:codex",
     "last_approval_kind": "standing_policy",
     "last_decision_id": null,
-    "last_event_id": "fb7f038e-11d0-4f54-a61d-7174c01511f4",
-    "last_reason": "Stage 08 컨텍스트 평가 계약 개정 새 knowledge",
-    "last_source_ids": [
-      "01dbf7cc-b854-4fac-8932-e66fd3dabd3a"
-    ],
-    "revision": 1,
-    "state": "current",
-    "superseded_by": null,
+    "last_event_id": "ea73e777-dfce-40f9-a106-b2629b8c5975",
+    "last_reason": "Stage 10 계약 보정으로 검증된 current replacement 적용",
+    "last_source_ids": [],
+    "revision": 2,
+    "state": "superseded",
+    "superseded_by": "35ed5523-d970-48eb-a2fe-716b111e970c",
     "target_id": "57064cc7-5c0b-4737-be35-2813b2798619",
     "target_type": "knowledge"
   },
   "record_type": "lifecycle_state",
   "schema_version": 1,
-  "updated_at": "2026-07-22T21:00:16Z"
+  "updated_at": "2026-07-23T06:34:07Z"
 }

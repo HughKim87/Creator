@@ -1,6 +1,6 @@
 # 지식 수명주기 계약과 사용법
 
-- 목적: Stage 05 지식 record의 원본을 덮어쓰지 않고 검토·현재 채택·충돌·대체·거부·폐기 상태와 이유를 추적한다.
+- 목적: 저장된 source·knowledge·decision record의 원본을 덮어쓰지 않고 검토·현재 채택·충돌·대체·거부·폐기 상태와 이유를 추적한다.
 - 읽는 시점: 지식의 현재 사용 가능 여부를 판단하거나 source drift, 정본 개정, 충돌, 대체를 처리할 때.
 - 책임: `data/events/lifecycle_events.jsonl`이 전이 정본, `lifecycle_state` record가 재구축 가능한 현재 projection, Stage 05 record가 당시 내용의 원본을 소유한다.
 - 상태: Stage 06 활성 계약.
@@ -21,7 +21,9 @@
 
 ## 대상과 초기 등록
 
-대상 유형은 `source`, `knowledge`, `decision`, `failure_knowledge`다. Stage 05에서 이미 검증된 source·knowledge는 `current`, 관찰·후보 상태는 `candidate`, 승인 근거가 있는 decision과 해결된 failure projection은 `current`로 등록한다.
+새 lifecycle 대상 유형은 `source`, `knowledge`, `decision`이다. Stage 05에서 이미 검증된 source·knowledge는 `current`, 관찰·후보 상태는 `candidate`, 승인 근거가 있는 decision은 `current`로 등록한다.
+
+Stage 05~09의 `failure_knowledge`와 실패 문서 전용 source·lifecycle은 legacy history로 읽기 호환만 유지한다. 해결 실패의 현재성은 [실패 Markdown 정본](KNOWLEDGE_TYPES_CONTRACT.md#해결-실패-정본-직접-재사용)의 직접 검증이 소유하며 새 lifecycle에 등록하지 않는다.
 
 - 기존 payload는 수정하지 않는다.
 - 한 대상에는 하나의 lifecycle snapshot만 존재한다.
@@ -54,21 +56,13 @@
 `lifecycle-audit`는 현재 프로젝트 bytes만 읽어 다음 실제 사건을 검출한다.
 
 - local source의 저장 hash와 현재 bytes 불일치 또는 소실
-- failure Markdown 정본과 hash 고정 projection 불일치
-- drift source를 참조하는 knowledge·decision·failure projection
+- drift source를 참조하는 knowledge·decision
 
 검출된 활성 record는 `review_required`가 되며 이유와 관련 source가 event에 남는다. 이미 review_required인 대상에는 중복 event를 추가하지 않는다. 주기 일정, LLM 자동 승인, 근거 없는 자동 병합은 이 단계에 없다.
 
-## 실패 projection 개정
+## Legacy 실패 projection 경계
 
-실패 Markdown은 계속 사람용 정본이다. 정본이 바뀌면 기존 source와 `failure_knowledge`를 수정하지 않고 다음 순서로 개정한다.
-
-1. 현재 Markdown hash로 새 source와 새 projection을 만든다.
-2. 둘을 승인된 `current`로 등록한다.
-3. 옛 source와 projection을 새 record로 `superseded` 처리한다.
-4. 옛 record와 event를 보존하고 current 목록에는 새 projection만 표시한다.
-
-이 동작은 수명주기 개정이며 Stage 08의 자동 유지보수·일괄 재생성과 구분한다.
+기존 stored failure projection은 삭제하거나 다시 current로 만들지 않는다. `lifecycle-refresh-failure`는 호환 명령 이름만 유지하며 연결된 canonical Markdown을 직접 검증하고 source·projection·snapshot·event를 만들지 않는다. 기본 current 검색과 maintenance는 legacy 실패 lifecycle을 제외한다.
 
 ## 승인된 진입점
 
@@ -76,7 +70,8 @@
 - 등록·조회: `lifecycle-register`, `lifecycle-register-existing`, `lifecycle-show`, `lifecycle-list`
 - 현재 선택·이력: `lifecycle-current`, `lifecycle-history`
 - 전이·복구: `lifecycle-transition`, `lifecycle-rebuild`
-- 사건 처리: `lifecycle-audit`, `lifecycle-refresh-failure`
+- 사건 처리: `lifecycle-audit`
+- Legacy 비저장 검증 alias: `lifecycle-refresh-failure`
 
 구조 계약은 `schemas/lifecycle-event-payload-v1.schema.json`과 `schemas/lifecycle-state-payload-v1.schema.json`이다. Python 검증기는 허용 전이, 승인 종류, 참조 record 유형, replacement 현재 상태 같은 교차 조건을 추가로 검사한다.
 

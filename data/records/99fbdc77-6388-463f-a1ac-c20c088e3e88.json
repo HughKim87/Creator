@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:a51d8a6d6e402333b2b474f52c26902843df2e7e5c983dc986e7b9204f09904d",
+  "created_at": "2026-07-23T06:32:45Z",
+  "id": "99fbdc77-6388-463f-a1ac-c20c088e3e88",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "docs/CONTEXT_PACKAGE_CONTRACT.md",
+    "observed_at": "2026-07-23T06:32:45Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:2468ab50d99417dd8d736523f095443a83435453247bf6de1232bf246660d8f0"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-23T06:32:45Z"
+}

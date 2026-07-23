@@ -2,7 +2,7 @@
 
 - 상태: 해결·회귀 검증 완료
 - 최초 확인: 2026-07-23 Stage 05 실제 failure projection 후 source 전체 검증
-- 마지막 검증: 2026-07-23
+- 마지막 검증: 2026-07-23 Stage 10 계약 개정
 - 적용 범위: hash가 고정된 로컬 source record의 역사 조회와 현재 locator 재검증
 
 ## 증상
@@ -24,7 +24,8 @@
 - source show/list는 common-record와 source payload의 저장 무결성을 검증한다.
 - source verify는 로컬 locator 존재와 현재 SHA-256 일치를 별도로 검사한다.
 - knowledge·decision의 역사 조회는 당시 source 참조를 유지한다.
-- failure projection은 현재 Markdown 정본과의 일치가 의미 자체이므로 계속 강제 검증한다.
+- 해결 실패는 stored source 목록과 분리해 canonical Markdown을 직접 검증한다.
+- Stage 10에서 두 활성 계약 source drift와 의존 knowledge만 정확히 식별하고 replacement 후 전체 scan의 drift 0을 확인했다.
 
 ## 재사용 규칙
 

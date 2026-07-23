@@ -3,7 +3,7 @@
 - 목적: 보호·역사 경계를 제외한 활성 Markdown 경로를 정본에서 결정론적으로 재생성한다.
 - 상태: 파생물. 이 파일은 규칙·상태·결정을 소유하지 않는다.
 - 생성 명령: `python -m file_data maintenance-inventory --write`
-- 원본 문서 수: 84
+- 원본 문서 수: 86
 - 자기 재귀 방지: 이 생성 파일 자체는 원본 목록에서 제외한다.
 
 ## docs
@@ -12,7 +12,7 @@
 - [파일 데이터 저장 계약](../FILE_DATA_CONTRACT.md) — `docs/FILE_DATA_CONTRACT.md`
 - [정보·문서 책임 구조](../INFORMATION_ARCHITECTURE.md) — `docs/INFORMATION_ARCHITECTURE.md`
 - [지식 수명주기 계약과 사용법](../KNOWLEDGE_LIFECYCLE_CONTRACT.md) — `docs/KNOWLEDGE_LIFECYCLE_CONTRACT.md`
-- [지식 유형 계약과 사용법](../KNOWLEDGE_TYPES_CONTRACT.md) — `docs/KNOWLEDGE_TYPES_CONTRACT.md`
+- [지식 유형·실패 정본 직접 재사용 계약](../KNOWLEDGE_TYPES_CONTRACT.md) — `docs/KNOWLEDGE_TYPES_CONTRACT.md`
 - [유지보수·검증 자동화 계약](../MAINTENANCE_AUTOMATION_CONTRACT.md) — `docs/MAINTENANCE_AUTOMATION_CONTRACT.md`
 - [공통 기록 I/O 계약과 사용법](../RECORD_IO_CONTRACT.md) — `docs/RECORD_IO_CONTRACT.md`
 - [작업 기록·현재 상태 계약](../WORK_STATE_CONTRACT.md) — `docs/WORK_STATE_CONTRACT.md`
@@ -28,11 +28,12 @@
 - [Stage 07 — 선택적 읽기·컨텍스트](../build/stage-07-context-retrieval.md) — `docs/build/stage-07-context-retrieval.md`
 - [Stage 08 — 유지보수·자동화](../build/stage-08-maintenance-automation.md) — `docs/build/stage-08-maintenance-automation.md`
 - [Stage 09 — 도메인 워크플로 확장](../build/stage-09-domain-integration.md) — `docs/build/stage-09-domain-integration.md`
+- [Stage 10 — 에이전트 자율 운영·구조 최적화](../build/stage-10-agent-autonomy-structure-optimization.md) — `docs/build/stage-10-agent-autonomy-structure-optimization.md`
 - [유튜브 촬영 전 근거 패키지 계약](../domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md) — `docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md`
 - [전체 활성 문서 지도](DOCUMENT_MAP.md) — `docs/obsidian/DOCUMENT_MAP.md`
 - [Obsidian 검토 환경 계약](OBSIDIAN_REVIEW_CONTRACT.md) — `docs/obsidian/OBSIDIAN_REVIEW_CONTRACT.md`
 - [Obsidian 시작 화면](START_HERE.md) — `docs/obsidian/START_HERE.md`
-- [단계별 보기](stages/README.md) — `docs/obsidian/stages/README.md`
+- [Stage 00~09 완료 시점 단계별 보기](stages/README.md) — `docs/obsidian/stages/README.md`
 - [Stage 00 보기](stages/stage-00.md) — `docs/obsidian/stages/stage-00.md`
 - [Stage 01.5 보기](stages/stage-01-5.md) — `docs/obsidian/stages/stage-01-5.md`
 - [Stage 01 보기](stages/stage-01.md) — `docs/obsidian/stages/stage-01.md`
@@ -53,6 +54,7 @@
 - [영향을 설명하지 않는 형식적 승인](../../failures/approval-without-impact-context.md) — `failures/approval-without-impact-context.md`
 - [권위 역할과 문서 유형의 혼합](../../failures/authority-role-type-conflation.md) — `failures/authority-role-type-conflation.md`
 - [완료 작업에 다음 행동을 함께 남기는 상태 충돌](../../failures/completed-work-next-action-conflict.md) — `failures/completed-work-next-action-conflict.md`
+- [실패 정본의 파생 projection·lifecycle 파일 증식](../../failures/derived-failure-projection-fanout.md) — `failures/derived-failure-projection-fanout.md`
 - [역사 지식 범위의 무제한 확대](../../failures/historical-scope-expansion.md) — `failures/historical-scope-expansion.md`
 - [진행 중 작업의 체크포인트 전이 부재](../../failures/in-progress-checkpoint-transition-gap.md) — `failures/in-progress-checkpoint-transition-gap.md`
 - [변경된 로컬 출처 한 건의 전체 목록 실패 전파](../../failures/mutable-local-source-list-fanout.md) — `failures/mutable-local-source-list-fanout.md`

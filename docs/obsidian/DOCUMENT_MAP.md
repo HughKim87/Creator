@@ -13,7 +13,7 @@
 - [SESSION_HANDOFF](../../SESSION_HANDOFF.md) — 권위 정본 · 현재 상태
 - [README](../../README.md) — 파생 표현 · 사용자 가이드
 
-## 활성 계약과 구축 계획
+## 핵심 계약과 현재 구축 계획
 
 - [정보·문서 책임 구조](../INFORMATION_ARCHITECTURE.md) — 권위 정본 · 계약
 - [파일 데이터 저장 계약](../FILE_DATA_CONTRACT.md) — 권위 정본 · 계약
@@ -24,19 +24,13 @@
 - [선택적 읽기·컨텍스트 패키지 계약](../CONTEXT_PACKAGE_CONTRACT.md) — 권위 정본 · 계약·사용 가이드
 - [유지보수·검증 자동화 계약](../MAINTENANCE_AUTOMATION_CONTRACT.md) — 권위 정본 · 계약·사용 가이드
 - [유튜브 촬영 전 근거 패키지 계약](../domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md) — 권위 정본 · 도메인 계약·사용 가이드
-- [자동 생성 활성 문서 inventory](GENERATED_DOCUMENT_INVENTORY.md) — 파생 표현 · 자동 재생성 목록
 - [마스터 구축 계획](../build/MASTER_BUILD_PLAN.md) — 권위 정본 · 단계 계획
-- [Stage 00](../build/stage-00-project-kernel.md)
-- [Stage 01](../build/stage-01-information-architecture.md)
-- [Stage 01.5](../build/stage-01-5-obsidian-document-visibility.md)
-- [Stage 02](../build/stage-02-file-data-foundation.md)
-- [Stage 03](../build/stage-03-record-io.md)
-- [Stage 04](../build/stage-04-work-state.md)
-- [Stage 05](../build/stage-05-knowledge-types.md)
-- [Stage 06](../build/stage-06-knowledge-lifecycle.md)
-- [Stage 07](../build/stage-07-context-retrieval.md)
-- [Stage 08](../build/stage-08-maintenance-automation.md)
-- [Stage 09](../build/stage-09-domain-integration.md)
+- [Stage 10 에이전트 자율 운영·구조 최적화](../build/stage-10-agent-autonomy-structure-optimization.md) — 현재 initiative의 진단·계획·검증 owner
+
+## 전체 활성 문서
+
+- [자동 생성 활성 문서 inventory](GENERATED_DOCUMENT_INVENTORY.md) — 보호·역사 경계를 제외한 모든 활성 Markdown 경로의 완전 목록
+- 이 지도는 owner와 범주 진입점만 소유한다. 새 문서마다 수동 행을 추가하지 않는다.
 
 ## 작업 규칙
 
@@ -47,67 +41,19 @@
 - [버전 관리 규칙](../../rules/version-control.md)
 - [보호 데이터 작업 규칙](../../rules/user-data-work.md)
 
-## 실패 지식
+## 실패·요구사항·시점 증거
 
 - [실패 지식 색인](../../failures/README.md)
-- [프로젝트 목적 과대 해석](../../failures/project-purpose-overreach.md)
-- [역사 지식 범위 확대](../../failures/historical-scope-expansion.md)
-- [미래 단계 조기 구현](../../failures/premature-future-stage-implementation.md)
-- [형식적 승인](../../failures/approval-without-impact-context.md)
-- [오래된 핸드오프](../../failures/stale-handoff-state.md)
-- [후행 공백 정규식](../../failures/trailing-whitespace-regex.md)
-- [`apply_patch` 목록 기호](../../failures/apply-patch-markdown-prefix.md)
-- [Windows 검증 명령 가정](../../failures/windows-validation-command-assumptions.md)
-- [권위 역할·문서 유형 혼합](../../failures/authority-role-type-conflation.md)
-- [활성 문서의 끊어진 로컬 링크](../../failures/active-document-link-rot.md)
-- [Obsidian 보호 경로 링크 노출](../../failures/obsidian-protected-path-link-leakage.md)
-- [시스템 Python 실행 경로 가정](../../failures/runtime-discovery-system-python.md)
-- [기록 ID와 저장 주소의 분리로 생기는 중복](../../failures/record-id-address-ambiguity.md)
-- [Windows CLI 표준 입출력 인코딩 불일치](../../failures/windows-cli-utf8-stdio.md)
-- [쓰기 후 검증의 잠금 해제 경쟁 구간](../../failures/post-write-verification-lock-window.md)
-- [저장된 기록 유형의 승인 우회](../../failures/stored-type-approval-bypass.md)
-- [구현 폴더와 정보 구조 계약의 드리프트](../../failures/structure-contract-folder-drift.md)
-- [작업 event 시각의 snapshot 역행](../../failures/work-event-time-regression.md)
-- [PowerShell 외부 프로세스 JSON 인수의 따옴표 손실](../../failures/powershell-native-json-argument-quoting.md)
-- [진행 중 작업의 체크포인트 전이 부재](../../failures/in-progress-checkpoint-transition-gap.md)
-- [변경된 로컬 출처 한 건의 전체 목록 실패 전파](../../failures/mutable-local-source-list-fanout.md)
-- [테스트 fixture의 payload 계약 구조 가정](../../failures/test-fixture-contract-shape-assumption.md)
-- [Windows 텍스트 줄바꿈 변환과 실제 크기 측정 불일치](../../failures/windows-text-newline-size-measurement.md)
-- [기존 Python bytecode 캐시와 청결 게이트 불일치](../../failures/python-bytecode-cache-cleanliness.md)
-- [완료 작업에 다음 행동을 함께 남기는 상태 충돌](../../failures/completed-work-next-action-conflict.md)
-
-## 시점 보고서
-
-- [Claude·Codex 최종 복기 교차검증 비교 (codex)](../../reports/2026-07-23_codex_claude_codex_최종_복기_교차검증_비교_보고서.md)
-- [두 최종 보고서 교차검증·점수 비교·후속 작업 (claude)](../../reports/2026-07-23_claude_교차검증_점수비교_후속작업_보고서.md)
-- [Stage 00~09 계획 대비 실제 구축 비교분석](../../reports/2026-07-23_stage00-09_계획_대비_실제_구축_비교분석_보고서.md)
-- [최종 복기 보고서 교차검증 (claude)](../../reports/2026-07-23_claude최종_복기_보고서_교차검증_보고서.md)
-- [Stage 00~09 프로젝트 구축 최종 복기 (codex)](../../reports/2026-07-23_codex_stage00-09_프로젝트_구축_최종_복기_보고서.md)
-- [Stage 09 유튜브 근거 패키지 검증](../../reports/2026-07-23_stage09_유튜브_근거_패키지_검증_보고서.md)
 - [통합 요구사항 기준서](../../reports/2026-07-22_프로젝트_의도_통합_요구사항_기준서.md)
-- [Codex 의도 역추론](../../reports/2026-07-22_codex_프로젝트_의도_역추론_보고서.md)
-- [Claude 의도 역추론](../../reports/2026-07-22_claude_프로젝트_의도_역추론_보고서.md)
-- [역추론 교차검증 점수](../../reports/2026-07-22_claude_역추론보고서_교차검증_점수.md)
-- [문서 기반 데이터 구축 제안](../../reports/2026-07-22_codex_문서_기반_데이터_구축_체계_제안_보고서.md)
-- [oh-my-codex 도입 분석](../../reports/2026-07-22_oh-my-codex_도입_리서치_분석_보고서.md)
+- [Stage 00~09 최종 복기](../../reports/2026-07-23_codex_stage00-09_프로젝트_구축_최종_복기_보고서.md)
+- 다른 실패 사례와 시점 보고서는 위 자동 inventory에서 찾고, 현재 지시로 사용하지 않는다.
 
 ## Obsidian 파생 검토 화면
 
 - [검토 환경 계약](OBSIDIAN_REVIEW_CONTRACT.md)
 - [시작 화면](START_HERE.md)
 - [이 전체 지도](DOCUMENT_MAP.md)
-- [단계별 보기](stages/README.md)
-- [Stage 00 보기](stages/stage-00.md)
-- [Stage 01 보기](stages/stage-01.md)
-- [Stage 01.5 보기](stages/stage-01-5.md)
-- [Stage 02 보기](stages/stage-02.md)
-- [Stage 03 보기](stages/stage-03.md)
-- [Stage 04 보기](stages/stage-04.md)
-- [Stage 05 보기](stages/stage-05.md)
-- [Stage 06 보기](stages/stage-06.md)
-- [Stage 07 보기](stages/stage-07.md)
-- [Stage 08 보기](stages/stage-08.md)
-- [Stage 09 보기](stages/stage-09.md)
+- [Stage 00~09 완료 시점 보기](stages/README.md) — 기존 파생 화면 묶음; 새 단계 파일을 추가하지 않음
 
 ## 제외 경계
 

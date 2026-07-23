@@ -11,7 +11,7 @@ import time
 from typing import Any, Mapping, Sequence
 
 from .context import ContextService
-from .knowledge import KnowledgeService, SourceIntegrityError
+from .knowledge import KnowledgeRecordError, KnowledgeService, SourceIntegrityError
 from .lifecycle import TERMINAL_STATES, LifecycleService
 from .store import InputContractError
 
@@ -140,6 +140,13 @@ class MaintenanceService:
     def detect_drift(self) -> list[dict[str, str]]:
         findings: list[dict[str, str]] = []
         drifted_sources: set[str] = set()
+        for ref in self.knowledge.failure_document_refs():
+            try:
+                self.knowledge.validate_failure_document(ref)
+            except KnowledgeRecordError as exc:
+                findings.append(
+                    {"target_id": ref, "kind": "failure_document", "reason": str(exc)}
+                )
         states = self.lifecycle.list_states()
         for state in states:
             if state["payload"]["state"] in TERMINAL_STATES:
@@ -147,9 +154,15 @@ class MaintenanceService:
             record = self.lifecycle.store.get_record(state["payload"]["target_id"])
             try:
                 if record["record_type"] == "source":
+                    locator = record["payload"]["locator"]
+                    if (
+                        record["payload"]["source_kind"] == "local_document"
+                        and locator.startswith("failures/")
+                    ):
+                        continue
                     self.knowledge.get_source(record["id"], verify_local=True)
                 elif record["record_type"] == "failure_knowledge":
-                    self.knowledge.get_failure_knowledge(record["id"])
+                    continue
             except SourceIntegrityError as exc:
                 findings.append({"target_id": record["id"], "kind": "integrity", "reason": str(exc)})
                 if record["record_type"] == "source":
@@ -161,8 +174,6 @@ class MaintenanceService:
             payload = record["payload"]
             if record["record_type"] in {"knowledge", "decision"}:
                 source_ids = set(payload["source_ids"])
-            elif record["record_type"] == "failure_knowledge":
-                source_ids = {payload["source_id"]}
             else:
                 source_ids = set()
             affected = sorted(source_ids & drifted_sources)
@@ -184,12 +195,18 @@ class MaintenanceService:
         for value, ids in claims.items():
             if len(ids) > 1:
                 findings.append({"kind": "knowledge_statement", "value": value, "record_ids": sorted(ids)})
-        failure_docs: dict[str, list[str]] = defaultdict(list)
-        for record in self.lifecycle.current_records(target_type="failure_knowledge"):
-            failure_docs[record["payload"]["canonical_doc_ref"]].append(record["id"])
-        for value, ids in failure_docs.items():
-            if len(ids) > 1:
-                findings.append({"kind": "failure_document", "value": value, "record_ids": sorted(ids)})
+        failure_titles: dict[str, list[str]] = defaultdict(list)
+        for ref in self.knowledge.failure_document_refs():
+            try:
+                view = self.knowledge.validate_failure_document(ref)
+            except KnowledgeRecordError:
+                continue
+            failure_titles[view["title"].strip().casefold()].append(ref)
+        for value, refs in failure_titles.items():
+            if len(refs) > 1:
+                findings.append(
+                    {"kind": "failure_title", "value": value, "record_ids": sorted(refs)}
+                )
         return sorted(findings, key=lambda item: (item["kind"], item["value"]))
 
     def cost_report(self, started: float | None = None) -> dict[str, Any]:
@@ -204,6 +221,7 @@ class MaintenanceService:
         elapsed = None if started is None else round((time.perf_counter() - started) * 1000, 2)
         return {
             "documents": documents,
+            "canonical_failure_documents": len(self.knowledge.failure_document_refs()),
             "records_by_type": records,
             "events": {"lifecycle": lifecycle_events, "work": work_events},
             "generated_files": 1 if (self.root / GENERATED_INVENTORY_REF).is_file() else 0,

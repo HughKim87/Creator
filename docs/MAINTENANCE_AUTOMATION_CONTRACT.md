@@ -10,7 +10,7 @@
 
 | 명령 | 기본 동작 | 쓰기 여부 | 성공 기준 |
 |---|---|---:|---|
-| `maintenance-scan` | source·failure projection drift, 의존 record, exact current 중복, inventory 상태, 비용 관측 | 없음 | drift 0, 중복 0, inventory 일치 |
+| `maintenance-scan` | source drift, 해결 실패 정본 구조, 의존 record, exact current 중복, inventory 상태, 비용 관측 | 없음 | drift·실패 정본 오류·중복 0, inventory 일치 |
 | `maintenance-verify` | scan + Markdown UTF-8/NUL/공백/링크 + Python AST + JSON schema + 보호 변경 + 현재 상태 링크 | 없음 | 오류 0, scan pass |
 | `maintenance-inventory` | 생성될 Obsidian inventory와 현재 파일 비교 | 없음 | bytes 일치 |
 | `maintenance-inventory --write` | 정본 경로에서 파생 inventory를 원자 교체 후 재검증 | 파생 파일 1개만 | 쓰기 후 expected bytes 일치 |
@@ -20,9 +20,10 @@
 
 ## 최신성·중복 경계
 
-- scan은 local source의 현재 bytes와 저장 hash, failure Markdown과 current projection, drift source 의존 record를 읽기 전용으로 찾는다.
+- scan은 local source의 현재 bytes와 저장 hash, drift source 의존 record를 읽기 전용으로 찾는다.
+- 모든 `failures/*.md` 정본을 strict UTF-8로 직접 파싱해 해결 상태와 필수 절을 확인한다. 사례별 projection이나 lifecycle 상태는 만들거나 갱신하지 않는다.
 - `LifecycleService.audit`와 달리 scan은 review event를 추가하거나 상태를 바꾸지 않는다.
-- 자동 중복은 current knowledge의 공백 제거·casefold 후 완전 동일 statement와 current failure projection의 동일 canonical 문서만 탐지한다.
+- 자동 중복은 current knowledge의 공백 제거·casefold 후 완전 동일 statement와 canonical failure 문서의 완전 동일 제목을 탐지한다.
 - 의미 유사도·충돌 판정·병합·삭제·current 선택은 자동화하지 않는다.
 - drift·중복 경고 허용치는 각각 0건이다. 발견 시 사람이 결과를 검토하고 기존 lifecycle 명령으로 처리한다.
 
@@ -48,7 +49,8 @@ Python은 AST parse, schema는 JSON parse, 문서는 strict UTF-8·NUL 0·후행
 scan은 다음을 JSON으로 반환한다.
 
 - 활성 문서 수·Unicode 문자·UTF-8 bytes
-- source·knowledge·decision·failure_knowledge·lifecycle_state·work_state 수
+- canonical failure 문서 수
+- source·knowledge·decision·lifecycle_state·work_state 수와 legacy `failure_knowledge` 수
 - lifecycle·work event 수
 - generated 파일 수
 - 실행 시간 millisecond와 5,000ms 초과 경고
@@ -66,7 +68,7 @@ scan은 다음을 JSON으로 반환한다.
 
 ## 보존·중단·후속
 
-- superseded·rejected·retired record와 과거 event는 무기한 보존하고 정리 명령을 만들지 않는다.
+- superseded·rejected·retired record, legacy failure projection과 과거 event는 보존하고 이번 단계에서 정리 명령을 만들지 않는다.
 - 파생 inventory 쓰기 외 상태 변경은 Stage 06~07의 명시 명령과 사용자 승인 경계를 사용한다.
 - 자동화가 오류를 숨기거나 수동 비용보다 큰 파일·시간·문맥을 만들면 활성화하지 않고 계약·단계 보고에 원인을 남긴다.
 - 도메인별 유지 규칙·추천·영상 제작 자동화는 Stage 09 범위다.
