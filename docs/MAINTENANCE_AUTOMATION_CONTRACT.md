@@ -29,14 +29,14 @@
 
 ## 파생 문서 inventory
 
-`docs/obsidian/GENERATED_DOCUMENT_INVENTORY.md`는 Git tracked Markdown과 현재 작업의 명시적 Markdown 변경에서 파생한다.
+`docs/obsidian/GENERATED_DOCUMENT_INVENTORY.md`는 Git tracked Markdown과 현재 작업의 명시적 Markdown 변경에서 파생하는 **전체 추적 문서 목록**이다. 완료 stage와 `reports/`도 포함하므로 active owner 목록이 아니다. 현재 작업 진입은 `START_HERE.md`와 `SESSION_HANDOFF.md`가 소유한다.
 
 - `backup`, `inputs`, `outputs`, `.git`, `.obsidian`은 source 목록에서 제외한다.
 - 경로·첫 H1 제목만 표시하고 규칙·상태·결정 본문을 복제하지 않는다.
 - 생성 시각과 무작위 값을 넣지 않아 같은 source 집합에서 같은 bytes를 만든다.
 - 자기 재귀 색인을 막기 위해 생성 파일 자체는 source 목록에서 제외한다.
 - 파일을 지운 뒤 같은 명령으로 재생성할 수 있다.
-- 사람이 분류한 [전체 문서 지도](obsidian/DOCUMENT_MAP.md)는 시작 화면 역할을 유지하고 generated inventory를 연결한다.
+- 사람이 분류한 [문서 진입 지도](obsidian/DOCUMENT_MAP.md)는 current owner와 범주만 연결한다.
 
 ## 검증과 보호 경계
 

@@ -1,9 +1,10 @@
-# 자동 생성 활성 문서 inventory
+# 자동 생성 전체 추적 문서 inventory
 
-- 목적: 보호·역사 경계를 제외한 활성 Markdown 경로를 정본에서 결정론적으로 재생성한다.
+- 목적: 보호·backup 경계를 제외한 추적 Markdown 경로를 결정론적으로 재생성한다.
 - 상태: 파생물. 이 파일은 규칙·상태·결정을 소유하지 않는다.
+- 사용 경계: 완료 stage와 시점 보고서를 포함하므로 active owner 목록이 아니다. 현재 진입은 `START_HERE.md`를 사용한다.
 - 생성 명령: `python -m file_data maintenance-inventory --write`
-- 원본 문서 수: 89
+- 원본 문서 수: 78
 - 자기 재귀 방지: 이 생성 파일 자체는 원본 목록에서 제외한다.
 
 ## docs
@@ -31,21 +32,10 @@
 - [Stage 10 — 에이전트 자율 운영·구조 최적화](../build/stage-10-agent-autonomy-structure-optimization.md) — `docs/build/stage-10-agent-autonomy-structure-optimization.md`
 - [Stage 11 — 운영 마찰·인지 복잡성 축소](../build/stage-11-operating-friction-reduction.md) — `docs/build/stage-11-operating-friction-reduction.md`
 - [유튜브 촬영 전 근거 패키지 계약](../domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md) — `docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md`
-- [전체 활성 문서 지도](DOCUMENT_MAP.md) — `docs/obsidian/DOCUMENT_MAP.md`
+- [문서 진입 지도](DOCUMENT_MAP.md) — `docs/obsidian/DOCUMENT_MAP.md`
 - [Obsidian 검토 환경 계약](OBSIDIAN_REVIEW_CONTRACT.md) — `docs/obsidian/OBSIDIAN_REVIEW_CONTRACT.md`
 - [Obsidian 시작 화면](START_HERE.md) — `docs/obsidian/START_HERE.md`
-- [Stage 00~09 완료 시점 단계별 보기](stages/README.md) — `docs/obsidian/stages/README.md`
-- [Stage 00 보기](stages/stage-00.md) — `docs/obsidian/stages/stage-00.md`
-- [Stage 01.5 보기](stages/stage-01-5.md) — `docs/obsidian/stages/stage-01-5.md`
-- [Stage 01 보기](stages/stage-01.md) — `docs/obsidian/stages/stage-01.md`
-- [Stage 02 보기](stages/stage-02.md) — `docs/obsidian/stages/stage-02.md`
-- [Stage 03 보기](stages/stage-03.md) — `docs/obsidian/stages/stage-03.md`
-- [Stage 04 보기](stages/stage-04.md) — `docs/obsidian/stages/stage-04.md`
-- [Stage 05 보기](stages/stage-05.md) — `docs/obsidian/stages/stage-05.md`
-- [Stage 06 보기](stages/stage-06.md) — `docs/obsidian/stages/stage-06.md`
-- [Stage 07 보기](stages/stage-07.md) — `docs/obsidian/stages/stage-07.md`
-- [Stage 08 보기](stages/stage-08.md) — `docs/obsidian/stages/stage-08.md`
-- [Stage 09 보기](stages/stage-09.md) — `docs/obsidian/stages/stage-09.md`
+- [완료 단계 역사 찾기](stages/README.md) — `docs/obsidian/stages/README.md`
 
 ## failures
 

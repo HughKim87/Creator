@@ -1,29 +1,31 @@
 # Obsidian 시작 화면
 
-- 목적: 사용자가 정본을 복제하지 않는 단일 화면에서 프로젝트 목적, 현재 상태, 규칙, 계획, 전체 지도에 진입한다.
-- 읽는 시점: Obsidian으로 프로젝트 검토를 시작할 때.
-- 책임: Stage 01.5 파생 검토 화면.
-- 상태: 활성.
-- 관련 권위: [Obsidian 검토 환경 계약](OBSIDIAN_REVIEW_CONTRACT.md).
+- 목적: 현재 작업을 먼저 보여주고 전체 추적 문서와 역사는 필요할 때만 탐색하게 한다.
+- 읽는 시점: Obsidian으로 프로젝트 검토를 시작할 때
+- 책임: 정본을 복제하지 않는 사용자 router
+- 상태: 활성
 
-## 핵심 진입점
+## 현재
 
-| 확인할 것 | 정본 또는 보기 |
+| 확인 | 정본 |
 |---|---|
-| 프로젝트 목적과 사용자 개요 | [README](../../README.md) |
-| 현재 단계·차단·첫 다음 행동 | [SESSION_HANDOFF](../../SESSION_HANDOFF.md) |
+| 프로젝트 목적·기본 사용법 | [README](../../README.md) |
+| 현재 작업·blocker·첫 다음 행동 | [SESSION_HANDOFF](../../SESSION_HANDOFF.md) |
+| 현재 Stage 11 계획·실행·보고 | [Stage 11 owner](../build/stage-11-operating-friction-reduction.md) |
 | 상시 정책 | [PROJECT_RULES](../../PROJECT_RULES.md) |
-| 작업 규칙 선택 | [AGENTS](../../AGENTS.md) |
-| 정보·문서 책임 | [INFORMATION_ARCHITECTURE](../INFORMATION_ARCHITECTURE.md) |
-| 전체 구축 순서 | [MASTER_BUILD_PLAN](../build/MASTER_BUILD_PLAN.md) |
-| 현재 요구사항 | [통합 요구사항 기준서](../../reports/2026-07-22_프로젝트_의도_통합_요구사항_기준서.md) |
-| 해결된 실패 지식 | [실패 지식 색인](../../failures/README.md) |
-| 핵심 owner·범주 연결 | [전체 문서 지도](DOCUMENT_MAP.md) |
-| 모든 활성 문서 경로 | [자동 생성 inventory](GENERATED_DOCUMENT_INVENTORY.md) |
-| Stage 00~09 완료 시점 보기 | [단계별 보기 색인](stages/README.md) |
+| 작업 등급·rule 선택 | [AGENTS](../../AGENTS.md) |
 
-현재 값은 이 화면에 복사하지 않는다. 항상 연결된 정본에서 확인한다.
+현재 값은 이 화면에 복사하지 않는다. 연결된 owner에서 확인한다.
+
+## 필요할 때
+
+| 목적 | 진입점 |
+|---|---|
+| 번호 구축 순서와 완료 stage owner | [MASTER_BUILD_PLAN](../build/MASTER_BUILD_PLAN.md) |
+| 핵심 계약·규칙·요구·실패 지식 | [문서 진입 지도](DOCUMENT_MAP.md) |
+| 완료 stage·보고서를 포함한 전체 추적 Markdown | [자동 전체 inventory](GENERATED_DOCUMENT_INVENTORY.md) |
+| 완료 Stage 00~10 역사 | [완료 단계 역사 찾기](stages/README.md) |
 
 ## 보호 경계
 
-`backup/`, `inputs/`, `outputs/`, `.git/`, `.obsidian/`은 전체 지도와 단계 보기의 내부 탐색 대상이 아니다. 경계의 존재만 [검토 환경 계약](OBSIDIAN_REVIEW_CONTRACT.md)에서 확인한다.
+`backup/`, `inputs/`, `outputs/`, `.git/`, `.obsidian/` 내부는 탐색·inventory 대상이 아니다.

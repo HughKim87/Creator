@@ -118,10 +118,11 @@ class MaintenanceService:
             group = Path(ref).parts[0] if len(Path(ref).parts) > 1 else "root"
             groups[group].append(ref)
         lines = [
-            "# 자동 생성 활성 문서 inventory",
+            "# 자동 생성 전체 추적 문서 inventory",
             "",
-            "- 목적: 보호·역사 경계를 제외한 활성 Markdown 경로를 정본에서 결정론적으로 재생성한다.",
+            "- 목적: 보호·backup 경계를 제외한 추적 Markdown 경로를 결정론적으로 재생성한다.",
             "- 상태: 파생물. 이 파일은 규칙·상태·결정을 소유하지 않는다.",
+            "- 사용 경계: 완료 stage와 시점 보고서를 포함하므로 active owner 목록이 아니다. 현재 진입은 `START_HERE.md`를 사용한다.",
             "- 생성 명령: `python -m file_data maintenance-inventory --write`",
             f"- 원본 문서 수: {len(refs)}",
             "- 자기 재귀 방지: 이 생성 파일 자체는 원본 목록에서 제외한다.",

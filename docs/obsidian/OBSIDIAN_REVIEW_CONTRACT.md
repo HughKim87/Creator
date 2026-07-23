@@ -1,57 +1,43 @@
 # Obsidian 검토 환경 계약
 
-- 목적: 프로젝트 정본을 복제하지 않고 Obsidian에서 전체 문서와 단계별 연결을 검토하는 경계를 정의한다.
-- 읽는 시점: Obsidian 볼트를 열기 전, 검토 화면을 갱신할 때, Stage 02 이후 단계 시작·종료 시.
-- 책임: 프로젝트 에이전트가 파생 검토 문서를 유지하고 사용자가 정본 변경을 승인한다.
-- 상태: Stage 01.5 활성 계약.
-- 관련 권위: [정보·문서 책임 구조](../INFORMATION_ARCHITECTURE.md), [상시 프로젝트 규칙](../../PROJECT_RULES.md).
+- 목적: 프로젝트 정본을 복제하지 않고 현재 owner와 전체 추적 문서를 구분해 탐색한다.
+- 읽는 시점: Obsidian 시작 경로·inventory·공유 설정을 변경하거나 보호 경계를 검증할 때
+- 책임: 프로젝트 에이전트가 파생 router를 유지하고 사용자가 정책 변경을 승인한다.
+- 상태: Stage 01.5 활성 계약
+- 관련 권위: [정보·문서 책임 구조](../INFORMATION_ARCHITECTURE.md), [상시 정책](../../PROJECT_RULES.md)
 
-## 권장 결정
+## 결정과 경계
 
 | 항목 | 선택 | 경계 |
 |---|---|---|
-| 볼트 | 프로젝트 루트를 단일 볼트로 사용 | 원본 상대 경로 유지, 복제 볼트 없음 |
-| 보호 제외 | `.git/`, `.obsidian/`, `backup/`, `inputs/`, `outputs/`를 `userIgnoreFilters`로 제외 | 보호 경로를 열거·색인하지 않음 |
-| 사용 방식 | 읽기·탐색 우선 | 직접 편집도 프로젝트 승인·검증 규칙을 우회하지 않음 |
-| 보고서 | 활성 `reports/*.md`를 모두 지도에 표시 | 현재 지시가 아닌 시점 증거로 표시 |
-| 설정 공유 | `.obsidian/app.json`의 안전 제외 설정만 Git 공유 | workspace, UI, 테마, 플러그인 상태는 로컬·Git 제외 |
-| 플러그인 | 커뮤니티 플러그인 없음 | 기본 링크·백링크·그래프·검색만 사용 |
-| 실행 환경 | 설치된 Obsidian Desktop 1.12.7 | 설치·업데이트는 수행하지 않음 |
+| 볼트 | 프로젝트 루트 | 복제 볼트 없음 |
+| 기본 화면 | 현재 owner 우선 | 완료 단계·보고서는 필요할 때 inventory에서 탐색 |
+| 보호 제외 | `.git/`, `.obsidian/`, `backup/`, `inputs/`, `outputs/` | 내부를 열거·색인하지 않음 |
+| 사용 방식 | 읽기·탐색 우선 | 직접 편집도 project rule을 우회하지 않음 |
+| 설정 공유 | `.obsidian/app.json`의 안전 제외만 | workspace, UI, 테마, plugin 상태는 로컬 |
+| plugin | community plugin 없음 | 기본 링크·검색만 사용 |
 
-## 정본과 파생 경계
+## Router와 inventory
 
-- `docs/obsidian/`의 시작 화면·owner router·자동 inventory·Stage 00~09 보기는 파생 문서다.
-- 현재 상태는 [SESSION_HANDOFF.md](../../SESSION_HANDOFF.md), 정책은 [PROJECT_RULES.md](../../PROJECT_RULES.md), 단계는 [마스터 계획](../build/MASTER_BUILD_PLAN.md)이 각각 소유한다.
-- 수동 지도에는 핵심 owner·범주·관계만 적고, 모든 활성 경로의 완전 목록은 generated inventory가 소유한다. 정본 본문이나 동적 상태를 복사하지 않는다.
-- Obsidian을 닫거나 `.obsidian/`의 로컬 상태를 제거해도 Markdown 시작 경로와 모든 정본이 동작해야 한다.
+- [START_HERE](START_HERE.md)는 현재 work, current initiative, startup policy로 먼저 연결한다.
+- [DOCUMENT_MAP](DOCUMENT_MAP.md)은 owner·계약·rule·history의 범주 진입점만 소유한다.
+- [GENERATED_DOCUMENT_INVENTORY](GENERATED_DOCUMENT_INVENTORY.md)는 보호·backup을 제외한 전체 추적 Markdown을 나열한다. 완료 stage와 `reports/`가 포함되므로 active owner 목록으로 해석하지 않는다.
+- 완료 stage는 [master](../build/MASTER_BUILD_PLAN.md)의 owner 표와 Git에서 찾는다. 단계별 수동 보기 파일을 만들거나 유지하지 않는다.
+- 현재 상태 값과 정본 본문을 파생 router에 복사하지 않는다.
 
 ## 사용자 시작 경로
 
 1. [Obsidian 시작 화면](START_HERE.md)
-2. [전체 문서 지도](DOCUMENT_MAP.md)
-3. [자동 전체 문서 inventory](GENERATED_DOCUMENT_INVENTORY.md)
-4. 현재 상태가 필요할 때 [SESSION_HANDOFF.md](../../SESSION_HANDOFF.md)
+2. 현재 작업은 [SESSION_HANDOFF](../../SESSION_HANDOFF.md)
+3. exact owner가 불명확할 때 [문서 진입 지도](DOCUMENT_MAP.md)
+4. 전체 경로가 필요할 때만 [자동 inventory](GENERATED_DOCUMENT_INVENTORY.md)
 
-## 편집 규칙
+## 갱신·검증
 
-- 기본 행동은 읽기, 링크 이동, 백링크·그래프 확인이다.
-- 정본 직접 편집은 해당 문서의 기존 소유자·작업 규칙·승인·검증을 그대로 적용한다.
-- 시작 화면과 지도는 파생 문서이므로 현재 상태 값을 수동 복제하지 않는다.
-- 새 검토 문서를 만들기 전에 [문서 생성 게이트](../INFORMATION_ARCHITECTURE.md#7-문서-생성-게이트)를 적용한다.
-
-## Stage 02 이후 갱신
-
-- 단계 시작 시 수동 지도에서 owner를 확인하고 마스터 계획에서 현재 단계 계획·적용 규칙·선행 결과로 이동한다.
-- 단계 종료 시 generated inventory를 재생성하고 고립·끊어진 링크를 검사한다. 새 문서마다 수동 지도 행이나 단계 보기 파일을 만들지 않는다.
-- Stage 00~09 단계별 보기는 완료 시점 파생 화면으로 유지하며 Stage 10 이후 새 파일을 추가하지 않는다.
-
-## 검증 과제
-
-1. 시작 화면에서 프로젝트 목적, 현재 단계, 적용 규칙, 첫 다음 행동으로 이동한다.
-2. owner router와 generated inventory를 함께 사용해 정책·절차·계약·계획·현재 상태·가이드·보고서·실패 지식 사례를 각각 찾는다.
-3. Stage 01.5 보기에서 선행 Stage 01 계약과 후속 Stage 02 계획으로 이동한다.
-4. `backup/`, `inputs/`, `outputs/` 내부 파일이 탐색·지도·그래프에 나타나지 않는지 확인한다.
-5. Obsidian 없이 동일 Markdown 링크가 동작하는지 확인한다.
+- Markdown path set이나 H1이 바뀔 때만 inventory를 재생성한다.
+- router를 바꾸면 현재 owner 링크, 전체 inventory 링크, 보호 경계, local link를 검사한다.
+- Obsidian이 없어도 같은 Markdown 링크로 현재 work와 모든 정본에 접근할 수 있어야 한다.
+- 새 파생 화면은 기존 router가 목적을 충족하지 못하는 distinct user need가 있을 때만 만든다.
 
 ## 문서 소유 파생 artifact
 

@@ -4,7 +4,7 @@
 - 목적: 실제 도메인 작업 전에 과도해진 필수 읽기, 승인·검증 게이트, 실패 기록, 활성 문서 표면을 줄여 안전 경계 안에서 에이전트가 더 빠르게 자율 작업하도록 만든다.
 - 읽는 시점: Stage 11 착수·단계 전환·성공 게이트·최종 보고·재개 시
 - 책임: 프로젝트 에이전트가 사용자의 2026-07-24 지시에 따라 계획·구현·검증·커밋한다.
-- 상태: **11B 완료 준비·경계 커밋 대기**
+- 상태: **11C 완료 준비·경계 커밋 대기**
 - 현재 상태 정본: [SESSION_HANDOFF](../../SESSION_HANDOFF.md)
 - 상위 순서: [마스터 구축 계획](MASTER_BUILD_PLAN.md)
 
@@ -219,6 +219,33 @@
 | 실패·자체 finding | material failure 없음, High 0·Medium 0·Low 0 |
 
 **11B 판정: 완료 준비.** 경계 커밋이 성공하기 전 11C를 시작하지 않는다.
+
+11B 경계 커밋은 `153758f68cdec69f52ba72f3e6c4296406cec8b6`이며 포함 경로 10개, 보호 경로 0, 커밋 후 clean을 확인했다.
+
+### 11C 활성 문서 표면 축소
+
+- 계획에 exact 승인된 Stage 00~09 link-only Obsidian 보기 11개만 제거했다. 각 실제 stage owner와 master owner 표, Git 이력은 보존했다.
+- `START_HERE`는 현재 work·현재 initiative·startup 정책을 먼저 보여주고, 전체 inventory와 완료 역사는 필요할 때만 연결한다.
+- generated inventory의 이름과 계약을 “활성 문서”에서 “전체 추적 문서”로 교정해 완료 stage·시점 보고서가 active owner로 오인되지 않게 했다.
+- `README`, `DOCUMENT_MAP`, Obsidian 계약, 정보 구조, maintenance 계약을 current/history 경계에 맞게 축약했다.
+- `windows-validation-command-assumptions`는 18,929 bytes·122줄에서 3,149 bytes·48줄로 줄이고 공통 원인·대표 recurrence·검증·재사용 규칙만 보존했다.
+- startup 3문서는 38,739 bytes·412줄 기준선에서 10,086 bytes·151줄로 감소했다. handoff는 28,258 bytes·302줄에서 2,783 bytes·49줄로 감소해 두 목표를 모두 통과했다.
+- 전체 Markdown은 89개·920,687 bytes·10,295줄에서 79개·856,433 bytes·9,838줄로 감소했다. Stage 11 단일 owner 1개를 추가한 상태의 순감소다.
+
+11C 성공 게이트:
+
+| 확인 | 결과 |
+|---|---|
+| exact 삭제 | 통과 — 승인된 11개와 actual delete set exact match, 그 밖의 삭제 0 |
+| current/history | 통과 — current는 START_HERE·handoff·Stage 11, 전체 tracked history는 inventory·master로 분리 |
+| startup 목표 | 통과 — 10,086 bytes ≤20,000, 151줄 ≤200; handoff 2,783 bytes·49줄 |
+| failure compaction | 통과 — canonical parser 성공, 원인·해결·검증·예방·근거 유지 |
+| targeted 회귀 | 통과 — `test_maintenance.py` 15 tests OK, artifact 20 drift 0 |
+| maintenance | 통과 — documents 79, links 421, errors·drift·duplicates 0, inventory 11,942 bytes 일치 |
+| 문서 데이터·Git | 통과 — 6 blocks·work 1, `git diff --check`, 보호·legacy·외부 변경 0 |
+| 자체 finding | 초기 startup lines 초과 Low 1을 handoff 재축약으로 보완, 최종 High 0·Medium 0·Low 0 |
+
+**11C 판정: 완료 준비.** 경계 커밋이 성공하기 전 11D를 시작하지 않는다.
 
 11A~11E의 이후 실제 변경, 검증 결과, 실패·판정, 커밋은 이 절에 계속 누적한다. 같은 사실을 별도 단계 보고서로 복제하지 않는다.
 
