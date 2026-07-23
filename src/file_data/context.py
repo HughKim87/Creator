@@ -8,6 +8,7 @@ from uuid import UUID
 
 from .knowledge import KnowledgeService
 from .lifecycle import LIFECYCLE_STATES, TARGET_TYPES, LifecycleError, LifecycleService
+from .document_data import DocumentDataService
 from .record import UnsafePathError, resolve_project_path
 from .store import InputContractError
 
@@ -55,10 +56,22 @@ def _content_size(item: Mapping[str, Any]) -> tuple[int, int]:
 
 
 class ContextService:
-    def __init__(self, project_root: Path | str) -> None:
+    def __init__(
+        self,
+        project_root: Path | str,
+        *,
+        _write_capability: object | None = None,
+    ) -> None:
         self.root = Path(project_root).resolve()
-        self.lifecycle = LifecycleService(self.root)
-        self.knowledge = KnowledgeService(self.root)
+        self.lifecycle = LifecycleService(
+            self.root,
+            _write_capability=_write_capability,
+        )
+        self.knowledge = KnowledgeService(
+            self.root,
+            _write_capability=_write_capability,
+        )
+        self.document_data = DocumentDataService(self.root)
 
     @staticmethod
     def _is_legacy_failure_source(record: Mapping[str, Any]) -> bool:
@@ -124,7 +137,12 @@ class ContextService:
             "payload": record["payload"],
         }
 
-    def _document_item(self, document_ref: str, reason: str) -> dict[str, Any]:
+    def _document_item(
+        self,
+        document_ref: str,
+        reason: str,
+        data_key: str | None = None,
+    ) -> dict[str, Any]:
         ref = _non_empty(document_ref, "document_ref").replace("\\", "/")
         try:
             target = resolve_project_path(self.root, ref)
@@ -139,7 +157,7 @@ class ContextService:
             raise ContextError(f"document is not strict UTF-8: {ref}") from exc
         if "\x00" in content:
             raise ContextError(f"document contains NUL: {ref}")
-        return {
+        item = {
             "kind": "document",
             "ref": target.relative_to(self.root).as_posix(),
             "status": "active",
@@ -147,6 +165,17 @@ class ContextService:
             "sources": [{"ref": target.relative_to(self.root).as_posix()}],
             "content": content,
         }
+        if data_key is not None:
+            block = self.document_data.get_block(_non_empty(data_key, "data_key"))
+            if block["owner"] != item["ref"]:
+                raise ContextError(
+                    f"project-data key {data_key} is owned by {block['owner']}, not {item['ref']}"
+                )
+            item["data_key"] = block["key"]
+            item["content"] = _canonical(
+                {key: value for key, value in block.items() if key != "owner"}
+            )
+        return item
 
     def measure_documents(self, document_refs: Sequence[str]) -> dict[str, int]:
         refs = sorted({_non_empty(ref, "document_ref").replace("\\", "/") for ref in document_refs})
@@ -176,9 +205,59 @@ class ContextService:
             normalized[key] = rendered
         return normalized
 
-    def filter_records(self, filters: Mapping[str, Any] | None = None) -> list[dict[str, Any]]:
+    def filter_records(
+        self,
+        filters: Mapping[str, Any] | None = None,
+        *,
+        legacy: bool = False,
+    ) -> list[dict[str, Any]]:
         normalized = self._normalized_filters(filters)
         state_filter = normalized.get("state", "current")
+        if not legacy:
+            records: list[dict[str, Any]] = []
+            for block in self.document_data.list_blocks():
+                if block["kind"] not in {"knowledge", "decision"}:
+                    continue
+                if block["status"] != state_filter:
+                    continue
+                if normalized.get("record_type") not in {None, block["kind"]}:
+                    continue
+                if (
+                    "scope" in normalized
+                    and (
+                        block["kind"] != "knowledge"
+                        or block["payload"]["scope"] != normalized["scope"]
+                    )
+                ):
+                    continue
+                if "evidence_role" in normalized:
+                    continue
+                records.append(
+                    {
+                        "ref": block["owner"],
+                        "data_key": block["key"],
+                        "record_type": block["kind"],
+                        "lifecycle_state": block["status"],
+                        "source_refs": block["source_refs"],
+                    }
+                )
+            if (
+                state_filter == "current"
+                and normalized.get("record_type") in {None, "failure_knowledge"}
+                and "scope" not in normalized
+                and normalized.get("evidence_role") in {None, "primary"}
+            ):
+                records.extend(
+                    self._failure_candidate(view)
+                    for view in self.knowledge.list_failure_documents()
+                )
+            return sorted(
+                records,
+                key=lambda item: (
+                    item.get("ref", ""),
+                    item.get("data_key", ""),
+                ),
+            )
         records: list[dict[str, Any]] = []
         for lifecycle_state in self.lifecycle.list_states(state=state_filter):
             record = self.lifecycle.store.get_record(lifecycle_state["payload"]["target_id"])
@@ -216,15 +295,16 @@ class ContextService:
 
     def _search_fields(self, record: Mapping[str, Any]) -> dict[str, str]:
         payload = record["payload"]
-        if record["record_type"] == "source":
+        record_type = record.get("record_type", record.get("kind"))
+        if record_type == "source":
             return {"locator": payload["locator"]}
-        if record["record_type"] == "knowledge":
+        if record_type == "knowledge":
             return {
                 "statement": payload["statement"],
                 "scope": payload["scope"],
                 "classification": payload["classification"],
             }
-        if record["record_type"] == "decision":
+        if record_type == "decision":
             return {
                 "problem": payload["problem"],
                 "rationale": payload["rationale"],
@@ -237,12 +317,25 @@ class ContextService:
             "prevention": "\n".join(payload["prevention"]),
         }
 
-    def search(self, text: str, filters: Mapping[str, Any] | None = None) -> list[dict[str, Any]]:
+    def search(
+        self,
+        text: str,
+        filters: Mapping[str, Any] | None = None,
+        *,
+        legacy: bool = False,
+    ) -> list[dict[str, Any]]:
         needle = _non_empty(text, "text").casefold()
-        candidates = self.filter_records({**self._normalized_filters(filters), "state": "current"})
+        candidates = self.filter_records(
+            {**self._normalized_filters(filters), "state": "current"},
+            legacy=legacy,
+        )
         matches: list[dict[str, Any]] = []
         for candidate in candidates:
-            if "ref" in candidate:
+            if "data_key" in candidate:
+                fields = self._search_fields(
+                    self.document_data.get_block(candidate["data_key"])
+                )
+            elif "ref" in candidate:
                 view = self.knowledge.validate_failure_document(candidate["ref"])
                 fields = {
                     "title": view["title"],
@@ -260,7 +353,12 @@ class ContextService:
                 matches.append({**candidate, "matched_fields": matched_fields})
         return matches
 
-    def build_package(self, request: Mapping[str, Any]) -> dict[str, Any]:
+    def build_package(
+        self,
+        request: Mapping[str, Any],
+        *,
+        legacy: bool = False,
+    ) -> dict[str, Any]:
         if not isinstance(request, Mapping):
             raise ContextError("context request must be an object")
         allowed = {
@@ -285,8 +383,11 @@ class ContextService:
         records = request.get("records", [])
         if not isinstance(documents, list) or not isinstance(records, list):
             raise ContextError("documents and records must be lists")
+        if records and not legacy:
+            raise ContextError("legacy_mode_required: records require explicit legacy mode")
         selected: list[dict[str, Any]] = []
         direct_keys: set[tuple[str, str]] = set()
+        direct_document_refs: set[str] = set()
         excluded_details: list[dict[str, str]] = []
         excluded_counts: dict[str, int] = {}
 
@@ -297,16 +398,31 @@ class ContextService:
 
         for item in sorted(
             documents,
-            key=lambda value: (value.get("ref", ""), value.get("reason", ""))
+            key=lambda value: (
+                value.get("ref", ""),
+                value.get("data_key", ""),
+                value.get("reason", ""),
+            )
             if isinstance(value, Mapping) else ("", ""),
         ):
-            if not isinstance(item, Mapping) or set(item) != {"ref", "reason"}:
-                raise ContextError("each document selection must contain ref and reason")
-            document_item = self._document_item(item["ref"], item["reason"])
-            key = ("document", document_item["ref"])
+            if (
+                not isinstance(item, Mapping)
+                or set(item) not in ({"ref", "reason"}, {"ref", "reason", "data_key"})
+            ):
+                raise ContextError(
+                    "each document selection must contain ref, reason, and optional data_key"
+                )
+            document_item = self._document_item(
+                item["ref"], item["reason"], item.get("data_key")
+            )
+            key = (
+                "document",
+                document_item["ref"] + "#" + document_item.get("data_key", ""),
+            )
             if key not in direct_keys:
                 selected.append(document_item)
                 direct_keys.add(key)
+                direct_document_refs.add(document_item["ref"])
         for item in sorted(
             records,
             key=lambda value: (value.get("id", ""), value.get("reason", ""))
@@ -333,37 +449,49 @@ class ContextService:
         if filters.get("state") not in {None, "current"}:
             raise ContextError("context package filters only allow current state")
         if search_text is not None:
-            candidates = self.search(search_text, filters)
+            candidates = self.search(search_text, filters, legacy=legacy)
         elif filters:
-            candidates = self.filter_records({**filters, "state": "current"})
+            candidates = self.filter_records(
+                {**filters, "state": "current"},
+                legacy=legacy,
+            )
         else:
             candidates = []
         for candidate in candidates:
-                if "ref" in candidate:
-                    key = ("document", candidate["ref"])
-                    candidate_ref = candidate["ref"]
-                else:
-                    key = ("record", candidate["id"])
-                    candidate_ref = candidate["id"]
-                if key in direct_keys:
-                    continue
-                reason = (
-                    "string_match:" + ",".join(candidate["matched_fields"])
-                    if "matched_fields" in candidate
-                    else "structured_filter"
+            if "ref" in candidate:
+                key = (
+                    "document",
+                    candidate["ref"] + "#" + candidate.get("data_key", ""),
                 )
-                item = (
-                    self._document_item(candidate["ref"], reason)
-                    if "ref" in candidate
-                    else self._record_item(candidate["id"], reason)
-                )
-                projected = direct_characters + _content_size(item)[0]
-                if projected > char_limit:
-                    exclude(candidate_ref, "size_limit")
+                candidate_ref = key[1]
+                if candidate["ref"] in direct_document_refs:
                     continue
-                selected.append(item)
-                direct_keys.add(key)
-                direct_characters = projected
+            else:
+                key = ("record", candidate["id"])
+                candidate_ref = candidate["id"]
+            if key in direct_keys:
+                continue
+            reason = (
+                "string_match:" + ",".join(candidate["matched_fields"])
+                if "matched_fields" in candidate
+                else "structured_filter"
+            )
+            item = (
+                self._document_item(
+                    candidate["ref"],
+                    reason,
+                    candidate.get("data_key"),
+                )
+                if "ref" in candidate
+                else self._record_item(candidate["id"], reason)
+            )
+            projected = direct_characters + _content_size(item)[0]
+            if projected > char_limit:
+                exclude(candidate_ref, "size_limit")
+                continue
+            selected.append(item)
+            direct_keys.add(key)
+            direct_characters = projected
         selected = sorted(selected, key=lambda item: (item["kind"], item.get("id", item.get("ref"))))
         content_characters = sum(_content_size(item)[0] for item in selected)
         content_bytes = sum(_content_size(item)[1] for item in selected)

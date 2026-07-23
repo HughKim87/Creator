@@ -11,7 +11,6 @@ import math
 import os
 from pathlib import Path
 import re
-import tempfile
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -270,46 +269,3 @@ def read_record(project_root: Path | str, relative_path: Path | str) -> dict[str
     record = decode_record(target.read_bytes())
     _validate_record_address(relative_path, record["id"])
     return record
-
-
-def atomic_write_record(
-    project_root: Path | str,
-    relative_path: Path | str,
-    record: Mapping[str, Any],
-    *,
-    overwrite: bool = False,
-) -> Path:
-    """Validate, verify, and atomically replace one record in its existing directory."""
-
-    encoded = encode_record(record)
-    _validate_record_address(relative_path, record["id"])
-    target = resolve_project_path(project_root, relative_path)
-    if not target.parent.is_dir():
-        raise UnsafePathError("Target parent directory must already exist.")
-
-    if target.exists():
-        existing = decode_record(target.read_bytes())
-        if not overwrite:
-            raise FileExistsError(f"Record already exists: {relative_path}")
-        if existing["id"] != record["id"]:
-            raise DuplicateRecordError("Overwrite cannot replace a different record id.")
-
-    descriptor, temporary_name = tempfile.mkstemp(
-        prefix=f".{target.name}.",
-        suffix=".tmp",
-        dir=target.parent,
-    )
-    temporary_path = Path(temporary_name)
-    try:
-        with os.fdopen(descriptor, "wb") as stream:
-            stream.write(encoded)
-            stream.flush()
-            os.fsync(stream.fileno())
-        verified = decode_record(temporary_path.read_bytes())
-        if verified != dict(record):
-            raise RecordValidationError("write_verification", "Temporary record differs after write.")
-        os.replace(temporary_path, target)
-    except BaseException:
-        temporary_path.unlink(missing_ok=True)
-        raise
-    return target

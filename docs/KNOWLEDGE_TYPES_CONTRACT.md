@@ -90,3 +90,31 @@ Stage 05 완료 시 source 23건, knowledge 1건, decision 1건, failure_knowled
 - 검색·순위·관계 탐색·컨텍스트 조립은 Stage 07 범위다.
 - 실패 정본 직접 검증과 중복 제목 탐지는 [Stage 08 유지보수 계약](MAINTENANCE_AUTOMATION_CONTRACT.md)이 소유한다.
 - 도메인 전용 필드와 영상 제작 연결은 Stage 09 전까지 도입하지 않는다.
+
+## 문서 소유 파생 artifact
+
+아래 block이 legacy source·knowledge·decision·failure projection schema의 exact 정본이다. 현재 failure 지식은 위 Markdown direct parser 계약을 사용한다.
+
+<!-- project-artifact:v1 path=schemas/source-payload-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"urn:kim-silver-youtube:schema:source-payload:v1","title":"Source Payload v1","type":"object","additionalProperties":false,"required":["source_kind","locator","observed_at","verification_status","evidence_role","version_or_hash"],"properties":{"source_kind":{"enum":["local_document","local_data","command_result","web_page","user_statement"]},"locator":{"type":"string","minLength":1},"observed_at":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},"verification_status":{"enum":["observed","verified","unavailable"]},"evidence_role":{"enum":["primary","supporting","contextual"]},"version_or_hash":{"type":["string","null"]}}}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=schemas/knowledge-payload-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"urn:kim-silver-youtube:schema:knowledge-payload:v1","title":"Knowledge Payload v1","type":"object","additionalProperties":false,"required":["statement","classification","scope","source_ids","verification_status","verified_by"],"properties":{"statement":{"type":"string","minLength":1,"maxLength":500,"pattern":"^[^\\r\\n]+$"},"classification":{"enum":["fact","inference","procedure","constraint"]},"scope":{"type":"string","minLength":1},"source_ids":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","format":"uuid"}},"verification_status":{"enum":["candidate","verified"]},"verified_by":{"type":["string","null"]}}}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=schemas/decision-payload-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"urn:kim-silver-youtube:schema:decision-payload:v1","title":"Decision Payload v1","type":"object","additionalProperties":false,"required":["problem","requirements","options","selected_option","rationale","impacts","source_ids","requires_user_approval","approval_kind","approved_by","decided_at"],"properties":{"problem":{"type":"string","minLength":1},"requirements":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"options":{"type":"array","minItems":2,"items":{"type":"object","additionalProperties":false,"required":["label","impact"],"properties":{"label":{"type":"string","minLength":1},"impact":{"type":"string","minLength":1}}}},"selected_option":{"type":"string","minLength":1},"rationale":{"type":"string","minLength":1},"impacts":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"source_ids":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","format":"uuid"}},"requires_user_approval":{"type":"boolean"},"approval_kind":{"enum":["user","standing_policy","agent_in_scope"]},"approved_by":{"type":"string","minLength":1},"decided_at":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"}}}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=schemas/failure-knowledge-payload-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"urn:kim-silver-youtube:schema:failure-knowledge-payload:v1","title":"Failure Knowledge Projection Payload v1","type":"object","additionalProperties":false,"required":["title","canonical_doc_ref","document_hash","source_id","symptom","conditions","confirmed_cause","resolution","verification","prevention","projection_status","projected_by","projected_at"],"properties":{"title":{"type":"string","minLength":1},"canonical_doc_ref":{"type":"string","pattern":"^failures/[^/]+\\.md$"},"document_hash":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},"source_id":{"type":"string","format":"uuid"},"symptom":{"type":"string","minLength":1},"conditions":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"confirmed_cause":{"type":"string","minLength":1},"resolution":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"verification":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"prevention":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"projection_status":{"const":"resolved"},"projected_by":{"type":"string","minLength":1},"projected_at":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"}}}
+```
+<!-- /project-artifact -->

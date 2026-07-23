@@ -19,13 +19,15 @@ from file_data import (  # noqa: E402
     ConcurrentWriteError,
     ConflictError,
     ExpectationMismatchError,
+    LegacyReadOnlyError,
     RecordNotFoundError,
     RecordStore,
     RecordValidationError,
     StoreNotInitializedError,
-    atomic_write_record,
     build_record,
 )
+from file_data.store import _atomic_write_record  # noqa: E402
+from test_support import TEST_WRITE_CAPABILITY  # noqa: E402
 
 
 FIRST_ID = "123e4567-e89b-42d3-a456-426614174000"
@@ -33,16 +35,34 @@ SECOND_ID = "123e4567-e89b-42d3-a456-426614174001"
 MISSING_ID = "123e4567-e89b-42d3-a456-426614174099"
 
 
+def atomic_write_record(
+    project_root: Path,
+    relative_path: Path,
+    record: dict,
+    *,
+    overwrite: bool = False,
+) -> Path:
+    return _atomic_write_record(
+        project_root,
+        relative_path,
+        record,
+        write_capability=TEST_WRITE_CAPABILITY,
+        overwrite=overwrite,
+    )
+
+
 class RecordStoreTests(unittest.TestCase):
     def make_store(self, root: Path) -> RecordStore:
-        store = RecordStore(root)
+        store = RecordStore._for_test(root)
         store.initialize()
         return store
 
     def test_initialization_is_required_and_scoped(self) -> None:
         with tempfile.TemporaryDirectory(prefix="stage03-init-") as raw_root:
             root = Path(raw_root)
-            store = RecordStore(root)
+            with self.assertRaises(LegacyReadOnlyError):
+                RecordStore(root).initialize()
+            store = RecordStore._for_test(root)
             with self.assertRaises(StoreNotInitializedError):
                 store.list_records("example")
             result = store.initialize()
@@ -51,6 +71,38 @@ class RecordStoreTests(unittest.TestCase):
                 sorted(path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_dir()),
                 ["data", "data/events", "data/records"],
             )
+
+    def test_test_write_capability_rejects_active_project_root(self) -> None:
+        with self.assertRaises(LegacyReadOnlyError):
+            RecordStore._for_test(ROOT)
+
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "tests" / "test_cli_entry.py"),
+                "--root",
+                str(ROOT),
+                "init",
+            ],
+            cwd=ROOT,
+            text=True,
+            encoding="utf-8",
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(completed.returncode, 2, completed.stderr)
+        self.assertEqual(json.loads(completed.stderr)["error"]["kind"], "legacy_read_only")
+
+        with (
+            tempfile.TemporaryDirectory(prefix="stage03-bound-first-") as first_root,
+            tempfile.TemporaryDirectory(prefix="stage03-bound-second-") as second_root,
+        ):
+            first_store = RecordStore._for_test(Path(first_root))
+            with self.assertRaisesRegex(LegacyReadOnlyError, "bound to another root"):
+                RecordStore(
+                    Path(second_root),
+                    _write_capability=first_store._write_capability,
+                )
 
     def test_create_get_list_and_expected_update(self) -> None:
         with tempfile.TemporaryDirectory(prefix="stage03-record-") as raw_root:
@@ -208,8 +260,21 @@ class RecordCliTests(unittest.TestCase):
         environment = os.environ.copy()
         environment["PYTHONPATH"] = str(ROOT / "src")
         environment["PYTHONDONTWRITEBYTECODE"] = "1"
+        prepared = list(arguments)
+        if prepared and prepared[0] in {
+            "get",
+            "list",
+            "list-events",
+        }:
+            prepared.insert(0, "--legacy-read")
         return subprocess.run(
-            [sys.executable, "-m", "file_data", "--root", str(root), *arguments],
+            [
+                sys.executable,
+                str(ROOT / "tests" / "test_cli_entry.py"),
+                "--root",
+                str(root),
+                *prepared,
+            ],
             cwd=ROOT,
             env=environment,
             text=True,

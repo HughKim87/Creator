@@ -63,3 +63,43 @@ SQLite, YAML 전용 파서, Obsidian 전용 속성, 외부 데이터베이스는
 - Stage 03은 이 외피와 안전 경로·원자 저장 함수를 재사용한 [공통 기록 I/O 계약](RECORD_IO_CONTRACT.md)을 소유한다.
 - Stage 04~06은 `payload` 내부의 작업 상태·지식 유형·수명주기 필드를 각 단계에서 별도로 승인한다.
 - Stage 08 전까지 동시 작성자와 자동 유지보수는 구현하지 않는다.
+
+## 문서 소유 파생 artifact
+
+아래 block이 공통 외피 schema와 중립 fixture의 exact 정본이다. `ArtifactService`는 승인된 기존 경로에만 이를 재생성한다.
+
+<!-- project-artifact:v1 path=schemas/common-record-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"urn:kim-silver-youtube:schema:common-record:v1","title":"Common Record v1","description":"Domain-neutral file record envelope for the Stage 02 foundation.","type":"object","additionalProperties":false,"required":["id","record_type","schema_version","created_at","updated_at","payload","content_hash"],"properties":{"id":{"type":"string","format":"uuid","pattern":"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"},"record_type":{"type":"string","pattern":"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"},"schema_version":{"const":1},"created_at":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},"updated_at":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},"payload":{"type":"object"},"content_hash":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=tests/fixtures/file_data/valid/neutral-record.json verify=json-semantic -->
+```json
+{"content_hash":"sha256:4533820fa597a429c82eb1b4ab95418cb6bd9f9d380a30091b350ff4cd240360","created_at":"2026-07-23T00:00:00Z","id":"123e4567-e89b-42d3-a456-426614174000","payload":{"message":"중립 예제"},"record_type":"example","schema_version":1,"updated_at":"2026-07-23T00:00:00Z"}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=tests/fixtures/file_data/invalid/missing-field.json verify=json-semantic -->
+```json
+{"created_at":"2026-07-23T00:00:00Z","id":"123e4567-e89b-42d3-a456-426614174000","payload":{},"record_type":"example","schema_version":1,"updated_at":"2026-07-23T00:00:00Z"}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=tests/fixtures/file_data/invalid/tampered-content.json verify=json-semantic -->
+```json
+{"content_hash":"sha256:4533820fa597a429c82eb1b4ab95418cb6bd9f9d380a30091b350ff4cd240360","created_at":"2026-07-23T00:00:00Z","id":"123e4567-e89b-42d3-a456-426614174000","payload":{"message":"변조됨"},"record_type":"example","schema_version":1,"updated_at":"2026-07-23T00:00:00Z"}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=tests/fixtures/file_data/invalid/wrong-id.json verify=json-semantic -->
+```json
+{"content_hash":"sha256:0000000000000000000000000000000000000000000000000000000000000000","created_at":"2026-07-23T00:00:00Z","id":"not-a-uuid","payload":{},"record_type":"example","schema_version":1,"updated_at":"2026-07-23T00:00:00Z"}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=tests/fixtures/file_data/invalid/wrong-version.json verify=json-semantic -->
+```json
+{"content_hash":"sha256:0000000000000000000000000000000000000000000000000000000000000000","created_at":"2026-07-23T00:00:00Z","id":"123e4567-e89b-42d3-a456-426614174000","payload":{},"record_type":"example","schema_version":2,"updated_at":"2026-07-23T00:00:00Z"}
+```
+<!-- /project-artifact -->

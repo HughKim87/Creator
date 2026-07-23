@@ -3,7 +3,7 @@
 - 목적: 보호·역사 경계를 제외한 활성 Markdown 경로를 정본에서 결정론적으로 재생성한다.
 - 상태: 파생물. 이 파일은 규칙·상태·결정을 소유하지 않는다.
 - 생성 명령: `python -m file_data maintenance-inventory --write`
-- 원본 문서 수: 86
+- 원본 문서 수: 88
 - 자기 재귀 방지: 이 생성 파일 자체는 원본 목록에서 제외한다.
 
 ## docs
@@ -69,7 +69,7 @@
 - [오래된 핸드오프 상태와 죽은 경로](../../failures/stale-handoff-state.md) — `failures/stale-handoff-state.md`
 - [저장된 기록 유형의 승인 우회](../../failures/stored-type-approval-bypass.md) — `failures/stored-type-approval-bypass.md`
 - [구현 폴더와 정보 구조 계약의 드리프트](../../failures/structure-contract-folder-drift.md) — `failures/structure-contract-folder-drift.md`
-- [테스트 fixture의 payload 계약 구조 가정](../../failures/test-fixture-contract-shape-assumption.md) — `failures/test-fixture-contract-shape-assumption.md`
+- [테스트 fixture의 계약 구조 가정](../../failures/test-fixture-contract-shape-assumption.md) — `failures/test-fixture-contract-shape-assumption.md`
 - [후행 공백 정규식의 탭 오해석](../../failures/trailing-whitespace-regex.md) — `failures/trailing-whitespace-regex.md`
 - [Windows CLI 표준 입출력 인코딩 불일치](../../failures/windows-cli-utf8-stdio.md) — `failures/windows-cli-utf8-stdio.md`
 - [Windows 텍스트 줄바꿈 변환과 실제 크기 측정 불일치](../../failures/windows-text-newline-size-measurement.md) — `failures/windows-text-newline-size-measurement.md`
@@ -84,10 +84,12 @@
 - [프로젝트 의도 역추론 보고서](../../reports/2026-07-22_codex_프로젝트_의도_역추론_보고서.md) — `reports/2026-07-22_codex_프로젝트_의도_역추론_보고서.md`
 - [oh-my-codex 도입 리서치·분석 보고서](../../reports/2026-07-22_oh-my-codex_도입_리서치_분석_보고서.md) — `reports/2026-07-22_oh-my-codex_도입_리서치_분석_보고서.md`
 - [프로젝트 의도 통합 요구사항 기준서](../../reports/2026-07-22_프로젝트_의도_통합_요구사항_기준서.md) — `reports/2026-07-22_프로젝트_의도_통합_요구사항_기준서.md`
+- [Claude Stage 10 교차검증 감사 보고서](../../reports/2026-07-23_claude_stage10_교차검증_감사_보고서.md) — `reports/2026-07-23_claude_stage10_교차검증_감사_보고서.md`
 - [두 최종 보고서 교차검증·점수 비교·후속 작업 보고서](../../reports/2026-07-23_claude_교차검증_점수비교_후속작업_보고서.md) — `reports/2026-07-23_claude_교차검증_점수비교_후속작업_보고서.md`
 - [Stage 00~09 최종 복기 보고서 교차검증 보고서](../../reports/2026-07-23_claude최종_복기_보고서_교차검증_보고서.md) — `reports/2026-07-23_claude최종_복기_보고서_교차검증_보고서.md`
 - [Claude·Codex 최종 복기 보고서 교차검증·비교 보고서](../../reports/2026-07-23_codex_claude_codex_최종_복기_교차검증_비교_보고서.md) — `reports/2026-07-23_codex_claude_codex_최종_복기_교차검증_비교_보고서.md`
 - [Stage 00~09 프로젝트 구축 최종 복기 보고서](../../reports/2026-07-23_codex_stage00-09_프로젝트_구축_최종_복기_보고서.md) — `reports/2026-07-23_codex_stage00-09_프로젝트_구축_최종_복기_보고서.md`
+- [이번 세션 작업 감사 보고서](../../reports/2026-07-23_codex_이번_세션_작업_감사_보고서.md) — `reports/2026-07-23_codex_이번_세션_작업_감사_보고서.md`
 - [Stage 00~09 계획 대비 실제 구축 비교분석 보고서](../../reports/2026-07-23_stage00-09_계획_대비_실제_구축_비교분석_보고서.md) — `reports/2026-07-23_stage00-09_계획_대비_실제_구축_비교분석_보고서.md`
 - [Stage 09 유튜브 촬영 전 근거 패키지 검증 보고서](../../reports/2026-07-23_stage09_유튜브_근거_패키지_검증_보고서.md) — `reports/2026-07-23_stage09_유튜브_근거_패키지_검증_보고서.md`
 
@@ -100,7 +102,7 @@
 
 ## rules
 
-- [Document Work Rules](../../rules/document-work.md) — `rules/document-work.md`
+- [Document-Based Data Work Rules](../../rules/document-work.md) — `rules/document-work.md`
 - [Failure-Record Work Rules](../../rules/failure-records.md) — `rules/failure-records.md`
 - [History Review Rules](../../rules/history-review.md) — `rules/history-review.md`
 - [Stage Work Rules](../../rules/stage-work.md) — `rules/stage-work.md`

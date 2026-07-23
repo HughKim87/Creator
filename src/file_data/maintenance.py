@@ -11,9 +11,15 @@ import time
 from typing import Any, Mapping, Sequence
 
 from .context import ContextService
+from .document_data import (
+    ArtifactService,
+    DocumentDataError,
+    DocumentDataService,
+    LegacyDataVerifier,
+)
 from .knowledge import KnowledgeRecordError, KnowledgeService, SourceIntegrityError
 from .lifecycle import TERMINAL_STATES, LifecycleService
-from .store import InputContractError
+from .store import InputContractError, RecordIOError
 
 
 GENERATED_INVENTORY_REF = "docs/obsidian/GENERATED_DOCUMENT_INVENTORY.md"
@@ -28,12 +34,29 @@ class MaintenanceError(InputContractError):
 
 
 class MaintenanceService:
-    def __init__(self, project_root: Path | str) -> None:
+    def __init__(
+        self,
+        project_root: Path | str,
+        *,
+        _write_capability: object | None = None,
+    ) -> None:
         self.root = Path(project_root).resolve()
         self.safe_directory = self.root.as_posix()
-        self.lifecycle = LifecycleService(self.root)
-        self.knowledge = KnowledgeService(self.root)
-        self.context = ContextService(self.root)
+        self.lifecycle = LifecycleService(
+            self.root,
+            _write_capability=_write_capability,
+        )
+        self.knowledge = KnowledgeService(
+            self.root,
+            _write_capability=_write_capability,
+        )
+        self.context = ContextService(
+            self.root,
+            _write_capability=_write_capability,
+        )
+        self.document_data = DocumentDataService(self.root)
+        self.artifacts = ArtifactService(self.root)
+        self.legacy_data = LegacyDataVerifier(self.root)
 
     def _git(self, *arguments: str) -> list[str]:
         result = subprocess.run(
@@ -137,9 +160,148 @@ class MaintenanceService:
             raise MaintenanceError("generated inventory post-write verification failed")
         return status
 
+    def _migrated_legacy_ids(self) -> tuple[set[str], set[str]]:
+        blocks = self.document_data.list_blocks()
+        knowledge_replacements: dict[str, Mapping[str, Any]] = {}
+        decision_replacements: dict[str, Mapping[str, Any]] = {}
+        for block in blocks:
+            if block["kind"] == "knowledge":
+                replacements = block["payload"]["replaces_legacy_ids"]
+            elif (
+                block["kind"] == "decision"
+                and block["payload"]["replaces_legacy_id"] is not None
+            ):
+                replacements = [block["payload"]["replaces_legacy_id"]]
+            else:
+                replacements = []
+            target = (
+                knowledge_replacements
+                if block["kind"] == "knowledge"
+                else decision_replacements
+            )
+            for legacy_id in replacements:
+                if legacy_id in target:
+                    raise DocumentDataError(
+                        f"legacy replacement is claimed by multiple document blocks: {legacy_id}"
+                    )
+                target[legacy_id] = block
+
+        all_states = {
+            state["payload"]["target_id"]: state
+            for state in self.lifecycle.list_states()
+        }
+        states = {
+            target_id: state
+            for target_id, state in all_states.items()
+            if state["payload"]["state"] not in TERMINAL_STATES
+        }
+        migrated_records: set[str] = set()
+        candidate_sources: set[str] = set()
+        consumers: dict[str, set[str]] = defaultdict(set)
+        for target_id, state in states.items():
+            record = self.lifecycle.store.get_record(target_id)
+            payload = record["payload"]
+            if record["record_type"] in {"knowledge", "decision"}:
+                source_ids = payload["source_ids"]
+            elif record["record_type"] == "failure_knowledge":
+                source_ids = [payload["source_id"]]
+            else:
+                source_ids = []
+            for source_id in source_ids:
+                consumers[source_id].add(record["id"])
+
+        for legacy_id, block in knowledge_replacements.items():
+            state = all_states.get(legacy_id)
+            if state is None:
+                raise DocumentDataError(
+                    f"knowledge replacement has no lifecycle state: {legacy_id}"
+                )
+            if state["payload"]["state"] in TERMINAL_STATES:
+                raise DocumentDataError(
+                    f"knowledge replacement target is terminal: {legacy_id}"
+                )
+            try:
+                record = self.lifecycle.store.get_record(legacy_id)
+            except RecordIOError as exc:
+                raise DocumentDataError(
+                    f"knowledge replacement record is unavailable: {legacy_id}"
+                ) from exc
+            payload = record["payload"]
+            expected = block["payload"]
+            if record["record_type"] != "knowledge" or any(
+                payload[field] != expected[field]
+                for field in (
+                    "statement",
+                    "classification",
+                    "scope",
+                    "verification_status",
+                    "verified_by",
+                )
+            ):
+                raise DocumentDataError(
+                    f"knowledge replacement does not exactly match legacy record: {legacy_id}"
+                )
+            if state["payload"]["state"] != block["status"]:
+                raise DocumentDataError(
+                    f"knowledge replacement lifecycle state differs: {legacy_id}"
+                )
+            migrated_records.add(legacy_id)
+            local_refs = {
+                ref.split("#", 1)[0]
+                for ref in block["source_refs"]
+                if not ref.startswith("https://")
+            }
+            for source_id in payload["source_ids"]:
+                source = self.lifecycle.store.get_record(source_id)
+                if (
+                    source["record_type"] == "source"
+                    and source["payload"]["source_kind"] == "local_document"
+                    and source["payload"]["locator"] in local_refs
+                ):
+                    candidate_sources.add(source_id)
+
+        for legacy_id in decision_replacements:
+            state = all_states.get(legacy_id)
+            if state is None:
+                raise DocumentDataError(
+                    f"decision replacement has no lifecycle state: {legacy_id}"
+                )
+            if state["payload"]["state"] in TERMINAL_STATES:
+                raise DocumentDataError(
+                    f"decision replacement target is terminal: {legacy_id}"
+                )
+            try:
+                record = self.lifecycle.store.get_record(legacy_id)
+            except RecordIOError as exc:
+                raise DocumentDataError(
+                    f"decision replacement record is unavailable: {legacy_id}"
+                ) from exc
+            if record["record_type"] != "decision":
+                raise DocumentDataError(
+                    f"decision replacement target is not a decision: {legacy_id}"
+                )
+            migrated_records.add(legacy_id)
+
+        migrated_sources = {
+            source_id
+            for source_id in candidate_sources
+            if consumers.get(source_id, set()) <= migrated_records
+        }
+        return migrated_records, migrated_sources
+
     def detect_drift(self) -> list[dict[str, str]]:
         findings: list[dict[str, str]] = []
         drifted_sources: set[str] = set()
+        try:
+            migrated_records, migrated_sources = self._migrated_legacy_ids()
+        except DocumentDataError as exc:
+            return [
+                {
+                    "target_id": "project-data:v1",
+                    "kind": "document_data",
+                    "reason": str(exc),
+                }
+            ]
         for ref in self.knowledge.failure_document_refs():
             try:
                 self.knowledge.validate_failure_document(ref)
@@ -154,6 +316,8 @@ class MaintenanceService:
             record = self.lifecycle.store.get_record(state["payload"]["target_id"])
             try:
                 if record["record_type"] == "source":
+                    if record["id"] in migrated_sources:
+                        continue
                     locator = record["payload"]["locator"]
                     if (
                         record["payload"]["source_kind"] == "local_document"
@@ -171,6 +335,8 @@ class MaintenanceService:
             if state["payload"]["state"] in TERMINAL_STATES:
                 continue
             record = self.lifecycle.store.get_record(state["payload"]["target_id"])
+            if record["id"] in migrated_records:
+                continue
             payload = record["payload"]
             if record["record_type"] in {"knowledge", "decision"}:
                 source_ids = set(payload["source_ids"])
@@ -190,7 +356,24 @@ class MaintenanceService:
     def detect_duplicates(self) -> list[dict[str, Any]]:
         findings: list[dict[str, Any]] = []
         claims: dict[str, list[str]] = defaultdict(list)
+        try:
+            migrated_records, _ = self._migrated_legacy_ids()
+        except DocumentDataError as exc:
+            return [
+                {
+                    "kind": "document_data",
+                    "value": str(exc),
+                    "record_ids": [],
+                }
+            ]
+        for block in self.document_data.list_blocks():
+            if block["kind"] == "knowledge" and block["status"] == "current":
+                claims[block["payload"]["statement"].strip().casefold()].append(
+                    "document:" + block["key"]
+                )
         for record in self.lifecycle.current_records(target_type="knowledge"):
+            if record["id"] in migrated_records:
+                continue
             claims[record["payload"]["statement"].strip().casefold()].append(record["id"])
         for value, ids in claims.items():
             if len(ids) > 1:
@@ -285,6 +468,23 @@ class MaintenanceService:
         started = time.perf_counter()
         scan = self.scan()
         errors, links = self._document_errors()
+        try:
+            self.document_data.validate()
+        except DocumentDataError as exc:
+            errors.append(f"document_data:{exc}")
+        try:
+            if any(
+                block["kind"] == "legacy-baseline"
+                for block in self.document_data.list_blocks()
+            ):
+                self.legacy_data.verify()
+        except DocumentDataError as exc:
+            errors.append(f"legacy_data:{exc}")
+        if self.artifacts.has_blocks():
+            try:
+                self.artifacts.check()
+            except DocumentDataError as exc:
+                errors.append(f"artifact:{exc}")
         for path in sorted((self.root / "src").rglob("*.py")):
             try:
                 ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -323,7 +523,12 @@ class MaintenanceService:
             "scan": scan,
         }
 
-    def evaluate_context(self, payload: Mapping[str, Any]) -> dict[str, Any]:
+    def evaluate_context(
+        self,
+        payload: Mapping[str, Any],
+        *,
+        legacy: bool = False,
+    ) -> dict[str, Any]:
         if not isinstance(payload, Mapping) or set(payload) != {"evaluations"}:
             raise MaintenanceError("evaluation payload must contain exactly evaluations")
         evaluations = payload["evaluations"]
@@ -340,8 +545,8 @@ class MaintenanceService:
                 raise MaintenanceError(f"each evaluation must contain exactly: {sorted(required)}")
             request = dict(evaluation["request"])
             request["baseline_characters"] = baseline["characters"]
-            first = self.context.build_package(request)
-            second = self.context.build_package(request)
+            first = self.context.build_package(request, legacy=legacy)
+            second = self.context.build_package(request, legacy=legacy)
             selected_ids = {
                 item["id"] for item in first["selected"] if item["kind"] == "record"
             }

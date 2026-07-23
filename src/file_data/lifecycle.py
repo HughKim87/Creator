@@ -240,14 +240,23 @@ def replay_lifecycle_events(target_id: str, events: Sequence[Mapping[str, Any]])
 
 
 class LifecycleService:
-    def __init__(self, project_root: Path | str) -> None:
+    def __init__(
+        self,
+        project_root: Path | str,
+        *,
+        _write_capability: object | None = None,
+    ) -> None:
         self.root = Path(project_root).resolve()
         self.store = RecordStore(
             self.root,
             approved_record_types=LIFECYCLE_RECORD_TYPES,
             approved_streams=LIFECYCLE_STREAMS,
+            _write_capability=_write_capability,
         )
-        self.knowledge = KnowledgeService(self.root)
+        self.knowledge = KnowledgeService(
+            self.root,
+            _write_capability=_write_capability,
+        )
 
     def initialize(self) -> dict[str, str]:
         return self.store.initialize()

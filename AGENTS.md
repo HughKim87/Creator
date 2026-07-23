@@ -23,7 +23,7 @@ Before starting a task, classify the requested actions and read every matching r
 |---|---|
 | Implement, review, or close a numbered build stage | `rules/stage-work.md` |
 | Close a numbered build stage; record, diagnose, resolve, review, or reuse a failure | `rules/failure-records.md` |
-| Create, edit, move, classify, or validate maintained documents | `rules/document-work.md` |
+| Create, edit, move, classify, or validate maintained documents or persistent project records, events, snapshots, indexes, and inventories | `rules/document-work.md` |
 | Inspect `backup/`, historical reports, or superseded material | `rules/history-review.md` |
 | Stage, commit, branch, push, recover, or make backup decisions | `rules/version-control.md` |
 | Work on an exact user-named item under `inputs/` or `outputs/` | `rules/user-data-work.md` |

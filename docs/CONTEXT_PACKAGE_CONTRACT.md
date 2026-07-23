@@ -51,6 +51,30 @@ package v1은 다음을 포함한다.
 
 package에는 생성 시각과 무작위 ID를 넣지 않는다. 같은 정본·요청·설정은 byte로 같은 논리 package와 fingerprint를 만든다. package는 반환만 하고 `data/`에 저장하지 않으므로 새 정본이 아니다.
 
+<!-- project-data:v1 kind=knowledge key=context-package-deterministic-derived-view -->
+```json
+{
+  "key": "context-package-deterministic-derived-view",
+  "kind": "knowledge",
+  "payload": {
+    "statement": "컨텍스트 패키지는 정본이 아니며 같은 정본·요청·설정에서 결정론적으로 재생성한다",
+    "classification": "constraint",
+    "scope": "project-foundation",
+    "verification_status": "verified",
+    "verified_by": "agent:stage10-standing-policy",
+    "replaces_legacy_ids": [
+      "35ed5523-d970-48eb-a2fe-716b111e970c"
+    ]
+  },
+  "source_refs": [
+    "docs/CONTEXT_PACKAGE_CONTRACT.md#비영구-context-package",
+    "docs/build/stage-07-context-retrieval.md"
+  ],
+  "status": "current"
+}
+```
+<!-- /project-data -->
+
 ## 크기와 기준선
 
 - 기본·대표 평가 최대 크기는 선택 content 12,000 Unicode 문자다.
@@ -82,3 +106,13 @@ CLI build는 PowerShell에서 UTF-8 stdin과 `--request-stdin`을 사용한다. 
 - 컨텍스트 package 저장·자동 지식 승격·보호 데이터 색인·보고서 기본 로딩은 금지한다.
 - 최신성·중복·재생성·비용 관측과 검증된 반복 실행은 [Stage 08 유지보수 계약](MAINTENANCE_AUTOMATION_CONTRACT.md)이 소유한다.
 - 도메인 태그·추천·영상 제작 입력은 Stage 09 범위다.
+
+## 문서 소유 파생 artifact
+
+아래 block이 비영구 context package schema의 exact 정본이다.
+
+<!-- project-artifact:v1 path=schemas/context-package-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"project://schemas/context-package-v1.schema.json","title":"Non-persistent context package v1","type":"object","additionalProperties":false,"required":["package_version","purpose","settings","selected","excluded","metrics","fingerprint"],"properties":{"package_version":{"const":1},"purpose":{"type":"string","minLength":1},"settings":{"type":"object","additionalProperties":false,"required":["char_limit","search","filters","exclusion_detail_limit"],"properties":{"char_limit":{"type":"integer","minimum":1},"search":{"type":["string","null"]},"filters":{"type":"object"},"exclusion_detail_limit":{"type":"integer","minimum":0,"maximum":20}}},"selected":{"type":"array","items":{"type":"object"}},"excluded":{"type":"object","additionalProperties":false,"required":["details","counts_by_reason"],"properties":{"details":{"type":"array","items":{"type":"object"}},"counts_by_reason":{"type":"object"}}},"metrics":{"type":"object","additionalProperties":false,"required":["selected_items","content_characters","content_utf8_bytes","baseline_characters","reduction_percent"],"properties":{"selected_items":{"type":"integer","minimum":0},"content_characters":{"type":"integer","minimum":0},"content_utf8_bytes":{"type":"integer","minimum":0},"baseline_characters":{"type":["integer","null"],"minimum":1},"reduction_percent":{"type":["number","null"]}}},"fingerprint":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}}
+```
+<!-- /project-artifact -->

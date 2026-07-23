@@ -11,7 +11,7 @@
 | 명령 | 기본 동작 | 쓰기 여부 | 성공 기준 |
 |---|---|---:|---|
 | `maintenance-scan` | source drift, 해결 실패 정본 구조, 의존 record, exact current 중복, inventory 상태, 비용 관측 | 없음 | drift·실패 정본 오류·중복 0, inventory 일치 |
-| `maintenance-verify` | scan + Markdown UTF-8/NUL/공백/링크 + Python AST + JSON schema + 보호 변경 + 현재 상태 링크 | 없음 | 오류 0, scan pass |
+| `maintenance-verify` | scan + Markdown UTF-8/NUL/공백/링크 + `project-data:v1` exact 계약 + `project-artifact:v1` semantic drift + Python AST + JSON schema + 보호 변경 + 현재 상태 링크 | 없음 | 오류 0, scan pass |
 | `maintenance-inventory` | 생성될 Obsidian inventory와 현재 파일 비교 | 없음 | bytes 일치 |
 | `maintenance-inventory --write` | 정본 경로에서 파생 inventory를 원자 교체 후 재검증 | 파생 파일 1개만 | 쓰기 후 expected bytes 일치 |
 | `maintenance-evaluate` | 명시 JSON의 컨텍스트 기대·금지·크기·절감·재현성 평가 | 없음 | 모든 평가 check 통과 |

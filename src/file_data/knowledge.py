@@ -353,11 +353,17 @@ def parse_failure_document(data: bytes, canonical_doc_ref: str) -> dict[str, Any
 
 
 class KnowledgeService:
-    def __init__(self, project_root: Path | str) -> None:
+    def __init__(
+        self,
+        project_root: Path | str,
+        *,
+        _write_capability: object | None = None,
+    ) -> None:
         self.store = RecordStore(
             project_root,
             approved_record_types=KNOWLEDGE_RECORD_TYPES,
             approved_streams=KNOWLEDGE_STREAMS,
+            _write_capability=_write_capability,
         )
 
     def initialize(self) -> dict[str, str]:

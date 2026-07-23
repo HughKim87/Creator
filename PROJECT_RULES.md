@@ -12,6 +12,16 @@
 - The user owns goals, prohibitions, protected-data access, external or costly actions, irreversible choices, and result confirmation. Agents own in-scope research, reasonable reversible decisions, implementation, validation, failure recovery, and concise progress reporting.
 - Report material choices, scope effects, failures, gate results, and remaining risk. Request user input only when the answer changes the authorized outcome, crosses a protected or external boundary, creates material irreversible risk, or cannot be resolved by a safe reversible default.
 
+## Document-based data and execution
+
+- Every durable project datum used to understand, plan, execute, verify, resume, or audit work must have exactly one human-readable maintained document as its active canonical owner.
+- Start work by reading the exact canonical documents routed by `AGENTS.md`. Before treating work as complete, update the existing document owners with every material requirement, decision, evidence reference, result, failure, validation state, blocker, and first next action produced by the work.
+- Source code and configuration may implement the project, but they must not be the sole owners of project intent, requirements, current state, decisions, work evidence, or reusable knowledge.
+- JSON, JSONL, schemas, records, events, snapshots, indexes, inventories, caches, and other machine-readable files may persist only when they are deterministic derivatives of document owners or explicitly labeled read-only legacy history. They must not own an active fact that is absent from its canonical document.
+- Before creating or changing persistent machine-readable data, identify its canonical document owner and the trace or rebuild relationship. If neither exists, create or update the document owner first; otherwise record the gap as a blocker and do not claim completion.
+- Existing machine-readable authorities that violate this model are migration debt, not precedent. Preserve them until an approved migration verifies no information loss, but do not add new active facts that exist only in those files.
+- Temporary execution data may remain outside maintained documents only when it is disposable, is not used to resume or audit later work, and is not treated as project knowledge or current state.
+
 ## Rule classification
 
 - Always-on rules live only in this `PROJECT_RULES.md` and are read once at session start.
@@ -58,4 +68,5 @@
 - Preserve unrelated user changes.
 - Verify changes in proportion to risk and follow the exact checks in the selected task rules.
 - Distinguish generated, structure-validated, tool-validated, app-validated, and user-approved states. Unrun checks and unimplemented features are not passes.
+- When a validation subagent is required, use one fresh subagent for that validation task with no inherited conversation or prior-task context. Give it only the current requirements and scope, the final artifacts or diff, completed test evidence, declared unresolved risks, and the validation contract. Do not disclose prior findings, fix history, retry history, or a desired verdict. Use the result only for read-only cross-validation.
 - After three consecutive failures of the same objective, record the attempts, confirmed cause, peak count, risk, and restart condition; change the approach and continue within the already authorized scope without requesting separate approval. Stop only when safe progress is impossible or continuation requires new authority, protected data, installation, external publication, or another material scope expansion.

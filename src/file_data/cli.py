@@ -22,6 +22,13 @@ from .knowledge import (
 from .lifecycle import APPROVAL_KINDS, LIFECYCLE_STATES, TARGET_TYPES, LifecycleService
 from .context import ContextService
 from .maintenance import MaintenanceService
+from .document_data import (
+    ARTIFACT_OWNERS,
+    ArtifactService,
+    DocumentDataService,
+    DocumentWorkService,
+    LegacyDataVerifier,
+)
 
 
 class RecordArgumentParser(argparse.ArgumentParser):
@@ -66,6 +73,11 @@ def _configure_utf8_stdio() -> None:
 def _parser() -> RecordArgumentParser:
     parser = RecordArgumentParser(prog="python -m file_data")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="existing project root")
+    parser.add_argument(
+        "--legacy-read",
+        action="store_true",
+        help="explicitly allow read-only legacy record and event commands",
+    )
     commands = parser.add_subparsers(dest="command", required=True)
 
     commands.add_parser("init", help="create approved data/records and data/events directories")
@@ -236,12 +248,15 @@ def _parser() -> RecordArgumentParser:
     context_request = context_build.add_mutually_exclusive_group(required=True)
     context_request.add_argument("--request-json", type=_payload)
     context_request.add_argument("--request-stdin", action="store_true")
+    context_build.add_argument("--legacy", action="store_true")
     context_search = commands.add_parser("context-search", help="find current records by plain substring")
     context_search.add_argument("--text", required=True)
+    context_search.add_argument("--legacy", action="store_true")
     context_search.add_argument("--type", choices=sorted(TARGET_TYPES), dest="record_type")
     context_search.add_argument("--scope")
     context_search.add_argument("--role", choices=sorted(SOURCE_EVIDENCE_ROLES), dest="evidence_role")
     context_filter = commands.add_parser("context-filter", help="filter lifecycle records by existing fields")
+    context_filter.add_argument("--legacy", action="store_true")
     context_filter.add_argument("--state", choices=sorted(LIFECYCLE_STATES))
     context_filter.add_argument("--type", choices=sorted(TARGET_TYPES), dest="record_type")
     context_filter.add_argument("--scope")
@@ -261,12 +276,134 @@ def _parser() -> RecordArgumentParser:
     maintenance_input = maintenance_evaluate.add_mutually_exclusive_group(required=True)
     maintenance_input.add_argument("--request-json", type=_payload)
     maintenance_input.add_argument("--request-stdin", action="store_true")
+    maintenance_evaluate.add_argument("--legacy", action="store_true")
+
+    commands.add_parser(
+        "document-data-validate",
+        help="validate every active Markdown-owned project-data block",
+    )
+    document_list = commands.add_parser(
+        "document-data-list",
+        help="list validated Markdown-owned project-data blocks",
+    )
+    document_list.add_argument(
+        "--kind",
+        choices=["work", "knowledge", "decision", "legacy-baseline"],
+    )
+    document_show = commands.add_parser(
+        "document-data-show",
+        help="show one validated Markdown-owned project-data block",
+    )
+    document_show.add_argument("--key", required=True)
+    commands.add_parser(
+        "document-work-show",
+        help="show the single active Markdown-owned work block and its expected hash",
+    )
+    document_work_checkpoint = commands.add_parser(
+        "document-work-checkpoint",
+        help="atomically checkpoint the active Markdown-owned work block",
+    )
+    document_work_checkpoint.add_argument("--expected-hash", required=True)
+    document_work_checkpoint.add_argument("--actor", required=True)
+    document_work_checkpoint.add_argument("--summary", required=True)
+    document_work_checkpoint.add_argument(
+        "--evidence",
+        action="append",
+        required=True,
+        dest="evidence_refs",
+    )
+    document_work_checkpoint.add_argument(
+        "--completed-item",
+        action="append",
+        default=[],
+        dest="completed_items",
+    )
+    document_work_checkpoint.add_argument("--next-action", required=True)
+    commands.add_parser(
+        "legacy-data-verify",
+        help="verify frozen legacy records and event streams against the document baseline",
+    )
+    commands.add_parser(
+        "artifact-check",
+        help="compare exact JSON artifacts with their Markdown owner blocks",
+    )
+    artifact_rebuild = commands.add_parser(
+        "artifact-rebuild",
+        help="rebuild one exact JSON artifact from its Markdown owner block",
+    )
+    artifact_rebuild.add_argument("--target", required=True, choices=sorted(ARTIFACT_OWNERS))
     return parser
 
 
-def _run(namespace: argparse.Namespace) -> dict[str, Any]:
+def _run(
+    namespace: argparse.Namespace,
+    *,
+    _write_capability: object | None = None,
+) -> dict[str, Any]:
+    legacy_read_commands = {
+        "get",
+        "list",
+        "list-events",
+        "work-show",
+        "source-show",
+        "source-list",
+        "source-verify",
+        "knowledge-show",
+        "knowledge-list",
+        "decision-show",
+        "decision-list",
+        "failure-show",
+        "lifecycle-show",
+        "lifecycle-list",
+        "lifecycle-current",
+        "lifecycle-history",
+    }
+    if namespace.command in legacy_read_commands and not namespace.legacy_read:
+        raise InputContractError(
+            "legacy_mode_required: use --legacy-read for record/event compatibility"
+        )
+    if namespace.command == "legacy-data-verify":
+        return LegacyDataVerifier(namespace.root).verify()
+    if namespace.command.startswith("document-work-"):
+        service = DocumentWorkService(namespace.root)
+        if namespace.command == "document-work-show":
+            return {"work": service.get_work()}
+        if namespace.command == "document-work-checkpoint":
+            return {
+                "work": service.checkpoint(
+                    expected_hash=namespace.expected_hash,
+                    actor=namespace.actor,
+                    summary=namespace.summary,
+                    evidence_refs=namespace.evidence_refs,
+                    completed_items=namespace.completed_items,
+                    next_action=namespace.next_action,
+                )
+            }
+        raise InputContractError(f"Unknown document work command: {namespace.command}")
+    if namespace.command.startswith("document-data-"):
+        service = DocumentDataService(namespace.root)
+        if namespace.command == "document-data-validate":
+            return service.validate()
+        if namespace.command == "document-data-list":
+            blocks = service.list_blocks()
+            if namespace.kind is not None:
+                blocks = [block for block in blocks if block["kind"] == namespace.kind]
+            return {"blocks": blocks, "count": len(blocks)}
+        if namespace.command == "document-data-show":
+            return {"block": service.get_block(namespace.key)}
+        raise InputContractError(f"Unknown document data command: {namespace.command}")
+    if namespace.command.startswith("artifact-"):
+        service = ArtifactService(namespace.root)
+        if namespace.command == "artifact-check":
+            return service.check()
+        if namespace.command == "artifact-rebuild":
+            return service.rebuild(namespace.target)
+        raise InputContractError(f"Unknown artifact command: {namespace.command}")
     if namespace.command.startswith("maintenance-"):
-        maintenance = MaintenanceService(namespace.root)
+        maintenance = MaintenanceService(
+            namespace.root,
+            _write_capability=_write_capability,
+        )
         if namespace.command == "maintenance-scan":
             return maintenance.scan()
         if namespace.command == "maintenance-verify":
@@ -275,15 +412,20 @@ def _run(namespace: argparse.Namespace) -> dict[str, Any]:
             return maintenance.write_inventory() if namespace.write else maintenance.inventory_status()
         if namespace.command == "maintenance-evaluate":
             return maintenance.evaluate_context(
-                _json_input(namespace.request_json, namespace.request_stdin)
+                _json_input(namespace.request_json, namespace.request_stdin),
+                legacy=namespace.legacy,
             )
         raise InputContractError(f"Unknown maintenance command: {namespace.command}")
     if namespace.command.startswith("context-"):
-        context = ContextService(namespace.root)
+        context = ContextService(
+            namespace.root,
+            _write_capability=_write_capability,
+        )
         if namespace.command == "context-build":
             return {
                 "package": context.build_package(
-                    _json_input(namespace.request_json, namespace.request_stdin)
+                    _json_input(namespace.request_json, namespace.request_stdin),
+                    legacy=namespace.legacy,
                 )
             }
         filters = {
@@ -297,16 +439,19 @@ def _run(namespace: argparse.Namespace) -> dict[str, Any]:
             if value is not None
         }
         if namespace.command == "context-search":
-            matches = context.search(namespace.text, filters)
+            matches = context.search(namespace.text, filters, legacy=namespace.legacy)
             return {"matches": matches, "count": len(matches)}
         if namespace.command == "context-filter":
-            records = context.filter_records(filters)
+            records = context.filter_records(filters, legacy=namespace.legacy)
             return {"records": records, "count": len(records)}
         if namespace.command == "context-baseline":
             return context.measure_documents(namespace.documents)
         raise InputContractError(f"Unknown context command: {namespace.command}")
     if namespace.command.startswith("lifecycle-"):
-        lifecycle = LifecycleService(namespace.root)
+        lifecycle = LifecycleService(
+            namespace.root,
+            _write_capability=_write_capability,
+        )
         if namespace.command == "lifecycle-register":
             return {
                 "state": lifecycle.register(
@@ -364,7 +509,10 @@ def _run(namespace: argparse.Namespace) -> dict[str, Any]:
             )
         raise InputContractError(f"Unknown lifecycle command: {namespace.command}")
     if namespace.command.startswith("failure-"):
-        knowledge = KnowledgeService(namespace.root)
+        knowledge = KnowledgeService(
+            namespace.root,
+            _write_capability=_write_capability,
+        )
         if namespace.command == "failure-validate":
             return {
                 "failure_document": knowledge.validate_failure_document(
@@ -384,7 +532,10 @@ def _run(namespace: argparse.Namespace) -> dict[str, Any]:
             return {"failure_documents": documents, "count": len(documents)}
         raise InputContractError(f"Unknown failure command: {namespace.command}")
     if namespace.command.startswith("decision-"):
-        knowledge = KnowledgeService(namespace.root)
+        knowledge = KnowledgeService(
+            namespace.root,
+            _write_capability=_write_capability,
+        )
         if namespace.command == "decision-create":
             record = knowledge.create_decision(
                 _json_input(namespace.payload_json, namespace.payload_stdin),
@@ -398,7 +549,10 @@ def _run(namespace: argparse.Namespace) -> dict[str, Any]:
             return {"records": records, "count": len(records)}
         raise InputContractError(f"Unknown decision command: {namespace.command}")
     if namespace.command.startswith("knowledge-"):
-        knowledge = KnowledgeService(namespace.root)
+        knowledge = KnowledgeService(
+            namespace.root,
+            _write_capability=_write_capability,
+        )
         if namespace.command == "knowledge-create":
             record = knowledge.create_knowledge(
                 statement=namespace.statement,
@@ -417,7 +571,10 @@ def _run(namespace: argparse.Namespace) -> dict[str, Any]:
             return {"records": records, "count": len(records)}
         raise InputContractError(f"Unknown knowledge command: {namespace.command}")
     if namespace.command.startswith("source-"):
-        knowledge = KnowledgeService(namespace.root)
+        knowledge = KnowledgeService(
+            namespace.root,
+            _write_capability=_write_capability,
+        )
         if namespace.command == "source-create":
             record = knowledge.create_source(
                 source_kind=namespace.source_kind,
@@ -437,7 +594,10 @@ def _run(namespace: argparse.Namespace) -> dict[str, Any]:
             return knowledge.verify_source(namespace.record_id)
         raise InputContractError(f"Unknown source command: {namespace.command}")
     if namespace.command.startswith("work-"):
-        work = WorkStateService(namespace.root)
+        work = WorkStateService(
+            namespace.root,
+            _write_capability=_write_capability,
+        )
         if namespace.command == "work-create":
             state = work.create_work(
                 _json_input(namespace.request_json, namespace.request_stdin),
@@ -466,7 +626,10 @@ def _run(namespace: argparse.Namespace) -> dict[str, Any]:
         if namespace.command == "work-rebuild":
             return {"state": work.rebuild_snapshot(namespace.work_id)}
         raise InputContractError(f"Unknown work command: {namespace.command}")
-    store = RecordStore(namespace.root)
+    store = RecordStore(
+        namespace.root,
+        _write_capability=_write_capability,
+    )
     if namespace.command == "init":
         return store.initialize()
     if namespace.command == "create":
@@ -515,11 +678,15 @@ def _error_payload(kind: str, message: str, recoverable: bool) -> dict[str, Any]
     }
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(
+    argv: list[str] | None = None,
+    *,
+    _write_capability: object | None = None,
+) -> int:
     _configure_utf8_stdio()
     try:
         namespace = _parser().parse_args(argv)
-        result = _run(namespace)
+        result = _run(namespace, _write_capability=_write_capability)
     except RecordIOError as exc:
         _emit(_error_payload(exc.kind, str(exc), exc.recoverable), error=True)
         return exc.exit_status

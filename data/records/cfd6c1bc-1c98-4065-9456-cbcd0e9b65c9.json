@@ -1,0 +1,24 @@
+{
+  "content_hash": "sha256:f5a98ba7184c611ac1fa1dd445616fa50957c8eb5c45002b5085d85d60355b20",
+  "created_at": "2026-07-23T05:56:19Z",
+  "id": "cfd6c1bc-1c98-4065-9456-cbcd0e9b65c9",
+  "payload": {
+    "conflict_ids": [],
+    "last_actor": "user:hugh",
+    "last_approval_kind": "user",
+    "last_decision_id": null,
+    "last_event_id": "a606cd01-84b2-4017-81d0-fc10ee1f8f42",
+    "last_reason": "사용자 요청으로 Codex 샌드박스 Python PATH 재발 원인과 재시작 후 검증을 정본에 반영",
+    "last_source_ids": [
+      "b46c3955-5432-4711-b51e-b4a31a36af04"
+    ],
+    "revision": 1,
+    "state": "current",
+    "superseded_by": null,
+    "target_id": "d62f0626-575c-44f6-b621-5cef5c00ad45",
+    "target_type": "failure_knowledge"
+  },
+  "record_type": "lifecycle_state",
+  "schema_version": 1,
+  "updated_at": "2026-07-23T05:56:19Z"
+}

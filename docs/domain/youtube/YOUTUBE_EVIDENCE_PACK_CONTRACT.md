@@ -29,8 +29,8 @@
 요청은 [youtube-evidence-request-v1](../../../schemas/youtube-evidence-request-v1.schema.json)을 따르며 다음 필드만 허용한다.
 
 - `video`: lowercase ASCII slug ID, 작업 제목, 대상 시청자, 설명 목표
-- `documents`: `ref`와 선택 이유의 명시 목록
-- `records`: record UUID와 선택 이유의 명시 목록
+- `documents`: `ref`, 선택 이유, 필요하면 같은 문서 안 `project-data:v1`의 `data_key`를 지정하는 기본 current 목록
+- `records`: 기존 record UUID와 선택 이유의 legacy 호환 목록. 기본 mode에서는 비어 있어야 하며 explicit CLI `--legacy`에서만 읽기 전용으로 허용
 - `search`: 선택적 current 문자열 후보. 사용하지 않으면 `null`
 - `char_limit`: 1~12,000 Unicode 문자
 - `baseline_characters`: 비교 기준선의 양의 Unicode 문자 수
@@ -52,7 +52,7 @@
 ## 5. 작업 흐름
 
 1. 명시 JSON과 허용 필드·길이·중복·evidence 존재를 검증한다.
-2. 목적·문서·record·검색·문자 상한·기준선을 공통 `ContextService` 요청으로 변환한다.
+2. 목적·문서·선택 `data_key`·검색·문자 상한·기준선을 공통 `ContextService` 요청으로 변환한다. legacy UUID가 있으면 explicit `--legacy` mode인지 먼저 확인한다.
 3. 공통 기반이 보호 경계, current 상태, source trace, 크기와 제외를 검증한다.
 4. 모든 direct record가 실제 selected current인지 다시 확인한다.
 5. 사용자 소유 `review_required` gate와 도메인 fingerprint를 추가한다.
@@ -65,6 +65,8 @@
 $request = Get-Content -LiteralPath 'examples/youtube/stage09-foundation-evidence.request.json' -Raw -Encoding UTF8
 $request | python -m youtube_domain --root . evidence-pack --request-stdin
 ```
+
+기존 UUID 요청을 감사 목적으로 재현할 때만 같은 명령에 `--legacy`를 추가한다. 기본 mode가 `records[]`를 받으면 `legacy_mode_required`로 실패하며 새 record를 만들지 않는다.
 
 PowerShell에서 native stdin으로 한글 JSON을 보낼 때는 `$OutputEncoding`과 `PYTHONUTF8=1`을 UTF-8로 설정한다.
 
@@ -88,6 +90,30 @@ PowerShell에서 native stdin으로 한글 JSON을 보낼 때는 `$OutputEncodin
 
 실제 결과에서 재사용 가치가 확인된 절차만 `youtube:evidence-pack` 범위 knowledge candidate로 만들 수 있다. candidate는 자동 current 승격하지 않으며 다음 작업의 기본 context 검색에도 포함되지 않는다. 사용자 또는 standing policy가 재사용 필요를 승인한 경우에만 lifecycle 전이를 별도로 수행한다.
 
+<!-- project-data:v1 kind=knowledge key=youtube-evidence-pack-review-required -->
+```json
+{
+  "key": "youtube-evidence-pack-review-required",
+  "kind": "knowledge",
+  "payload": {
+    "statement": "유튜브 촬영 전 근거 패키지는 current 근거만 선택하고 작업 제목과 창작 방향을 사용자 review_required로 남긴다.",
+    "classification": "procedure",
+    "scope": "youtube:evidence-pack",
+    "verification_status": "verified",
+    "verified_by": "agent:stage09-domain-validation",
+    "replaces_legacy_ids": [
+      "a77456b1-28e8-4d31-8f51-c04cff89c2db"
+    ]
+  },
+  "source_refs": [
+    "docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md#8-지식-환류",
+    "reports/2026-07-23_stage09_유튜브_근거_패키지_검증_보고서.md"
+  ],
+  "status": "candidate"
+}
+```
+<!-- /project-data -->
+
 ## 9. 제외와 후속
 
 - 전체 8단계 영상 제작 워크플로와 과거 구현 복원
@@ -97,5 +123,27 @@ PowerShell에서 native stdin으로 한글 JSON을 보낼 때는 `$OutputEncodin
 - 원본·파생 결과 자동 저장
 - 공통 record schema의 유튜브 필드 추가
 - 도메인 경험의 전역 지식 자동 승격
+
+## 10. 문서 소유 파생 artifact
+
+아래 block이 YouTube request·pack schema와 보호 데이터 없는 기본 문서 참조 example의 exact 정본이다.
+
+<!-- project-artifact:v1 path=schemas/youtube-evidence-request-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"project://schemas/youtube-evidence-request-v1.schema.json","title":"YouTube pre-production evidence request v1","type":"object","additionalProperties":false,"required":["video","documents","records","search","char_limit","baseline_characters"],"properties":{"video":{"type":"object","additionalProperties":false,"required":["id","working_title","audience","goal"],"properties":{"id":{"type":"string","pattern":"^[a-z0-9]+(?:-[a-z0-9]+)*$","maxLength":80},"working_title":{"type":"string","minLength":1,"maxLength":200},"audience":{"type":"string","minLength":1,"maxLength":500},"goal":{"type":"string","minLength":1,"maxLength":1000}}},"documents":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["ref","reason"],"properties":{"ref":{"type":"string","minLength":1,"maxLength":200},"data_key":{"type":"string","pattern":"^[a-z0-9]+(?:-[a-z0-9]+)*$","maxLength":100},"reason":{"type":"string","minLength":1,"maxLength":500}}}},"records":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["id","reason"],"properties":{"id":{"type":"string","format":"uuid","maxLength":200},"reason":{"type":"string","minLength":1,"maxLength":500}}}},"search":{"type":["string","null"]},"char_limit":{"type":"integer","minimum":1,"maximum":12000},"baseline_characters":{"type":"integer","minimum":1}}}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=schemas/youtube-evidence-pack-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"project://schemas/youtube-evidence-pack-v1.schema.json","title":"YouTube pre-production evidence pack v1","type":"object","additionalProperties":false,"required":["pack_version","domain","task","video","approval_gate","context_package","fingerprint"],"properties":{"pack_version":{"const":1},"domain":{"const":"youtube"},"task":{"const":"preproduction_evidence_pack"},"video":{"type":"object","additionalProperties":false,"required":["id","working_title","audience","goal"],"properties":{"id":{"type":"string","pattern":"^[a-z0-9]+(?:-[a-z0-9]+)*$","maxLength":80},"working_title":{"type":"string","minLength":1,"maxLength":200},"audience":{"type":"string","minLength":1,"maxLength":500},"goal":{"type":"string","minLength":1,"maxLength":1000}}},"approval_gate":{"type":"object","additionalProperties":false,"required":["status","owner","decision","reason"],"properties":{"status":{"const":"review_required"},"owner":{"const":"user"},"decision":{"const":"working_title_and_creative_direction"},"reason":{"type":"string","minLength":1}}},"context_package":{"$ref":"context-package-v1.schema.json"},"fingerprint":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=examples/youtube/stage09-foundation-evidence.request.json verify=json-semantic -->
+```json
+{"baseline_characters":315497,"char_limit":12000,"documents":[{"data_key":"context-package-deterministic-derived-view","reason":"선택적 근거 구성의 현재 계약","ref":"docs/CONTEXT_PACKAGE_CONTRACT.md"}],"records":[],"search":null,"video":{"audience":"반복 제작에서 AI 작업 기억의 비용을 줄이고 싶은 1인 크리에이터","goal":"전체 문서를 매번 읽지 않고 current 근거만 선택해 재현 가능한 작업 문맥을 만드는 방식을 설명한다.","id":"stage09-foundation-context","working_title":"AI 작업 기억을 가볍게 만드는 선택적 컨텍스트"}}
+```
+<!-- /project-artifact -->
 
 후속 작업은 Stage 09 결과와 사용자의 별도 선택으로 새 범위를 정의한다.

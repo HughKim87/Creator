@@ -13,6 +13,7 @@ from uuid import uuid4
 from file_data import ExpectationMismatchError
 from file_data.knowledge import KnowledgeService
 from file_data.lifecycle import InvalidLifecycleTransition, LifecycleError, LifecycleService
+from test_support import TEST_WRITE_CAPABILITY
 
 
 FAILURE_TEXT = """# 검증 실패 사례
@@ -54,9 +55,18 @@ class LifecycleTests(unittest.TestCase):
         return tempfile.TemporaryDirectory(prefix="stage06-lifecycle-")
 
     def _services(self, raw_root: str) -> tuple[KnowledgeService, LifecycleService]:
-        knowledge = KnowledgeService(raw_root)
+        knowledge = KnowledgeService(
+            raw_root,
+            _write_capability=TEST_WRITE_CAPABILITY,
+        )
         knowledge.initialize()
-        return knowledge, LifecycleService(raw_root)
+        return (
+            knowledge,
+            LifecycleService(
+                raw_root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            ),
+        )
 
     def _statement_source(self, knowledge: KnowledgeService, *, status: str = "verified") -> dict:
         return knowledge.create_source(
@@ -387,14 +397,26 @@ class LifecycleTests(unittest.TestCase):
             source = self._statement_source(knowledge)
             env = {**os.environ, "PYTHONPATH": str(Path(__file__).parents[1] / "src"), "PYTHONUTF8": "1"}
             command = [
-                sys.executable, "-m", "file_data", "--root", raw_root,
+                sys.executable,
+                str(Path(__file__).parents[1] / "tests" / "test_cli_entry.py"),
+                "--root",
+                raw_root,
                 "lifecycle-register", "--id", source["id"], "--state", "current",
                 "--actor", "agent:test", "--approval-kind", "standing_policy", "--reason", "CLI 검증",
             ]
             created = subprocess.run(command, capture_output=True, text=True, encoding="utf-8", env=env, check=False)
             self.assertEqual(created.returncode, 0, created.stderr)
             listed = subprocess.run(
-                [sys.executable, "-m", "file_data", "--root", raw_root, "lifecycle-list", "--state", "current"],
+                [
+                    sys.executable,
+                    str(Path(__file__).parents[1] / "tests" / "test_cli_entry.py"),
+                    "--root",
+                    raw_root,
+                    "--legacy-read",
+                    "lifecycle-list",
+                    "--state",
+                    "current",
+                ],
                 capture_output=True, text=True, encoding="utf-8", env=env, check=False,
             )
             self.assertEqual(listed.returncode, 0, listed.stderr)

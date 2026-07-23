@@ -241,11 +241,17 @@ def project_work_state(events: Sequence[Mapping[str, Any]], work_id: str) -> dic
 
 
 class WorkStateService:
-    def __init__(self, project_root: str) -> None:
+    def __init__(
+        self,
+        project_root: str,
+        *,
+        _write_capability: object | None = None,
+    ) -> None:
         self.store = RecordStore(
             project_root,
             approved_record_types=WORK_RECORD_TYPES,
             approved_streams=WORK_STREAMS,
+            _write_capability=_write_capability,
         )
 
     def initialize(self) -> dict[str, str]:

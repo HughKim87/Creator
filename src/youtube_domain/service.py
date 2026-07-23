@@ -72,12 +72,52 @@ def _selections(value: Any, field: str, identity: str) -> list[dict[str, str]]:
     return sorted(normalized, key=lambda item: (item[identity], item["reason"]))
 
 
-def validate_request(value: Mapping[str, Any]) -> dict[str, Any]:
+def _document_selections(value: Any) -> list[dict[str, str]]:
+    if not isinstance(value, list):
+        raise YouTubeDomainError("documents must be a list")
+    normalized: list[dict[str, str]] = []
+    seen: set[tuple[str, str | None]] = set()
+    for item in value:
+        if not isinstance(item, Mapping) or set(item) not in (
+            {"ref", "reason"},
+            {"ref", "reason", "data_key"},
+        ):
+            raise YouTubeDomainError(
+                "each documents item must contain ref, reason, and optional data_key"
+            )
+        ref = _text(item["ref"], "documents.ref", maximum=200)
+        data_key = (
+            _text(item["data_key"], "documents.data_key", maximum=100)
+            if "data_key" in item
+            else None
+        )
+        if data_key is not None and not SLUG_PATTERN.fullmatch(data_key):
+            raise YouTubeDomainError("documents.data_key must be a lowercase ASCII slug")
+        identity = (ref, data_key)
+        if identity in seen:
+            raise YouTubeDomainError(f"duplicate documents selection: {ref}#{data_key or ''}")
+        seen.add(identity)
+        result = {
+            "ref": ref,
+            "reason": _text(item["reason"], "documents.reason", maximum=500),
+        }
+        if data_key is not None:
+            result["data_key"] = data_key
+        normalized.append(result)
+    return sorted(
+        normalized,
+        key=lambda item: (item["ref"], item.get("data_key", ""), item["reason"]),
+    )
+
+
+def validate_request(value: Mapping[str, Any], *, legacy: bool = False) -> dict[str, Any]:
     if not isinstance(value, Mapping) or set(value) != REQUEST_FIELDS:
         raise YouTubeDomainError(f"request must contain exactly: {sorted(REQUEST_FIELDS)}")
     video = _video(value["video"])
-    documents = _selections(value["documents"], "documents", "ref")
+    documents = _document_selections(value["documents"])
     records = _selections(value["records"], "records", "id")
+    if records and not legacy:
+        raise YouTubeDomainError("legacy_mode_required: records[] requires explicit --legacy")
     search = value["search"]
     if search is not None:
         search = _text(search, "search", maximum=500)
@@ -104,12 +144,20 @@ def validate_request(value: Mapping[str, Any]) -> dict[str, Any]:
 
 
 class YouTubeEvidenceService:
-    def __init__(self, project_root: Path | str) -> None:
+    def __init__(
+        self,
+        project_root: Path | str,
+        *,
+        _write_capability: object | None = None,
+    ) -> None:
         self.root = Path(project_root).resolve()
-        self.context = ContextService(self.root)
+        self.context = ContextService(
+            self.root,
+            _write_capability=_write_capability,
+        )
 
-    def build_pack(self, request: Mapping[str, Any]) -> dict[str, Any]:
-        normalized = validate_request(request)
+    def build_pack(self, request: Mapping[str, Any], *, legacy: bool = False) -> dict[str, Any]:
+        normalized = validate_request(request, legacy=legacy)
         video = normalized["video"]
         context_request: dict[str, Any] = {
             "purpose": f"YouTube pre-production evidence for {video['id']}: {video['goal']}",
@@ -120,7 +168,7 @@ class YouTubeEvidenceService:
         }
         if normalized["search"] is not None:
             context_request["search"] = normalized["search"]
-        context_package = self.context.build_package(context_request)
+        context_package = self.context.build_package(context_request, legacy=legacy)
         selected_ids = {
             item["id"]
             for item in context_package["selected"]

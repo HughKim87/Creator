@@ -12,6 +12,7 @@ from uuid import uuid4
 from file_data.context import ContextError
 from file_data.knowledge import KnowledgeService
 from file_data.lifecycle import LifecycleService
+from test_support import TEST_WRITE_CAPABILITY
 from youtube_domain import (
     REQUEST_FIELDS,
     VIDEO_FIELDS,
@@ -30,9 +31,35 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
         root = Path(raw_root)
         (root / "docs").mkdir()
         (root / "docs" / "evidence.md").write_text(
-            "# 영상 근거\n\n현재 근거만 선택한다.\n", encoding="utf-8"
+            """# 영상 근거
+
+현재 근거만 선택한다.
+
+<!-- project-data:v1 kind=knowledge key=test-youtube-evidence -->
+```json
+{
+  "key": "test-youtube-evidence",
+  "kind": "knowledge",
+  "payload": {
+    "statement": "영상 근거 패키지는 current 근거만 선택한다",
+    "classification": "procedure",
+    "scope": "youtube:evidence-pack",
+    "verification_status": "verified",
+    "verified_by": "agent:test",
+    "replaces_legacy_ids": ["123e4567-e89b-42d3-a456-426614174000"]
+  },
+  "source_refs": ["docs/evidence.md"],
+  "status": "current"
+}
+```
+<!-- /project-data -->
+""",
+            encoding="utf-8",
         )
-        knowledge = KnowledgeService(root)
+        knowledge = KnowledgeService(
+            root,
+            _write_capability=TEST_WRITE_CAPABILITY,
+        )
         knowledge.initialize()
         source = knowledge.create_source(
             source_kind="local_document",
@@ -49,7 +76,10 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
             verified_by="agent:test",
             record_id=str(uuid4()),
         )
-        LifecycleService(root).register_existing(actor="agent:test", approval_kind="standing_policy")
+        LifecycleService(
+            root,
+            _write_capability=TEST_WRITE_CAPABILITY,
+        ).register_existing(actor="agent:test", approval_kind="standing_policy")
         return source, claim
 
     def _request(self, claim_id: str) -> dict:
@@ -67,13 +97,61 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
             "baseline_characters": 1000,
         }
 
+    def _document_request(self) -> dict:
+        request = self._request(str(uuid4()))
+        request["documents"] = [
+            {
+                "ref": "docs/evidence.md",
+                "data_key": "test-youtube-evidence",
+                "reason": "문서 정본 근거",
+            }
+        ]
+        request["records"] = []
+        return request
+
+    def test_default_mode_builds_from_document_data_key_without_legacy_records(self) -> None:
+        with self._root() as raw_root:
+            self._fixture(raw_root)
+            pack = YouTubeEvidenceService(raw_root).build_pack(self._document_request())
+            selected = pack["context_package"]["selected"]
+            self.assertEqual(len(selected), 1)
+            self.assertEqual(selected[0]["data_key"], "test-youtube-evidence")
+            self.assertEqual(selected[0]["kind"], "document")
+
+    def test_project_shadow_read_matches_document_statement_to_legacy_uuid(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        request = json.loads(
+            (root / "examples" / "youtube" / "stage09-foundation-evidence.request.json")
+            .read_text(encoding="utf-8")
+        )
+        service = YouTubeEvidenceService(root)
+        document_pack = service.build_pack(request)
+        legacy_request = json.loads(json.dumps(request, ensure_ascii=False))
+        legacy_request["documents"] = []
+        legacy_request["records"] = [
+            {
+                "id": "35ed5523-d970-48eb-a2fe-716b111e970c",
+                "reason": "Stage 10 legacy current knowledge shadow",
+            }
+        ]
+        legacy_pack = service.build_pack(legacy_request, legacy=True)
+        document_item = document_pack["context_package"]["selected"][0]
+        legacy_item = legacy_pack["context_package"]["selected"][0]
+        document_statement = json.loads(document_item["content"])["payload"]["statement"]
+        self.assertEqual(document_statement, legacy_item["payload"]["statement"])
+        self.assertEqual(
+            document_item["data_key"],
+            "context-package-deterministic-derived-view",
+        )
+        self.assertEqual(legacy_item["id"], "35ed5523-d970-48eb-a2fe-716b111e970c")
+
     def test_builds_deterministic_nonpersistent_pack_with_user_gate(self) -> None:
         with self._root() as raw_root:
             source, claim = self._fixture(raw_root)
             service = YouTubeEvidenceService(raw_root)
             before = sorted(path.relative_to(raw_root).as_posix() for path in Path(raw_root).rglob("*"))
-            first = service.build_pack(self._request(claim["id"]))
-            second = service.build_pack(self._request(claim["id"]))
+            first = service.build_pack(self._request(claim["id"]), legacy=True)
+            second = service.build_pack(self._request(claim["id"]), legacy=True)
             after = sorted(path.relative_to(raw_root).as_posix() for path in Path(raw_root).rglob("*"))
             self.assertEqual(first, second)
             self.assertEqual(before, after)
@@ -90,7 +168,10 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
     def test_noncurrent_requested_record_fails_instead_of_partial_success(self) -> None:
         with self._root() as raw_root:
             source, old = self._fixture(raw_root)
-            replacement = KnowledgeService(raw_root).create_knowledge(
+            replacement = KnowledgeService(
+                raw_root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            ).create_knowledge(
                 statement="개정된 current 영상 근거 절차",
                 classification="procedure",
                 scope="youtube:evidence-pack",
@@ -99,7 +180,10 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
                 verified_by="agent:test",
                 record_id=str(uuid4()),
             )
-            lifecycle = LifecycleService(raw_root)
+            lifecycle = LifecycleService(
+                raw_root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             lifecycle.register(
                 replacement["id"], initial_state="current", actor="agent:test",
                 approval_kind="standing_policy", reason="개정 절차"
@@ -111,7 +195,9 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
                 replacement_id=replacement["id"]
             )
             with self.assertRaises(YouTubeEvidenceError):
-                YouTubeEvidenceService(raw_root).build_pack(self._request(old["id"]))
+                YouTubeEvidenceService(raw_root).build_pack(
+                    self._request(old["id"]), legacy=True
+                )
 
     def test_protected_document_is_rejected_by_common_context_boundary(self) -> None:
         with self._root() as raw_root:
@@ -119,7 +205,11 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
             request = self._request(claim["id"])
             request["documents"] = [{"ref": "inputs/private.md", "reason": "금지 원본"}]
             with self.assertRaises(ContextError):
-                YouTubeEvidenceService(raw_root).build_pack(request)
+                YouTubeEvidenceService(raw_root).build_pack(request, legacy=True)
+
+    def test_default_mode_rejects_legacy_uuid_records_without_explicit_opt_in(self) -> None:
+        with self.assertRaisesRegex(YouTubeDomainError, "legacy_mode_required"):
+            validate_request(self._request(str(uuid4())))
 
     def test_request_rejects_unknown_fields_duplicates_empty_evidence_and_large_limit(self) -> None:
         request = self._request(str(uuid4()))
@@ -171,7 +261,7 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
             environment["PYTHONUTF8"] = "1"
             command = [
                 sys.executable, "-m", "youtube_domain", "--root", raw_root,
-                "evidence-pack", "--request-stdin",
+                "evidence-pack", "--request-stdin", "--legacy",
             ]
             success = subprocess.run(
                 command,

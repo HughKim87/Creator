@@ -81,3 +81,19 @@ Stage 05~09의 `failure_knowledge`와 실패 문서 전용 source·lifecycle은 
 - 주기 실행·중복 탐지·비용 관측·일괄 재생성은 Stage 08 범위다.
 - 도메인 전용 상태와 영상 제작 연결은 Stage 09 범위다.
 - 보호 데이터, `backup/` 전체 이관, 사용자 승인 없는 삭제는 계속 제외한다.
+
+## 문서 소유 파생 artifact
+
+아래 두 block이 legacy lifecycle event·snapshot schema의 exact 정본이다.
+
+<!-- project-artifact:v1 path=schemas/lifecycle-event-payload-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"project://schemas/lifecycle-event-payload-v1.schema.json","title":"Lifecycle event payload v1","type":"object","additionalProperties":false,"required":["target_id","target_type","actor","action","from_state","to_state","reason","approval_kind","source_ids","related_target_ids","replacement_id"],"properties":{"target_id":{"type":"string","format":"uuid"},"target_type":{"enum":["source","knowledge","decision","failure_knowledge"]},"actor":{"type":"string","minLength":1},"action":{"enum":["register","request_review","approve_current","declare_conflict","supersede","reject","retire"]},"from_state":{"oneOf":[{"type":"null"},{"enum":["candidate","current","review_required","superseded","rejected","retired"]}]},"to_state":{"enum":["candidate","current","review_required","superseded","rejected","retired"]},"reason":{"type":"string","minLength":1},"approval_kind":{"enum":["agent_in_scope","user","standing_policy"]},"source_ids":{"type":"array","uniqueItems":true,"items":{"type":"string","format":"uuid"}},"related_target_ids":{"type":"array","uniqueItems":true,"items":{"type":"string","format":"uuid"}},"replacement_id":{"oneOf":[{"type":"null"},{"type":"string","format":"uuid"}]},"decision_id":{"oneOf":[{"type":"null"},{"type":"string","format":"uuid"}]}}}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=schemas/lifecycle-state-payload-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"project://schemas/lifecycle-state-payload-v1.schema.json","title":"Lifecycle state payload v1","type":"object","additionalProperties":false,"required":["target_id","target_type","state","revision","last_event_id","conflict_ids","superseded_by","last_reason","last_actor","last_approval_kind","last_source_ids","last_decision_id"],"properties":{"target_id":{"type":"string","format":"uuid"},"target_type":{"enum":["source","knowledge","decision","failure_knowledge"]},"state":{"enum":["candidate","current","review_required","superseded","rejected","retired"]},"revision":{"type":"integer","minimum":1},"last_event_id":{"type":"string","format":"uuid"},"conflict_ids":{"type":"array","uniqueItems":true,"items":{"type":"string","format":"uuid"}},"superseded_by":{"oneOf":[{"type":"null"},{"type":"string","format":"uuid"}]},"last_reason":{"type":"string","minLength":1},"last_actor":{"type":"string","minLength":1},"last_approval_kind":{"enum":["agent_in_scope","user","standing_policy"]},"last_source_ids":{"type":"array","uniqueItems":true,"items":{"type":"string","format":"uuid"}},"last_decision_id":{"oneOf":[{"type":"null"},{"type":"string","format":"uuid"}]}}}
+```
+<!-- /project-artifact -->

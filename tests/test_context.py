@@ -12,6 +12,7 @@ from uuid import uuid4
 from file_data.context import ContextError, ContextLimitError, ContextService
 from file_data.knowledge import KnowledgeService
 from file_data.lifecycle import LifecycleService
+from test_support import TEST_WRITE_CAPABILITY
 
 
 FAILURE_TEXT = """# 컨텍스트 실패
@@ -43,7 +44,10 @@ class ContextServiceTests(unittest.TestCase):
         root = Path(raw_root)
         (root / "docs").mkdir()
         (root / "docs" / "route.md").write_text("# 직접 라우팅\n\n필수 계약만 읽는다.\n", encoding="utf-8")
-        knowledge = KnowledgeService(root)
+        knowledge = KnowledgeService(
+            root,
+            _write_capability=TEST_WRITE_CAPABILITY,
+        )
         knowledge.initialize()
         source = knowledge.create_source(
             source_kind="local_document",
@@ -60,8 +64,15 @@ class ContextServiceTests(unittest.TestCase):
             verified_by="agent:test",
             record_id=str(uuid4()),
         )
-        LifecycleService(root).register_existing(actor="agent:test", approval_kind="standing_policy")
-        return ContextService(root), source, claim
+        LifecycleService(
+            root,
+            _write_capability=TEST_WRITE_CAPABILITY,
+        ).register_existing(actor="agent:test", approval_kind="standing_policy")
+        return (
+            ContextService(root, _write_capability=TEST_WRITE_CAPABILITY),
+            source,
+            claim,
+        )
 
     def _root(self) -> tempfile.TemporaryDirectory[str]:
         return tempfile.TemporaryDirectory(prefix="stage07-context-")
@@ -82,8 +93,8 @@ class ContextServiceTests(unittest.TestCase):
                 "char_limit": 12000,
                 "baseline_characters": 1000,
             }
-            first = context.build_package(request)
-            second = context.build_package(request)
+            first = context.build_package(request, legacy=True)
+            second = context.build_package(request, legacy=True)
             self.assertEqual(first, second)
             self.assertEqual(first["metrics"]["selected_items"], 2)
             self.assertEqual({item["kind"] for item in first["selected"]}, {"document", "record"})
@@ -92,14 +103,20 @@ class ContextServiceTests(unittest.TestCase):
     def test_noncurrent_direct_record_is_excluded_with_reason(self) -> None:
         with self._root() as raw_root:
             context, source, old = self._fixture(raw_root)
-            knowledge = KnowledgeService(raw_root)
+            knowledge = KnowledgeService(
+                raw_root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             replacement = knowledge.create_knowledge(
                 statement="직접 선택은 current 상태를 먼저 확인한다",
                 classification="procedure", scope="project-foundation",
                 source_ids=[source["id"]], verification_status="verified",
                 verified_by="agent:test", record_id=str(uuid4())
             )
-            lifecycle = LifecycleService(raw_root)
+            lifecycle = LifecycleService(
+                raw_root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             lifecycle.register(
                 replacement["id"], initial_state="current", actor="agent:test",
                 approval_kind="standing_policy", reason="개정 절차"
@@ -113,7 +130,7 @@ class ContextServiceTests(unittest.TestCase):
             package = context.build_package({
                 "purpose": "과거 record 제외",
                 "records": [{"id": old["id"], "reason": "명시했지만 과거 상태"}],
-            })
+            }, legacy=True)
             self.assertEqual(package["selected"], [])
             self.assertEqual(package["excluded"]["counts_by_reason"], {"noncurrent:superseded": 1})
 
@@ -123,29 +140,36 @@ class ContextServiceTests(unittest.TestCase):
             matches = context.filter_records({
                 "record_type": "knowledge", "state": "current",
                 "scope": "project-foundation", "evidence_role": "primary",
-            })
+            }, legacy=True)
             self.assertEqual([item["id"] for item in matches], [claim["id"]])
-            self.assertEqual(context.filter_records({"scope": "other"}), [])
+            self.assertEqual(context.filter_records({"scope": "other"}, legacy=True), [])
             package = context.build_package({
                 "purpose": "필터 단독 선택",
                 "filters": {
                     "record_type": "knowledge", "scope": "project-foundation",
                     "evidence_role": "primary",
                 },
-            })
+            }, legacy=True)
             self.assertEqual(
                 [item["id"] for item in package["selected"] if item["kind"] == "record"], [claim["id"]]
             )
             with self.assertRaises(ContextError):
-                context.build_package({"purpose": "과거 상태 package 금지", "filters": {"state": "superseded"}})
+                context.build_package(
+                    {"purpose": "과거 상태 package 금지", "filters": {"state": "superseded"}},
+                    legacy=True,
+                )
 
     def test_plain_search_returns_current_candidates_and_distinguishes_no_result(self) -> None:
         with self._root() as raw_root:
             context, _, claim = self._fixture(raw_root)
-            matches = context.search("전체 읽기", {"record_type": "knowledge"})
+            matches = context.search(
+                "전체 읽기",
+                {"record_type": "knowledge"},
+                legacy=True,
+            )
             self.assertEqual([item["id"] for item in matches], [claim["id"]])
             self.assertEqual(matches[0]["matched_fields"], ["statement"])
-            self.assertEqual(context.search("존재하지 않는 문자열"), [])
+            self.assertEqual(context.search("존재하지 않는 문자열", legacy=True), [])
 
     def test_failure_search_uses_canonical_document_without_record_fanout(self) -> None:
         with self._root() as raw_root:
@@ -197,13 +221,19 @@ class ContextServiceTests(unittest.TestCase):
     def test_search_never_returns_superseded_match(self) -> None:
         with self._root() as raw_root:
             context, source, old = self._fixture(raw_root)
-            knowledge = KnowledgeService(raw_root)
+            knowledge = KnowledgeService(
+                raw_root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             replacement = knowledge.create_knowledge(
                 statement="전체 읽기 대신 current 선택을 사용한다", classification="procedure",
                 scope="project-foundation", source_ids=[source["id"]],
                 verification_status="verified", verified_by="agent:test", record_id=str(uuid4())
             )
-            lifecycle = LifecycleService(raw_root)
+            lifecycle = LifecycleService(
+                raw_root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             lifecycle.register(
                 replacement["id"], initial_state="current", actor="agent:test",
                 approval_kind="standing_policy", reason="새 절차"
@@ -214,7 +244,10 @@ class ContextServiceTests(unittest.TestCase):
                 actor="agent:test", approval_kind="standing_policy", reason="새 절차로 대체",
                 replacement_id=replacement["id"]
             )
-            self.assertEqual([item["id"] for item in context.search("전체 읽기")], [replacement["id"]])
+            self.assertEqual(
+                [item["id"] for item in context.search("전체 읽기", legacy=True)],
+                [replacement["id"]],
+            )
 
     def test_protected_document_is_rejected_before_read(self) -> None:
         with self._root() as raw_root:
@@ -244,7 +277,7 @@ class ContextServiceTests(unittest.TestCase):
                 "documents": [{"ref": "docs/route.md", "reason": "필수 계약"}],
                 "search": "전체 읽기",
                 "char_limit": document_chars,
-            })
+            }, legacy=True)
             self.assertEqual(package["metrics"]["selected_items"], 1)
             self.assertEqual(package["excluded"]["counts_by_reason"], {"size_limit": 1})
 
@@ -269,7 +302,16 @@ class ContextServiceTests(unittest.TestCase):
                 "records": [{"id": claim["id"], "reason": "현재 절차"}],
             }, ensure_ascii=False)
             built = subprocess.run(
-                [sys.executable, "-m", "file_data", "--root", raw_root, "context-build", "--request-stdin"],
+                [
+                    sys.executable,
+                    "-m",
+                    "file_data",
+                    "--root",
+                    raw_root,
+                    "context-build",
+                    "--legacy",
+                    "--request-stdin",
+                ],
                 input=request, capture_output=True, text=True, encoding="utf-8", env=env, check=False,
             )
             self.assertEqual(built.returncode, 0, built.stderr)
@@ -290,6 +332,66 @@ class ContextServiceTests(unittest.TestCase):
         self.assertEqual(set(schema["required"]), {
             "package_version", "purpose", "settings", "selected", "excluded", "metrics", "fingerprint"
         })
+
+    def test_actual_project_defaults_to_document_records_and_requires_explicit_legacy(
+        self,
+    ) -> None:
+        root = Path(__file__).parents[1]
+        service = ContextService(root)
+        current = service.filter_records({"record_type": "knowledge"})
+        self.assertEqual(
+            {item["data_key"] for item in current},
+            {
+                "active-information-single-owner",
+                "context-package-deterministic-derived-view",
+            },
+        )
+        self.assertTrue(all("id" not in item for item in current))
+        matches = service.search("결정론적", {"record_type": "knowledge"})
+        self.assertEqual(
+            [item["data_key"] for item in matches],
+            ["context-package-deterministic-derived-view"],
+        )
+        package = service.build_package(
+            {
+                "purpose": "직접 선택한 전체 문서와 같은 문서의 검색 block 중복 방지",
+                "documents": [
+                    {
+                        "ref": "docs/CONTEXT_PACKAGE_CONTRACT.md",
+                        "reason": "전체 계약 직접 선택",
+                    }
+                ],
+                "search": "결정론적",
+                "filters": {"record_type": "knowledge"},
+                "char_limit": 100000,
+            }
+        )
+        self.assertEqual(
+            [
+                item["ref"]
+                for item in package["selected"]
+                if item["ref"] == "docs/CONTEXT_PACKAGE_CONTRACT.md"
+            ],
+            ["docs/CONTEXT_PACKAGE_CONTRACT.md"],
+        )
+        self.assertNotIn("data_key", package["selected"][0])
+        with self.assertRaisesRegex(ContextError, "legacy_mode_required"):
+            service.build_package(
+                {
+                    "purpose": "기본 경로 UUID 차단",
+                    "records": [
+                        {
+                            "id": "35ed5523-d970-48eb-a2fe-716b111e970c",
+                            "reason": "legacy",
+                        }
+                    ],
+                }
+            )
+        legacy = service.filter_records(
+            {"record_type": "knowledge"},
+            legacy=True,
+        )
+        self.assertTrue(any("id" in item for item in legacy))
 
 
 if __name__ == "__main__":

@@ -49,6 +49,11 @@ def _parser() -> DomainArgumentParser:
     source = evidence.add_mutually_exclusive_group(required=True)
     source.add_argument("--request-json")
     source.add_argument("--request-stdin", action="store_true")
+    evidence.add_argument(
+        "--legacy",
+        action="store_true",
+        help="allow read-only legacy UUID records[] compatibility",
+    )
     return parser
 
 
@@ -63,7 +68,10 @@ def main(argv: list[str] | None = None) -> int:
         namespace = _parser().parse_args(argv)
         raw = sys.stdin.read() if namespace.request_stdin else namespace.request_json
         request = _decode(raw)
-        pack = YouTubeEvidenceService(namespace.root).build_pack(request)
+        pack = YouTubeEvidenceService(namespace.root).build_pack(
+            request,
+            legacy=namespace.legacy,
+        )
         _emit({"ok": True, "result": {"pack": pack}})
         return 0
     except ContextLimitError as exc:

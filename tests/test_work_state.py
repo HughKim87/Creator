@@ -25,6 +25,7 @@ from file_data import (  # noqa: E402
     REQUEST_FIELDS,
     WorkStateService,
 )
+from test_support import TEST_WRITE_CAPABILITY  # noqa: E402
 
 
 WORK_ID = "123e4567-e89b-42d3-a456-426614174020"
@@ -44,7 +45,10 @@ def request_payload() -> dict[str, object]:
 
 class WorkStateServiceTests(unittest.TestCase):
     def make_service(self, root: Path) -> WorkStateService:
-        service = WorkStateService(str(root))
+        service = WorkStateService(
+            str(root),
+            _write_capability=TEST_WRITE_CAPABILITY,
+        )
         service.initialize()
         return service
 
@@ -325,8 +329,17 @@ class WorkStateCliTests(unittest.TestCase):
         environment = os.environ.copy()
         environment["PYTHONPATH"] = str(ROOT / "src")
         environment["PYTHONDONTWRITEBYTECODE"] = "1"
+        prepared = list(arguments)
+        if prepared and prepared[0] == "work-show":
+            prepared.insert(0, "--legacy-read")
         return subprocess.run(
-            [sys.executable, "-m", "file_data", "--root", str(root), *arguments],
+            [
+                sys.executable,
+                str(ROOT / "tests" / "test_cli_entry.py"),
+                "--root",
+                str(root),
+                *prepared,
+            ],
             cwd=ROOT,
             env=environment,
             text=True,

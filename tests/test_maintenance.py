@@ -9,10 +9,11 @@ import tempfile
 import unittest
 from uuid import uuid4
 
-from file_data.context import ContextService
+from file_data.context import ContextError, ContextService
 from file_data.knowledge import KnowledgeService
 from file_data.lifecycle import LifecycleService
 from file_data.maintenance import GENERATED_INVENTORY_REF, MaintenanceService
+from test_support import TEST_WRITE_CAPABILITY
 
 
 FAILURE_TEXT = """# 유지보수 실패
@@ -60,7 +61,10 @@ class MaintenanceServiceTests(unittest.TestCase):
         (root / "schemas" / "neutral.json").write_text("{}\n", encoding="utf-8")
         subprocess.run(["git", "init", "-q"], cwd=root, check=True, capture_output=True)
         subprocess.run(["git", "add", "."], cwd=root, check=True, capture_output=True)
-        knowledge = KnowledgeService(root)
+        knowledge = KnowledgeService(
+            root,
+            _write_capability=TEST_WRITE_CAPABILITY,
+        )
         knowledge.initialize()
         source = knowledge.create_source(
             source_kind="local_document", locator="docs/source.md", evidence_role="primary",
@@ -71,10 +75,53 @@ class MaintenanceServiceTests(unittest.TestCase):
             scope="test", source_ids=[source["id"]], verification_status="verified",
             verified_by="agent:test", record_id=str(uuid4())
         )
-        LifecycleService(root).register_existing(actor="agent:test", approval_kind="standing_policy")
-        maintenance = MaintenanceService(root)
+        LifecycleService(
+            root,
+            _write_capability=TEST_WRITE_CAPABILITY,
+        ).register_existing(actor="agent:test", approval_kind="standing_policy")
+        maintenance = MaintenanceService(
+            root,
+            _write_capability=TEST_WRITE_CAPABILITY,
+        )
         maintenance.write_inventory()
         return maintenance, source, claim
+
+    @staticmethod
+    def _write_knowledge_replacement(
+        root: Path,
+        claim: dict,
+        *,
+        statement: str | None = None,
+        replacement_id: str | None = None,
+        target: str = "docs/canonical.md",
+        key: str = "canonical-maintenance-claim",
+    ) -> None:
+        payload = claim["payload"]
+        rendered_statement = statement or payload["statement"]
+        (root / target).write_text(
+            f"""# Canonical
+
+<!-- project-data:v1 kind=knowledge key={key} -->
+```json
+{{
+  "key": "{key}",
+  "kind": "knowledge",
+  "payload": {{
+    "statement": {json.dumps(rendered_statement, ensure_ascii=False)},
+    "classification": {json.dumps(payload["classification"], ensure_ascii=False)},
+    "scope": {json.dumps(payload["scope"], ensure_ascii=False)},
+    "verification_status": {json.dumps(payload["verification_status"], ensure_ascii=False)},
+    "verified_by": {json.dumps(payload["verified_by"], ensure_ascii=False)},
+    "replaces_legacy_ids": ["{replacement_id or claim["id"]}"]
+  }},
+  "source_refs": ["docs/source.md"],
+  "status": "current"
+}}
+```
+<!-- /project-data -->
+""",
+            encoding="utf-8",
+        )
 
     def test_inventory_is_deterministic_and_regenerates_after_deletion(self) -> None:
         with self._root() as raw_root:
@@ -117,6 +164,130 @@ class MaintenanceServiceTests(unittest.TestCase):
             self.assertEqual(len(lifecycle._events()[0]), before_events)
             self.assertEqual(lifecycle.get_state(source["id"]), before_source)
 
+    def test_exact_document_replacement_suppresses_only_exclusively_migrated_legacy(
+        self,
+    ) -> None:
+        with self._root() as raw_root:
+            maintenance, source, claim = self._fixture(raw_root)
+            root = Path(raw_root)
+            self._write_knowledge_replacement(root, claim)
+            (root / "docs" / "source.md").write_text(
+                "# 출처\n\nversion two\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(maintenance.detect_drift(), [])
+            self.assertEqual(maintenance.detect_duplicates(), [])
+
+            (root / "docs" / "source.md").write_text(
+                "# 출처\n\nversion one\n",
+                encoding="utf-8",
+            )
+            second = KnowledgeService(
+                root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            ).create_knowledge(
+                statement="공유 출처를 사용하는 별도 현재 지식",
+                classification="fact",
+                scope="test",
+                source_ids=[source["id"]],
+                verification_status="verified",
+                verified_by="agent:test",
+                record_id=str(uuid4()),
+            )
+            LifecycleService(
+                root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            ).register(
+                second["id"],
+                initial_state="current",
+                actor="agent:test",
+                approval_kind="standing_policy",
+                reason="공유 출처 drift fixture",
+            )
+            (root / "docs" / "source.md").write_text(
+                "# 출처\n\nversion two\n",
+                encoding="utf-8",
+            )
+            findings = maintenance.detect_drift()
+            self.assertEqual(
+                {finding["target_id"] for finding in findings},
+                {source["id"], second["id"]},
+            )
+
+    def test_inexact_document_replacement_fails_closed_as_document_data(self) -> None:
+        with self._root() as raw_root:
+            maintenance, _, claim = self._fixture(raw_root)
+            self._write_knowledge_replacement(
+                Path(raw_root),
+                claim,
+                statement="legacy와 일치하지 않는 문장",
+            )
+            findings = maintenance.detect_drift()
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(findings[0]["target_id"], "project-data:v1")
+            self.assertIn("does not exactly match", findings[0]["reason"])
+
+    def test_unknown_terminal_wrong_type_and_duplicate_replacements_fail_closed(
+        self,
+    ) -> None:
+        with self._root() as raw_root:
+            maintenance, source, claim = self._fixture(raw_root)
+            root = Path(raw_root)
+
+            self._write_knowledge_replacement(
+                root,
+                claim,
+                replacement_id=str(uuid4()),
+            )
+            self.assertIn(
+                "has no lifecycle state",
+                maintenance.detect_drift()[0]["reason"],
+            )
+
+            self._write_knowledge_replacement(
+                root,
+                claim,
+                replacement_id=source["id"],
+            )
+            self.assertIn(
+                "not exactly match legacy record",
+                maintenance.detect_drift()[0]["reason"],
+            )
+
+            self._write_knowledge_replacement(root, claim)
+            lifecycle = LifecycleService(
+                root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
+            state = lifecycle.get_state(claim["id"])
+            lifecycle.transition(
+                claim["id"],
+                expected_state_hash=state["content_hash"],
+                action="retire",
+                actor="agent:test",
+                approval_kind="standing_policy",
+                reason="terminal replacement fixture",
+            )
+            self.assertIn(
+                "target is terminal",
+                maintenance.detect_drift()[0]["reason"],
+            )
+
+        with self._root() as raw_root:
+            maintenance, _, claim = self._fixture(raw_root)
+            root = Path(raw_root)
+            self._write_knowledge_replacement(root, claim)
+            self._write_knowledge_replacement(
+                root,
+                claim,
+                target="docs/canonical-second.md",
+                key="canonical-maintenance-claim-second",
+            )
+            self.assertIn(
+                "claimed by multiple document blocks",
+                maintenance.detect_drift()[0]["reason"],
+            )
+
     def test_scan_validates_canonical_failures_without_projection_records(self) -> None:
         with self._root() as raw_root:
             maintenance, _, _ = self._fixture(raw_root)
@@ -151,14 +322,20 @@ class MaintenanceServiceTests(unittest.TestCase):
             failures.mkdir()
             target = failures / "case.md"
             target.write_text(FAILURE_TEXT, encoding="utf-8")
-            knowledge = KnowledgeService(root)
+            knowledge = KnowledgeService(
+                root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             legacy = knowledge._import_legacy_failure_knowledge(
                 "failures/case.md",
                 projected_by="agent:test",
                 record_id=str(uuid4()),
                 source_id=str(uuid4()),
             )
-            lifecycle = LifecycleService(root)
+            lifecycle = LifecycleService(
+                root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             lifecycle.register_existing(
                 actor="agent:test",
                 approval_kind="standing_policy",
@@ -225,13 +402,19 @@ class MaintenanceServiceTests(unittest.TestCase):
     def test_scan_detects_exact_current_knowledge_duplicate(self) -> None:
         with self._root() as raw_root:
             maintenance, source, claim = self._fixture(raw_root)
-            knowledge = KnowledgeService(raw_root)
+            knowledge = KnowledgeService(
+                raw_root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             duplicate = knowledge.create_knowledge(
                 statement=claim["payload"]["statement"], classification="constraint", scope="test",
                 source_ids=[source["id"]], verification_status="verified",
                 verified_by="agent:test", record_id=str(uuid4())
             )
-            LifecycleService(raw_root).register(
+            LifecycleService(
+                raw_root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            ).register(
                 duplicate["id"], initial_state="current", actor="agent:test",
                 approval_kind="standing_policy", reason="중복 탐지 fixture"
             )
@@ -268,25 +451,26 @@ class MaintenanceServiceTests(unittest.TestCase):
     def test_context_evaluation_reruns_with_current_baseline(self) -> None:
         with self._root() as raw_root:
             maintenance, _, claim = self._fixture(raw_root)
-            result = maintenance.evaluate_context(
-                {
-                    "evaluations": [
-                        {
-                            "name": "current claim",
-                            "request": {
-                                "purpose": "유지보수 평가",
-                                "records": [{"id": claim["id"], "reason": "필수 current 지식"}],
-                                "char_limit": 12000,
-                            },
-                            "expected_record_ids": [claim["id"]],
-                            "forbidden_record_ids": [],
-                            "max_characters": 12000,
-                            "min_reduction_percent": 0,
-                            "max_irrelevant_records": 0,
-                        }
-                    ]
-                }
-            )
+            payload = {
+                "evaluations": [
+                    {
+                        "name": "current claim",
+                        "request": {
+                            "purpose": "유지보수 평가",
+                            "records": [{"id": claim["id"], "reason": "필수 current 지식"}],
+                            "char_limit": 12000,
+                        },
+                        "expected_record_ids": [claim["id"]],
+                        "forbidden_record_ids": [],
+                        "max_characters": 12000,
+                        "min_reduction_percent": 0,
+                        "max_irrelevant_records": 0,
+                    }
+                ]
+            }
+            with self.assertRaisesRegex(ContextError, "legacy_mode_required"):
+                maintenance.evaluate_context(payload)
+            result = maintenance.evaluate_context(payload, legacy=True)
             self.assertTrue(result["ok"])
             self.assertTrue(result["results"][0]["checks"]["repeatable"])
 
@@ -310,7 +494,8 @@ class MaintenanceServiceTests(unittest.TestCase):
                             "max_irrelevant_records": 1,
                         }
                     ]
-                }
+                },
+                legacy=True,
             )
             self.assertFalse(result["ok"])
             self.assertEqual(result["results"][0]["forbidden_record_ids"], [claim["id"]])

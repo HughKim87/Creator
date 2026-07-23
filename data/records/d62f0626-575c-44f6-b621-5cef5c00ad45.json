@@ -1,0 +1,37 @@
+{
+  "content_hash": "sha256:be0c7a106e11ce842de81febfef326d6b17e1b4d1c7611059a05c95b4ab1d510",
+  "created_at": "2026-07-23T05:56:19Z",
+  "id": "d62f0626-575c-44f6-b621-5cef5c00ad45",
+  "payload": {
+    "canonical_doc_ref": "failures/runtime-discovery-system-python.md",
+    "conditions": [
+      "로컬 Python 실행, 설치 없는 테스트, Codex 번들 런타임, Windows 샌드박스 PATH"
+    ],
+    "confirmed_cause": "프로젝트가 시스템 전역 Python을 제공한다고 가정했고, Codex 데스크톱 작업에 제공되는 번들 런타임 경로를 먼저 조회하지 않았다.\n\n재발 시에는 PATH 문자열에 Python 경로가 있다는 사실과 샌드박스에서 그 실행 파일을 실제 실행할 수 있다는 사실을 구분하지 않았다. 접근이 거부된 기존 Python 3.10 경로를 보고도 이를 단순한 “PATH 부재”로 잘못 설명했고, 샌드박스에서 실행 가능한 Codex 번들 Python 디렉터리를 PATH에 넣기 전에 bare `python`을 호출했다. 사용자 PATH 변경 뒤에도 실행 중인 Codex 프로세스는 시작 시점의 이전 PATH를 유지하므로 재시작 전에는 변경이 샌드박스에 반영되지 않는다.",
+    "document_hash": "sha256:3be21b81a92e409ff5663d5e537ab4396b6b02ff636ab22812d229bbddf0ce3a",
+    "prevention": [
+      "로컬 프로젝트에서 런타임이 필요하면 설치를 시도하기 전에 제공된 작업공간 런타임을 조회한다.",
+      "PATH에 문자열이 존재하는지만 보지 말고 샌드박스 안에서 `Get-Command python`과 실제 `python --version`이 모두 성공하는지 첫 의존 명령 전에 확인한다.",
+      "초기화 도구가 bare `python`을 요구하면 샌드박스에서 실행 가능한 번들 Python 디렉터리를 PATH에 먼저 넣고, 실행 중인 Codex가 이전 환경을 보유한 경우 재시작한 뒤 초기화를 실행한다.",
+      "번들 절대 경로는 버전에 따라 달라질 수 있으므로 프로젝트 계약에 고정하지 않고 작업공간 의존성 조회 결과와 실제 명령 해석 결과를 대조한다.",
+      "프로젝트 코드는 명시한 표준 라이브러리 범위를 유지하고 숨은 전역 패키지에 의존하지 않는다."
+    ],
+    "projected_at": "2026-07-23T05:56:19Z",
+    "projected_by": "user:hugh",
+    "projection_status": "resolved",
+    "resolution": [
+      "Codex 번들 Python 디렉터리를 사용자 PATH 맨 앞에 추가하고 Codex를 재시작해 새 샌드박스 프로세스가 해당 PATH를 상속하게 했다."
+    ],
+    "source_id": "b46c3955-5432-4711-b51e-b4a31a36af04",
+    "symptom": "Stage 02 구현 언어를 확인하려고 `python --version`과 `py -3 --version`을 실행했지만 시스템 PATH와 Windows Python Launcher에 설치된 Python 3가 없어 진단 명령이 실패했다.\n\n2026-07-23 재발에서는 사용자 PATH에 기존 Python 3.10 경로가 있었지만 Codex 샌드박스가 해당 `python.exe` 실행을 `액세스가 거부되었습니다`로 차단했고, `Get-Command python`과 `where.exe python`은 실행 가능한 명령을 찾지 못했다. 초기화 도구가 bare `python` 명령을 요구해 첫 실행이 중단됐다.",
+    "title": "시스템 Python 실행 경로 가정",
+    "verification": [
+      "재시작한 샌드박스에서 `Get-Command python`이 `C:\\Users\\Hugh\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe`를 반환했고 `python --version`은 Python 3.12.13, 종료 상태 0을 반환했다.",
+      "임시 프로젝트 루트에서 `python -m file_data --root <temp> init`을 우회 없는 bare `python`으로 실행해 종료 상태 0과 `data/records`, `data/events` 생성을 확인했다.",
+      "검증용 임시 루트를 제거한 뒤 Git 작업 트리가 깨끗함을 확인했다."
+    ]
+  },
+  "record_type": "failure_knowledge",
+  "schema_version": 1,
+  "updated_at": "2026-07-23T05:56:19Z"
+}

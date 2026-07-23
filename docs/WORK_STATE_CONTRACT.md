@@ -79,3 +79,25 @@ PowerShell에서는 요청 JSON을 UTF-8 stdin으로 보내고 `work-create --re
 - 관련 기록 ID와 근거 위치
 
 동적 Git 상태와 파일 개수는 snapshot에 고정 저장하지 않고 필요할 때 다시 조회한다.
+
+## 문서 소유 파생 artifact
+
+아래 세 block이 legacy read 호환용 work request·event·snapshot schema의 exact 정본이다.
+
+<!-- project-artifact:v1 path=schemas/work-request-payload-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"urn:kim-silver-youtube:schema:work-request-payload:v1","title":"Work Request Payload v1","type":"object","additionalProperties":false,"required":["desired_outcome","authorized_actions","excluded_scope","input_refs","protection_boundaries","required_decisions","verification_levels"],"properties":{"desired_outcome":{"type":"string","minLength":1},"authorized_actions":{"type":"array","items":{"type":"string","minLength":1}},"excluded_scope":{"type":"array","items":{"type":"string","minLength":1}},"input_refs":{"type":"array","items":{"type":"string","minLength":1}},"protection_boundaries":{"type":"array","items":{"type":"string","minLength":1}},"required_decisions":{"type":"array","items":{"type":"string","minLength":1}},"verification_levels":{"type":"array","items":{"type":"string","minLength":1}}}}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=schemas/work-event-payload-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"urn:kim-silver-youtube:schema:work-event-payload:v1","title":"Work Event Payload v1","type":"object","additionalProperties":false,"required":["work_id","actor","action","outcome","from_status","to_status","request","completed_items","blockers","next_action","related_record_ids","evidence_refs"],"properties":{"work_id":{"type":"string","format":"uuid"},"actor":{"type":"string","minLength":1},"action":{"type":"string","minLength":1},"outcome":{"enum":["success","failure","blocked","rejected"]},"from_status":{"type":["string","null"],"enum":["requested","in_progress","completed","failed","blocked",null]},"to_status":{"type":["string","null"],"enum":["requested","in_progress","completed","failed","blocked",null]},"request":{"oneOf":[{"$ref":"work-request-payload-v1.schema.json"},{"type":"null"}]},"completed_items":{"type":"array","items":{"type":"string","minLength":1}},"blockers":{"type":"array","items":{"type":"string","minLength":1}},"next_action":{"type":["string","null"]},"related_record_ids":{"type":"array","items":{"type":"string","minLength":1}},"evidence_refs":{"type":"array","items":{"type":"string","minLength":1}}}}
+```
+<!-- /project-artifact -->
+
+<!-- project-artifact:v1 path=schemas/work-state-payload-v1.schema.json verify=json-semantic -->
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"urn:kim-silver-youtube:schema:work-state-payload:v1","title":"Work State Payload v1","type":"object","additionalProperties":false,"required":["work_id","request","status","completed_items","blockers","next_action","related_record_ids","evidence_refs","last_event_id"],"properties":{"work_id":{"type":"string","format":"uuid"},"request":{"$ref":"work-request-payload-v1.schema.json"},"status":{"enum":["requested","in_progress","completed","failed","blocked"]},"completed_items":{"type":"array","items":{"type":"string","minLength":1}},"blockers":{"type":"array","items":{"type":"string","minLength":1}},"next_action":{"type":["string","null"]},"related_record_ids":{"type":"array","items":{"type":"string","minLength":1}},"evidence_refs":{"type":"array","items":{"type":"string","minLength":1}},"last_event_id":{"type":"string","format":"uuid"}}}
+```
+<!-- /project-artifact -->

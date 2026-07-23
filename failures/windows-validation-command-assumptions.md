@@ -2,7 +2,7 @@
 
 - 상태: 해결·회귀 검증 완료
 - 최초 확인: 2026-07-23 Stage 00 커밋 전 완성 게이트
-- 마지막 검증: 2026-07-23
+- 마지막 검증: 2026-07-24
 - 적용 범위: Windows PowerShell, `rg`, 문서 링크·문구 단언 검사
 
 ## 증상
@@ -30,6 +30,11 @@
 - 실패 projection 갱신 준비에서 `lifecycle-current --help`와 실제 조회를 병렬 실행해 도움말 결과를 확인하기 전에 존재하지 않는 `--target-type` 옵션을 추측했다.
 - lifecycle 교체 검증에서 `lifecycle-show`의 실제 반환이 `result.lifecycle.payload`와 `result.record`로 나뉘는지 먼저 관찰하지 않고 `result.payload`를 가정했다.
 - 최종 문서 검증에서 Windows PowerShell 5.1의 `foreach` 문 출력을 괄호나 변수 없이 바로 pipe할 수 있다고 가정했다.
+- Stage 10 문서 데이터 검증에서 source-layout package의 module discovery에 필요한 `PYTHONPATH=src`를 생략해 현재 Python이 `file_data`를 자동 발견할 것이라고 가정했다.
+- Stage 10 실패 정본 검증에서 parser 내부 destination 이름 `canonical_doc_ref`를 공개 CLI option으로 오인해 실제 `--doc` 대신 존재하지 않는 `--canonical-doc-ref`를 사용했다.
+- Stage 10 후속 자체 재검토에서 Git 조회의 기존 `safe.directory` 요구를 첫 명령에 반영하지 않았고, PowerShell 보간 문자열의 변수 바로 뒤 `:`를 `${name}` 없이 사용해 parser 오류를 냈다.
+- 같은 후속 파일 검사에서 정규식 문자 클래스에 PowerShell backtick을 잘못 사용해 문자 `t`까지 trailing whitespace로 오인했고, `rg`의 binary detection 상태에서 NUL 정규식이 그대로 동작할 것이라고 가정했다.
+- Stage 10 High 1 보완 집중 검증에서 `tests`가 import package이고 모든 test module이 단독 discovery에서도 source root를 설정할 것이라고 가정했다.
 
 ## 실패·해결 이력
 
@@ -61,6 +66,11 @@
 | 실패 projection 갱신 준비 | `lifecycle-current --help`와 `--target-type failure_knowledge` 조회를 병렬 실행해 조회가 입력 오류로 종료 | 별도 조회 1 | 도움말 출력을 먼저 확인한 뒤 실제 공개 옵션 `--type failure_knowledge`로 재실행해 current 실패 projection 25건과 대상 ID 2건을 정상 조회 |
 | lifecycle 교체 상태 검증 | 여덟 대상의 `lifecycle-show` 결과를 실제 한 건 관찰 없이 `result.payload`로 읽어 상태 표가 빈 값으로 출력됨 | 별도 검증 1 | 한 대상의 원시 JSON에서 `result.lifecycle.payload` 구조를 확인하고 그 경로로 상태·대체 ID 검증을 다시 구성 |
 | 최종 문서 검증 | `foreach (...) { ... } | Format-Table` 구문이 Windows PowerShell 5.1에서 빈 pipe 요소 파서 오류로 중단 | 별도 검증 1 | `foreach` 결과를 변수에 먼저 저장한 뒤 별도 문장에서 `Format-Table`로 전달하는 호환 구문으로 변경 |
+| Stage 10 문서 데이터 최종 검증 | `python -m file_data`를 `PYTHONPATH` 없이 실행해 `No module named file_data`로 중단 | 별도 검증 1 | `PYTHONPATH=src`를 명시해 document-data 6, artifact 20, legacy baseline, maintenance 전체를 재실행하고 성공 |
+| Stage 10 실패 정본 최종 검증 | `failure-validate --canonical-doc-ref`가 필수 `--doc` 누락으로 입력 오류 반환 | 별도 검증 1 | `failure-validate --help`를 먼저 확인하고 공개 옵션 `--doc`로 재실행해 canonical failure 검증 성공 |
+| Stage 10 후속 자체 재검토 Git 조회 | 저장소별 `safe.directory` 누락으로 첫 status·diff 조회 중단 | 별도 조회 1 | 저장소 절대 경로를 호출별 `-c safe.directory=...`로 고정해 branch·status·diff 조회 성공 |
+| Stage 10 후속 변경 파일 직접 검사 | `${name}` 없는 `"$name:"` parser 오류 → 잘못된 `[ `t]` 문자 클래스로 대량 거짓 양성 → binary mode의 `rg \\x00` 제약으로 NUL 검사 실패 | 3 | trailing whitespace는 `rg --pcre2 '[\\x20\\t]+$'`, strict UTF-8·NUL은 .NET strict decoder와 byte 검사로 분리해 대상 미추적 문서·Python 5개 오류 0 확인 |
+| Stage 10 High 1 집중 회귀 | `python -m unittest tests.test_record_io`는 `test_support`를 찾지 못했고, maintenance 단독 discovery는 `file_data`를 찾지 못함 | 목적별 별도 명령 각 1 | 파일 패턴 discover는 테스트의 실제 import 경계를 확인해 사용하고, 최종 권위 명령 `python -m unittest discover -s tests -v`로 120건 전체 성공 |
 
 ## 해결과 검증
 
@@ -77,6 +87,9 @@
 - Git status를 파일 inventory로 사용할 때는 untracked 디렉터리 축약 정책을 기본값에 맡기지 않고 `--untracked-files=all`을 명시한다.
 - 실패 경로를 검증할 때 예상된 stderr를 예외로 취급하지 말고 native exit code·구조화 payload를 먼저 수집한 뒤 기대한 비성공인지 판정한다.
 - 구조화 표의 의미를 검증할 때 임의의 주변 문구를 요구하지 말고 header와 행 pattern·개수를 직접 단언한다.
+- source-layout Python package의 module CLI를 실행할 때는 repository contract에 맞는 module search path를 먼저 확인하고 이 프로젝트에서는 `PYTHONPATH=src`를 명시한다.
+- PowerShell 보간 문자열에서 변수 바로 뒤에 `:` 같은 이름 문자가 올 수 있으면 `${name}` 형식을 사용한다.
+- PowerShell backtick 이스케이프와 정규식 이스케이프를 섞지 않는다. 공백·탭 검사는 검증된 PCRE2 문자 코드 `[\x20\t]`로 분리하고, NUL·strict UTF-8은 byte 검사와 strict decoder로 검증한다.
 
 ## 재사용 규칙
 
@@ -96,6 +109,9 @@
 - 구조화 응답을 일괄 파싱하기 전에 원시 응답 한 건에서 실제 경로를 확인하고, 필수 값이 비어 있으면 성공으로 보고하지 않는다.
 - 검증용 PowerShell은 현재 런타임에서 파싱 가능한 작은 문장으로 나누고, 한 문장에 statement와 pipeline을 압축하지 않는다.
 - 연속 검사 실패 시 추측을 한 번 더 덧붙이지 말고 실제 객체 구조를 출력하는 최소 무변경 관찰로 접근법을 전환한다.
+- 검증 명령을 실행하기 전에 같은 명령의 테스트·문서가 요구하는 환경 변수와 module root를 확인하며, module discovery 실패를 네트워크나 사용자 승인 문제로 분류하지 않는다.
+- 같은 파일 검증 목적에서 검사기 자체가 연속 실패하면 정규식을 계속 덧붙이지 않고, trailing whitespace와 encoding/NUL을 서로 다른 검증 수단으로 분리한다.
+- 테스트 일부만 실행할 때는 전체 suite의 선행 import가 `sys.path`를 우연히 보정한다고 가정하지 말고 해당 테스트의 import 계약을 먼저 확인한다. 완료 판정은 저장소가 정한 전체 discover 명령으로 다시 검증한다.
 
 ## 근거
 

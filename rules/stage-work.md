@@ -13,6 +13,8 @@
 - Implement only the current stage. Do not add a later-stage interface, dependency, data structure, or completion requirement early.
 - Report the planned change and exclusion boundary before writing.
 - Run the stage's consolidated verification at the completion checkpoint. If it fails, fix the cause and repeat the consolidated verification.
+- When independent subagent validation is part of the gate, finish the scoped implementation and local verification first, then create exactly one fresh read-only validator for that validation task without inherited conversation context. Provide only the current requirements and scope, final artifacts or diff, completed test evidence, declared unresolved risks, and pass/fail contract; do not provide past findings, fix or retry history, or a desired verdict.
+- Do not reuse a validator after changing the validated result. A materially changed result is a new validation task and, if validation is still authorized and required, must be reviewed by a new blind validator. Do not add multiple validators to the same validation task.
 - Record evidence for user-purpose alignment, actual operation, future-stage exclusion, and past-failure prevention.
 - At stage closure, also apply `rules/failure-records.md`: promote every verified resolved failure to the cross-stage `failures/` knowledge owner, retain unresolved failures as handoff blockers, and record a no-failure result when applicable.
 - After those four checks and before the completion report, run the final self-review and scoring gate in `docs/build/MASTER_BUILD_PLAN.md#64-최종-자체-검토점수-게이트`.

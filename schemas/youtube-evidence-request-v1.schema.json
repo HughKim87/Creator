@@ -25,6 +25,11 @@
         "required": ["ref", "reason"],
         "properties": {
           "ref": {"type": "string", "minLength": 1, "maxLength": 200},
+          "data_key": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "maxLength": 100
+          },
           "reason": {"type": "string", "minLength": 1, "maxLength": 500}
         }
       }

@@ -52,3 +52,13 @@
 3. Stage 01.5 보기에서 선행 Stage 01 계약과 후속 Stage 02 계획으로 이동한다.
 4. `backup/`, `inputs/`, `outputs/` 내부 파일이 탐색·지도·그래프에 나타나지 않는지 확인한다.
 5. Obsidian 없이 동일 Markdown 링크가 동작하는지 확인한다.
+
+## 문서 소유 파생 artifact
+
+아래 block이 Git에 공유하는 유일한 Obsidian 설정의 exact 정본이다.
+
+<!-- project-artifact:v1 path=.obsidian/app.json verify=json-semantic -->
+```json
+{"defaultViewMode":"preview","showUnsupportedFiles":false,"userIgnoreFilters":[".git/",".obsidian/","backup/","inputs/","outputs/"]}
+```
+<!-- /project-artifact -->

@@ -1,0 +1,16 @@
+{
+  "content_hash": "sha256:4bed69e2264b97672769965d195fae75fa619c47a27cafbff77b2cc6103cc6e8",
+  "created_at": "2026-07-23T05:56:19Z",
+  "id": "b46c3955-5432-4711-b51e-b4a31a36af04",
+  "payload": {
+    "evidence_role": "primary",
+    "locator": "failures/runtime-discovery-system-python.md",
+    "observed_at": "2026-07-23T05:56:19Z",
+    "source_kind": "local_document",
+    "verification_status": "verified",
+    "version_or_hash": "sha256:3be21b81a92e409ff5663d5e537ab4396b6b02ff636ab22812d229bbddf0ce3a"
+  },
+  "record_type": "source",
+  "schema_version": 1,
+  "updated_at": "2026-07-23T05:56:19Z"
+}

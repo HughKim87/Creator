@@ -15,6 +15,30 @@
 - 폴더는 독자보다 책임을 우선해 나누며, 실제 파일이 필요하기 전에는 빈 미래 폴더를 만들지 않는다.
 - 구조화 데이터 형식, ID, 자동 생성, 검색 색인은 후속 단계가 소유한다.
 
+<!-- project-data:v1 kind=knowledge key=active-information-single-owner -->
+```json
+{
+  "key": "active-information-single-owner",
+  "kind": "knowledge",
+  "payload": {
+    "statement": "활성 정보마다 단일 소유자를 둔다.",
+    "classification": "constraint",
+    "scope": "프로젝트 정보·문서 책임",
+    "verification_status": "verified",
+    "verified_by": "agent:stage10-standing-policy",
+    "replaces_legacy_ids": [
+      "9cd29c01-06e9-42ab-bd05-87f4d83f6fab"
+    ]
+  },
+  "source_refs": [
+    "docs/INFORMATION_ARCHITECTURE.md#1-기본-원칙",
+    "PROJECT_RULES.md"
+  ],
+  "status": "current"
+}
+```
+<!-- /project-data -->
+
 ## 2. 권위 역할
 
 | 권위 역할 | 의미 | 변경 기준 | 대표 예시 |

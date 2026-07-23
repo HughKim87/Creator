@@ -4,7 +4,6 @@ from .record import (
     DuplicateRecordError,
     RecordValidationError,
     UnsafePathError,
-    atomic_write_record,
     build_record,
     compute_content_hash,
     decode_record,
@@ -21,6 +20,7 @@ from .store import (
     ConflictError,
     ExpectationMismatchError,
     InputContractError,
+    LegacyReadOnlyError,
     RecordIOError,
     RecordNotFoundError,
     RecordStore,
@@ -98,12 +98,19 @@ from .maintenance import (
     MaintenanceError,
     MaintenanceService,
 )
+from .document_data import (
+    ARTIFACT_OWNERS,
+    ArtifactService,
+    DocumentDataError,
+    DocumentDataService,
+    DocumentWorkService,
+    LegacyDataVerifier,
+)
 
 __all__ = [
     "DuplicateRecordError",
     "RecordValidationError",
     "UnsafePathError",
-    "atomic_write_record",
     "build_record",
     "compute_content_hash",
     "decode_record",
@@ -118,6 +125,7 @@ __all__ = [
     "ConflictError",
     "ExpectationMismatchError",
     "InputContractError",
+    "LegacyReadOnlyError",
     "RecordIOError",
     "RecordNotFoundError",
     "RecordStore",
@@ -184,4 +192,10 @@ __all__ = [
     "RUNTIME_WARNING_MS",
     "MaintenanceError",
     "MaintenanceService",
+    "ARTIFACT_OWNERS",
+    "ArtifactService",
+    "DocumentDataError",
+    "DocumentDataService",
+    "DocumentWorkService",
+    "LegacyDataVerifier",
 ]

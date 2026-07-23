@@ -28,6 +28,7 @@ from file_data import (  # noqa: E402
     KnowledgeService,
     SourceIntegrityError,
 )
+from test_support import TEST_WRITE_CAPABILITY  # noqa: E402
 
 
 SOURCE_ID = "123e4567-e89b-42d3-a456-426614174050"
@@ -55,7 +56,10 @@ def failure_document(*, status: str = "해결·회귀 검증 완료", include_pr
 
 class SourceRecordTests(unittest.TestCase):
     def make_service(self, root: Path) -> KnowledgeService:
-        service = KnowledgeService(root)
+        service = KnowledgeService(
+            root,
+            _write_capability=TEST_WRITE_CAPABILITY,
+        )
         service.initialize()
         return service
 
@@ -159,7 +163,10 @@ class KnowledgeRecordTests(unittest.TestCase):
     def test_verified_knowledge_create_read_and_list(self) -> None:
         with tempfile.TemporaryDirectory(prefix="stage05b-knowledge-") as raw_root:
             root = Path(raw_root)
-            service = KnowledgeService(root)
+            service = KnowledgeService(
+                root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             service.initialize()
             self.source(service, root)
             created = service.create_knowledge(
@@ -177,7 +184,10 @@ class KnowledgeRecordTests(unittest.TestCase):
     def test_knowledge_rejects_multiclaim_shape_missing_source_and_bad_approval(self) -> None:
         with tempfile.TemporaryDirectory(prefix="stage05b-invalid-") as raw_root:
             root = Path(raw_root)
-            service = KnowledgeService(root)
+            service = KnowledgeService(
+                root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             service.initialize()
             self.source(service, root)
             cases = [
@@ -209,7 +219,10 @@ class KnowledgeRecordTests(unittest.TestCase):
     def test_source_drift_preserves_historical_knowledge_but_fails_explicit_verify(self) -> None:
         with tempfile.TemporaryDirectory(prefix="stage05b-drift-") as raw_root:
             root = Path(raw_root)
-            service = KnowledgeService(root)
+            service = KnowledgeService(
+                root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             service.initialize()
             self.source(service, root)
             created = service.create_knowledge(
@@ -264,7 +277,10 @@ class DecisionRecordTests(unittest.TestCase):
 
     def test_decision_create_read_and_list(self) -> None:
         with tempfile.TemporaryDirectory(prefix="stage05c-decision-") as raw_root:
-            service = KnowledgeService(Path(raw_root))
+            service = KnowledgeService(
+                Path(raw_root),
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             service.initialize()
             self.source(service)
             created = service.create_decision(self.payload(), record_id=DECISION_ID)
@@ -273,7 +289,10 @@ class DecisionRecordTests(unittest.TestCase):
 
     def test_decision_rejects_unreviewed_selection_duplicate_option_and_bad_approval(self) -> None:
         with tempfile.TemporaryDirectory(prefix="stage05c-invalid-") as raw_root:
-            service = KnowledgeService(Path(raw_root))
+            service = KnowledgeService(
+                Path(raw_root),
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             service.initialize()
             self.source(service)
             bad_selected = self.payload()
@@ -303,7 +322,10 @@ class FailureKnowledgeTests(unittest.TestCase):
             root = Path(raw_root)
             (root / "failures").mkdir()
             (root / "failures" / "neutral.md").write_text(failure_document(), encoding="utf-8")
-            service = KnowledgeService(root)
+            service = KnowledgeService(
+                root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             service.initialize()
             before = list((root / "data" / "records").glob("*.json"))
             validated = service.import_failure_knowledge(
@@ -324,7 +346,10 @@ class FailureKnowledgeTests(unittest.TestCase):
             root = Path(raw_root)
             failures = root / "failures"
             failures.mkdir()
-            service = KnowledgeService(root)
+            service = KnowledgeService(
+                root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             service.initialize()
             (failures / "unresolved.md").write_text(
                 failure_document(status="원인 조사 중"), encoding="utf-8"
@@ -356,7 +381,10 @@ class FailureKnowledgeTests(unittest.TestCase):
             root = Path(raw_root)
             (root / "failures").mkdir()
             (root / "failures" / "neutral.md").write_text(failure_document(), encoding="utf-8")
-            service = KnowledgeService(root)
+            service = KnowledgeService(
+                root,
+                _write_capability=TEST_WRITE_CAPABILITY,
+            )
             service.initialize()
             imported = service._import_legacy_failure_knowledge(
                 "failures/neutral.md",
@@ -377,8 +405,25 @@ class SourceCliTests(unittest.TestCase):
         environment = os.environ.copy()
         environment["PYTHONPATH"] = str(ROOT / "src")
         environment["PYTHONDONTWRITEBYTECODE"] = "1"
+        prepared = list(arguments)
+        if prepared and prepared[0] in {
+            "source-show",
+            "source-list",
+            "source-verify",
+            "knowledge-show",
+            "knowledge-list",
+            "decision-show",
+            "decision-list",
+        }:
+            prepared.insert(0, "--legacy-read")
         return subprocess.run(
-            [sys.executable, "-m", "file_data", "--root", str(root), *arguments],
+            [
+                sys.executable,
+                str(ROOT / "tests" / "test_cli_entry.py"),
+                "--root",
+                str(root),
+                *prepared,
+            ],
             cwd=ROOT,
             env=environment,
             text=True,
