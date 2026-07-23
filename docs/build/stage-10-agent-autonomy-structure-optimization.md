@@ -5,7 +5,7 @@
 - 사용 시점: Stage 10 착수·체크포인트·종료, 운영 권한 또는 실패 지식 구조를 변경할 때
 - 작성 책임: 프로젝트 에이전트
 - 승인 근거: 사용자의 2026-07-23 범위 승인과 2026-07-24 검증 방식 변경
-- 상태: **완료 준비** — 후속 High 1을 수정하고 active project root·CLI 우회·타 root 권한 재사용 거부 회귀와 전체 120 tests·통합 게이트를 통과해 자체 96점·차단 결함 0을 재확인함. 사용자 완료 확인과 경계 커밋은 아직 남음
+- 상태: **완료** — 후속 High 1 보완, 전체 120 tests·통합 게이트, 자체 96점·차단 결함 0, 사용자 완료 확인, Stage 10 경계 커밋 `2853868e742cb51919f76de26e0f9d5f7fe5cd3f`을 모두 확인함
 - 현재 상태 정본: [SESSION_HANDOFF](../../SESSION_HANDOFF.md)
 - 공통 게이트: [마스터 구축 계획 §6](MASTER_BUILD_PLAN.md#6-공통-승인-게이트)
 
@@ -299,7 +299,7 @@
 | 5 | 10R-E 문서 우선 코드·CLI·테스트 | 목표 구조가 확정된 뒤에만 writer·reader를 변경 가능 | 문서 parser/writer, doc-first CLI, 파생 rebuild, machine-only write 차단, 대표 회귀 구현 | 우회 쓰기 경로, 문서 없는 상태 생성, 재생성 불가능성 | 대표 작업이 문서 읽기→문서 갱신→파생 재생성으로 성공, 우회 쓰기 실패 | **통과** — 1차 FAIL H1/M4·재검증 FAIL H0/M2 전부 보완, 같은 검증자 최종 PASS H0/M0/L0, 115 tests |
 | 6 | 10R-F legacy 격리·문서 이관 | 새 경로가 먼저 작동해야 기존 데이터를 안전하게 전환 가능 | 기존 JSON을 보존한 채 read-only legacy 표식, 문서 정본 이관, 기본 경로 legacy 의존 제거 | ID·관계·시간·근거 손실, 기본 경로의 숨은 legacy read | 정보 손실 0, 기본 writer/read 의존 0, legacy 새 쓰기 0, rollback 가능 | **통과** — test capability를 검증된 임시 root에 결합하고 active source project·타 root 재사용을 fail-closed로 거부함 |
 | 7 | 10R-G 전체 사용자 요구 검증 | 모든 실제 diff와 migration 결과가 있어야 전체 검증 가능 | SR-01~SR-27 추적표와 전체 활성 경로를 검증 | 문서 기반 전체 운영, 자율성, 보고, fanout, 역사 실패 재발 | High·Medium 미해결 0, 모든 지적 판정 완료 | **통과** — 사용자 예외에 따른 최종 자체 재검토 High 0·Medium 0·Low 0 |
-| 8 | 10R-H 최종 게이트·종료 | 부분 게이트가 모두 통과한 뒤에만 전체 점수와 상태를 닫을 수 있음 | 네 가지 확인, 전체 회귀, maintenance, 문서·work·Git 정합화, 95점 이상 재산정 | 완료 주장과 실제 증거의 마지막 반례 | 미검증 요구 0, 차단 결함 0, 총점 95 이상, 사용자 확인, 경계 커밋 성공 | **완료 준비** — 자체 96점·차단 결함 0. 사용자 확인과 경계 커밋 대기 |
+| 8 | 10R-H 최종 게이트·종료 | 부분 게이트가 모두 통과한 뒤에만 전체 점수와 상태를 닫을 수 있음 | 네 가지 확인, 전체 회귀, maintenance, 문서·work·Git 정합화, 95점 이상 재산정 | 완료 주장과 실제 증거의 마지막 반례 | 미검증 요구 0, 차단 결함 0, 총점 95 이상, 사용자 확인, 경계 커밋 성공 | **완료** — 자체 96점·차단 결함 0, 사용자 확인, 경계 커밋 `2853868` 검증 |
 
 10R-G는 원래 전체 범위 최종 교차검증 단계였으나 2026-07-24 사용자 최신 지시에 따라 현재 작업에서 제외됐고 전체 diff 자체 재검토로 대체됐다. 이 현재 작업 예외는 기존 역사 판정을 바꾸거나 다른 작업의 blind 검증 정책을 폐기하지 않는다.
 
@@ -1117,4 +1117,17 @@ maintenance는 문서 block의 명시적 `replaces_legacy_ids`와 기존 nonterm
 | 유지보수성·인지 복잡성 | 20 | 18 | root-bound capability와 단일 공통 guard, 실패 재사용 기록 | read-only legacy 호환층과 긴 Stage 10 역사 owner 비용 잔존 `-2` |
 | **총점** | **100** | **96** | **High 0·Medium 0·Low 0, 차단 결함 0** | **완료 준비** |
 
-**최종 판정:** 10R-F와 10R-G는 통과했고 10R-H는 96점·차단 결함 0으로 `완료 준비`다. Stage 10의 공식 `완료`는 사용자 확인과 §6.5 경계 커밋 성공 뒤에만 표시한다.
+**최종 판정:** 10R-F와 10R-G는 통과했고 10R-H는 96점·차단 결함 0으로 `완료 준비`에 도달했다. 이후 사용자가 결과를 확인하고 경계 커밋 `2853868e742cb51919f76de26e0f9d5f7fe5cd3f`을 직접 생성했으므로 Stage 10의 공식 완료 조건을 충족했다.
+
+#### 2026-07-24 Stage 10 공식 종료
+
+- 사용자 완료 확인: 통과 — 사용자가 Stage 10 결과를 직접 커밋하고 공식 종료 기록을 지시했다.
+- 경계 커밋: `2853868e742cb51919f76de26e0f9d5f7fe5cd3f` (`refactor: Stage 10 자율 운영 구조 최적화`)
+- 커밋 후 작업트리: clean
+- 보호 경계: 커밋 조회에서 `inputs/`·`outputs/` 포함 0
+- 최종 점수와 finding: 96/100, High 0·Medium 0·Low 0, blocker 0
+- 실패 지식: 해결된 재발은 기존 `failures/` 정본에 반영·직접 검증됐고 미해결 실패 0. 공식 종료 문서 확인 중 발생한 PowerShell pattern 인용 오류도 `failures/windows-validation-command-assumptions.md`에 병합하고 분리 명령으로 재검증했다.
+- 종료 문서 검증: document-data block 6, canonical failure 직접 검증, maintenance errors·drift·duplicates 0, inventory 12,527 bytes 일치, 최종 verify·scan runtime warning 없음. 앞선 한 번의 전체 verify 시간 경고에서도 핵심 scan 경고는 없었음
+- 다음 단계: 마스터 구축 계획의 번호 단계는 Stage 10에서 종료한다. 새 Stage나 실제 유튜브·콘텐츠·운영 작업은 자동 생성·자동 착수하지 않는다.
+
+**공식 종료 판정:** Stage 10 **완료**. 이후 실제 프로젝트 작업은 사용자가 구체적으로 지시하기 전까지 시작하지 않는다.
