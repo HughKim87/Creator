@@ -4,7 +4,7 @@
 - 목적: 실제 도메인 작업 전에 과도해진 필수 읽기, 승인·검증 게이트, 실패 기록, 활성 문서 표면을 줄여 안전 경계 안에서 에이전트가 더 빠르게 자율 작업하도록 만든다.
 - 읽는 시점: Stage 11 착수·단계 전환·성공 게이트·최종 보고·재개 시
 - 책임: 프로젝트 에이전트가 사용자의 2026-07-24 지시에 따라 계획·구현·검증·커밋한다.
-- 상태: **11C 완료 준비·경계 커밋 대기**
+- 상태: **11D 완료 준비·최종 보고 경계 커밋 대기**
 - 현재 상태 정본: [SESSION_HANDOFF](../../SESSION_HANDOFF.md)
 - 상위 순서: [마스터 구축 계획](MASTER_BUILD_PLAN.md)
 
@@ -247,11 +247,90 @@
 
 **11C 판정: 완료 준비.** 경계 커밋이 성공하기 전 11D를 시작하지 않는다.
 
+11C 경계 커밋은 `fef880d38b54eb51bb222262fd1c282dcc154bed`이며 변경 23개, exact 삭제 11개, 보호 경로 0, 커밋 후 clean을 확인했다.
+
+### 11D 통합 검증·최종 보고
+
+- `python -m unittest discover -s tests -v`: **120 tests, OK**
+- document data: 6 blocks, `work 1 / knowledge 3 / decision 1 / legacy-baseline 1`
+- artifact: 20개, drift 0
+- legacy baseline: records 211·manifest 22,577 bytes·tree hash 일치, lifecycle 157행·work 36행 stream hash 일치
+- maintenance: documents 79, links 421, Python 15, schema 13, errors·drift·duplicates 0, inventory 일치, runtime warning 없음
+- compact failure canonical parser: 성공
+- quick/controlled 계약 8개 assertion: 전부 true
+- Stage 11 경계 commits `5c322cd`, `153758f`, `fef880d`: 순서·메시지·포함 경로·보호 경로 0 확인
+- 자체 재검토: High 0·Medium 0·Low 0, unresolved material blocker 0
+
+**11D 판정: 완료 준비.** 아래 최종 보고·자체 점수를 포함한 경계 커밋이 성공하기 전 11E를 시작하지 않는다.
+
 11A~11E의 이후 실제 변경, 검증 결과, 실패·판정, 커밋은 이 절에 계속 누적한다. 같은 사실을 별도 단계 보고서로 복제하지 않는다.
 
 ## 10. 최종 작업 보고·자체 점수
 
-모든 구현이 끝난 뒤 전후 지표, 제거·수정 내용, 검증 수준, 잔여 위험, 실패 정리와 100점 자체 평가를 이 절에 기록한다. 점수 항목은 사용자 목적 정합성, 실제 검증 신뢰도, 안전·범위, 문서 일관성, 유지보수성·인지 복잡성을 각 20점으로 사용하며 차단 결함이 있으면 점수와 무관하게 실패다.
+### 10.1 결과 요약
+
+지연의 주원인은 문서 수 자체보다 **완료 역사가 startup과 현재 상태에 중복되고, 구축 단계용 full gate가 일상 작업에도 전파되며, 모든 write와 사소한 실패가 추가 검증·문서 갱신을 만드는 제어면**이었다.
+
+이번 Stage 11은 다음처럼 고쳤다.
+
+1. `quick / standard / controlled` 작업 등급을 도입해 가장 낮은 충분 절차를 에이전트가 선택한다.
+2. 일반 작업에서 번호 Stage, master, 100점표, subagent, 별도 보고서, commit을 자동 요구하지 않는다.
+3. 검증은 매 저장이 아니라 logical batch checkpoint에서 위험에 비례해 수행한다.
+4. failure 정본은 재발·안전/정확성 영향·비자명한 해결·실질 차단 기준을 넘을 때만 유지한다.
+5. handoff에서 완료 Stage 10 역사와 중복 checkpoint를 제거하고 현재 work·blocker·첫 행동만 남겼다.
+6. 과거 Obsidian 단계 보기 11개를 제거하고 current router와 전체 tracked history inventory를 분리했다.
+7. plan·실행·최종 보고는 이 owner 하나에 통합해 새 진단·단계 보고 파일을 만들지 않았다.
+
+### 10.2 전후 지표
+
+| 지표 | 이전 | 최종 | 변화 |
+|---|---:|---:|---:|
+| startup 3문서 | 38,739 bytes·412줄 | 10,221 bytes·151줄 | 20,000 bytes·200줄 목표 통과 |
+| `SESSION_HANDOFF.md` | 28,258 bytes·302줄 | 2,918 bytes·49줄 | 12,000 bytes·140줄 목표 통과 |
+| AGENTS+PROJECT_RULES+task rules 6 | 24,697 bytes·231줄 | 16,186 bytes·210줄 | bytes -34.5% |
+| `MASTER_BUILD_PLAN.md` | 20,438 bytes·255줄 | 8,968 bytes·137줄 | bytes -56.1% |
+| 유지 Markdown | 89개·920,687 bytes·10,295줄 | 79개·864,741 bytes·9,942줄 | 파일 -10개 |
+| 수동 과거 stage view | 11개 | 0개 | -100% |
+| Windows validation failure owner | 18,929 bytes·122줄 | 3,149 bytes·48줄 | bytes -83.4% |
+
+### 10.3 제거·보존
+
+- 제거: 계획에 exact 명시한 `docs/obsidian/stages/stage-00.md`~`stage-09.md` 11개
+- 보존: 각 `docs/build/stage-*.md`, master owner 표, Git history
+- 보존·미접근: `inputs/`, `outputs/`, `backup/`
+- 보존·불변: legacy records 211개, lifecycle event 157행, work event 36행
+- 미착수: 실제 유튜브·콘텐츠·운영 작업, 새 plugin·DB·CI·예약
+- 미수행: branch·push·배포·외부 게시
+
+삭제 파일은 Git commit `fef880d`에서 복구할 수 있다.
+
+### 10.4 실패 정리
+
+- Stage 11 초기에 재발한 Git `safe.directory`·공백 경로 인용은 기존 Windows validation 사례와 같은 root cause로 병합했고, 정본을 공통 원인·해결·예방 중심으로 축약한 뒤 parser와 전체 회귀를 통과했다.
+- 11C 자체 검토에서 startup 151줄 목표 이전 측정이 242줄인 Low 1을 발견했다. 중복 handoff checkpoint를 제거해 최종 목표를 통과했고 같은 전체 checkpoint를 다시 실행했다.
+- 그 밖의 unresolved material failure는 없다. 예상 negative test와 즉시 교정된 transient orchestration typo는 durable threshold를 넘지 않아 새 failure 지식을 만들지 않았다.
+
+### 10.5 잔여 위험
+
+- 전체 추적 Markdown 79개와 read-only legacy 211 records·193 event rows는 남아 있다. 기본 작업 경로에서는 읽지 않지만 역사 감사·호환 비용은 존재한다.
+- 전체 controlled 회귀는 약 31초가 걸린다. `quick`·`standard`에는 targeted 검증만 사용하므로 일상 경로 비용은 분리됐다.
+- Obsidian 앱을 직접 열어 UI를 확인하지는 않았다. Markdown link, protected filter artifact, inventory, maintenance로 구조·도구 검증을 수행했다.
+- 작업 등급은 에이전트 판단을 사용한다. 보호·외부·비가역·material scope 조건을 명시해 과소 분류를 차단했지만, 새로운 경계 유형은 상시 정책 보완이 필요할 수 있다.
+
+### 10.6 자체 점수
+
+| 평가 항목 | 배점 | 점수 | 근거·감점 |
+|---|---:|---:|---|
+| 사용자 목적·요구 정합성 | 20 | 20 | 계획 선행, 단계·게이트·커밋, 자율성 우선 규칙, 제거·보고 요구를 모두 반영 |
+| 실제 기능·검증 신뢰도 | 20 | 19 | 120 tests·통합 5종·대표 계약 통과. Obsidian UI 직접 확인 미실행 `-1` |
+| 범위·안전 경계 | 20 | 20 | exact 삭제 11, 보호·backup 접근 0, legacy bytes 불변, 외부·push 0 |
+| 단일 owner·문서 일관성 | 20 | 19 | current/history·handoff·Stage 11 owner 일치. 완료 역사 문서 79개가 전체 inventory에는 남음 `-1` |
+| 유지보수성·인지 복잡성 | 20 | 18 | startup 151줄, 위험 비례 검증, master·failure 축약. legacy 호환층과 controlled 120-test 비용 잔존 `-2` |
+| **총점** | **100** | **96** | **차단 결함 0, High 0·Medium 0·Low 0 — 완료 준비** |
+
+### 10.7 최종 권고
+
+Stage 11의 구현 목표는 달성됐다. 이후 일반 작업은 `quick` 또는 `standard`가 기본이며, 새 번호 stage나 full report는 사용자나 실제 위험이 요구할 때만 사용한다. legacy 기반 자체를 제거하는 일은 이번 성과를 희석할 만큼 범위가 크므로 별도 실측 근거와 exact 승인 없이는 착수하지 않는 것이 권장된다.
 
 ## 11. 이번 세션의 규칙 반영
 
