@@ -18,7 +18,10 @@
 | `reports/` | 사용자가 명시적으로 요청한 시점 보고서 |
 | `work/` | 활성 작업과 core 변경 차단 실패 |
 | `data/` | 실행 시 생성되는 disposable record·event |
-| `skills/` | 실제 스킬이 생길 때만 만드는 Codex skill source |
+| `inputs/` | 영상별 보호 원본; Git 제외 |
+| `outputs/` | 영상·SRT·썸네일·업로드 패키지 같은 보호 파생물; Git 제외 |
+| `.runtime/` | 프로젝트 로컬 도구·모델·의존성; Git 제외 |
+| `../.agents/skills/` | 저장소 전체에서 자동 발견되는 Codex skill source |
 
 새 작업은 이 영역에 추가한다. extension 작업을 이유로 core 구현·계약·규칙을 자동 변경하지 않는다.
 

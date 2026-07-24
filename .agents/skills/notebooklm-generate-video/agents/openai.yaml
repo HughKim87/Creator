@@ -1,0 +1,4 @@
+interface:
+  display_name: "NotebookLM 동영상 생성"
+  short_description: "출처 기반 맞춤 영상을 생성하고 5분 간격으로 완료를 검증합니다."
+  default_prompt: "NotebookLM에서 맞춤 동영상 오버뷰를 한 번 생성하고, 5분 간격으로 상태를 확인해 재생 가능 상태까지 검증한 뒤 다운로드 전에 멈춰 주세요."

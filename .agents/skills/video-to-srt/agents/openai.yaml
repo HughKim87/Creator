@@ -1,0 +1,4 @@
+interface:
+  display_name: "Video to SRT"
+  short_description: "영상 음성을 전사하고 검증된 SRT 자막을 생성합니다."
+  default_prompt: "정확한 영상의 음성을 로컬에서 전사하고 용어·타임코드를 정제해 검증된 SRT와 원본 전사 JSON을 만든 뒤 제목·썸네일 단계 전에 멈춰 주세요."
