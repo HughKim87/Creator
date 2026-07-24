@@ -1,4 +1,4 @@
-"""Stage 04 work request, event replay, and current work snapshot."""
+"""Work request, event replay, and current work snapshot."""
 
 from __future__ import annotations
 

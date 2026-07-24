@@ -1,4 +1,4 @@
-"""Stage 05 explicit long-term knowledge record types."""
+"""Explicit long-term knowledge record types."""
 
 from __future__ import annotations
 

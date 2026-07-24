@@ -2,8 +2,8 @@
 
 - 목적: 현재 작업에 필요한 활성 문서, current 지식 record, canonical 해결 실패 문서만 직접 선택·필터·단순 문자열 후보로 구성하고 선택·제외 이유와 크기를 함께 보여준다.
 - 읽는 시점: 전체 문서 읽기 없이 작업 컨텍스트를 만들거나 대표 선택 평가를 실행할 때.
-- 책임: `ContextService`가 선택·검증·크기 제한·fingerprint를, 원 문서와 Stage 05 record가 내용 정본을, lifecycle이 저장 record의 현재 상태를, `failures/*.md`가 해결 실패의 현재성을 소유한다.
-- 상태: Stage 07 활성 계약.
+- 책임: `ContextService`가 선택·검증·크기 제한·fingerprint를, 원 문서와 record가 내용 정본을, lifecycle이 저장 record의 현재 상태를, `failures/*.md`가 해결 실패의 현재성을 소유한다.
+- 상태: 활성 계약.
 - 선행 계약: [지식 수명주기](KNOWLEDGE_LIFECYCLE_CONTRACT.md), [정보·문서 책임 구조](INFORMATION_ARCHITECTURE.md).
 
 ## 선택 우선순위
@@ -26,7 +26,7 @@
 
 ## 구조화 필터와 단순 검색
 
-허용 필터는 실제 Stage 05~06 필드 네 개뿐이다.
+허용 필터는 실제 지식·수명주기 필드 네 개뿐이다.
 
 | 필터 | 값·동작 |
 |---|---|
@@ -61,14 +61,11 @@ package에는 생성 시각과 무작위 ID를 넣지 않는다. 같은 정본·
     "classification": "constraint",
     "scope": "project-foundation",
     "verification_status": "verified",
-    "verified_by": "agent:stage10-standing-policy",
-    "replaces_legacy_ids": [
-      "35ed5523-d970-48eb-a2fe-716b111e970c"
-    ]
+    "verified_by": "agent:document-cleanup",
+    "replaces_legacy_ids": []
   },
   "source_refs": [
-    "docs/CONTEXT_PACKAGE_CONTRACT.md#비영구-context-package",
-    "docs/build/stage-07-context-retrieval.md"
+    "docs/CONTEXT_PACKAGE_CONTRACT.md#비영구-context-package"
   ],
   "status": "current"
 }
@@ -88,7 +85,7 @@ package에는 생성 시각과 무작위 ID를 넣지 않는다. 같은 정본·
 | 평가 | 직접·검색 입력 | 필수 결과 | 금지 결과 |
 |---|---|---|---|
 | 기존 지식 읽기 | 기존 current knowledge ID | 정확한 knowledge 1건과 source 상태 | 대체된 옛 knowledge, 무관 record |
-| 새 지식 다시 읽기 | Stage 07에서 만든 current knowledge의 고유 문구 | 새 knowledge 1건 | candidate·superseded·보호 경로 |
+| 새 지식 다시 읽기 | current knowledge의 고유 문구 | 새 knowledge 1건 | candidate·superseded·보호 경로 |
 | 실패 경험 재사용 | 해결된 Windows UTF-8 pipe 실패의 고유 문구 | canonical 실패 Markdown 문서와 재사용 규칙 | legacy projection, 무관 실패 |
 
 세 평가 모두 필수 누락 0, 금지 결과 0이어야 한다. 직접 선택의 무관 결과 허용은 0, 단순 검색 후보는 최대 1건이다. 실패하면 단순 검색 필드·질의를 먼저 보정하고, 그것으로 해결되지 않는 증거가 있을 때만 다음 검색 기술을 제안한다.
@@ -104,8 +101,8 @@ CLI build는 PowerShell에서 UTF-8 stdin과 `--request-stdin`을 사용한다. 
 ## 제외와 후속
 
 - 컨텍스트 package 저장·자동 지식 승격·보호 데이터 색인·보고서 기본 로딩은 금지한다.
-- 최신성·중복·재생성·비용 관측과 검증된 반복 실행은 [Stage 08 유지보수 계약](MAINTENANCE_AUTOMATION_CONTRACT.md)이 소유한다.
-- 도메인 태그·추천·영상 제작 입력은 Stage 09 범위다.
+- 최신성·중복·비용 관측과 검증된 반복 실행은 [유지보수 계약](MAINTENANCE_AUTOMATION_CONTRACT.md)이 소유한다.
+- 도메인 태그·추천·영상 제작 입력은 별도 도메인 계약이 소유한다.
 
 ## 문서 소유 파생 artifact
 

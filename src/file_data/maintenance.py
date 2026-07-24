@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from collections import Counter, defaultdict
 import json
-import os
 from pathlib import Path
 import re
 import subprocess
@@ -15,14 +14,12 @@ from .document_data import (
     ArtifactService,
     DocumentDataError,
     DocumentDataService,
-    LegacyDataVerifier,
 )
 from .knowledge import KnowledgeRecordError, KnowledgeService, SourceIntegrityError
 from .lifecycle import TERMINAL_STATES, LifecycleService
 from .store import InputContractError, RecordIOError
 
 
-GENERATED_INVENTORY_REF = "docs/obsidian/GENERATED_DOCUMENT_INVENTORY.md"
 RUNTIME_WARNING_MS = 5_000
 PROTECTED_SEGMENTS = frozenset({"backup", "inputs", "outputs", ".git", ".obsidian"})
 LINK_PATTERN = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
@@ -56,7 +53,6 @@ class MaintenanceService:
         )
         self.document_data = DocumentDataService(self.root)
         self.artifacts = ArtifactService(self.root)
-        self.legacy_data = LegacyDataVerifier(self.root)
 
     def _git(self, *arguments: str) -> list[str]:
         result = subprocess.run(
@@ -83,7 +79,7 @@ class MaintenanceService:
             paths.append(path)
         return paths
 
-    def document_refs(self, *, include_generated: bool = True) -> list[str]:
+    def document_refs(self) -> list[str]:
         tracked = self._git(
             "ls-files", "--", "*.md", ":(exclude)backup/**", ":(exclude)inputs/**",
             ":(exclude)outputs/**", ":(exclude).git/**", ":(exclude).obsidian/**",
@@ -94,72 +90,15 @@ class MaintenanceService:
             parts = set(Path(ref).parts)
             if parts & PROTECTED_SEGMENTS:
                 continue
-            if not include_generated and ref == GENERATED_INVENTORY_REF:
-                continue
             if (self.root / ref).is_file():
                 refs.append(ref)
         return refs
 
-    def _title(self, ref: str) -> str:
-        raw = (self.root / ref).read_bytes()
-        try:
-            content = raw.decode("utf-8", "strict")
-        except UnicodeDecodeError as exc:
-            raise MaintenanceError(f"document is not strict UTF-8: {ref}") from exc
-        for line in content.splitlines():
-            if line.startswith("# "):
-                return line[2:].strip()
-        return Path(ref).stem
-
-    def render_inventory(self) -> str:
-        refs = self.document_refs(include_generated=False)
-        groups: dict[str, list[str]] = defaultdict(list)
-        for ref in refs:
-            group = Path(ref).parts[0] if len(Path(ref).parts) > 1 else "root"
-            groups[group].append(ref)
-        lines = [
-            "# 자동 생성 전체 추적 문서 inventory",
-            "",
-            "- 목적: 보호·backup 경계를 제외한 추적 Markdown 경로를 결정론적으로 재생성한다.",
-            "- 상태: 파생물. 이 파일은 규칙·상태·결정을 소유하지 않는다.",
-            "- 사용 경계: 완료 stage와 시점 보고서를 포함하므로 active owner 목록이 아니다. 현재 진입은 `START_HERE.md`를 사용한다.",
-            "- 생성 명령: `python -m file_data maintenance-inventory --write`",
-            f"- 원본 문서 수: {len(refs)}",
-            "- 자기 재귀 방지: 이 생성 파일 자체는 원본 목록에서 제외한다.",
-            "",
-        ]
-        inventory_path = self.root / GENERATED_INVENTORY_REF
-        for group in sorted(groups):
-            lines.extend([f"## {group}", ""])
-            for ref in sorted(groups[group]):
-                relative = Path(os.path.relpath(self.root / ref, inventory_path.parent)).as_posix()
-                lines.append(f"- [{self._title(ref)}]({relative}) — `{ref}`")
-            lines.append("")
-        return "\n".join(lines).rstrip() + "\n"
-
-    def inventory_status(self) -> dict[str, Any]:
-        expected = self.render_inventory().encode("utf-8")
-        target = self.root / GENERATED_INVENTORY_REF
-        current = target.read_bytes() if target.is_file() else None
-        return {
-            "ref": GENERATED_INVENTORY_REF,
-            "exists": current is not None,
-            "matches": current == expected,
-            "expected_bytes": len(expected),
-            "current_bytes": None if current is None else len(current),
-        }
-
-    def write_inventory(self) -> dict[str, Any]:
-        target = self.root / GENERATED_INVENTORY_REF
-        target.parent.mkdir(parents=True, exist_ok=True)
-        rendered = self.render_inventory().encode("utf-8")
-        temporary = target.with_name(f".{target.name}.tmp")
-        temporary.write_bytes(rendered)
-        temporary.replace(target)
-        status = self.inventory_status()
-        if not status["matches"]:
-            raise MaintenanceError("generated inventory post-write verification failed")
-        return status
+    def runtime_data_available(self) -> bool:
+        return (
+            (self.root / "data" / "records").is_dir()
+            and (self.root / "data" / "events").is_dir()
+        )
 
     def _migrated_legacy_ids(self) -> tuple[set[str], set[str]]:
         blocks = self.document_data.list_blocks()
@@ -293,16 +232,6 @@ class MaintenanceService:
     def detect_drift(self) -> list[dict[str, str]]:
         findings: list[dict[str, str]] = []
         drifted_sources: set[str] = set()
-        try:
-            migrated_records, migrated_sources = self._migrated_legacy_ids()
-        except DocumentDataError as exc:
-            return [
-                {
-                    "target_id": "project-data:v1",
-                    "kind": "document_data",
-                    "reason": str(exc),
-                }
-            ]
         for ref in self.knowledge.failure_document_refs():
             try:
                 self.knowledge.validate_failure_document(ref)
@@ -310,6 +239,19 @@ class MaintenanceService:
                 findings.append(
                     {"target_id": ref, "kind": "failure_document", "reason": str(exc)}
                 )
+        if not self.runtime_data_available():
+            return sorted(findings, key=lambda item: (item["kind"], item["target_id"]))
+        try:
+            migrated_records, migrated_sources = self._migrated_legacy_ids()
+        except DocumentDataError as exc:
+            findings.append(
+                {
+                    "target_id": "project-data:v1",
+                    "kind": "document_data",
+                    "reason": str(exc),
+                }
+            )
+            return sorted(findings, key=lambda item: (item["kind"], item["target_id"]))
         states = self.lifecycle.list_states()
         for state in states:
             if state["payload"]["state"] in TERMINAL_STATES:
@@ -357,25 +299,28 @@ class MaintenanceService:
     def detect_duplicates(self) -> list[dict[str, Any]]:
         findings: list[dict[str, Any]] = []
         claims: dict[str, list[str]] = defaultdict(list)
-        try:
-            migrated_records, _ = self._migrated_legacy_ids()
-        except DocumentDataError as exc:
-            return [
-                {
-                    "kind": "document_data",
-                    "value": str(exc),
-                    "record_ids": [],
-                }
-            ]
+        migrated_records: set[str] = set()
+        if self.runtime_data_available():
+            try:
+                migrated_records, _ = self._migrated_legacy_ids()
+            except DocumentDataError as exc:
+                return [
+                    {
+                        "kind": "document_data",
+                        "value": str(exc),
+                        "record_ids": [],
+                    }
+                ]
         for block in self.document_data.list_blocks():
             if block["kind"] == "knowledge" and block["status"] == "current":
                 claims[block["payload"]["statement"].strip().casefold()].append(
                     "document:" + block["key"]
                 )
-        for record in self.lifecycle.current_records(target_type="knowledge"):
-            if record["id"] in migrated_records:
-                continue
-            claims[record["payload"]["statement"].strip().casefold()].append(record["id"])
+        if self.runtime_data_available():
+            for record in self.lifecycle.current_records(target_type="knowledge"):
+                if record["id"] in migrated_records:
+                    continue
+                claims[record["payload"]["statement"].strip().casefold()].append(record["id"])
         for value, ids in claims.items():
             if len(ids) > 1:
                 findings.append({"kind": "knowledge_statement", "value": value, "record_ids": sorted(ids)})
@@ -394,21 +339,28 @@ class MaintenanceService:
         return sorted(findings, key=lambda item: (item["kind"], item["value"]))
 
     def cost_report(self, started: float | None = None) -> dict[str, Any]:
-        refs = self.document_refs(include_generated=True)
+        refs = self.document_refs()
         documents = self.context.measure_documents(refs)
         record_types = (
             "source", "knowledge", "decision", "failure_knowledge", "lifecycle_state", "work_state"
         )
-        records = {record_type: len(self.lifecycle.store.list_records(record_type)) for record_type in record_types}
-        lifecycle_events = len(self.lifecycle._events()[0])
-        work_events = len(self.lifecycle.store.list_events("work_events")[0])
+        if self.runtime_data_available():
+            records = {
+                record_type: len(self.lifecycle.store.list_records(record_type))
+                for record_type in record_types
+            }
+            lifecycle_events = len(self.lifecycle._events()[0])
+            work_events = len(self.lifecycle.store.list_events("work_events")[0])
+        else:
+            records = {record_type: 0 for record_type in record_types}
+            lifecycle_events = 0
+            work_events = 0
         elapsed = None if started is None else round((time.perf_counter() - started) * 1000, 2)
         return {
             "documents": documents,
             "canonical_failure_documents": len(self.knowledge.failure_document_refs()),
             "records_by_type": records,
             "events": {"lifecycle": lifecycle_events, "work": work_events},
-            "generated_files": 1 if (self.root / GENERATED_INVENTORY_REF).is_file() else 0,
             "elapsed_ms": elapsed,
             "runtime_warning": elapsed is not None and elapsed > RUNTIME_WARNING_MS,
         }
@@ -417,22 +369,20 @@ class MaintenanceService:
         started = time.perf_counter()
         drift = self.detect_drift()
         duplicates = self.detect_duplicates()
-        inventory = self.inventory_status()
         costs = self.cost_report(started)
-        ok = not drift and not duplicates and inventory["matches"]
+        ok = not drift and not duplicates
         return {
             "ok": ok,
             "status": "pass" if ok else "attention_required",
             "drift": drift,
             "duplicates": duplicates,
-            "inventory": inventory,
             "costs": costs,
         }
 
     def _document_errors(self) -> tuple[list[str], int]:
         errors: list[str] = []
         links = 0
-        for ref in self.document_refs(include_generated=True):
+        for ref in self.document_refs():
             path = self.root / ref
             raw = path.read_bytes()
             try:
@@ -473,14 +423,6 @@ class MaintenanceService:
             self.document_data.validate()
         except DocumentDataError as exc:
             errors.append(f"document_data:{exc}")
-        try:
-            if any(
-                block["kind"] == "legacy-baseline"
-                for block in self.document_data.list_blocks()
-            ):
-                self.legacy_data.verify()
-        except DocumentDataError as exc:
-            errors.append(f"legacy_data:{exc}")
         if self.artifacts.has_blocks():
             try:
                 self.artifacts.check()
@@ -501,11 +443,8 @@ class MaintenanceService:
         ]
         errors.extend(f"protected_change:{path}" for path in protected_changes)
         readme = (self.root / "README.md").read_text(encoding="utf-8")
-        document_map = (self.root / "docs" / "obsidian" / "DOCUMENT_MAP.md").read_text(encoding="utf-8")
-        if "SESSION_HANDOFF.md" not in readme or "SESSION_HANDOFF.md" not in document_map:
+        if "SESSION_HANDOFF.md" not in readme:
             errors.append("current_state_link_missing")
-        if "GENERATED_DOCUMENT_INVENTORY.md" not in document_map:
-            errors.append("generated_inventory_link_missing")
         if not scan["ok"]:
             errors.append("maintenance_scan_attention_required")
         elapsed = round((time.perf_counter() - started) * 1000, 2)
@@ -514,7 +453,7 @@ class MaintenanceService:
             "status": "pass" if not errors else "fail",
             "errors": sorted(errors),
             "metrics": {
-                "documents": len(self.document_refs(include_generated=True)),
+                "documents": len(self.document_refs()),
                 "links": links,
                 "python_files": len(list((self.root / "src").rglob("*.py"))),
                 "schemas": len(list((self.root / "schemas").glob("*.json"))),
@@ -535,7 +474,7 @@ class MaintenanceService:
         evaluations = payload["evaluations"]
         if not isinstance(evaluations, list) or not evaluations:
             raise MaintenanceError("evaluations must be a non-empty list")
-        baseline = self.context.measure_documents(self.document_refs(include_generated=True))
+        baseline = self.context.measure_documents(self.document_refs())
         results: list[dict[str, Any]] = []
         for evaluation in evaluations:
             required = {

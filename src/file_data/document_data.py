@@ -70,7 +70,6 @@ DECISION_FIELDS = frozenset(
         "replaces_legacy_id",
     }
 )
-LEGACY_BASELINE_FIELDS = frozenset({"data_root_entries", "events", "records"})
 WORK_STATUSES = frozenset({"requested", "in_progress", "failed", "blocked", "completed"})
 KNOWLEDGE_STATUSES = frozenset({"candidate", "current"})
 KNOWLEDGE_CLASSES = frozenset({"fact", "inference", "procedure", "constraint"})
@@ -96,7 +95,7 @@ ARTIFACT_OWNERS: dict[str, str] = {
         "docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md"
     ),
     ".obsidian/app.json": "docs/obsidian/OBSIDIAN_REVIEW_CONTRACT.md",
-    "examples/youtube/stage09-foundation-evidence.request.json": (
+    "examples/youtube/foundation-evidence.request.json": (
         "docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md"
     ),
     "tests/fixtures/file_data/valid/neutral-record.json": "docs/FILE_DATA_CONTRACT.md",
@@ -383,12 +382,11 @@ class DocumentDataService:
             )
         if kind == "decision":
             return (
-                len(path.parts) == 3
-                and path.parts[:2] == ("docs", "build")
-                and path.name.startswith("stage-")
+                len(path.parts) == 2
+                and path.parts[0] == "docs"
+                or len(path.parts) >= 3
+                and path.parts[:2] == ("docs", "domain")
             )
-        if kind == "legacy-baseline":
-            return relative == "docs/build/stage-10-agent-autonomy-structure-optimization.md"
         return False
 
     def _validate_work(self, block: Mapping[str, Any]) -> None:
@@ -491,52 +489,6 @@ class DocumentDataService:
         _utc(payload["decided_at"], "payload.decided_at")
         _uuid_or_none(payload["replaces_legacy_id"], "payload.replaces_legacy_id")
 
-    def _validate_legacy_baseline(self, block: Mapping[str, Any]) -> None:
-        payload = block["payload"]
-        if not isinstance(payload, Mapping) or set(payload) != LEGACY_BASELINE_FIELDS:
-            raise DocumentDataError(
-                f"legacy-baseline payload must contain exactly: {sorted(LEGACY_BASELINE_FIELDS)}"
-            )
-        if payload["data_root_entries"] != ["events", "records"]:
-            raise DocumentDataError("legacy baseline data_root_entries must be events, records")
-        events = payload["events"]
-        event_fields = {"allowed_files", "file_count", "files"}
-        if not isinstance(events, Mapping) or set(events) != event_fields:
-            raise DocumentDataError(f"legacy events must contain exactly: {sorted(event_fields)}")
-        if events["allowed_files"] != ["lifecycle_events.jsonl", "work_events.jsonl"]:
-            raise DocumentDataError("legacy event allowlist is invalid")
-        if events["file_count"] != 2 or set(events["files"]) != set(events["allowed_files"]):
-            raise DocumentDataError("legacy event count or file mapping is invalid")
-        for name, details in events["files"].items():
-            if not isinstance(details, Mapping) or set(details) != {"rows", "sha256"}:
-                raise DocumentDataError(f"legacy event details are invalid: {name}")
-            if not isinstance(details["rows"], int) or details["rows"] < 0:
-                raise DocumentDataError(f"legacy event row count is invalid: {name}")
-            if re.fullmatch(r"[0-9a-f]{64}", details["sha256"]) is None:
-                raise DocumentDataError(f"legacy event hash is invalid: {name}")
-        records = payload["records"]
-        record_fields = {
-            "allowed_suffix",
-            "count",
-            "manifest_bytes",
-            "subdirectories_allowed",
-            "tree_sha256",
-        }
-        if not isinstance(records, Mapping) or set(records) != record_fields:
-            raise DocumentDataError(
-                f"legacy records must contain exactly: {sorted(record_fields)}"
-            )
-        if (
-            records["allowed_suffix"] != ".json"
-            or not isinstance(records["count"], int)
-            or records["count"] < 0
-            or not isinstance(records["manifest_bytes"], int)
-            or records["manifest_bytes"] < 0
-            or records["subdirectories_allowed"] is not False
-            or re.fullmatch(r"[0-9a-f]{64}", records["tree_sha256"]) is None
-        ):
-            raise DocumentDataError("legacy records baseline values are invalid")
-
     def _validate_block(
         self,
         block: dict[str, Any],
@@ -556,7 +508,6 @@ class DocumentDataService:
         source_refs = _string_list(
             block["source_refs"],
             "source_refs",
-            require_nonempty=kind != "legacy-baseline",
         )
         for index, ref in enumerate(source_refs):
             self._source_ref(ref, f"source_refs[{index}]")
@@ -572,10 +523,6 @@ class DocumentDataService:
             if block["status"] != "current":
                 raise DocumentDataError("decision status must be current")
             self._validate_decision(block)
-        elif kind == "legacy-baseline":
-            if block["status"] != "current":
-                raise DocumentDataError("legacy-baseline status must be current")
-            self._validate_legacy_baseline(block)
         else:
             raise DocumentDataError(f"unknown project-data kind: {kind}")
         return {**block, "owner": owner}
@@ -771,100 +718,6 @@ class DocumentWorkService:
                 temporary.unlink(missing_ok=True)
             if lock_acquired:
                 self.lock.unlink(missing_ok=True)
-
-
-class LegacyDataVerifier:
-    """Verify the frozen legacy data tree against its Markdown-owned baseline."""
-
-    BASELINE_KEY = "stage10-data-legacy-baseline"
-
-    def __init__(self, project_root: Path | str) -> None:
-        self.document_data = DocumentDataService(project_root)
-        self.root = self.document_data.root
-
-    @staticmethod
-    def _sha256(data: bytes) -> str:
-        return hashlib.sha256(data).hexdigest()
-
-    def verify(self) -> dict[str, Any]:
-        block = self.document_data.get_block(self.BASELINE_KEY)
-        if block["kind"] != "legacy-baseline":
-            raise DocumentDataError("legacy baseline key has the wrong kind")
-        expected = block["payload"]
-        data_root = self.root / "data"
-        if not data_root.is_dir() or data_root.is_symlink():
-            raise DocumentDataError("legacy data root is missing or is a symlink")
-        entries = sorted(path.name for path in data_root.iterdir())
-        if entries != expected["data_root_entries"]:
-            raise DocumentDataError(
-                "legacy data root entries differ: " + ", ".join(entries)
-            )
-
-        events_root = data_root / "events"
-        records_root = data_root / "records"
-        if (
-            not events_root.is_dir()
-            or events_root.is_symlink()
-            or not records_root.is_dir()
-            or records_root.is_symlink()
-        ):
-            raise DocumentDataError("legacy events/records must be real directories")
-
-        event_entries = sorted(events_root.iterdir(), key=lambda path: path.name)
-        if any(not path.is_file() or path.is_symlink() for path in event_entries):
-            raise DocumentDataError("legacy events contains a non-file or symlink")
-        event_names = [path.name for path in event_entries]
-        if event_names != expected["events"]["allowed_files"]:
-            raise DocumentDataError(
-                "legacy event files differ: " + ", ".join(event_names)
-            )
-        events: dict[str, dict[str, Any]] = {}
-        for path in event_entries:
-            raw = path.read_bytes()
-            try:
-                text = raw.decode("utf-8", "strict")
-            except UnicodeDecodeError as exc:
-                raise DocumentDataError(
-                    f"legacy event stream is not strict UTF-8: {path.name}"
-                ) from exc
-            if "\x00" in text:
-                raise DocumentDataError(f"legacy event stream contains NUL: {path.name}")
-            rows = len(text.splitlines())
-            actual = {"rows": rows, "sha256": self._sha256(raw)}
-            if actual != expected["events"]["files"][path.name]:
-                raise DocumentDataError(f"legacy event baseline drift: {path.name}")
-            events[path.name] = actual
-
-        record_entries = sorted(records_root.iterdir(), key=lambda path: path.name)
-        if any(
-            not path.is_file()
-            or path.is_symlink()
-            or path.suffix != expected["records"]["allowed_suffix"]
-            for path in record_entries
-        ):
-            raise DocumentDataError("legacy records contains a non-JSON entry or symlink")
-        manifest = "".join(
-            f"{path.name}\t{self._sha256(path.read_bytes())}\n"
-            for path in record_entries
-        ).encode("utf-8")
-        records = {
-            "count": len(record_entries),
-            "manifest_bytes": len(manifest),
-            "tree_sha256": self._sha256(manifest),
-            "subdirectories": 0,
-        }
-        if (
-            records["count"] != expected["records"]["count"]
-            or records["manifest_bytes"] != expected["records"]["manifest_bytes"]
-            or records["tree_sha256"] != expected["records"]["tree_sha256"]
-        ):
-            raise DocumentDataError("legacy record tree baseline drift")
-        return {
-            "data_root_entries": entries,
-            "events": events,
-            "records": records,
-            "status": "pass",
-        }
 
 
 class ArtifactService:

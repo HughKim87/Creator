@@ -118,33 +118,6 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
             self.assertEqual(selected[0]["data_key"], "test-youtube-evidence")
             self.assertEqual(selected[0]["kind"], "document")
 
-    def test_project_shadow_read_matches_document_statement_to_legacy_uuid(self) -> None:
-        root = Path(__file__).resolve().parents[1]
-        request = json.loads(
-            (root / "examples" / "youtube" / "stage09-foundation-evidence.request.json")
-            .read_text(encoding="utf-8")
-        )
-        service = YouTubeEvidenceService(root)
-        document_pack = service.build_pack(request)
-        legacy_request = json.loads(json.dumps(request, ensure_ascii=False))
-        legacy_request["documents"] = []
-        legacy_request["records"] = [
-            {
-                "id": "35ed5523-d970-48eb-a2fe-716b111e970c",
-                "reason": "Stage 10 legacy current knowledge shadow",
-            }
-        ]
-        legacy_pack = service.build_pack(legacy_request, legacy=True)
-        document_item = document_pack["context_package"]["selected"][0]
-        legacy_item = legacy_pack["context_package"]["selected"][0]
-        document_statement = json.loads(document_item["content"])["payload"]["statement"]
-        self.assertEqual(document_statement, legacy_item["payload"]["statement"])
-        self.assertEqual(
-            document_item["data_key"],
-            "context-package-deterministic-derived-view",
-        )
-        self.assertEqual(legacy_item["id"], "35ed5523-d970-48eb-a2fe-716b111e970c")
-
     def test_builds_deterministic_nonpersistent_pack_with_user_gate(self) -> None:
         with self._root() as raw_root:
             source, claim = self._fixture(raw_root)

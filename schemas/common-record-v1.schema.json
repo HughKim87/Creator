@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:kim-silver-youtube:schema:common-record:v1",
   "title": "Common Record v1",
-  "description": "Domain-neutral file record envelope for the Stage 02 foundation.",
+  "description": "Domain-neutral file record envelope.",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -1,7 +1,7 @@
 # Document-Based Data Work Rules
 
 - Purpose: govern maintained documents and persistent project data without turning documentation into the work product.
-- Read when: creating or changing maintained Markdown, root controls, records, events, snapshots, indexes, or inventories.
+- Read when: creating or changing maintained Markdown, root controls, records, events, snapshots, or indexes.
 - Authority: task-specific; `PROJECT_RULES.md` remains higher authority.
 
 ## Rules
@@ -12,6 +12,5 @@
 - For a maintained machine artifact, identify its document owner, rebuild command, and verification. Do not write it if that relationship is missing.
 - Link to policy, procedure, and current state instead of copying them. User-facing guides and approval summaries use Korean; concise agent-only routing may use English.
 - Validate a logical batch at its completion checkpoint: strict UTF-8, NUL 0, relevant structure and links, trailing whitespace, and the scoped diff.
-- Regenerate the document inventory only when the maintained Markdown path set or H1 titles change.
 - Run full maintenance only for controlled structural work or when the active plan requires it; otherwise use the smallest direct document checks that cover the change.
 - Generated or structure-valid does not mean user-approved.

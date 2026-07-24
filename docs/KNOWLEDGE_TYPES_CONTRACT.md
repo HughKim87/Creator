@@ -3,7 +3,7 @@
 - 목적: 작업 기록과 분리된 장기 재사용 데이터를 출처·단일 지식 주장·결정 record로 관리하고, 해결 실패는 canonical Markdown을 저장 projection 없이 직접 검증·재사용한다.
 - 읽는 시점: source·knowledge·decision record를 생성·조회·검증하거나 해결 실패 문서를 기록·검색할 때.
 - 책임: `src/file_data/knowledge.py`가 의미 검증과 참조 무결성, `schemas/*-payload-v1.schema.json`이 저장 record 구조, `failures/*.md`가 실패 사례의 사람·기계 공통 정본을 소유한다.
-- 상태: Stage 05 계약을 Stage 10에서 단순화.
+- 상태: 활성 계약.
 - 선행 계약: [공통 기록 I/O](RECORD_IO_CONTRACT.md), [작업 기록·현재 상태](WORK_STATE_CONTRACT.md).
 
 ## 유형과 정본 책임
@@ -24,7 +24,7 @@
 - 로컬 출처는 정규화된 프로젝트 상대 경로만 허용하고 `backup`, `inputs`, `outputs`, `.git`, `.obsidian`을 거부한다.
 - 로컬 파일 생성 시 실제 bytes의 SHA-256을 계산해 `verified`로 저장한다.
 - `source-show`와 `source-list`는 당시 관찰 record를 읽는다. `source-verify`는 현재 bytes를 다시 계산하며 저장 hash와 다르면 `source_integrity`로 실패한다.
-- web source는 `http` 또는 `https` locator만 기록한다. Stage 05는 외부 내용을 가져오거나 권위를 자동 판정하지 않는다.
+- web source는 `http` 또는 `https` locator만 기록한다. 이 계층은 외부 내용을 가져오거나 권위를 자동 판정하지 않는다.
 - user statement는 원문을 복사하지 않고 승인된 `request://...` 참조만 기록할 수 있다.
 
 ## 05B 지식 항목
@@ -35,7 +35,7 @@
 - source ID는 최소 한 개이며 모두 존재하는 `source` record여야 한다.
 - `unavailable` source는 지식 생성에 사용할 수 없다.
 - `candidate`는 `verified_by`를 가질 수 없고 `verified`는 검증 주체가 필수다.
-- 참조한 로컬 source가 바뀌어도 당시 지식 record 조회는 보존되지만 `source-verify`는 실패한다. 현재도 유효한지의 갱신·대체 판정은 Stage 06이 소유한다.
+- 참조한 로컬 source가 바뀌어도 당시 지식 record 조회는 보존되지만 `source-verify`는 실패한다. 현재도 유효한지의 갱신·대체 판정은 수명주기 계약이 소유한다.
 
 ## 05C 결정 기록
 
@@ -60,7 +60,7 @@
 
 정본 Markdown이 갱신되면 다음 읽기부터 새 내용이 즉시 사용된다. 별도 source·projection·lifecycle snapshot을 갱신하지 않는다. 파일 이력은 Git이, 재발·해결 이력은 Markdown 본문이 보존한다.
 
-기존 `failure_knowledge`·실패 전용 source·lifecycle record는 Stage 05~09의 legacy history다. 삭제하지 않고 `failure-show --id` 같은 명시 direct read만 지원하며 기본 목록·검색·maintenance current 판정에는 사용하지 않는다.
+외부에서 이전 `failure_knowledge`·실패 전용 source·lifecycle record를 가져온 경우에만 명시 direct read 호환을 제공한다. 현재 프로젝트는 이를 저장하지 않으며 기본 목록·검색·maintenance current 판정에도 사용하지 않는다.
 
 ## 승인된 진입점
 
@@ -82,14 +82,12 @@
 
 Python 검증기가 구조 스키마보다 강한 교차 필드·참조·hash 검증을 수행한다. 테스트는 두 필드 집합과 enum이 일치하는지 확인한다.
 
-Stage 05 완료 시 source 23건, knowledge 1건, decision 1건, failure_knowledge 21건을 만들었다. Stage 10 이전 revision까지 늘어난 stored failure projection은 legacy 역사이며, 현재 해결 실패 수는 `failure-list`가 canonical Markdown에서 실행 시 계산한다.
+## 연계·제외
 
-## Stage 05 제외와 후속
-
-- source·knowledge·decision record 검토·대체·폐기·충돌·사건 기반 검토 트리거는 [Stage 06 수명주기](KNOWLEDGE_LIFECYCLE_CONTRACT.md)가 소유한다.
-- 검색·순위·관계 탐색·컨텍스트 조립은 Stage 07 범위다.
-- 실패 정본 직접 검증과 중복 제목 탐지는 [Stage 08 유지보수 계약](MAINTENANCE_AUTOMATION_CONTRACT.md)이 소유한다.
-- 도메인 전용 필드와 영상 제작 연결은 Stage 09 전까지 도입하지 않는다.
+- source·knowledge·decision record 검토·대체·폐기·충돌·사건 기반 검토 트리거는 [지식 수명주기 계약](KNOWLEDGE_LIFECYCLE_CONTRACT.md)이 소유한다.
+- 검색·순위·관계 탐색·컨텍스트 조립은 [컨텍스트 계약](CONTEXT_PACKAGE_CONTRACT.md)이 소유한다.
+- 실패 정본 직접 검증과 중복 제목 탐지는 [유지보수 계약](MAINTENANCE_AUTOMATION_CONTRACT.md)이 소유한다.
+- 도메인 전용 필드와 영상 제작 연결은 도메인 계약에서만 정의한다.
 
 ## 문서 소유 파생 artifact
 

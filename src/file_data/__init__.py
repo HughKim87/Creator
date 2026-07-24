@@ -92,7 +92,6 @@ from .context import (
     ContextService,
 )
 from .maintenance import (
-    GENERATED_INVENTORY_REF,
     PROTECTED_SEGMENTS as MAINTENANCE_PROTECTED_SEGMENTS,
     RUNTIME_WARNING_MS,
     MaintenanceError,
@@ -104,7 +103,6 @@ from .document_data import (
     DocumentDataError,
     DocumentDataService,
     DocumentWorkService,
-    LegacyDataVerifier,
 )
 
 __all__ = [
@@ -187,7 +185,6 @@ __all__ = [
     "ContextError",
     "ContextLimitError",
     "ContextService",
-    "GENERATED_INVENTORY_REF",
     "MAINTENANCE_PROTECTED_SEGMENTS",
     "RUNTIME_WARNING_MS",
     "MaintenanceError",
@@ -197,5 +194,4 @@ __all__ = [
     "DocumentDataError",
     "DocumentDataService",
     "DocumentWorkService",
-    "LegacyDataVerifier",
 ]

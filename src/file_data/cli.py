@@ -27,7 +27,6 @@ from .document_data import (
     ArtifactService,
     DocumentDataService,
     DocumentWorkService,
-    LegacyDataVerifier,
 )
 
 
@@ -199,7 +198,7 @@ def _parser() -> RecordArgumentParser:
     lifecycle_register.add_argument("--source-id", action="append", default=[])
     lifecycle_register.add_argument("--decision-id")
     lifecycle_register_existing = commands.add_parser(
-        "lifecycle-register-existing", help="register every unregistered Stage 05 knowledge record"
+        "lifecycle-register-existing", help="register every unregistered knowledge record"
     )
     lifecycle_register_existing.add_argument("--actor", required=True)
     lifecycle_register_existing.add_argument(
@@ -264,12 +263,8 @@ def _parser() -> RecordArgumentParser:
     context_baseline = commands.add_parser("context-baseline", help="measure exact active document refs")
     context_baseline.add_argument("--document", action="append", required=True, dest="documents")
 
-    commands.add_parser("maintenance-scan", help="read-only drift, duplicate, inventory and cost scan")
+    commands.add_parser("maintenance-scan", help="read-only drift, duplicate and cost scan")
     commands.add_parser("maintenance-verify", help="fail-closed project structure verification")
-    maintenance_inventory = commands.add_parser(
-        "maintenance-inventory", help="check or regenerate the derived Obsidian document inventory"
-    )
-    maintenance_inventory.add_argument("--write", action="store_true")
     maintenance_evaluate = commands.add_parser(
         "maintenance-evaluate", help="rerun fixed context evaluations from explicit JSON input"
     )
@@ -288,7 +283,7 @@ def _parser() -> RecordArgumentParser:
     )
     document_list.add_argument(
         "--kind",
-        choices=["work", "knowledge", "decision", "legacy-baseline"],
+        choices=["work", "knowledge", "decision"],
     )
     document_show = commands.add_parser(
         "document-data-show",
@@ -319,10 +314,6 @@ def _parser() -> RecordArgumentParser:
         dest="completed_items",
     )
     document_work_checkpoint.add_argument("--next-action", required=True)
-    commands.add_parser(
-        "legacy-data-verify",
-        help="verify frozen legacy records and event streams against the document baseline",
-    )
     commands.add_parser(
         "artifact-check",
         help="compare exact JSON artifacts with their Markdown owner blocks",
@@ -362,8 +353,6 @@ def _run(
         raise InputContractError(
             "legacy_mode_required: use --legacy-read for record/event compatibility"
         )
-    if namespace.command == "legacy-data-verify":
-        return LegacyDataVerifier(namespace.root).verify()
     if namespace.command.startswith("document-work-"):
         service = DocumentWorkService(namespace.root)
         if namespace.command == "document-work-show":
@@ -408,8 +397,6 @@ def _run(
             return maintenance.scan()
         if namespace.command == "maintenance-verify":
             return maintenance.verify()
-        if namespace.command == "maintenance-inventory":
-            return maintenance.write_inventory() if namespace.write else maintenance.inventory_status()
         if namespace.command == "maintenance-evaluate":
             return maintenance.evaluate_context(
                 _json_input(namespace.request_json, namespace.request_stdin),

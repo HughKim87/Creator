@@ -3,7 +3,7 @@
 - 목적: 사용자 요청, 승인·제외 범위, 작업 사건과 개별 작업의 현재 상태를 채팅 기억과 독립적으로 재구성한다.
 - 읽는 시점: 작업 단위를 시작·전이·재개하거나 `SESSION_HANDOFF.md`에 활성 work 포인터를 갱신할 때.
 - 책임: `work_events`가 작업 사건의 추가 전용 정본, `work_state`가 복구 가능한 현재 작업 snapshot, `SESSION_HANDOFF.md`가 프로젝트 전체 현재 단계·첫 다음 행동 정본이다.
-- 상태: Stage 04 활성 계약.
+- 상태: 활성 계약.
 - 선행 계약: [공통 기록 I/O 계약](RECORD_IO_CONTRACT.md).
 
 ## 정본 분리
@@ -13,7 +13,7 @@
 | 프로젝트 전체 현재 단계·첫 다음 행동 | `SESSION_HANDOFF.md` | 활성 work ID·snapshot hash만 연결 |
 | 작업 요청·상태 전이 사건 | `data/events/work_events.jsonl` | 한 사건 한 common-record v1 줄 |
 | 개별 작업 현재 상태 | `data/records/<work_id>.json`의 `work_state` | event replay로 삭제 후 재생성 가능 |
-| 장기 지식 | 아직 없음 | 작업 경험은 Stage 05 승인 전 자동 승격 금지 |
+| 장기 지식 | 지식 유형 계약 | 작업 경험의 자동 승격 금지 |
 
 핸드오프와 work snapshot이 같은 프로젝트 상태 본문을 각각 소유하지 않는다. 핸드오프는 활성 작업을 식별하고, 작업 요청·진행·실패·근거는 구조화 기록을 가리킨다.
 
@@ -82,7 +82,7 @@ PowerShell에서는 요청 JSON을 UTF-8 stdin으로 보내고 `work-create --re
 
 ## 문서 소유 파생 artifact
 
-아래 세 block이 legacy read 호환용 work request·event·snapshot schema의 exact 정본이다.
+아래 세 block이 work request·event·snapshot schema의 exact 정본이다.
 
 <!-- project-artifact:v1 path=schemas/work-request-payload-v1.schema.json verify=json-semantic -->
 ```json

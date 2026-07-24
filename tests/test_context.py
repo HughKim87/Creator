@@ -333,7 +333,7 @@ class ContextServiceTests(unittest.TestCase):
             "package_version", "purpose", "settings", "selected", "excluded", "metrics", "fingerprint"
         })
 
-    def test_actual_project_defaults_to_document_records_and_requires_explicit_legacy(
+    def test_actual_project_defaults_to_document_records_without_runtime_data(
         self,
     ) -> None:
         root = Path(__file__).parents[1]
@@ -387,12 +387,5 @@ class ContextServiceTests(unittest.TestCase):
                     ],
                 }
             )
-        legacy = service.filter_records(
-            {"record_type": "knowledge"},
-            legacy=True,
-        )
-        self.assertTrue(any("id" in item for item in legacy))
-
-
 if __name__ == "__main__":
     unittest.main()

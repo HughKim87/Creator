@@ -2,8 +2,8 @@
 
 - 목적: 저장된 source·knowledge·decision record의 원본을 덮어쓰지 않고 검토·현재 채택·충돌·대체·거부·폐기 상태와 이유를 추적한다.
 - 읽는 시점: 지식의 현재 사용 가능 여부를 판단하거나 source drift, 정본 개정, 충돌, 대체를 처리할 때.
-- 책임: `data/events/lifecycle_events.jsonl`이 전이 정본, `lifecycle_state` record가 재구축 가능한 현재 projection, Stage 05 record가 당시 내용의 원본을 소유한다.
-- 상태: Stage 06 활성 계약.
+- 책임: `data/events/lifecycle_events.jsonl`이 전이 정본, `lifecycle_state` record가 재구축 가능한 현재 projection, 원본 record가 당시 내용을 소유한다.
+- 상태: 활성 계약.
 - 선행 계약: [지식 유형 계약](KNOWLEDGE_TYPES_CONTRACT.md), [공통 기록 I/O](RECORD_IO_CONTRACT.md).
 
 ## 상태와 의미
@@ -21,14 +21,14 @@
 
 ## 대상과 초기 등록
 
-새 lifecycle 대상 유형은 `source`, `knowledge`, `decision`이다. Stage 05에서 이미 검증된 source·knowledge는 `current`, 관찰·후보 상태는 `candidate`, 승인 근거가 있는 decision은 `current`로 등록한다.
+새 lifecycle 대상 유형은 `source`, `knowledge`, `decision`이다. 이미 검증된 source·knowledge는 `current`, 관찰·후보 상태는 `candidate`, 승인 근거가 있는 decision은 `current`로 등록한다.
 
-Stage 05~09의 `failure_knowledge`와 실패 문서 전용 source·lifecycle은 legacy history로 읽기 호환만 유지한다. 해결 실패의 현재성은 [실패 Markdown 정본](KNOWLEDGE_TYPES_CONTRACT.md#해결-실패-정본-직접-재사용)의 직접 검증이 소유하며 새 lifecycle에 등록하지 않는다.
+외부에서 가져온 이전 `failure_knowledge`와 실패 문서 전용 source·lifecycle은 읽기 호환만 제공한다. 해결 실패의 현재성은 [실패 Markdown 정본](KNOWLEDGE_TYPES_CONTRACT.md#해결-실패-정본-직접-재사용)의 직접 검증이 소유하며 새 lifecycle에 등록하지 않는다.
 
 - 기존 payload는 수정하지 않는다.
 - 한 대상에는 하나의 lifecycle snapshot만 존재한다.
 - 초기 `current` 등록도 `user` 또는 `standing_policy` 승인 증거가 필요하다.
-- 일괄 등록은 아직 lifecycle이 없는 현재 Stage 05 record만 처리하며 반복 실행해도 새 event를 만들지 않는다.
+- 일괄 등록은 아직 lifecycle이 없는 현재 record만 처리하며 반복 실행해도 새 event를 만들지 않는다.
 
 ## 전이와 승인 경계
 
@@ -46,7 +46,7 @@ Stage 05~09의 `failure_knowledge`와 실패 문서 전용 source·lifecycle은 
 ## 검토·개정·충돌 보존
 
 - event는 대상, 이전·다음 상태, actor, action, 이유, 승인 종류, 확인 source, 관련 current decision, 충돌 대상, replacement를 함께 보존한다.
-- 개정은 기존 payload update가 아니라 새 Stage 05 record 생성과 `supersede` 관계로 표현한다.
+- 개정은 기존 payload update가 아니라 새 record 생성과 `supersede` 관계로 표현한다.
 - 충돌은 같은 유형의 record를 모두 보존하고 양쪽을 `review_required`로 만든다. 자동 병합하거나 임의로 하나를 current로 고르지 않는다.
 - current 선택은 `lifecycle-current`가 담당하며 candidate·review_required·terminal record를 기본 결과에서 제외한다.
 - 삭제 명령은 제공하지 않는다. 원본, event, snapshot은 프로젝트 보존 정책과 Git 이력 안에서 계속 유지한다.
@@ -77,10 +77,10 @@ Stage 05~09의 `failure_knowledge`와 실패 문서 전용 source·lifecycle은 
 
 ## 제외와 후속
 
-- current record의 직접 선택·구조화 필터·제한된 컨텍스트 package는 [Stage 07 계약](CONTEXT_PACKAGE_CONTRACT.md)이 소유한다.
-- 주기 실행·중복 탐지·비용 관측·일괄 재생성은 Stage 08 범위다.
-- 도메인 전용 상태와 영상 제작 연결은 Stage 09 범위다.
-- 보호 데이터, `backup/` 전체 이관, 사용자 승인 없는 삭제는 계속 제외한다.
+- current record의 직접 선택·구조화 필터·제한된 컨텍스트 package는 [컨텍스트 계약](CONTEXT_PACKAGE_CONTRACT.md)이 소유한다.
+- 주기 실행·중복 탐지·비용 관측은 [유지보수 계약](MAINTENANCE_AUTOMATION_CONTRACT.md)이 소유한다.
+- 도메인 전용 상태와 영상 제작 연결은 도메인 계약이 소유한다.
+- 보호 데이터 접근과 사용자 승인 없는 삭제는 계속 제외한다.
 
 ## 문서 소유 파생 artifact
 

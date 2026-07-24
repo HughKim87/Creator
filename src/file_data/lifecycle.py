@@ -539,7 +539,7 @@ class LifecycleService:
                         initial_state=initial,
                         actor=actor,
                         approval_kind=approval_kind if initial == "current" else "agent_in_scope",
-                        reason="Stage 05 검증 상태를 보존한 최소 수명주기 등록",
+                        reason="기존 검증 상태를 보존한 최소 수명주기 등록",
                     )
                 )
         return created

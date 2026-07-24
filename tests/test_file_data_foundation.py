@@ -22,7 +22,6 @@ from file_data import (  # noqa: E402
     DocumentWorkService,
     DuplicateRecordError,
     ExpectationMismatchError,
-    LegacyDataVerifier,
     LegacyReadOnlyError,
     RecordStore,
     RecordValidationError,
@@ -258,10 +257,10 @@ class FileDataFoundationTests(unittest.TestCase):
     def test_document_data_parser_validates_actual_project_blocks(self) -> None:
         service = DocumentDataService(ROOT)
         result = service.validate()
-        self.assertEqual(result["blocks"], 6)
+        self.assertEqual(result["blocks"], 3)
         self.assertEqual(
             result["counts_by_kind"],
-            {"decision": 1, "knowledge": 3, "legacy-baseline": 1, "work": 1},
+            {"knowledge": 3},
         )
         block = service.get_block("context-package-deterministic-derived-view")
         self.assertEqual(block["owner"], "docs/CONTEXT_PACKAGE_CONTRACT.md")
@@ -489,14 +488,7 @@ class FileDataFoundationTests(unittest.TestCase):
                 self.assertTrue(target.is_file())
                 self.assertEqual(service.check(), {"artifacts": 20, "drift": []})
 
-    def test_actual_legacy_data_matches_document_baseline(self) -> None:
-        result = LegacyDataVerifier(ROOT).verify()
-        self.assertEqual(result["status"], "pass")
-        self.assertEqual(result["records"]["count"], 211)
-        self.assertEqual(result["events"]["lifecycle_events.jsonl"]["rows"], 157)
-        self.assertEqual(result["events"]["work_events.jsonl"]["rows"], 36)
-
-    def test_production_record_writes_fail_before_touching_legacy_data(self) -> None:
+    def test_production_record_writes_fail_before_touching_runtime_data(self) -> None:
         before = {
             path.name: path.read_bytes()
             for path in (ROOT / "data" / "events").glob("*.jsonl")
@@ -530,16 +522,5 @@ class FileDataFoundationTests(unittest.TestCase):
             before,
         )
 
-    def test_production_cli_legacy_reads_require_explicit_mode(self) -> None:
-        from file_data.cli import main
-
-        self.assertEqual(
-            main(["--root", str(ROOT), "knowledge-list"]),
-            2,
-        )
-        self.assertEqual(
-            main(["--root", str(ROOT), "--legacy-read", "knowledge-list"]),
-            0,
-        )
 if __name__ == "__main__":
     unittest.main()

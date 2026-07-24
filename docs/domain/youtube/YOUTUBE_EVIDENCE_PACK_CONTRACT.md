@@ -3,8 +3,8 @@
 - 목적: 첫 유튜브 도메인 작업으로 명시된 영상 목표와 current 근거를 연결해 촬영 전 검토용 비영구 evidence pack을 만든다.
 - 읽는 시점: 유튜브 영상의 근거 패키지를 만들거나 도메인 adapter의 입력·결과·승인 경계를 검토할 때.
 - 책임: `youtube_domain.YouTubeEvidenceService`가 도메인 입력을 검증하고 공통 `ContextService`가 근거 선택·출처·비용을 소유한다.
-- 상태: Stage 09 첫 도메인 계약.
-- 관련 권위: [선택적 컨텍스트 계약](../../CONTEXT_PACKAGE_CONTRACT.md), [작업 상태 계약](../../WORK_STATE_CONTRACT.md), [Stage 09 계획](../../build/stage-09-domain-integration.md).
+- 상태: 활성 도메인 계약.
+- 관련 권위: [선택적 컨텍스트 계약](../../CONTEXT_PACKAGE_CONTRACT.md), [작업 상태 계약](../../WORK_STATE_CONTRACT.md).
 
 ## 1. 선택한 도메인과 첫 작업
 
@@ -22,7 +22,7 @@
 | 창작 방향·작업 제목 승인 | 사용자 | 결과는 항상 `review_required`; adapter가 승인하지 않음 |
 | 사용자 원본 | `inputs/` 보호 경계 | 이번 작업에서 열거·열람·이동·저장하지 않음 |
 | 파생 evidence pack | 호출 stdout | 기본 비영구. `outputs/` 저장은 정확한 대상·목적의 별도 사용자 승인 필요 |
-| 검증 결과 | 날짜가 있는 `reports/` | pack 본문을 복제하지 않고 fingerprint·선택·비용·판정만 시점 증거로 보존 |
+| 검증 결과 | 실행 응답과 Git | pack 본문을 장기 보고서로 복제하지 않음 |
 
 ## 3. 요청 계약
 
@@ -57,12 +57,12 @@
 4. 모든 direct record가 실제 selected current인지 다시 확인한다.
 5. 사용자 소유 `review_required` gate와 도메인 fingerprint를 추가한다.
 6. stdout으로만 반환하고 package·영상 원본·도메인 상태를 저장하지 않는다.
-7. 실제 실행의 fingerprint와 측정값만 work event와 시점 보고서에 연결한다.
+7. 실제 실행의 fingerprint와 측정값은 현재 작업에 필요할 때만 checkpoint에 연결한다.
 
 ## 6. 실행점과 검증 수준
 
 ```powershell
-$request = Get-Content -LiteralPath 'examples/youtube/stage09-foundation-evidence.request.json' -Raw -Encoding UTF8
+$request = Get-Content -LiteralPath 'examples/youtube/foundation-evidence.request.json' -Raw -Encoding UTF8
 $request | python -m youtube_domain --root . evidence-pack --request-stdin
 ```
 
@@ -100,14 +100,11 @@ PowerShell에서 native stdin으로 한글 JSON을 보낼 때는 `$OutputEncodin
     "classification": "procedure",
     "scope": "youtube:evidence-pack",
     "verification_status": "verified",
-    "verified_by": "agent:stage09-domain-validation",
-    "replaces_legacy_ids": [
-      "a77456b1-28e8-4d31-8f51-c04cff89c2db"
-    ]
+    "verified_by": "agent:document-cleanup",
+    "replaces_legacy_ids": []
   },
   "source_refs": [
-    "docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md#8-지식-환류",
-    "reports/2026-07-23_stage09_유튜브_근거_패키지_검증_보고서.md"
+    "docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md#8-지식-환류"
   ],
   "status": "candidate"
 }
@@ -116,7 +113,7 @@ PowerShell에서 native stdin으로 한글 JSON을 보낼 때는 `$OutputEncodin
 
 ## 9. 제외와 후속
 
-- 전체 8단계 영상 제작 워크플로와 과거 구현 복원
+- 전체 영상 제작 워크플로와 과거 구현 복원
 - 제목·창작 방향 자동 승인
 - 대본·자막·편집 자료·썸네일 생성
 - YouTube Studio·Premiere·외부 API 호출
@@ -140,10 +137,10 @@ PowerShell에서 native stdin으로 한글 JSON을 보낼 때는 `$OutputEncodin
 ```
 <!-- /project-artifact -->
 
-<!-- project-artifact:v1 path=examples/youtube/stage09-foundation-evidence.request.json verify=json-semantic -->
+<!-- project-artifact:v1 path=examples/youtube/foundation-evidence.request.json verify=json-semantic -->
 ```json
-{"baseline_characters":315497,"char_limit":12000,"documents":[{"data_key":"context-package-deterministic-derived-view","reason":"선택적 근거 구성의 현재 계약","ref":"docs/CONTEXT_PACKAGE_CONTRACT.md"}],"records":[],"search":null,"video":{"audience":"반복 제작에서 AI 작업 기억의 비용을 줄이고 싶은 1인 크리에이터","goal":"전체 문서를 매번 읽지 않고 current 근거만 선택해 재현 가능한 작업 문맥을 만드는 방식을 설명한다.","id":"stage09-foundation-context","working_title":"AI 작업 기억을 가볍게 만드는 선택적 컨텍스트"}}
+{"baseline_characters":315497,"char_limit":12000,"documents":[{"data_key":"context-package-deterministic-derived-view","reason":"선택적 근거 구성의 현재 계약","ref":"docs/CONTEXT_PACKAGE_CONTRACT.md"}],"records":[],"search":null,"video":{"audience":"반복 제작에서 AI 작업 기억의 비용을 줄이고 싶은 1인 크리에이터","goal":"전체 문서를 매번 읽지 않고 current 근거만 선택해 재현 가능한 작업 문맥을 만드는 방식을 설명한다.","id":"foundation-context","working_title":"AI 작업 기억을 가볍게 만드는 선택적 컨텍스트"}}
 ```
 <!-- /project-artifact -->
 
-후속 작업은 Stage 09 결과와 사용자의 별도 선택으로 새 범위를 정의한다.
+후속 작업은 사용자의 별도 선택으로 새 범위를 정의한다.
