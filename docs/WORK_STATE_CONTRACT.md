@@ -10,12 +10,12 @@
 
 | 정보 | 정본 | 파생·연결 |
 |---|---|---|
-| 프로젝트 전체 현재 단계·첫 다음 행동 | `SESSION_HANDOFF.md` | 활성 work ID·snapshot hash만 연결 |
+| 프로젝트 전체 현재 작업·첫 다음 행동 | `SESSION_HANDOFF.md` | 구조화 재개가 필요할 때만 활성 work ID·snapshot hash 연결 |
 | 작업 요청·상태 전이 사건 | `data/events/work_events.jsonl` | 한 사건 한 common-record v1 줄 |
 | 개별 작업 현재 상태 | `data/records/<work_id>.json`의 `work_state` | event replay로 삭제 후 재생성 가능 |
 | 장기 지식 | 지식 유형 계약 | 작업 경험의 자동 승격 금지 |
 
-핸드오프와 work snapshot이 같은 프로젝트 상태 본문을 각각 소유하지 않는다. 핸드오프는 활성 작업을 식별하고, 작업 요청·진행·실패·근거는 구조화 기록을 가리킨다.
+핸드오프와 work snapshot이 같은 프로젝트 상태 본문을 각각 소유하지 않는다. 핸드오프는 현재 작업과 첫 다음 행동을 짧게 표시한다. 여러 세션의 구조화 재개가 필요한 작업만 active work block으로 요청·진행·실패·근거 기록을 가리키며, 완료된 block은 시작 문맥에서 제거한다.
 
 ## 작업 요청
 
@@ -71,12 +71,14 @@ PowerShell에서는 요청 JSON을 UTF-8 stdin으로 보내고 `work-create --re
 
 ## 세션 독립 재개
 
-새 세션은 startup 3문서를 읽은 뒤 핸드오프의 활성 work ID로 `work-show`를 실행한다. 다음을 확인할 수 있어야 한다.
+새 세션은 startup 3문서를 읽는다. 핸드오프에 활성 work ID가 있을 때만 `work-show`를 실행하며 다음을 확인한다.
 
 - 사용자가 원하는 결과와 승인·제외 범위
 - 현재 작업 상태와 검증된 완료 항목
 - 차단 요소와 첫 다음 행동
 - 관련 기록 ID와 근거 위치
+
+활성 work ID가 없으면 핸드오프의 현재 작업·blocker·첫 다음 행동만 사용한다. 완료 work의 요청과 실행 이력은 기존 snapshot·event와 exact owner에 남고 시작 문맥에는 복제하지 않는다.
 
 동적 Git 상태와 파일 개수는 snapshot에 고정 저장하지 않고 필요할 때 다시 조회한다.
 

@@ -18,7 +18,6 @@ A corrected one-off typo, quoting error, wrong option, path assumption, expected
 ## Rules
 
 - Keep a currently blocking failure, consecutive count, immediate risk, and restart condition in `SESSION_HANDOFF.md`; remove it when the blocker is verified resolved.
-- At three consecutive failures of the same objective, preserve the peak evidence, change the method, and continue within the authorized scope.
 - Search `failures/README.md` before creating a case. Merge a recurrence into the same root-cause owner only when it adds useful prevention or material recurrence evidence.
 - A durable case states the symptom, confirmed cause, material failed attempts, resolution, verification, prevention, and safe references. Do not copy raw logs, secrets, or protected/user-original content.
 - Historical failure projections belong to Git history. Current canonical cases are Markdown and must not create per-case projections.
