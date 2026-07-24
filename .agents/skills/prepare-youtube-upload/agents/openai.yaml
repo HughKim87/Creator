@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prepare YouTube Upload"
+  short_description: "수동 YouTube 업로드용 파일과 메타데이터 패키지 준비"
+  default_prompt: "Use $prepare-youtube-upload to validate my finished video assets and create a copy-ready manual YouTube upload guide."

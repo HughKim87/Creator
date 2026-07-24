@@ -1,0 +1,4 @@
+interface:
+  display_name: "YouTube 제목·썸네일 생성"
+  short_description: "영상 근거로 유튜브 제목과 썸네일을 생성·검증"
+  default_prompt: "Use $youtube-title-thumbnail to create and validate a YouTube title and thumbnail from this video and transcript."
