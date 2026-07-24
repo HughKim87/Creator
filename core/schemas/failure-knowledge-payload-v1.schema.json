@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kim-silver-youtube:schema:failure-knowledge-payload:v1",
+  "title": "Failure Knowledge Projection Payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "canonical_doc_ref", "document_hash", "source_id", "symptom", "conditions", "confirmed_cause", "resolution", "verification", "prevention", "projection_status", "projected_by", "projected_at"],
+  "properties": {
+    "title": {"type": "string", "minLength": 1},
+    "canonical_doc_ref": {"type": "string", "pattern": "^core/failures/[^/]+\\.md$"},
+    "document_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "source_id": {"type": "string", "format": "uuid"},
+    "symptom": {"type": "string", "minLength": 1},
+    "conditions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "confirmed_cause": {"type": "string", "minLength": 1},
+    "resolution": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "verification": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "prevention": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "projection_status": {"const": "resolved"},
+    "projected_by": {"type": "string", "minLength": 1},
+    "projected_at": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"}
+  }
+}

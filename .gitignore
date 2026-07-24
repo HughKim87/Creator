@@ -2,8 +2,8 @@
 inputs/
 outputs/
 
-# Generated project data
-data/
+# Generated extension work data
+extension/data/
 
 # Context-system cross-process coordination
 catalog/.context-system.lock
