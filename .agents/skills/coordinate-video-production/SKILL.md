@@ -15,23 +15,32 @@ description: 영상 하나의 NotebookLM 리서치·동영상 생성·SRT·제�
 - NotebookLM 단계의 기본 브라우저는 Chrome, 기본 프로필 표시명과 디렉터리는 `Profile 4`로 기록한다. 사용자가 다른 프로필을 명시한 경우에만 바꾼다.
 - 보호 원본은 `extension/inputs/<job-id>/`, 파생 산출물은 `extension/outputs/<job-id>/`에 둔다.
 - 모델과 도구 의존성은 `extension/.runtime/`에 둔다.
-- 영상·음성·자막·썸네일·로그를 Git에 추가하지 않는다.
+- 이 스킬이 Git 추적·제외 정책을 임의로 바꾸지 않는다. 특히 `extension/work/`의 생성 이미지를 자동 제외하거나 `.gitignore`를 수정하지 않고, 기존 프로젝트 정책과 사용자의 관리 방식을 따른다.
 - 완료된 단계의 실제 산출물 경로와 검증 결과만 작업 기록에 남긴다.
+
+작업 기록을 만들거나 바꾼 직후, 그리고 다음 단계를 시작하기 전에 검증한다.
+
+```powershell
+python .agents/skills/coordinate-video-production/scripts/validate_video_job.py `
+  extension/work/<job-id>/VIDEO_JOB.json
+```
+
+`status: valid`가 아니면 다음 단계를 시작하거나 작업 전체를 완료 처리하지 않는다.
 
 ## 워크트리 보호 게이트
 
-파일을 만들거나 변경하기 전에 현재 저장소 경계를 검증한다.
+파일을 만들거나 변경하기 전에 [references/worktree-routing.json](references/worktree-routing.json)의 기본 브랜치와 실제 Git worktree를 검증한다. 스킬을 호출한 절대 경로와 현재 브랜치를 작업 대상의 근거로 사용하지 않는다.
 
 ```powershell
 python .agents/skills/coordinate-video-production/scripts/check_worktree.py `
-  --root . `
-  --expected-branch <사용자가 지정했거나 작업 시작 시 확정한 브랜치>
+  --root .
 ```
 
-- 사용자가 특정 워크트리를 지정하면 그 절대 경로와 브랜치를 작업 범위로 고정한다.
-- `status: invalid`이면 산출물 생성·복사·정리를 시작하지 않는다.
-- 최종 보고에도 검증된 워크트리 절대 경로와 브랜치를 포함한다.
-- main과 별도 worktree가 함께 있으면 현재 경로와 Git root가 일치하는지 확인한다.
+- 사용자가 이번 요청에서 다른 브랜치를 명시한 경우에만 `--expected-branch <branch>`로 기본값을 덮어쓴다. 현재 브랜치를 기대값으로 채우지 않는다.
+- 현재 root가 다르면 결과의 `expected_root`로 작업 위치를 전환해 같은 명령을 다시 실행한다.
+- 기대 브랜치의 worktree가 없거나 재검증 결과가 `invalid`이면 산출물 생성·복사·정리를 시작하지 않는다. `main`으로 대체하지 않는다.
+- 대상 root를 확정한 뒤 그 worktree의 `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 읽고 작업 상태를 판정한다.
+- 명시적으로 이 스킬을 호출했는데 대상 handoff가 비-NotebookLM 작업이거나 이 스킬을 owner에서 제외하면 그 작업을 현재 단계로 승계하지 않는다. 새 영상 준비 요청이면 대상 worktree 준비 상태만 반환하고, 주제를 받은 뒤 새 `VIDEO_JOB.json`을 만든다.
 - 최종 보고에도 검증한 워크트리 절대 경로와 브랜치를 포함한다.
 
 ## Chrome 연결 게이트
@@ -53,7 +62,7 @@ python .agents/skills/coordinate-video-production/scripts/check_worktree.py `
 |---|---|---|
 | `research` | `$notebooklm-research-topic` | 노트북 URL, 출처 수, 출처 품질 게이트 |
 | `video` | `$notebooklm-generate-video` | 완성 아티팩트, 길이, 재생·다운로드 가능 상태 |
-| `captions` | `$video-to-srt` | MP4, 검증된 SRT, 원본 전사 JSON |
+| `captions` | `$video-to-srt` | MP4, 구조 검증된 SRT, 원본 전사 JSON, 전체 의미·맞춤법 검수 기록 |
 | `title_thumbnail` | `$youtube-title-thumbnail` | 승인된 제목, 썸네일, 검증 패키지 |
 | `upload_package` | `$prepare-youtube-upload` | 수동 업로드 안내서와 `external_actions: none` 검증 |
 
@@ -66,19 +75,22 @@ python .agents/skills/coordinate-video-production/scripts/check_worktree.py `
 3. 다음 단계 하나만 해당 스킬로 실행한다.
 4. NotebookLM 리서치·영상 생성처럼 시간이 필요한 작업은 해당 스킬의 대기 규칙을 따른다. 영상 생성 완료 확인은 5분 간격으로만 수행한다.
 5. 단계 산출물을 검증한 뒤 상태를 `complete`로 바꾸고 경로·URL·검증 요약을 기록한다.
-6. 기본값은 한 단계씩 멈추되, 사용자가 “일괄 진행”을 명시하면 승인 게이트와 외부 효과 경계를 유지하면서 검증된 다음 단계로 계속 진행한다.
-7. output 정리가 필요하면 `.agents/skills/prepare-youtube-upload/scripts/retain_upload_package.py`를 먼저 dry-run으로 실행한다. 삭제는 사용자가 명시적으로 승인한 경우에만 `--apply`를 사용하고, 패키지·가이드·실제 업로드 파일·`preparation.keep_files`는 보존한다.
+6. 작업 기록을 검증해 `status: valid`인 것을 확인한다.
+7. 기본값은 한 단계씩 멈추되, 사용자가 “일괄 진행”을 명시하면 승인 게이트와 외부 효과 경계를 유지하면서 검증된 다음 단계로 계속 진행한다.
+8. output 정리가 필요하면 `.agents/skills/prepare-youtube-upload/scripts/retain_upload_package.py`를 먼저 dry-run으로 실행한다. 삭제는 사용자가 명시적으로 승인한 경우에만 `--apply`를 사용하고, 패키지·가이드·실제 업로드 파일·`preparation.keep_files`는 보존한다.
 
 ## 사용자 확인 게이트
 
 - `$connect-chrome-profile`이 공식 복구 절차를 완료한 뒤 `needs_user` 또는 `unavailable`을 반환하면 그 결과와 필요한 사용자 행동을 기록한다.
 - 생성·권한·유료 사용 문제가 있으면 `blocked`로 기록한다.
 - 제목과 썸네일은 사용자 승인 전까지 `title_thumbnail`을 완료로 처리하지 않는다.
-- 실제 YouTube 업로드·게시·공개 범위 변경은 단계에 포함하지 않는다. 마지막 단계는 수동 업로드 자료 준비로 끝낸다.
+- 실제 YouTube 업로드·게시·공개 범위 변경과 그 결과 확인은 단계에 포함하지 않는다. 마지막 단계는 수동 업로드 가이드 생성·검증으로 끝낸다.
 
 ## 완료
 
-다섯 단계가 모두 `complete`이고 마지막 패키지가 `external_actions: none`이면 작업 상태를 `complete`로 바꾼다. 기존 업로드가 기록되어 있으면 중복 업로드 경고를 유지한다.
+다섯 단계가 모두 `complete`이고 마지막 패키지가 `external_actions: none`이며 작업 기록 검증이 `status: valid`이면 작업 상태를 `complete`로 바꾸고 `next_action`을 `none`으로 기록한다. 기존 업로드가 기록되어 있으면 중복 업로드 경고를 유지한다.
+
+가이드 생성·검증이 완료 조건의 끝이다. 이후 사용자의 업로드 여부, 대상 채널, 공개 상태, 게시 결과를 blocker·다음 행동·후속 확인으로 기록하거나 확인하지 않는다.
 
 반환한다.
 
@@ -92,3 +104,5 @@ python .agents/skills/coordinate-video-production/scripts/check_worktree.py `
   - 영상·썸네일·SRT 절대 경로
   - 설명문·설정·수동 업로드 안내서 경로
   - 보존 목록과 검증 결과
+
+최종 완료 보고에는 제작 작업이 끝났고 남은 에이전트 작업이 없다고 명시한다. 사용자에게 업로드 후 다시 알려 달라고 요청하지 않는다.

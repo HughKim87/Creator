@@ -69,6 +69,7 @@
 
 - Job status: `active`, `needs_user`, `blocked`, `complete`.
 - Stage status: `pending`, `in_progress`, `needs_user`, `blocked`, `complete`.
+- `stages`에는 `research`, `video`, `captions`, `title_thumbnail`, `upload_package` 다섯 키만 이 순서대로 둔다.
 - Browser surface는 `chrome`, 기본 `profile_label`과 `profile_directory`는 `Profile 4`, `connection_scope`는 `browser_runtime`이다.
 - Browser status: `needs_connection`, `connected`, `needs_user`, `unavailable`.
 - `verification_method`는 `same_runtime`, `explicit_tab_mention`, `profile_targeted_launch` 중 검증에 사용한 값을 기록한다.
@@ -78,5 +79,15 @@
 - At most one stage may be `in_progress`, `needs_user`, or `blocked`.
 - A stage may become `complete` only after its artifacts and validation summary are recorded.
 - Later stages remain `pending` until every earlier stage is `complete`.
+- Job status가 `complete`이면 `next_action`은 정확히 `none`이다. 수동 YouTube 업로드와 그 결과 확인은 job 밖의 사용자 작업이다.
 - `updated_at` uses an ISO 8601 timestamp with timezone.
 - Local paths are repository-relative. URLs are allowed only for NotebookLM artifacts and source records.
+
+생성·변경 후 아래 명령을 실행한다.
+
+```powershell
+python .agents/skills/coordinate-video-production/scripts/validate_video_job.py `
+  extension/work/<job-id>/VIDEO_JOB.json
+```
+
+다음 단계 시작과 전체 완료 처리에는 검증 결과 `status: valid`가 필요하다.

@@ -105,8 +105,9 @@ def render_guide(
         "",
         f"- 원본 데이터: `{package_path}`",
         f"- 재생성: `python \"{script_path}\" \"{package_path}\"`",
-        "- 상태: 수동 업로드 준비 완료",
-        "- 경계: 이 문서는 YouTube를 조작하지 않으며 업로드는 사용자가 직접 수행한다.",
+        "- 상태: 영상 제작 워크플로 완료",
+        "- 완료 기준: 수동 업로드 가이드 생성·검증 완료",
+        "- 경계: 이후 YouTube 업로드와 결과 확인은 사용자가 직접 수행하며 Codex 작업에 포함되지 않는다.",
         "",
     ]
     if warning:
@@ -140,7 +141,7 @@ def render_guide(
             "",
             "## 설정",
             "",
-            f"- 채널: {channel['name']} (`{channel['id']}`)",
+            f"- 채널: {channel['name']} (YouTube Studio에서 직접 확인)",
             f"- 재생목록: {metadata.get('playlist') or '지정 없음'}",
             f"- 카테고리: {metadata['category']}",
             f"- 동영상 언어: {metadata['language']}",
@@ -205,9 +206,8 @@ def main() -> int:
     preparation = require_mapping(data.get("preparation"), "preparation", errors)
 
     require_text(channel.get("name"), "channel.name", errors)
-    channel_id = require_text(channel.get("id"), "channel.id", errors)
-    if channel_id and not channel_id.startswith("UC"):
-        errors.append("channel.id must start with UC")
+    if "id" in channel:
+        errors.append("manual packages must not contain channel IDs")
 
     base = package_path.parent.resolve()
     resolved: dict[str, Path] = {}

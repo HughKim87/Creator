@@ -6,8 +6,7 @@ Resolve artifact paths relative to the JSON package directory. `existing_upload`
 {
   "schema_version": "youtube-manual-upload-v1",
   "channel": {
-    "name": "Channel name",
-    "id": "UC..."
+    "name": "Channel name"
   },
   "artifacts": {
     "video": "video.mp4",
@@ -40,4 +39,4 @@ Resolve artifact paths relative to the JSON package directory. `existing_upload`
 
 `preparation.keep_files` is optional. When present, each path is resolved relative to the package and is retained by the safe output cleanup script together with the package, generated guide, and four referenced artifacts.
 
-Do not add external-action approvals or browser profile fields. This package authorizes local preparation only.
+Do not add a channel ID, placeholder channel ID, external-action approvals, or browser profile fields. The user confirms the destination channel directly in YouTube Studio because this package authorizes local preparation only.

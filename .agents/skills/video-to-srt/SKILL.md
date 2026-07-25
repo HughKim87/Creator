@@ -28,14 +28,15 @@ description: NotebookLM 등에서 생성한 동영상의 음성을 로컬 Whispe
 
 4. 기본 모델은 다국어 정확도와 속도의 균형이 좋은 `large-v3-turbo`다. `transcribe_to_srt.py`는 별도 `--model-dir`가 없으면 공용 모델 캐시를 자동으로 사용한다.
 5. 모델 캐시와 Python 의존성을 `extension/work/<job-id>/`에 복사하거나 커밋하지 않는다. 작업 폴더에는 영상별 SRT·원본 전사·용어 사전만 둔다.
-6. Windows에서는 CUDA 장치가 보여도 실제 추론 시 `cublas64_12.dll` 또는 cuDNN이 없을 수 있다. CUDA를 쓰려면 라이브러리까지 확인한다. 확실하지 않으면 `cpu/int8`을 기본값으로 사용한다.
+6. `transcribe_to_srt.py`와 `validate_srt.py`는 프로젝트의 `extension/.runtime/python-deps`를 자동으로 우선 참조한다. 검증 명령을 위해 별도 `PYTHONPATH`를 만들지 않는다.
+7. Windows에서는 CUDA 장치가 보여도 실제 추론 시 `cublas64_12.dll` 또는 cuDNN이 없을 수 있다. CUDA를 쓰려면 라이브러리까지 확인한다. 확실하지 않으면 `cpu/int8`을 기본값으로 사용한다.
 
 ## 전사 실행
 
 `scripts/transcribe_to_srt.py`를 사용한다.
 
 ```powershell
-python scripts/transcribe_to_srt.py <video.mp4> `
+& python scripts/transcribe_to_srt.py '<video.mp4>' `
   --output <captions.srt> `
   --raw-json <transcript.json> `
   --model large-v3-turbo `
@@ -47,6 +48,8 @@ python scripts/transcribe_to_srt.py <video.mp4> `
 
 실행 규칙:
 
+- Windows 경로에 공백이나 한글이 있으면 실행 파일과 모든 경로 인수를 작은따옴표로 감싸고 PowerShell 호출 연산자 `&`를 사용한다.
+- 백그라운드 실행이 필요하면 인수 배열을 사용한다. 예: `Start-Process -FilePath $python -ArgumentList @($script, $video, '--output', $srt) -WindowStyle Hidden -PassThru`.
 - 제품명과 기술 용어를 `initial_prompt`와 glossary `terms`에 넣는다.
 - 단어 타임스탬프와 VAD를 사용한다.
 - 원본 세그먼트·단어 확률·모델·장치·언어 확률을 JSON으로 보존한다.
@@ -67,7 +70,7 @@ Whisper 결과를 그대로 최종본으로 취급하지 않는다.
 
 glossary 형식은 `references/glossary-format.md`를 따른다.
 
-## 품질 검증
+## 구조 검증
 
 `scripts/validate_srt.py <captions.srt> --video <video.mp4>`를 실행하고 다음을 모두 확인한다.
 
@@ -80,7 +83,32 @@ glossary 형식은 `references/glossary-format.md`를 따른다.
 - 마지막 큐가 영상 길이를 넘지 않음
 - 지나치게 긴 큐와 긴 텍스트는 경고로 검토
 
-내용은 최소한 시작부, 핵심 전문 용어가 많은 중간 구간, 숫자·가격 구간, 결론부를 직접 읽어 확인한다. 깨진 문자와 glossary 용어를 검색한다. 영상 자체가 필요한 내용을 빠뜨렸다면 자막에 내용을 만들어 넣지 말고 영상 내용 공백으로 보고한다.
+## 의미·맞춤법 검수
+
+구조 검증 통과만으로 자막을 완료 처리하지 않는다. `scripts/review_srt.py`와 원본 전사 JSON을 사용해 다음 순서로 전체 자막을 검수한다.
+
+```powershell
+& python scripts/review_srt.py '<captions.srt>' `
+  --raw-json '<transcript.json>' `
+  --glossary '<glossary.json>' `
+  --output '<captions-review.json>'
+```
+
+1. 첫 실행의 `low_confidence_words`와 `unresolved_replacement_hits`를 확인한다.
+2. 낮은 확률 단어만 보지 말고 SRT의 모든 큐를 처음부터 끝까지 읽어 문맥상 잘못된 단어, 동음이의어, 조사·어미, 전문 용어와 맞춤법을 확인한다.
+3. 음성으로 확인된 오인식만 glossary `replacements`에 추가한다. 의미를 새로 만들거나 문체를 윤문하지 않는다.
+4. `--postprocess-only`로 SRT를 다시 만든 뒤 구조 검증과 검색을 반복한다.
+5. 전체 큐 검수가 끝났을 때만 `--confirm-full-read`를 붙여 최종 검수 기록을 만든다.
+
+```powershell
+& python scripts/review_srt.py '<captions.srt>' `
+  --raw-json '<transcript.json>' `
+  --glossary '<glossary.json>' `
+  --output '<captions-review.json>' `
+  --confirm-full-read
+```
+
+최종 `captions-review.json`의 `status`가 `reviewed`이고 glossary의 교정 전 표현이 최종 SRT에 남지 않아야 한다. 영상 자체가 필요한 내용을 빠뜨렸다면 자막에 내용을 만들어 넣지 말고 영상 내용 공백으로 보고한다.
 
 ## 반환 결과
 
@@ -89,9 +117,9 @@ glossary 형식은 `references/glossary-format.md`를 따른다.
 - 원본 전사 JSON 경로
 - 모델·장치·처리 시간
 - 큐 수, 첫 시작, 마지막 종료
-- 자동 교정과 수동 확인 내용
+- 전체 의미·맞춤법 검수 기록 경로와 자동 교정·수동 확인 내용
 - 남아 있는 불확실한 구간
 
 ## 정지 조건
 
-검증된 SRT와 원본 전사 JSON을 만든 뒤 멈춘다. 제목·썸네일 제작과 수동 업로드 자료 준비는 후속 스킬의 책임이며, 실제 YouTube 업로드는 사용자가 직접 수행한다.
+구조 검증을 통과한 SRT, 원본 전사 JSON, `status: reviewed`인 전체 의미·맞춤법 검수 기록을 만든 뒤 멈춘다. 제목·썸네일 제작과 수동 업로드 자료 준비는 후속 스킬의 책임이며, 실제 YouTube 업로드는 사용자가 직접 수행한다.

@@ -4,7 +4,14 @@ import argparse
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+DEFAULT_RUNTIME_DEPENDENCIES = PROJECT_ROOT / "extension" / ".runtime" / "python-deps"
+if DEFAULT_RUNTIME_DEPENDENCIES.is_dir():
+    sys.path.insert(0, str(DEFAULT_RUNTIME_DEPENDENCIES))
 
 
 TIMESTAMP = re.compile(
