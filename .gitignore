@@ -5,6 +5,16 @@ catalog/.context-system.lock
 __pycache__/
 *.pyc
 
+# Project-local disposable runtime dependencies
+/extension/.runtime/
+
+# Protected user media and derived outputs
+**/inputs/
+**/outputs/
+
 # Obsidian local UI and workspace state; keep only the shared safety config
 .obsidian/*
 !.obsidian/app.json
+
+# Generated extension work data
+extension/data/
