@@ -1,4 +1,4 @@
 interface:
   display_name: "NotebookLM 동영상 생성"
   short_description: "출처 기반 맞춤 영상을 생성하고 5분 간격으로 완료를 검증합니다."
-  default_prompt: "Use $notebooklm-generate-video to create one custom NotebookLM video, check it only every 5 minutes, and verify playback before download."
+  default_prompt: "Use $notebooklm-generate-video with Chrome Profile 4 to create one custom NotebookLM video, check it only every 5 minutes, and verify playback before download."

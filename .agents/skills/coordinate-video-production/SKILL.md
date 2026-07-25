@@ -12,10 +12,23 @@ description: 영상 하나의 NotebookLM 리서치·동영상 생성·SRT·제�
 새 영상마다 `extension/work/<job-id>/VIDEO_JOB.json`을 하나 만든다. 생성하거나 변경할 때 [references/video-job-format.md](references/video-job-format.md)를 읽는다.
 
 - `job-id`는 `YYYY-MM-DD-topic-slug` 형식의 짧은 영문 소문자 ID로 정한다.
+- NotebookLM 단계의 기본 브라우저는 Chrome, 기본 프로필 표시명은 `Profile 4`로 기록한다. 사용자가 다른 프로필을 명시한 경우에만 바꾼다.
 - 보호 원본은 `extension/inputs/<job-id>/`, 파생 산출물은 `extension/outputs/<job-id>/`에 둔다.
 - 모델과 도구 의존성은 `extension/.runtime/`에 둔다.
 - 영상·음성·자막·썸네일·로그를 Git에 추가하지 않는다.
 - 완료된 단계의 실제 산출물 경로와 검증 결과만 작업 기록에 남긴다.
+
+## Chrome 연결 계약
+
+`research` 또는 `video` 단계 전에 다음을 적용한다.
+
+1. `chrome:control-chrome` 스킬을 읽고 Chrome 확장 surface를 명시적으로 선택한다. 내장 브라우저, 기본 브라우저 자동 선택, 별도 Playwright 또는 Computer Use로 대체하지 않는다.
+2. 새 Codex 작업·대화에서는 이전 대화의 Chrome 연결이나 탭을 재사용할 수 있다고 가정하지 않는다. Chrome 확장 연결을 새로 확보하고 해당 연결의 전체 사용 문서를 읽는다.
+3. 작업 기록의 `browser.profile_label`을 확인한다. 기본값은 `Profile 4`다.
+4. 쿠키, 로컬 저장소, 프로필 폴더, 비밀번호 또는 계정 주소를 검사하지 않는다.
+5. 지원되는 연결 상태에서 프로필 표시명을 확인할 수 없으면 사용자에게 `Chrome Profile 4를 열고 ChatGPT 확장 사이드 패널이 로드된 상태로 알려주세요`라고 요청한다.
+6. 다른 프로필이 연결되었거나 확장이 응답하지 않으면 작업 상태와 브라우저 상태를 `needs_user`로 기록하고 멈춘다. 다른 브라우저나 계정으로 우회하지 않는다.
+7. 올바른 Chrome 연결에서 NotebookLM 로그인 화면을 확인한 뒤에만 이번 세션의 브라우저 상태를 `connected`로 바꾼다. 이전 세션의 `connected` 값은 연결 증거로 사용하지 않는다.
 
 ## 단계 선택
 
@@ -42,7 +55,7 @@ description: 영상 하나의 NotebookLM 리서치·동영상 생성·SRT·제�
 
 ## 사용자 확인 게이트
 
-- 지정 Chrome 프로필이나 NotebookLM 로그인이 연결되지 않으면 `needs_user`로 기록한다.
+- `Profile 4`의 Chrome 확장 연결이나 NotebookLM 로그인이 확인되지 않으면 `needs_user`로 기록한다.
 - 생성·권한·유료 사용 문제가 있으면 `blocked`로 기록한다.
 - 제목과 썸네일은 사용자 승인 전까지 `title_thumbnail`을 완료로 처리하지 않는다.
 - 실제 YouTube 업로드·게시·공개 범위 변경은 단계에 포함하지 않는다. 마지막 단계는 수동 업로드 자료 준비로 끝낸다.

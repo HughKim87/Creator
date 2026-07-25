@@ -1,4 +1,4 @@
 interface:
   display_name: "NotebookLM 주제 리서치"
   short_description: "Deep Research 출처를 검수해 영상용 리서치 노트북을 준비합니다."
-  default_prompt: "Use $notebooklm-research-topic to research this topic in NotebookLM, verify official and community sources, and stop before video generation."
+  default_prompt: "Use $notebooklm-research-topic with Chrome Profile 4 to research this topic in NotebookLM, verify official and community sources, and stop before video generation."
