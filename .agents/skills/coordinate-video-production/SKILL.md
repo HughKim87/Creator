@@ -31,6 +31,8 @@ python .agents/skills/coordinate-video-production/scripts/check_worktree.py `
 - 사용자가 특정 워크트리를 지정하면 그 절대 경로와 브랜치를 작업 범위로 고정한다.
 - `status: invalid`이면 산출물 생성·복사·정리를 시작하지 않는다.
 - 최종 보고에도 검증된 워크트리 절대 경로와 브랜치를 포함한다.
+- main과 별도 worktree가 함께 있으면 현재 경로와 Git root가 일치하는지 확인한다.
+- 최종 보고에도 검증한 워크트리 절대 경로와 브랜치를 포함한다.
 
 ## Chrome 연결 게이트
 
