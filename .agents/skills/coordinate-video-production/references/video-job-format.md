@@ -11,9 +11,11 @@
   "browser": {
     "surface": "chrome",
     "profile_label": "Profile 4",
+    "profile_directory": "Profile 4",
     "required_origin": "https://notebooklm.google.com",
-    "connection_scope": "per_session",
+    "connection_scope": "browser_runtime",
     "status": "needs_connection",
+    "verification_method": "",
     "last_verified_at": ""
   },
   "paths": {
@@ -67,10 +69,12 @@
 
 - Job status: `active`, `needs_user`, `blocked`, `complete`.
 - Stage status: `pending`, `in_progress`, `needs_user`, `blocked`, `complete`.
-- Browser surface는 `chrome`, 기본 `profile_label`은 `Profile 4`, `connection_scope`는 `per_session`이다.
+- Browser surface는 `chrome`, 기본 `profile_label`과 `profile_directory`는 `Profile 4`, `connection_scope`는 `browser_runtime`이다.
 - Browser status: `needs_connection`, `connected`, `needs_user`, `unavailable`.
-- 새 Codex 작업·대화를 시작하면 저장된 상태와 관계없이 브라우저 연결을 다시 확인한다. 이전 세션의 `connected` 값은 연결 증거가 아니다.
-- `profile_label`은 사용자가 보는 안전한 표시명만 저장한다. 프로필 폴더 경로, 계정 주소, 쿠키, 토큰, 로컬 저장소 또는 비밀번호는 저장하지 않는다.
+- `verification_method`는 `same_runtime`, `explicit_tab_mention`, `profile_targeted_launch` 중 검증에 사용한 값을 기록한다.
+- 같은 Codex 작업의 살아 있는 브라우저 런타임에서는 검증된 바인딩을 재사용한다. 새 Codex 작업 또는 새 브라우저 런타임에서는 저장 상태와 관계없이 연결을 다시 확인한다.
+- `profile_label`과 `profile_directory`에는 `Profile 4` 같은 안전한 식별자만 저장한다. 전체 프로필 경로, 브라우저 ID, 확장 인스턴스 ID, 계정 주소, 쿠키, 토큰, 로컬 저장소 또는 비밀번호는 저장하지 않는다.
+- `$connect-chrome-profile`이 공식 복구 절차를 완료하기 전에는 Browser 또는 Job status를 `needs_user`로 바꾸지 않는다.
 - At most one stage may be `in_progress`, `needs_user`, or `blocked`.
 - A stage may become `complete` only after its artifacts and validation summary are recorded.
 - Later stages remain `pending` until every earlier stage is `complete`.

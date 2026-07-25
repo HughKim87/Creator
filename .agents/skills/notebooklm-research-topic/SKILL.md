@@ -20,16 +20,14 @@ NotebookLM 안에서 리서치를 수행하고, 다음 제작 단계가 사용�
 
 복잡한 주제는 `references/research-brief-template.md`를 읽고 한 번의 구조화된 조사 프롬프트로 만든다.
 
-## 브라우저 준비
+## Chrome 연결 게이트
 
-1. 브라우저 작업 전에 `chrome:control-chrome` 스킬을 읽고 Chrome 확장 surface를 명시적으로 선택한다. 내장 브라우저, 기본 브라우저 자동 선택, 별도 Playwright 또는 Computer Use로 대체하지 않는다.
-2. 작업 기록의 `browser.profile_label`을 사용한다. 값이 없으면 `Profile 4`로 설정하고, 사용자가 다른 프로필을 명시한 경우에만 바꾼다.
-3. 새 Codex 작업·대화에서는 Chrome 확장 연결을 새로 확보하고 전체 사용 문서를 읽는다. 이전 대화의 연결·탭·`connected` 기록을 재사용하지 않는다.
-4. 지원되는 연결 상태에서 프로필 표시명을 확인할 수 없으면 사용자에게 `Chrome Profile 4를 열고 ChatGPT 확장 사이드 패널이 로드된 상태로 알려주세요`라고 요청한다.
-5. 다른 프로필이 연결되었거나 확장이 응답하지 않으면 `browser.status`와 작업 상태를 `needs_user`로 기록하고 멈춘다. 다른 브라우저나 계정으로 우회하지 않는다.
-6. 쿠키, 로컬 저장소, 프로필 폴더, 비밀번호 또는 계정 주소를 검사하거나 기록하지 않는다.
-7. 올바른 Chrome 연결에서 NotebookLM 로그인 상태를 화면으로 확인한 뒤 이번 세션의 `browser.status`를 `connected`로 기록한다.
-8. 기존 노트북을 사용할지 새 노트북을 만들지는 사용자의 명시된 범위에 따른다. 명시가 없으면 새 노트북을 만든다.
+1. 브라우저 작업 전에 작업 기록의 `browser.profile_directory`와 `required_origin`으로 `$connect-chrome-profile`을 실행한다. 값이 없으면 각각 `Profile 4`와 `https://notebooklm.google.com`을 사용한다.
+2. 연결 스킬이 `status: connected`를 반환할 때만 리서치를 시작하고, 반환된 Chrome 바인딩과 검증된 탭을 재사용한다.
+3. 공식 프로필 진단과 프로필 대상 실행 경로가 끝나기 전에 사용자에게 프로필 메뉴 전환이나 확장 패널 준비를 요구하지 않는다.
+4. 연결 스킬이 `needs_user` 또는 `unavailable`을 반환하면 그 결과를 그대로 기록하고 멈춘다. 다른 브라우저나 계정으로 우회하지 않는다.
+5. 쿠키, 로컬 저장소, 전체 프로필 경로, 브라우저 ID, 확장 인스턴스 ID, 비밀번호 또는 계정 주소를 검사하거나 기록하지 않는다.
+6. 기존 노트북을 사용할지 새 노트북을 만들지는 사용자의 명시된 범위에 따른다. 명시가 없으면 새 노트북을 만든다.
 
 ## Deep Research 실행
 
@@ -73,7 +71,7 @@ NotebookLM 안에서 리서치를 수행하고, 다음 제작 단계가 사용�
 
 다음 중 하나면 사용자에게 상태와 필요한 조치만 알리고 멈춘다.
 
-- `Profile 4`의 Chrome 확장 연결 또는 NotebookLM 로그인이 확인되지 않음
+- `$connect-chrome-profile`이 공식 복구 절차 후 `needs_user` 또는 `unavailable`을 반환함
 - Deep Research가 명시적 오류로 종료됨
 - 공식 자료와 커뮤니티 자료의 최소 게이트를 대체 출처로도 충족하지 못함
 - 유료 사용, 권한 변경, 공유 또는 게시가 필요함
