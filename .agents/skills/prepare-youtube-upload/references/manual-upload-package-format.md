@@ -27,7 +27,8 @@ Resolve artifact paths relative to the JSON package directory. `existing_upload`
   },
   "preparation": {
     "status": "ready",
-    "youtube_actions": "manual_by_user"
+    "youtube_actions": "manual_by_user",
+    "keep_files": ["description.ko.md"]
   },
   "existing_upload": {
     "video_id": "optional",
@@ -36,5 +37,7 @@ Resolve artifact paths relative to the JSON package directory. `existing_upload`
   }
 }
 ```
+
+`preparation.keep_files` is optional. When present, each path is resolved relative to the package and is retained by the safe output cleanup script together with the package, generated guide, and four referenced artifacts.
 
 Do not add external-action approvals or browser profile fields. This package authorizes local preparation only.

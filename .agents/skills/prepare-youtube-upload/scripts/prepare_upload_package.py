@@ -93,6 +93,7 @@ def render_guide(
     package_path: Path,
     data: dict[str, Any],
     resolved: dict[str, Path],
+    keep_files: list[Path],
     hashes: dict[str, str],
     warning: str | None,
 ) -> str:
@@ -147,11 +148,20 @@ def render_guide(
             f"- 아동용: {bool_ko(metadata['made_for_kids'])}",
             f"- 공개 상태 권장값: {metadata['visibility_recommendation']}",
             "",
+            "## 함께 보존할 업로드 정보",
+            "",
+        ]
+    )
+    for path in keep_files:
+        lines.append(f"- `{path.name}`: `{path}`")
+    lines.extend(
+        [
+            "",
             "## 수동 업로드 순서",
             "",
             "1. YouTube Studio에서 올바른 채널인지 확인한다.",
             "2. 영상 파일을 한 번만 선택하고 제목과 설명을 붙여넣는다.",
-            "3. v2 썸네일을 선택하고 재생목록·카테고리·아동용 여부를 설정한다.",
+            "3. 준비된 썸네일을 선택하고 재생목록·카테고리·아동용 여부를 설정한다.",
             "4. 한국어·타이밍 포함 방식으로 SRT 파일을 추가한다.",
             "5. 저작권 검사를 확인하고 원하는 공개 상태를 직접 선택한다.",
             "6. 저장 후 콘텐츠 목록에서 제목·썸네일·자막·공개 상태를 확인한다.",
@@ -260,6 +270,21 @@ def main() -> int:
     if preparation.get("youtube_actions") != "manual_by_user":
         errors.append("preparation.youtube_actions must be manual_by_user")
 
+    keep_files: list[Path] = []
+    raw_keep_files = preparation.get("keep_files", [])
+    if not isinstance(raw_keep_files, list):
+        errors.append("preparation.keep_files must be a list")
+    else:
+        for index, value in enumerate(raw_keep_files):
+            path = resolve_artifact(
+                base,
+                value,
+                f"preparation.keep_files[{index}]",
+                errors,
+            )
+            if path:
+                keep_files.append(path)
+
     if "approval" in data:
         errors.append("manual packages must not contain external-action approvals")
     if "chrome_profile" in channel:
@@ -320,6 +345,7 @@ def main() -> int:
                 package_path,
                 data,
                 resolved,
+                keep_files,
                 hashes,
                 duplicate_warning,
             ),
@@ -336,6 +362,10 @@ def main() -> int:
         "errors": errors,
         "warnings": warnings,
         "external_actions": "none",
+        "retention": {
+            "keep_files": [str(path) for path in keep_files],
+            "guide": str(guide_path),
+        },
     }
     print(json.dumps(output, ensure_ascii=False, indent=2))
     return 0 if not errors else 1

@@ -39,6 +39,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--line-3", required=True)
     parser.add_argument("--badge", default="")
     parser.add_argument("--font", type=Path)
+    parser.add_argument(
+        "--text-max-width",
+        type=int,
+        default=600,
+        help="Maximum width for each text block inside the left safe area.",
+    )
+    parser.add_argument(
+        "--text-min-size",
+        type=int,
+        default=48,
+        help="Smallest font size allowed when fitting a text block.",
+    )
     parser.add_argument("--accent-color", default="#FFCD4A")
     parser.add_argument("--underline-color", default="#00C9FF")
     parser.add_argument("--glow-color", default="#00B0FF")
@@ -53,6 +65,21 @@ def find_font(explicit: Path | None) -> Path:
         if candidate and candidate.is_file():
             return candidate
     raise SystemExit("No usable font found. Pass --font <font.ttf>.")
+
+
+def fit_font(text: str, font_path: Path, initial_size: int, max_width: int, min_size: int) -> ImageFont.FreeTypeFont:
+    if not text.strip():
+        raise SystemExit("Text blocks must not be empty.")
+    if max_width < 1 or min_size < 1 or min_size > initial_size:
+        raise SystemExit("Invalid text fitting bounds.")
+    for size in range(initial_size, min_size - 1, -1):
+        font = ImageFont.truetype(str(font_path), size)
+        bbox = font.getbbox(text)
+        if bbox[2] - bbox[0] <= max_width:
+            return font
+    raise SystemExit(
+        f"Text does not fit within {max_width}px at the minimum font size: {text}"
+    )
 
 
 def parse_color(value: str) -> tuple[int, int, int, int]:
@@ -96,6 +123,8 @@ def render(args: argparse.Namespace) -> dict[str, object]:
         raise SystemExit(f"Background not found: {args.background}")
     if not 1 <= args.jpeg_quality <= 100:
         raise SystemExit("--jpeg-quality must be between 1 and 100")
+    if args.text_max_width < 300:
+        raise SystemExit("--text-max-width must be at least 300px")
 
     font_path = find_font(args.font)
     accent = parse_color(args.accent_color)
@@ -108,10 +137,18 @@ def render(args: argparse.Namespace) -> dict[str, object]:
         image = image.resize((1280, 720), Image.Resampling.LANCZOS)
 
     image = add_left_gradient(image)
-    font_line_1 = ImageFont.truetype(str(font_path), 92)
-    font_line_2 = ImageFont.truetype(str(font_path), 92)
-    font_line_3 = ImageFont.truetype(str(font_path), 108)
-    font_badge = ImageFont.truetype(str(font_path), 34)
+    font_line_1 = fit_font(
+        args.line_1, font_path, 92, args.text_max_width, args.text_min_size
+    )
+    font_line_2 = fit_font(
+        args.line_2, font_path, 92, args.text_max_width, args.text_min_size
+    )
+    font_line_3 = fit_font(
+        args.line_3, font_path, 108, args.text_max_width, args.text_min_size
+    )
+    font_badge = fit_font(
+        args.badge, font_path, 34, args.text_max_width - 54, max(28, args.text_min_size - 14)
+    ) if args.badge else ImageFont.truetype(str(font_path), 34)
 
     glow = Image.new("RGBA", image.size, (0, 0, 0, 0))
     glow_draw = ImageDraw.Draw(glow)
@@ -205,6 +242,13 @@ def render(args: argparse.Namespace) -> dict[str, object]:
         "output_jpg": str(args.output_jpg.resolve()),
         "preview": str(args.preview.resolve()) if args.preview else None,
         "font": str(font_path),
+        "text_max_width": args.text_max_width,
+        "text_sizes": [
+            font_line_1.size,
+            font_line_2.size,
+            font_line_3.size,
+            font_badge.size if args.badge else None,
+        ],
         "size": [1280, 720],
         "jpeg_bytes": os.path.getsize(args.output_jpg),
     }

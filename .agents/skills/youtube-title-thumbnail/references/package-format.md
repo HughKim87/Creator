@@ -25,10 +25,10 @@
     "rationale": "영상의 핵심 비교와 실무 이득을 함께 약속함"
   },
   "thumbnail": {
-    "background": "thumbnail-background.png",
-    "master": "thumbnail.png",
+    "background": "../../work/example-job/thumbnail-background.png",
+    "master": "../../work/example-job/thumbnail.png",
     "upload": "thumbnail.jpg",
-    "mobile_preview": "thumbnail-preview-320.jpg",
+    "mobile_preview": "../../work/example-job/thumbnail-preview-320.jpg",
     "text": [
       "첫 문구",
       "둘째 문구",
@@ -44,6 +44,8 @@
   }
 }
 ```
+
+최종 output 폴더를 간결하게 유지하려면 배경·마스터·모바일 미리보기는 `work/<job-id>/`에 두고, `outputs/<job-id>/`에는 업로드 이미지와 승인 패키지만 둔다. 상대 경로는 패키지 JSON이 있는 폴더를 기준으로 해석한다.
 
 `channel_evidence.status`는 다음 중 하나다.
 
