@@ -9,6 +9,13 @@ from pathlib import Path
 from typing import Any
 
 
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+DEFAULT_RUNTIME_DEPENDENCIES = PROJECT_ROOT / "extension" / ".runtime" / "python-deps"
+DEFAULT_MODEL_DIR = PROJECT_ROOT / "extension" / ".runtime" / "models" / "whisper"
+if DEFAULT_RUNTIME_DEPENDENCIES.is_dir():
+    sys.path.insert(0, str(DEFAULT_RUNTIME_DEPENDENCIES))
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Transcribe video audio and create a refined SRT file."
@@ -17,7 +24,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--raw-json", type=Path)
     parser.add_argument("--model", default="large-v3-turbo")
-    parser.add_argument("--model-dir", type=Path)
+    parser.add_argument(
+        "--model-dir",
+        type=Path,
+        help=f"Whisper cache directory (default: {DEFAULT_MODEL_DIR})",
+    )
     parser.add_argument("--language", default="ko")
     parser.add_argument("--device", choices=("cpu", "cuda"), default="cpu")
     parser.add_argument("--compute-type")
@@ -216,6 +227,7 @@ def transcribe(
         return {
             "source": args.video.name,
             "model": args.model,
+            "model_dir": str(args.model_dir),
             "device": f"{device}/{selected_compute_type}",
             "language": info.language,
             "language_probability": info.language_probability,
@@ -359,6 +371,10 @@ def refine(
 def main() -> None:
     args = parse_args()
     args.video = args.video.resolve()
+    if args.model_dir is None:
+        args.model_dir = DEFAULT_MODEL_DIR
+    else:
+        args.model_dir = args.model_dir.resolve()
     if not args.video.is_file() or args.video.stat().st_size == 0:
         raise SystemExit(f"Video is missing or empty: {args.video}")
 

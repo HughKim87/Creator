@@ -21,13 +21,14 @@ description: NotebookLM 등에서 생성한 동영상의 음성을 로컬 Whispe
 ## 환경 점검
 
 1. 영상 크기가 0보다 크고 비디오·오디오 스트림과 총 길이가 있는지 PyAV로 확인한다.
-2. `faster-whisper`가 없으면 사용자 승인 없이 설치하지 않는다.
-3. 승인된 경우 프로젝트의 Git 제외 런타임 폴더에 설치한다.
+2. 먼저 공용 Git 제외 런타임을 확인한다. Python 의존성은 `extension/.runtime/python-deps/`, Whisper 모델 캐시는 `extension/.runtime/models/whisper/`를 기본 경로로 재사용한다.
+3. `faster-whisper`가 공용 런타임에 없으면 사용자 승인 없이 설치하지 않는다. 한 번 승인·설치한 뒤에는 영상별 `work/<job-id>/`에 다시 설치하지 않는다.
 
    `python -m pip install --target <runtime-deps> faster-whisper`
 
-4. 기본 모델은 다국어 정확도와 속도의 균형이 좋은 `large-v3-turbo`다.
-5. Windows에서는 CUDA 장치가 보여도 실제 추론 시 `cublas64_12.dll` 또는 cuDNN이 없을 수 있다. CUDA를 쓰려면 라이브러리까지 확인한다. 확실하지 않으면 `cpu/int8`을 기본값으로 사용한다.
+4. 기본 모델은 다국어 정확도와 속도의 균형이 좋은 `large-v3-turbo`다. `transcribe_to_srt.py`는 별도 `--model-dir`가 없으면 공용 모델 캐시를 자동으로 사용한다.
+5. 모델 캐시와 Python 의존성을 `extension/work/<job-id>/`에 복사하거나 커밋하지 않는다. 작업 폴더에는 영상별 SRT·원본 전사·용어 사전만 둔다.
+6. Windows에서는 CUDA 장치가 보여도 실제 추론 시 `cublas64_12.dll` 또는 cuDNN이 없을 수 있다. CUDA를 쓰려면 라이브러리까지 확인한다. 확실하지 않으면 `cpu/int8`을 기본값으로 사용한다.
 
 ## 전사 실행
 
@@ -38,6 +39,7 @@ python scripts/transcribe_to_srt.py <video.mp4> `
   --output <captions.srt> `
   --raw-json <transcript.json> `
   --model large-v3-turbo `
+  --model-dir extension/.runtime/models/whisper `
   --language ko `
   --device cpu `
   --glossary <glossary.json>
