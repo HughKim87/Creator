@@ -58,8 +58,9 @@ python .agents/skills/coordinate-video-production/scripts/validate_video_job.py 
 
 `research`와 `video` 전에 작업 기록의 프로필과 origin으로 `$connect-chrome-profile`을 실행한다.
 
+- Chrome 초기 선택 권한은 `$connect-chrome-profile`에만 있다. fresh 런타임에서는 이 스킬을 browser runtime bootstrap보다 먼저 실행한다. 이 스킬과 하위 NotebookLM 스킬은 연결 전후에 `agent.browsers.get("extension")`, `getDefault()`, `getForUrl()`로 브라우저를 다시 선택하지 않는다.
 - `connected`와 검증 방법을 반환할 때만 NotebookLM 단계를 시작한다.
-- 같은 런타임의 검증 바인딩은 재사용하고 새 런타임에서는 다시 검증한다.
+- 반환된 exact Chrome 바인딩과 검증 탭만 하위 단계에 넘긴다. 같은 런타임의 검증 바인딩은 probe 성공 시 재사용하고, 명시적 unavailable·disconnected 오류나 새 런타임에서는 `$connect-chrome-profile`로 다시 검증한다.
 - 내장 브라우저, 다른 프로필, 별도 Playwright, Computer Use와 웹 검색으로 우회하지 않는다.
 - 연결 검증 시각을 기록하고 단계 검증기가 확인하게 한다.
 

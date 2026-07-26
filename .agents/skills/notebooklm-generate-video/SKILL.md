@@ -22,11 +22,13 @@ description: 검수된 출처가 있는 NotebookLM 노트북에서 AI 동영상 
 
 ## Chrome 연결 게이트
 
-1. 브라우저 작업 전에 작업 기록의 `browser.profile_directory`와 `required_origin`으로 `$connect-chrome-profile`을 실행한다. 값이 없으면 각각 `Profile 4`와 `https://notebooklm.google.com`을 사용한다.
+1. browser runtime bootstrap이나 다른 `agent.browsers.*` 호출보다 먼저 작업 기록의 `browser.profile_directory`와 `required_origin`으로 `$connect-chrome-profile`을 실행한다. 값이 없으면 각각 `Profile 4`와 `https://notebooklm.google.com`을 사용한다.
 2. 연결 스킬이 `status: connected`를 반환할 때만 영상 생성을 시작하고, 반환된 Chrome 바인딩과 검증된 탭을 재사용한다.
-3. 공식 프로필 진단과 프로필 대상 실행 경로가 끝나기 전에 사용자에게 프로필 메뉴 전환이나 확장 패널 준비를 요구하지 않는다.
-4. 연결 스킬이 `needs_user` 또는 `unavailable`을 반환하면 그 결과를 그대로 기록하고 멈춘다. 다른 브라우저나 계정으로 우회하지 않는다.
-5. 쿠키, 로컬 저장소, 전체 프로필 경로, 브라우저 ID, 확장 인스턴스 ID, 비밀번호 또는 계정 주소를 검사하거나 기록하지 않는다.
+3. 이 스킬은 Chrome을 다시 선택하지 않는다. `agent.browsers.get("extension")`, `getDefault()`, `getForUrl()`와 기존 일반 `chrome`·`browser` 바인딩을 사용하지 않는다.
+4. 반환 바인딩이 명시적 unavailable·disconnected 오류를 내면 임의 fallback 없이 `$connect-chrome-profile`을 다시 실행한다.
+5. 공식 프로필 진단과 프로필 대상 실행 경로가 끝나기 전에 사용자에게 프로필 메뉴 전환이나 확장 패널 준비를 요구하지 않는다.
+6. 연결 스킬이 `needs_user` 또는 `unavailable`을 반환하면 그 결과를 그대로 기록하고 멈춘다. 다른 브라우저나 계정으로 우회하지 않는다.
+7. 쿠키, 로컬 저장소, 전체 프로필 경로, 브라우저 ID, 확장 인스턴스 ID, 비밀번호 또는 계정 주소를 검사하거나 기록하지 않는다.
 
 ## 사전 점검
 
