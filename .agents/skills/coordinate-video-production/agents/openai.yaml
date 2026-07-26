@@ -1,4 +1,4 @@
 interface:
   display_name: "Coordinate Video Production"
   short_description: "worktree·썸네일 승인·최종 네 파일을 강제하는 영상 제작 조정"
-  default_prompt: "Use $coordinate-video-production to verify the routed worktree first, then continue one video through copy-approved thumbnail creation and a four-file manual upload output."
+  default_prompt: "Use $coordinate-video-production to activate the routed worktree first, then continue one video through copy-approved thumbnail creation and a four-file manual upload output."

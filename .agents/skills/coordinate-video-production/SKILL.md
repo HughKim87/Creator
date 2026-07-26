@@ -9,19 +9,24 @@ description: 영상 하나의 NotebookLM 리서치·동영상 생성·SRT·문�
 
 ## 첫 실행 게이트
 
-이 스킬을 읽은 뒤 첫 실행 명령으로 worktree를 검증한다. 파일 조회·생성·변경, 브라우저 연결과 작업 기록 판정보다 먼저 실행한다.
+이 스킬을 읽은 뒤 첫 실행 명령으로 **라우팅된 worktree를 활성 실행 root로 확정**한다. 파일 조회·생성·변경, 브라우저 연결과 작업 기록 판정보다 먼저 실행한다.
 
 ```powershell
-python .agents/skills/coordinate-video-production/scripts/check_worktree.py `
-  --root .
+$activation = python .agents/skills/coordinate-video-production/scripts/activate_worktree.py `
+  --root . | ConvertFrom-Json
+if ($activation.status -ne 'valid') { throw ($activation | ConvertTo-Json -Depth 8) }
+$activeRoot = $activation.active_root
+$activeBranch = $activation.active_branch
 ```
 
 - 사용자가 이번 요청에서 다른 브랜치를 명시한 경우에만 `--expected-branch`로 덮어쓴다. 현재 브랜치를 기대값으로 채우지 않는다.
-- 결과가 다른 `expected_root`를 가리키면 그 위치로 이동해 같은 명령을 다시 실행한다.
-- 재검증이 `valid`가 아니면 영상 파일이나 브라우저를 만지지 않는다. `main`으로 대체하지 않는다.
-- 유효한 대상 root의 `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 읽는다.
+- `activate_worktree.py`가 `redirected: true`를 반환하면 `active_root`가 스킬의 **유일한 작업 기준**이다. 이후 모든 셸 명령은 `workdir=$activeRoot`로 실행하고, 모든 상대 경로·작업 기록·검증 명령은 `$activeRoot`를 기준으로 해석한다.
+- `active_root`를 확보한 뒤에는 원래 세션 cwd의 파일을 다시 조회하지 않는다. `.`를 원래 cwd를 뜻하는 상태로 사용하지 않는다.
+- `active_root`의 재검증이 `valid`가 아니면 영상 파일이나 브라우저를 만지지 않는다. `main`으로 대체하지 않는다.
+- 유효한 대상 root의 `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 `$activeRoot`에서 읽는다.
 - 대상 handoff가 비-NotebookLM 작업이고 이 스킬을 owner에서 제외하면 그 작업을 영상 단계로 승계하지 않는다.
-- 최종 보고에 검증한 절대 root와 branch를 포함한다.
+- 셸의 `Set-Location`이나 한 번의 명령에 지정한 `workdir`는 부모 Codex 세션의 cwd를 영구 변경하지 않을 수 있다. 따라서 “현재 세션이 전환됐다”고 추정하지 말고, 최종 보고에는 `workflow root`와 `workflow branch`를 명시한다. 실제 앱 세션 cwd를 별도로 확인하지 않았다면 이를 “현재 워크트리”라고 표현하지 않는다.
+- 최종 보고에 검증한 절대 root와 branch, 그리고 `redirected` 여부를 포함한다.
 
 ## 작업 기록
 
