@@ -37,8 +37,8 @@ def complete_job() -> dict[str, object]:
         "status": "complete",
         "browser": {
             "surface": "chrome",
-            "profile_label": "Profile 4",
-            "profile_directory": "Profile 4",
+            "profile_label": "Reusable test profile",
+            "profile_directory": "Profile 19",
             "required_origin": "https://notebooklm.google.com",
             "connection_scope": "browser_runtime",
             "status": "connected",
@@ -66,6 +66,23 @@ class VideoJobValidationTests(unittest.TestCase):
     def test_complete_job_is_valid(self) -> None:
         result = MODULE.validate_video_job(complete_job())
         self.assertEqual(result["status"], "valid", result["errors"])
+
+    def test_arbitrary_profile_directory_is_valid(self) -> None:
+        job = complete_job()
+        job["browser"]["profile_label"] = "Another account"
+        job["browser"]["profile_directory"] = "Profile 27"
+        result = MODULE.validate_video_job(job)
+        self.assertEqual(result["status"], "valid", result["errors"])
+
+    def test_missing_profile_directory_is_invalid(self) -> None:
+        job = complete_job()
+        job["browser"]["profile_directory"] = ""
+        result = MODULE.validate_video_job(job)
+        self.assertEqual(result["status"], "invalid")
+        self.assertIn(
+            "browser.profile_directory must be non-empty text",
+            result["errors"],
+        )
 
     def test_complete_job_cannot_leave_manual_upload_as_next_action(self) -> None:
         job = complete_job()

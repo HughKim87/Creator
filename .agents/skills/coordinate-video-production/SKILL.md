@@ -33,13 +33,21 @@ $activeBranch = $activation.active_branch
 
 [references/video-job-format.md](references/video-job-format.md)에 따라 새 작업마다 `extension/work/<job-id>/VIDEO_JOB.json`을 만든다.
 
+- 프로필 설정은 두 계층만 사용한다. Git에서 제외된 worktree-local `extension/.runtime/video-workflow-defaults.json`은 새 작업의 기본값이고, 영상별 `VIDEO_JOB.json`의 `browser`는 그 작업에 확정된 현재값이다. `SESSION_HANDOFF.md`는 프로필 설정에 사용하거나 수정하지 않는다.
+- 새 작업의 프로필은 `.agents/skills/coordinate-video-production/scripts/resolve_browser_profile.py`로 결정한다. 스킬 호출에 프로필 directory나 alias가 있으면 그 입력을 사용하고, 없으면 worktree-local 기본값을 자동 사용한다.
+- 결정된 결과는 새 `VIDEO_JOB.json`의 `browser`에 기록한다. runtime 기본값 파일은 수정하지 않는다.
+- 진행 중 작업의 하위 단계는 이미 확정된 `VIDEO_JOB.json`의 `browser`를 그대로 전달한다. 사용자가 해당 작업의 프로필 변경을 명시한 경우에만 resolver를 다시 실행하고, 실제로 사용할 새 결과를 작업의 현재값으로 기록한다.
+- 사용자가 `메인프로필`처럼 runtime 설정의 `profile_aliases` 키를 입력하면 대응하는 label과 directory를 사용한다. 입력도 worktree-local 기본값도 없을 때만 작업 기록 생성과 browser runtime 초기화 전에 사용자에게 한 번 요청한다.
+- 연결 스킬과 하위 단계 스킬 자체에는 프로필 기본값을 두지 않는다.
+- `browser.profile_label`은 선택적 표시명이다. 별도 값이 없으면 전달받은 `profile_directory`와 같은 문자열을 기록한다.
+- `browser.required_origin`은 같은 우선순위로 확정하되, 이 worktree의 runtime 기본값은 NotebookLM origin이다.
+- 진행 중 작업은 사용자의 명시적 변경이 없는 한 기존 `VIDEO_JOB.json` 값을 보존한다. runtime 기본값 변경, 연결 스킬, 다른 작업, 현재 Chrome 창에서 값을 추론하거나 덮어쓰지 않는다.
 - 새 작업은 `video-job-v3`를 사용하고 worktree 검증 결과를 `execution_context`에 기록한다.
 - `execution_mode`는 `autonomous_local_pipeline` 또는 `review_gated`로 기록한다.
 - `execution_mode`는 단계 사이의 자동 진행만 제어한다. 제목·문구·이미지·최종 시각의 승인 권한을 부여하지 않는다.
 - `thumbnail_contract`에 `generation_mode`, `allow_local_text_composite`, `approval_mode`, `instruction_source`를 기록한다. 사용자가 별도로 창작 선택권을 위임하지 않으면 `approval_mode`는 `review_gated`다.
 - “끝까지 진행”, “중간 과정은 알아서 진행”은 `autonomous_local_pipeline` 근거일 수 있지만 `approval_mode: delegated_by_user` 근거가 아니다.
 - 사용자가 웹 ChatGPT와 같은 생성을 요구하면 `generation_mode: one_shot_imagegen`, `allow_local_text_composite: false`, `instruction_source: explicit_user`로 기록한다.
-- 기본 Chrome 프로필 표시명과 디렉터리는 `Profile 4`, 기본 origin은 NotebookLM이다.
 - 기술 패키지와 생성 원본은 `work/<job-id>/`, 최종 사용자 파일은 `outputs/<job-id>/`에 둔다.
 - `.gitignore`나 추적 정책을 임의로 바꾸지 않는다.
 
@@ -54,9 +62,19 @@ python .agents/skills/coordinate-video-production/scripts/validate_video_job.py 
 
 `status: valid`와 `worktree.status: valid`가 아니면 진행하지 않는다.
 
+새 작업의 browser 값은 다음처럼 확정한다. `<profile-input>`이 없으면 관련 옵션을 생략한다.
+
+```powershell
+python .agents/skills/coordinate-video-production/scripts/resolve_browser_profile.py `
+  --config extension/.runtime/video-workflow-defaults.json `
+  --profile-alias <profile-input>
+```
+
+프로필 디렉터리를 직접 전달받았으면 `--profile-alias` 대신 `--profile-directory`를 사용한다. 출력의 `browser` 객체를 `VIDEO_JOB.json`에 그대로 기록한다.
+
 ## Chrome 게이트
 
-`research`와 `video` 전에 작업 기록의 프로필과 origin으로 `$connect-chrome-profile`을 실행한다.
+`research`와 `video` 전에 작업 기록의 `browser.profile_directory`와 `browser.required_origin`을 그대로 `$connect-chrome-profile`에 전달한다. 둘 중 하나라도 없으면 연결을 시도하지 않고 작업 기록 검증 실패로 멈춘다.
 
 - Chrome 초기 선택 권한은 `$connect-chrome-profile`에만 있다. fresh 런타임에서는 이 스킬을 browser runtime bootstrap보다 먼저 실행한다. 이 스킬과 하위 NotebookLM 스킬은 연결 전후에 `agent.browsers.get("extension")`, `getDefault()`, `getForUrl()`로 브라우저를 다시 선택하지 않는다.
 - `connected`와 검증 방법을 반환할 때만 NotebookLM 단계를 시작한다.

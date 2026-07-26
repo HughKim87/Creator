@@ -7,15 +7,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SKILLS = ROOT / ".agents" / "skills"
 CONNECT = SKILLS / "connect-chrome-profile" / "SKILL.md"
+CONNECT_AGENT = SKILLS / "connect-chrome-profile" / "agents" / "openai.yaml"
 COORDINATE = SKILLS / "coordinate-video-production" / "SKILL.md"
 RESEARCH = SKILLS / "notebooklm-research-topic" / "SKILL.md"
+RESEARCH_AGENT = SKILLS / "notebooklm-research-topic" / "agents" / "openai.yaml"
 VIDEO = SKILLS / "notebooklm-generate-video" / "SKILL.md"
+VIDEO_AGENT = SKILLS / "notebooklm-generate-video" / "agents" / "openai.yaml"
 JOB_FORMAT = (
     SKILLS
     / "coordinate-video-production"
     / "references"
     / "video-job-format.md"
 )
+GITIGNORE = ROOT / ".gitignore"
 
 
 def read(path: Path) -> str:
@@ -23,48 +27,70 @@ def read(path: Path) -> str:
 
 
 class ChromeProfileSkillContractTests(unittest.TestCase):
-    def test_connector_uses_official_profile_recovery(self) -> None:
+    def test_connector_requires_caller_owned_profile_and_origin(self) -> None:
+        text = read(CONNECT)
+        self.assertIn("`profile_directory`: 필수", text)
+        self.assertIn("`target_origin`: 필수", text)
+        self.assertIn("이 스킬에는 프로필과 origin 기본값이 없다", text)
+        self.assertNotIn("Profile 4", text)
+        self.assertNotIn("Profile 4", read(CONNECT_AGENT))
+
+    def test_connector_uses_exact_profile_launch_delta(self) -> None:
         text = read(CONNECT)
         required = [
             "chrome:control-chrome",
-            'agent.documentation.get("chrome-troubleshooting")',
-            "check-extension-installed.js --json",
             "CODEX_CHROME_PREFERENCES_PATH",
             "open-chrome-window.js --dry-run --json",
-            "open-chrome-window.js",
-            "2초",
-            "한 번 통신에 성공한 뒤에는 해당 런타임에서 확장 감지를 반복하지 않는다",
-            "공식 복구 절차가 끝나기 전에는 사용자에게 수동 프로필 전환을 요구",
-            "explicit_tab_mention",
-            "profile_targeted_launch",
+            "select-profile-delta.mjs",
+            'agent.browsers.get(descriptor.id)',
+            'discoveryMode: "post_launch_initial"',
+            'discoveryMode: "baseline_delta"',
+            "profile_launch_delta_not_found",
         ]
         for token in required:
             with self.subTest(token=token):
                 self.assertIn(token, text)
-        self.assertLess(
-            text.index("첫 가벼운 연결 호출이 실패하면"),
-            text.index("check-extension-installed.js --json"),
-        )
 
-    def test_dependent_skills_require_connector_before_browser_work(self) -> None:
-        forbidden_manual_prompt = (
-            "Chrome Profile 4를 열고 ChatGPT 확장 사이드 패널이 로드된 상태로 알려주세요"
-        )
-        for path in (COORDINATE, RESEARCH, VIDEO):
+    def test_coordinate_owns_per_job_profile_value(self) -> None:
+        text = read(COORDINATE)
+        self.assertIn("프로필 설정은 두 계층만 사용한다", text)
+        self.assertIn("browser.profile_directory", text)
+        self.assertIn("resolve_browser_profile.py", text)
+        self.assertIn("프로필 directory나 alias가 있으면 그 입력을 사용", text)
+        self.assertIn("worktree-local 기본값을 자동 사용", text)
+        self.assertIn("SESSION_HANDOFF.md", text)
+        self.assertIn("프로필 설정에 사용하거나 수정하지 않는다", text)
+        self.assertNotIn("Profile 4", text)
+
+    def test_worktree_runtime_defaults_are_git_ignored(self) -> None:
+        text = read(GITIGNORE)
+        self.assertIn("/extension/.runtime/", text)
+
+    def test_dependent_skills_forward_job_values_without_fallback(self) -> None:
+        for path in (RESEARCH, VIDEO):
             text = read(path)
             with self.subTest(path=path):
                 self.assertIn("$connect-chrome-profile", text)
-                self.assertNotIn(forbidden_manual_prompt, text)
+                self.assertIn("browser.profile_directory", text)
+                self.assertIn("browser.required_origin", text)
+                self.assertIn("기본값을 만들지 말고", text)
+                self.assertNotIn("Profile 4", text)
+        for path in (RESEARCH_AGENT, VIDEO_AGENT):
+            with self.subTest(path=path):
+                self.assertNotIn("Profile 4", read(path))
 
-    def test_job_example_records_safe_profile_contract(self) -> None:
+    def test_job_example_records_parameterized_profile_contract(self) -> None:
         text = read(JOB_FORMAT)
         match = re.search(r"```json\s*(\{.*?\})\s*```", text, re.DOTALL)
         self.assertIsNotNone(match)
         payload = json.loads(match.group(1))
         browser = payload["browser"]
         self.assertEqual(browser["surface"], "chrome")
-        self.assertEqual(browser["profile_label"], "Profile 4")
-        self.assertEqual(browser["profile_directory"], "Profile 4")
+        self.assertEqual(browser["profile_label"], "<optional-profile-label>")
+        self.assertEqual(
+            browser["profile_directory"],
+            "<required-profile-directory>",
+        )
         self.assertEqual(browser["connection_scope"], "browser_runtime")
         self.assertEqual(browser["status"], "needs_connection")
         self.assertEqual(browser["verification_method"], "")

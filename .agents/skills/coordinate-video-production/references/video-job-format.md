@@ -26,8 +26,8 @@
   },
   "browser": {
     "surface": "chrome",
-    "profile_label": "Profile 4",
-    "profile_directory": "Profile 4",
+    "profile_label": "<optional-profile-label>",
+    "profile_directory": "<required-profile-directory>",
     "required_origin": "https://notebooklm.google.com",
     "connection_scope": "browser_runtime",
     "status": "needs_connection",
@@ -84,6 +84,12 @@
 
 ## 실행 컨텍스트
 
+- 새 작업의 browser 값은 `resolve_browser_profile.py`로 확정한다. 스킬 호출에 profile directory나 alias가 있으면 입력값을, 없으면 Git에서 제외된 worktree-local `extension/.runtime/video-workflow-defaults.json`을 사용한다.
+- resolver 결과를 `VIDEO_JOB.json`에 현재 작업값으로 기록하고 runtime 기본값과 `SESSION_HANDOFF.md`는 수정하지 않는다.
+- 진행 중 작업의 하위 단계는 `VIDEO_JOB.json`의 값을 사용한다. 사용자가 작업 프로필 변경을 명시한 경우에만 resolver 결과로 현재 작업값을 갱신한다.
+- `connect-chrome-profile`과 하위 단계 스킬은 프로필 기본값을 소유하지 않고 이 작업 기록의 확정값만 받는다.
+- `browser.profile_label`은 선택적 표시명이다. 별도 입력이 없으면 `profile_directory`와 같은 값을 기록한다.
+- 위 JSON의 꺾쇠 placeholder는 실제 작업을 만들 때 확정값으로 교체한다.
 - `execution_mode`는 `autonomous_local_pipeline` 또는 `review_gated`다. 이 값은 단계 사이의 자동 진행만 제어하며 창작 승인 권한을 부여하지 않는다.
 - `thumbnail_contract.generation_mode`는 `one_shot_imagegen` 또는 `local_text_composite`다.
 - `thumbnail_contract.allow_local_text_composite`는 불리언이다. 웹 ChatGPT와 같은 완성형 생성을 요구받으면 `false`다.

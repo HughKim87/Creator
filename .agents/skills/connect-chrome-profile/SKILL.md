@@ -1,17 +1,19 @@
 ---
 name: connect-chrome-profile
-description: 사용자가 지정한 Chrome 프로필을 공식 ChatGPT Chrome Extension 실행 경로로 열고, 실행 델타로 정확한 확장 인스턴스와 대상 웹 탭을 검증해 후속 브라우저 작업에 넘기는 스킬. Profile 4 같은 특정 프로필로 NotebookLM을 사용하거나 새 Codex 작업에서 Chrome 연결을 다시 만들어야 할 때 사용한다.
+description: 호출자가 전달한 Chrome 프로필 디렉터리를 공식 ChatGPT Chrome Extension 실행 경로로 열고, 실행 델타로 정확한 확장 인스턴스와 대상 웹 탭을 검증해 후속 브라우저 작업에 넘기는 범용 스킬. 특정 프로필로 웹 작업을 시작하거나 새 Codex 작업에서 Chrome 연결을 다시 만들어야 할 때 사용한다.
 ---
 
 # Chrome 프로필 연결
 
-목표는 하나다. 지정 프로필로 새 Chrome 창을 연 뒤, 그 실행으로 생긴 확장 인스턴스나 탭만 연결한다. `status: connected` 전에는 NotebookLM 작업을 시작하지 않는다.
+목표는 하나다. 호출자가 전달한 프로필로 새 Chrome 창을 연 뒤, 그 실행으로 생긴 확장 인스턴스나 탭만 연결한다. `status: connected` 전에는 호출 작업을 시작하지 않는다.
 
 ## 입력
 
-- `profile_directory`: 기본값 `Profile 4`
-- `target_origin`: NotebookLM 기본값 `https://notebooklm.google.com`
+- `profile_directory`: 필수. 호출자가 전달한 비어 있지 않은 Chrome 프로필 디렉터리 식별자
+- `target_origin`: 필수. 연결 후 열 절대 URL의 origin
 - 선택적 Chrome 탭 멘션
+
+이 스킬에는 프로필과 origin 기본값이 없다. 둘 중 하나라도 빠지면 browser runtime을 초기화하거나 Chrome을 열기 전에 `needs_user`를 반환한다.
 
 프로필 이름은 로컬 실행 식별자다. 계정 주소·쿠키·토큰·비밀번호·브라우저 저장소로 프로필을 추론하지 않는다.
 
@@ -31,7 +33,7 @@ description: 사용자가 지정한 Chrome 프로필을 공식 ChatGPT Chrome Ex
    - 다음 호출에서 현재 exact 바인딩들의 `user.openTabs()`를 읽어 `current`를 만든다.
    - 필수 선택기 `.agents/skills/connect-chrome-profile/scripts/select-profile-delta.mjs`의 `selectProfileDelta()`를 호출한다. fresh 런타임은 `discoveryMode: "post_launch_initial"`, 기존 런타임은 `discoveryMode: "baseline_delta"`를 사용한다. 후보 선택 코드를 즉석에서 다시 작성하지 않는다.
 8. 선택기가 탭을 반환하면 그 exact 바인딩의 `user.claimTab(result.tab)`에 반환된 같은 탭 객체를 넘긴다. `new_browser`를 반환하면 그 exact 바인딩에 새 탭을 만든다. `about:blank`이면 선택된 탭만 `target_origin`으로 이동한다.
-9. 탭 URL이 `target_origin`인지, NotebookLM 서비스 화면이 로드됐는지, 로그인된 화면인지 가시 상태로 검증한다. 모두 성공한 뒤에만 `connected`를 반환한다.
+9. 탭 URL이 `target_origin`인지, 호출자가 요구한 서비스 화면과 로그인 상태가 충족되는지 가시 상태로 검증한다. 모두 성공한 뒤에만 `connected`를 반환한다.
 
 선택기는 활성 worktree의 절대 경로로 import한다.
 
@@ -45,7 +47,7 @@ const { selectProfileDelta } = await import(
 ## 금지
 
 - 연결 전후에 `agent.browsers.get("extension")`, `getDefault()`, `getForUrl()`로 브라우저를 선택하지 않는다.
-- 목록 순서, 기존 NotebookLM 탭, 일반 `chrome`·`browser` 바인딩을 Profile 4의 증거로 사용하지 않는다.
+- 목록 순서, 기존 대상 사이트 탭, 일반 `chrome`·`browser` 바인딩을 요청 프로필의 증거로 사용하지 않는다.
 - browser runtime을 reset·재import하거나 내장 브라우저, 별도 Playwright, Computer Use, 웹 검색으로 우회하지 않는다.
 - `Preferences`, `Secure Preferences`, `Extensions` 등 브라우저 프로필 파일을 읽거나 열거하지 않는다. 따라서 해당 파일을 읽는 `check-extension-installed.js`도 실행하지 않는다.
 - 검증 전 사용자에게 프로필 메뉴 전환을 요구하지 않는다.

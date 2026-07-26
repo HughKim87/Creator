@@ -22,7 +22,7 @@ NotebookLM 안에서 리서치를 수행하고, 다음 제작 단계가 사용�
 
 ## Chrome 연결 게이트
 
-1. browser runtime bootstrap이나 다른 `agent.browsers.*` 호출보다 먼저 작업 기록의 `browser.profile_directory`와 `required_origin`으로 `$connect-chrome-profile`을 실행한다. 값이 없으면 각각 `Profile 4`와 `https://notebooklm.google.com`을 사용한다.
+1. browser runtime bootstrap이나 다른 `agent.browsers.*` 호출보다 먼저 작업 기록의 `browser.profile_directory`와 `browser.required_origin`을 그대로 `$connect-chrome-profile`에 전달한다. 둘 중 하나라도 없으면 기본값을 만들지 말고 작업 기록 검증 실패로 멈춘다.
 2. 연결 스킬이 `status: connected`를 반환할 때만 리서치를 시작하고, 반환된 Chrome 바인딩과 검증된 탭을 재사용한다.
 3. 이 스킬은 Chrome을 다시 선택하지 않는다. `agent.browsers.get("extension")`, `getDefault()`, `getForUrl()`와 기존 일반 `chrome`·`browser` 바인딩을 사용하지 않는다.
 4. 반환 바인딩이 명시적 unavailable·disconnected 오류를 내면 임의 fallback 없이 `$connect-chrome-profile`을 다시 실행한다.

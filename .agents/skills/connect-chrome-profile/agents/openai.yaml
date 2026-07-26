@@ -1,4 +1,4 @@
 interface:
   display_name: "Chrome 프로필 연결"
-  short_description: "브라우저 선택 전에 지정 Chrome 프로필과 대상 탭을 정확히 연결합니다."
-  default_prompt: "Use $connect-chrome-profile before any agent.browsers selection to launch Chrome Profile 4, identify it from launch evidence, and verify the NotebookLM tab."
+  short_description: "전달받은 Chrome 프로필과 대상 탭을 정확히 연결합니다."
+  default_prompt: "Use $connect-chrome-profile with the caller-provided profile_directory and target_origin before any browser selection, then return only the verified exact Chrome binding and tab."
