@@ -1,28 +1,17 @@
 #!/usr/bin/env python3
-"""Plan or apply a safe cleanup that retains a complete YouTube upload package."""
+"""Plan or apply a safe archive that leaves only user-facing upload files."""
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
+import shutil
 from typing import Any
 
 
-ARTIFACT_KEYS = ("video", "thumbnail", "captions", "title_thumbnail_package")
-
-
-def _resolve_inside(base: Path, value: Any, field: str) -> Path:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{field} must be non-empty text")
-    candidate = (base / value).resolve()
-    try:
-        candidate.relative_to(base)
-    except ValueError as exc:
-        raise ValueError(f"{field} escapes the package directory") from exc
-    if not candidate.is_file() or candidate.stat().st_size == 0:
-        raise ValueError(f"{field} not found or empty: {candidate}")
-    return candidate
+SCHEMA_VERSIONS = {"youtube-manual-upload-v1", "youtube-manual-upload-v2"}
 
 
 def _load_package(package_path: Path) -> dict[str, Any]:
@@ -32,9 +21,76 @@ def _load_package(package_path: Path) -> dict[str, Any]:
         raise ValueError(f"cannot read package: {exc}") from exc
     if not isinstance(value, dict):
         raise ValueError("package root must be an object")
-    if value.get("schema_version") != "youtube-manual-upload-v1":
-        raise ValueError("schema_version must be youtube-manual-upload-v1")
+    if value.get("schema_version") not in SCHEMA_VERSIONS:
+        raise ValueError(
+            f"schema_version must be one of {sorted(SCHEMA_VERSIONS)}"
+        )
     return value
+
+
+def _find_project_root(start: Path) -> Path:
+    for candidate in (start, *start.parents):
+        if (
+            (candidate / "PROJECT_RULES.md").is_file()
+            and (candidate / "extension").is_dir()
+        ):
+            return candidate.resolve()
+    raise ValueError("cannot locate project root from package path")
+
+
+def _resolve(
+    base: Path,
+    root: Path,
+    value: Any,
+    field: str,
+    *,
+    require_file: bool = False,
+    require_dir: bool = False,
+) -> Path:
+    if isinstance(value, Path):
+        value = str(value)
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field} must be non-empty text")
+    candidate = Path(value)
+    if not candidate.is_absolute():
+        candidate = base / candidate
+    candidate = candidate.resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"{field} escapes the allowed root") from exc
+    if require_file and (
+        not candidate.is_file() or candidate.stat().st_size == 0
+    ):
+        raise ValueError(f"{field} not found or empty: {candidate}")
+    if require_dir and not candidate.is_dir():
+        raise ValueError(f"{field} directory not found: {candidate}")
+    return candidate
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _plain_names(value: Any, field: str) -> set[str]:
+    if not isinstance(value, list) or len(value) != 4:
+        raise ValueError(f"{field} must contain exactly 4 filenames")
+    names: set[str] = set()
+    for index, item in enumerate(value):
+        if (
+            not isinstance(item, str)
+            or not item.strip()
+            or Path(item).name != item
+        ):
+            raise ValueError(f"{field}[{index}] must be a plain filename")
+        names.add(item)
+    if len(names) != 4:
+        raise ValueError(f"{field} must contain 4 unique filenames")
+    return names
 
 
 def build_plan(package: Path, guide: Path | None = None) -> dict[str, Any]:
@@ -42,58 +98,160 @@ def build_plan(package: Path, guide: Path | None = None) -> dict[str, Any]:
     if not package_path.is_file():
         raise ValueError(f"package not found: {package_path}")
     base = package_path.parent
+    project_root = _find_project_root(base)
     data = _load_package(package_path)
+    schema = data["schema_version"]
     artifacts = data.get("artifacts")
+    preparation = data.get("preparation")
     if not isinstance(artifacts, dict):
         raise ValueError("artifacts must be an object")
-    keep: set[Path] = {package_path}
-    for key in ARTIFACT_KEYS:
-        keep.add(_resolve_inside(base, artifacts.get(key), f"artifacts.{key}"))
-
-    preparation = data.get("preparation")
     if not isinstance(preparation, dict):
         raise ValueError("preparation must be an object")
-    keep_files = preparation.get("keep_files", [])
-    if not isinstance(keep_files, list):
-        raise ValueError("preparation.keep_files must be a list")
-    for index, value in enumerate(keep_files):
-        keep.add(_resolve_inside(base, value, f"preparation.keep_files[{index}]"))
 
-    guide_path = (guide or package_path.with_name("YOUTUBE-MANUAL-UPLOAD.md")).resolve()
+    if schema == "youtube-manual-upload-v2":
+        output_dir = _resolve(
+            base,
+            project_root,
+            preparation.get("output_dir"),
+            "preparation.output_dir",
+            require_dir=True,
+        )
+        archive_dir = _resolve(
+            base,
+            project_root,
+            preparation.get("archive_dir"),
+            "preparation.archive_dir",
+        )
+        final_names = _plain_names(
+            preparation.get("final_output_files"),
+            "preparation.final_output_files",
+        )
+        guide_path = _resolve(
+            base,
+            project_root,
+            guide if guide is not None else preparation.get("guide"),
+            "preparation.guide",
+            require_file=True,
+        )
+        for key in ("video", "thumbnail", "captions"):
+            path = _resolve(
+                base,
+                project_root,
+                artifacts.get(key),
+                f"artifacts.{key}",
+                require_file=True,
+            )
+            if path.parent != output_dir or path.name not in final_names:
+                raise ValueError(
+                    f"artifacts.{key} is outside the final output contract"
+                )
+        if guide_path.parent != output_dir or guide_path.name not in final_names:
+            raise ValueError("guide is outside the final output contract")
+    else:
+        output_dir = base
+        archive_dir = (
+            project_root
+            / "extension"
+            / "work"
+            / output_dir.name
+            / "archive"
+        ).resolve()
+        final_names = set()
+        for key in ("video", "thumbnail", "captions"):
+            path = _resolve(
+                base,
+                base,
+                artifacts.get(key),
+                f"artifacts.{key}",
+                require_file=True,
+            )
+            final_names.add(path.name)
+        guide_path = (
+            guide.resolve()
+            if guide
+            else package_path.with_name("YOUTUBE-MANUAL-UPLOAD.md")
+        )
+        if (
+            not guide_path.is_file()
+            or guide_path.parent.resolve() != output_dir
+        ):
+            raise ValueError(f"guide not found in output directory: {guide_path}")
+        final_names.add(guide_path.name)
+
     try:
-        guide_path.relative_to(base)
-    except ValueError as exc:
-        raise ValueError("guide escapes the package directory") from exc
-    if guide_path.is_file():
-        keep.add(guide_path)
+        archive_dir.relative_to(output_dir)
+    except ValueError:
+        pass
+    else:
+        raise ValueError("archive directory must be outside output directory")
 
-    deletable = sorted(
-        path.resolve()
-        for path in base.iterdir()
-        if path.is_file() and not path.is_symlink() and path.resolve() not in keep
+    unexpected_directories = sorted(
+        str(path.resolve())
+        for path in output_dir.iterdir()
+        if path.is_dir() or path.is_symlink()
     )
+    archive_items: list[dict[str, str]] = []
+    for path in sorted(output_dir.iterdir()):
+        if not path.is_file() or path.is_symlink() or path.name in final_names:
+            continue
+        destination = (archive_dir / path.name).resolve()
+        if destination.exists():
+            raise ValueError(f"archive destination already exists: {destination}")
+        archive_items.append(
+            {
+                "source": str(path.resolve()),
+                "destination": str(destination),
+                "sha256": _sha256(path),
+            }
+        )
+
+    present_names = {
+        path.name
+        for path in output_dir.iterdir()
+        if path.is_file() and not path.is_symlink()
+    }
+    missing_final = sorted(final_names - present_names)
+    if missing_final:
+        raise ValueError(f"missing final output files: {missing_final}")
+
     return {
         "status": "ready",
-        "target": str(base),
-        "keep": sorted(str(path) for path in keep),
-        "delete": [str(path) for path in deletable],
+        "schema_version": schema,
+        "output_dir": str(output_dir),
+        "archive_dir": str(archive_dir),
+        "keep": sorted(str(output_dir / name) for name in final_names),
+        "archive": archive_items,
+        "unexpected_directories": unexpected_directories,
         "external_actions": "none",
     }
 
 
 def apply_plan(plan: dict[str, Any]) -> dict[str, Any]:
-    deleted = []
-    for raw_path in plan["delete"]:
-        path = Path(raw_path).resolve()
-        target = Path(plan["target"]).resolve()
-        if path.parent != target or not path.is_file() or path.is_symlink():
-            raise ValueError(f"refusing unsafe cleanup target: {path}")
-        path.unlink()
-        deleted.append(str(path))
-    plan = dict(plan)
-    plan["deleted"] = deleted
-    plan["external_actions"] = "local_file_cleanup"
-    return plan
+    if plan["unexpected_directories"]:
+        raise ValueError(
+            "refusing to finalize while unexpected directories or symlinks exist"
+        )
+    output_dir = Path(plan["output_dir"]).resolve()
+    archive_dir = Path(plan["archive_dir"]).resolve()
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    moved: list[dict[str, str]] = []
+    for item in plan["archive"]:
+        source = Path(item["source"]).resolve()
+        destination = Path(item["destination"]).resolve()
+        if (
+            source.parent != output_dir
+            or not source.is_file()
+            or source.is_symlink()
+        ):
+            raise ValueError(f"refusing unsafe archive source: {source}")
+        if destination.parent != archive_dir or destination.exists():
+            raise ValueError(f"refusing unsafe archive destination: {destination}")
+        shutil.move(str(source), str(destination))
+        moved.append(item)
+    result = dict(plan)
+    result["moved"] = moved
+    result["external_actions"] = "local_file_archive"
+    return result
 
 
 def parse_args() -> argparse.Namespace:
@@ -103,7 +261,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--apply",
         action="store_true",
-        help="delete only the files in the generated cleanup plan",
+        help="move planned non-final files to the separate archive directory",
     )
     return parser.parse_args()
 
@@ -121,7 +279,11 @@ def main() -> int:
     except (OSError, ValueError) as exc:
         print(
             json.dumps(
-                {"status": "invalid", "errors": [str(exc)], "external_actions": "none"},
+                {
+                    "status": "invalid",
+                    "errors": [str(exc)],
+                    "external_actions": "none",
+                },
                 ensure_ascii=False,
                 indent=2,
             )

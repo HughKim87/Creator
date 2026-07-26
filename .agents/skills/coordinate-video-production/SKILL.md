@@ -1,108 +1,104 @@
 ---
 name: coordinate-video-production
-description: 영상 하나의 NotebookLM 리서치·동영상 생성·SRT·제목과 썸네일·수동 YouTube 업로드 준비 단계를 작업 기록으로 관리하고 다음에 실행할 정확한 스킬을 선택한다. 사용자가 새 영상 제작을 시작하거나, 진행 중인 영상의 다음 단계를 묻거나, 여러 제작 단계를 이어서 진행해 달라고 할 때 사용한다.
+description: 영상 하나의 NotebookLM 리서치·동영상 생성·SRT·문구 승인 기반 제목과 썸네일·사용자용 네 파일만 남기는 수동 YouTube 업로드 준비 단계를 검증된 worktree에서 관리한다. 사용자가 새 영상 제작, 진행 중 작업의 다음 단계, 여러 단계를 끝까지 진행하거나 영상 제작 스킬의 안전한 연결을 요청할 때 사용한다.
 ---
 
 # Coordinate Video Production
 
-영상별 상태만 관리하고 기존 5개 제작 스킬을 순서대로 연결한다. 각 단계의 실제 작업은 해당 스킬에 맡긴다.
+영상별 상태를 관리하고 다섯 제작 스킬을 순서대로 연결한다. 단계 작업은 해당 스킬에 맡긴다.
 
-## 작업 기록
+## 첫 실행 게이트
 
-새 영상마다 `extension/work/<job-id>/VIDEO_JOB.json`을 하나 만든다. 생성하거나 변경할 때 [references/video-job-format.md](references/video-job-format.md)를 읽는다.
-
-- `job-id`는 `YYYY-MM-DD-topic-slug` 형식의 짧은 영문 소문자 ID로 정한다.
-- NotebookLM 단계의 기본 브라우저는 Chrome, 기본 프로필 표시명과 디렉터리는 `Profile 4`로 기록한다. 사용자가 다른 프로필을 명시한 경우에만 바꾼다.
-- 보호 원본은 `extension/inputs/<job-id>/`, 파생 산출물은 `extension/outputs/<job-id>/`에 둔다.
-- 모델과 도구 의존성은 `extension/.runtime/`에 둔다.
-- 이 스킬이 Git 추적·제외 정책을 임의로 바꾸지 않는다. 특히 `extension/work/`의 생성 이미지를 자동 제외하거나 `.gitignore`를 수정하지 않고, 기존 프로젝트 정책과 사용자의 관리 방식을 따른다.
-- 완료된 단계의 실제 산출물 경로와 검증 결과만 작업 기록에 남긴다.
-
-작업 기록을 만들거나 바꾼 직후, 그리고 다음 단계를 시작하기 전에 검증한다.
-
-```powershell
-python .agents/skills/coordinate-video-production/scripts/validate_video_job.py `
-  extension/work/<job-id>/VIDEO_JOB.json
-```
-
-`status: valid`가 아니면 다음 단계를 시작하거나 작업 전체를 완료 처리하지 않는다.
-
-## 워크트리 보호 게이트
-
-파일을 만들거나 변경하기 전에 [references/worktree-routing.json](references/worktree-routing.json)의 기본 브랜치와 실제 Git worktree를 검증한다. 스킬을 호출한 절대 경로와 현재 브랜치를 작업 대상의 근거로 사용하지 않는다.
+이 스킬을 읽은 뒤 첫 실행 명령으로 worktree를 검증한다. 파일 조회·생성·변경, 브라우저 연결과 작업 기록 판정보다 먼저 실행한다.
 
 ```powershell
 python .agents/skills/coordinate-video-production/scripts/check_worktree.py `
   --root .
 ```
 
-- 사용자가 이번 요청에서 다른 브랜치를 명시한 경우에만 `--expected-branch <branch>`로 기본값을 덮어쓴다. 현재 브랜치를 기대값으로 채우지 않는다.
-- 현재 root가 다르면 결과의 `expected_root`로 작업 위치를 전환해 같은 명령을 다시 실행한다.
-- 기대 브랜치의 worktree가 없거나 재검증 결과가 `invalid`이면 산출물 생성·복사·정리를 시작하지 않는다. `main`으로 대체하지 않는다.
-- 대상 root를 확정한 뒤 그 worktree의 `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 읽고 작업 상태를 판정한다.
-- 명시적으로 이 스킬을 호출했는데 대상 handoff가 비-NotebookLM 작업이거나 이 스킬을 owner에서 제외하면 그 작업을 현재 단계로 승계하지 않는다. 새 영상 준비 요청이면 대상 worktree 준비 상태만 반환하고, 주제를 받은 뒤 새 `VIDEO_JOB.json`을 만든다.
-- 최종 보고에도 검증한 워크트리 절대 경로와 브랜치를 포함한다.
+- 사용자가 이번 요청에서 다른 브랜치를 명시한 경우에만 `--expected-branch`로 덮어쓴다. 현재 브랜치를 기대값으로 채우지 않는다.
+- 결과가 다른 `expected_root`를 가리키면 그 위치로 이동해 같은 명령을 다시 실행한다.
+- 재검증이 `valid`가 아니면 영상 파일이나 브라우저를 만지지 않는다. `main`으로 대체하지 않는다.
+- 유효한 대상 root의 `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 읽는다.
+- 대상 handoff가 비-NotebookLM 작업이고 이 스킬을 owner에서 제외하면 그 작업을 영상 단계로 승계하지 않는다.
+- 최종 보고에 검증한 절대 root와 branch를 포함한다.
 
-## Chrome 연결 게이트
+## 작업 기록
 
-`research` 또는 `video` 단계 전에 다음을 적용한다.
+[references/video-job-format.md](references/video-job-format.md)에 따라 새 작업마다 `extension/work/<job-id>/VIDEO_JOB.json`을 만든다.
 
-1. 작업 기록의 `browser.profile_directory`와 `required_origin`을 입력으로 `$connect-chrome-profile`을 먼저 실행한다. 기존 기록에 `profile_directory`가 없으면 `Profile 4`로 보완한다.
-2. 연결 스킬이 `connected`와 검증 방법을 반환할 때만 단계 스킬을 실행하고, 그 스킬이 넘긴 Chrome 바인딩과 탭을 재사용한다.
-3. 연결 스킬이 공식 진단·프로필 대상 dry-run·사용자 승인 후 프로필 창 실행·연결 재시도를 완료하기 전에는 수동 프로필 전환을 요구하거나 작업 상태를 `needs_user`로 바꾸지 않는다.
-4. 탭 제어 API가 Chrome 프로필 메뉴를 누르지 못한다는 이유만으로 지정 프로필 창을 열 수 없다고 보고하지 않는다.
-5. 같은 Codex 작업의 살아 있는 검증 컨텍스트는 사용자 턴 사이에 재사용한다. 새 Codex 작업 또는 새 브라우저 런타임에서는 과거 `connected` 기록과 관계없이 다시 검증한다.
-6. 내장 브라우저, 다른 계정, 별도 Playwright, Computer Use 또는 웹 검색으로 우회하지 않는다.
+- 새 작업은 `video-job-v2`를 사용하고 worktree 검증 결과를 `execution_context`에 기록한다.
+- 기본 Chrome 프로필 표시명과 디렉터리는 `Profile 4`, 기본 origin은 NotebookLM이다.
+- 기술 패키지와 생성 원본은 `work/<job-id>/`, 최종 사용자 파일은 `outputs/<job-id>/`에 둔다.
+- `.gitignore`나 추적 정책을 임의로 바꾸지 않는다.
 
-## 단계 선택
+작업 기록 생성·변경 직후와 각 단계 시작 전에 실행한다.
 
-아래 순서를 고정한다.
+```powershell
+python .agents/skills/coordinate-video-production/scripts/validate_video_job.py `
+  extension/work/<job-id>/VIDEO_JOB.json `
+  --root . `
+  --check-artifacts
+```
 
-| 단계 | 사용할 스킬 | 완료 근거 |
+`status: valid`와 `worktree.status: valid`가 아니면 진행하지 않는다.
+
+## Chrome 게이트
+
+`research`와 `video` 전에 작업 기록의 프로필과 origin으로 `$connect-chrome-profile`을 실행한다.
+
+- `connected`와 검증 방법을 반환할 때만 NotebookLM 단계를 시작한다.
+- 같은 런타임의 검증 바인딩은 재사용하고 새 런타임에서는 다시 검증한다.
+- 내장 브라우저, 다른 프로필, 별도 Playwright, Computer Use와 웹 검색으로 우회하지 않는다.
+- 연결 검증 시각을 기록하고 단계 검증기가 확인하게 한다.
+
+## 단계 순서
+
+| 단계 | 스킬 | 완료 근거 |
 |---|---|---|
-| `research` | `$notebooklm-research-topic` | 노트북 URL, 출처 수, 출처 품질 게이트 |
-| `video` | `$notebooklm-generate-video` | 완성 아티팩트, 길이, 재생·다운로드 가능 상태 |
-| `captions` | `$video-to-srt` | MP4, 구조 검증된 SRT, 원본 전사 JSON, 전체 의미·맞춤법 검수 기록 |
-| `title_thumbnail` | `$youtube-title-thumbnail` | 승인된 제목, 썸네일, 검증 패키지 |
-| `upload_package` | `$prepare-youtube-upload` | 수동 업로드 안내서와 `external_actions: none` 검증 |
+| `research` | `$notebooklm-research-topic` | 노트북 URL과 출처 품질 |
+| `video` | `$notebooklm-generate-video` | 완성 영상, 길이, 재생·다운로드 상태 |
+| `captions` | `$video-to-srt` | MP4, SRT, 원본 전사와 전체 검수 |
+| `title_thumbnail` | `$youtube-title-thumbnail` | 승인된 제목·문구·생성·최종 시각과 썸네일 |
+| `upload_package` | `$prepare-youtube-upload` | 업로드용 네 파일, 별도 archive와 수동 가이드 |
 
-`VIDEO_JOB.json`에서 첫 번째 `pending` 단계를 다음 단계로 선택한다. 앞 단계가 모두 `complete`가 아니면 뒤 단계를 시작하지 않는다.
+첫 `pending` 단계만 실행한다. 앞 단계가 모두 `complete`가 아니면 뒤 단계를 시작하지 않는다.
 
-## 실행 규칙
+## 실행과 승인
 
-1. 작업 기록과 실제 산출물의 존재를 먼저 확인한다.
-2. `in_progress`, `needs_user`, `blocked` 단계가 있으면 새 단계를 시작하지 않고 그 상태부터 처리한다.
-3. 다음 단계 하나만 해당 스킬로 실행한다.
-4. NotebookLM 리서치·영상 생성처럼 시간이 필요한 작업은 해당 스킬의 대기 규칙을 따른다. 영상 생성 완료 확인은 5분 간격으로만 수행한다.
-5. 단계 산출물을 검증한 뒤 상태를 `complete`로 바꾸고 경로·URL·검증 요약을 기록한다.
-6. 작업 기록을 검증해 `status: valid`인 것을 확인한다.
-7. 기본값은 한 단계씩 멈추되, 사용자가 “일괄 진행”을 명시하면 승인 게이트와 외부 효과 경계를 유지하면서 검증된 다음 단계로 계속 진행한다.
-8. output 정리가 필요하면 `.agents/skills/prepare-youtube-upload/scripts/retain_upload_package.py`를 먼저 dry-run으로 실행한다. 삭제는 사용자가 명시적으로 승인한 경우에만 `--apply`를 사용하고, 패키지·가이드·실제 업로드 파일·`preparation.keep_files`는 보존한다.
+1. 실제 산출물과 작업 기록을 확인한다.
+2. 활성·사용자 대기·차단 단계가 있으면 그 상태부터 해결한다.
+3. 다음 스킬 하나만 실행하고 산출물을 검증한다.
+4. 검증 후에만 단계 상태와 경로를 갱신한다.
+5. 사용자의 일괄 진행 지시는 검증된 다음 단계로 계속할 권한이지만 썸네일 승인 생략은 아니다.
 
-## 사용자 확인 게이트
+썸네일 단계는 다음 순서를 강제한다.
 
-- `$connect-chrome-profile`이 공식 복구 절차를 완료한 뒤 `needs_user` 또는 `unavailable`을 반환하면 그 결과와 필요한 사용자 행동을 기록한다.
-- 생성·권한·유료 사용 문제가 있으면 `blocked`로 기록한다.
-- 제목과 썸네일은 사용자 승인 전까지 `title_thumbnail`을 완료로 처리하지 않는다.
-- 실제 YouTube 업로드·게시·공개 범위 변경과 그 결과 확인은 단계에 포함하지 않는다. 마지막 단계는 수동 업로드 가이드 생성·검증으로 끝낸다.
+`문구 후보 → 문구 승인 → 이미지 생성 승인 → 완성형 생성 → 최종 시각 승인`
+
+사용자가 “썸네일 승인 생략”을 명시한 경우에만 해당 승인을 `delegated_by_user`로 기록한다. 기술 검증이나 권장안 위임만으로 최종 시각 승인을 추론하지 않는다.
+
+## 최종 output
+
+수동 가이드를 만든 뒤 `$prepare-youtube-upload`의 archive dry-run을 확인하고 적용한다. 파일을 삭제하지 않는다.
+
+완료 시 `outputs/<job-id>/`에는 정확히 다음만 남긴다.
+
+- MP4 영상
+- 최종 썸네일
+- SRT 자막
+- `YOUTUBE-MANUAL-UPLOAD.md`
+
+기술 JSON, 설명 원본, 전사·검수 기록, 생성 원본과 이전 썸네일은 `work/<job-id>/` 또는 `work/<job-id>/archive/`에 둔다.
 
 ## 완료
 
-다섯 단계가 모두 `complete`이고 마지막 패키지가 `external_actions: none`이며 작업 기록 검증이 `status: valid`이면 작업 상태를 `complete`로 바꾸고 `next_action`을 `none`으로 기록한다. 기존 업로드가 기록되어 있으면 중복 업로드 경고를 유지한다.
+다음을 모두 충족할 때만 job을 `complete`, `next_action`을 `none`으로 기록한다.
 
-가이드 생성·검증이 완료 조건의 끝이다. 이후 사용자의 업로드 여부, 대상 채널, 공개 상태, 게시 결과를 blocker·다음 행동·후속 확인으로 기록하거나 확인하지 않는다.
+- 다섯 단계 `complete`
+- worktree와 작업 기록 검증 통과
+- 제목·썸네일 승인 포함 검증 통과
+- 수동 패키지 errors·warnings 0, `external_actions: none`
+- archive 적용 후 output 파일 네 개와 archive 재검증 통과
 
-반환한다.
-
-- job ID와 작업 기록 경로
-- 검증한 워크트리 절대 경로와 브랜치
-- 현재 완료 단계와 검증 근거
-- 현재 blocker 또는 필요한 사용자 행동
-- 다음 단계와 사용할 스킬
-- 최종 완료 시 아래 업로드 보고
-  - 최종 제목
-  - 영상·썸네일·SRT 절대 경로
-  - 설명문·설정·수동 업로드 안내서 경로
-  - 보존 목록과 검증 결과
-
-최종 완료 보고에는 제작 작업이 끝났고 남은 에이전트 작업이 없다고 명시한다. 사용자에게 업로드 후 다시 알려 달라고 요청하지 않는다.
+최종 보고에는 job ID, root·branch, 최종 제목, 네 output 파일, archive와 검증 결과를 반환한다. 실제 YouTube 업로드·게시·공개 범위 변경이나 결과 확인은 하지 않는다.

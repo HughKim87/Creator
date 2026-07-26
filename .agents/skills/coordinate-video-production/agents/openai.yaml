@@ -1,4 +1,4 @@
 interface:
   display_name: "Coordinate Video Production"
-  short_description: "영상별 5단계 제작 진행 상태와 다음 스킬을 안전하게 관리"
-  default_prompt: "Use $coordinate-video-production with Chrome Profile 4 to start or continue one video project through the next validated production stage."
+  short_description: "worktree·썸네일 승인·최종 네 파일을 강제하는 영상 제작 조정"
+  default_prompt: "Use $coordinate-video-production to verify the routed worktree first, then continue one video through copy-approved thumbnail creation and a four-file manual upload output."

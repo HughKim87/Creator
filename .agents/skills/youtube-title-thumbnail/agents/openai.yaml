@@ -1,4 +1,4 @@
 interface:
   display_name: "YouTube 제목·썸네일 생성"
-  short_description: "영상 근거로 유튜브 제목과 썸네일을 생성·검증"
-  default_prompt: "Use $youtube-title-thumbnail to create and validate a YouTube title and thumbnail from this video and transcript."
+  short_description: "문구 승인 후 클릭 중심 완성형 썸네일을 생성·검증"
+  default_prompt: "Use $youtube-title-thumbnail to propose thumbnail copy first, wait for copy approval, then create and validate the finished YouTube title-thumbnail package."

@@ -15,6 +15,7 @@ except ImportError as exc:
     raise SystemExit("Pillow is required to validate the thumbnail.") from exc
 
 
+SCHEMA_VERSIONS = {"youtube-manual-upload-v1", "youtube-manual-upload-v2"}
 ALLOWED_VISIBILITY = {"private", "unlisted", "public", "scheduled"}
 
 
@@ -48,23 +49,47 @@ def require_text(
     return value
 
 
-def resolve_artifact(
-    base: Path, value: Any, name: str, errors: list[str]
+def find_project_root(start: Path) -> Path:
+    for candidate in (start, *start.parents):
+        if (
+            (candidate / "PROJECT_RULES.md").is_file()
+            and (candidate / "extension").is_dir()
+        ):
+            return candidate.resolve()
+    raise ValueError("cannot locate project root from package path")
+
+
+def resolve_location(
+    base: Path,
+    scope_root: Path,
+    value: Any,
+    name: str,
+    errors: list[str],
+    *,
+    require_file: bool,
+    require_dir: bool = False,
 ) -> Path | None:
     text = require_text(value, name, errors)
     if not text:
         return None
-    candidate = (base / text).resolve()
+    candidate = Path(text)
+    if not candidate.is_absolute():
+        candidate = base / candidate
+    candidate = candidate.resolve()
     try:
-        candidate.relative_to(base)
+        candidate.relative_to(scope_root)
     except ValueError:
-        errors.append(f"{name} escapes the package directory")
+        errors.append(f"{name} escapes the allowed root")
         return None
-    if not candidate.is_file():
-        errors.append(f"{name} not found: {candidate}")
-        return None
-    if candidate.stat().st_size == 0:
-        errors.append(f"{name} is empty: {candidate}")
+    if require_file:
+        if not candidate.is_file():
+            errors.append(f"{name} not found: {candidate}")
+            return None
+        if candidate.stat().st_size == 0:
+            errors.append(f"{name} is empty: {candidate}")
+            return None
+    if require_dir and not candidate.is_dir():
+        errors.append(f"{name} directory not found: {candidate}")
         return None
     return candidate
 
@@ -91,6 +116,7 @@ def bool_ko(value: bool) -> str:
 
 def render_guide(
     package_path: Path,
+    guide_path: Path,
     data: dict[str, Any],
     resolved: dict[str, Path],
     keep_files: list[Path],
@@ -104,7 +130,10 @@ def render_guide(
         "# YouTube 수동 업로드 패키지",
         "",
         f"- 원본 데이터: `{package_path}`",
-        f"- 재생성: `python \"{script_path}\" \"{package_path}\"`",
+        (
+            f"- 재생성: `python \"{script_path}\" \"{package_path}\" "
+            f"--guide \"{guide_path}\"`"
+        ),
         "- 상태: 영상 제작 워크플로 완료",
         "- 완료 기준: 수동 업로드 가이드 생성·검증 완료",
         "- 경계: 이후 YouTube 업로드와 결과 확인은 사용자가 직접 수행하며 Codex 작업에 포함되지 않는다.",
@@ -149,15 +178,15 @@ def render_guide(
             f"- 아동용: {bool_ko(metadata['made_for_kids'])}",
             f"- 공개 상태 권장값: {metadata['visibility_recommendation']}",
             "",
-            "## 함께 보존할 업로드 정보",
-            "",
         ]
     )
-    for path in keep_files:
-        lines.append(f"- `{path.name}`: `{path}`")
+    if keep_files:
+        lines.extend(["## 함께 보존할 업로드 정보", ""])
+        for path in keep_files:
+            lines.append(f"- `{path.name}`: `{path}`")
+        lines.append("")
     lines.extend(
         [
-            "",
             "## 수동 업로드 순서",
             "",
             "1. YouTube Studio에서 올바른 채널인지 확인한다.",
@@ -184,6 +213,50 @@ def render_guide(
     return "\n".join(lines)
 
 
+def validate_title_package(
+    title_package: Path,
+    title: str,
+    thumbnail: Path | None,
+    errors: list[str],
+) -> None:
+    try:
+        approved = json.loads(title_package.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"title-thumbnail package is unreadable: {exc}")
+        return
+    selected = approved.get("title", {}).get("selected")
+    if title and selected != title:
+        errors.append("manual title differs from the approved package")
+    if approved.get("title", {}).get("status") != "approved":
+        errors.append("title-thumbnail title is not approved")
+
+    approved_thumbnail_value = approved.get("thumbnail", {}).get("upload")
+    if not isinstance(approved_thumbnail_value, str):
+        errors.append("title-thumbnail upload path is missing")
+    elif thumbnail:
+        approved_thumbnail = (
+            title_package.parent / approved_thumbnail_value
+        ).resolve()
+        if approved_thumbnail != thumbnail:
+            errors.append("manual thumbnail differs from the approved package")
+
+    schema = approved.get("schema_version")
+    if schema == "youtube-title-thumbnail-v2":
+        approval = approved.get("approval")
+        if not isinstance(approval, dict):
+            errors.append("title-thumbnail approval object is missing")
+            return
+        for name in ("copy", "image_generation", "visual"):
+            item = approval.get(name)
+            if not isinstance(item, dict) or item.get("status") != "approved":
+                errors.append(f"title-thumbnail approval.{name} is not approved")
+    elif schema == "youtube-title-thumbnail-v1":
+        if approved.get("validation", {}).get("user_approved") is not True:
+            errors.append("title-thumbnail package is not user-approved")
+    else:
+        errors.append("unsupported title-thumbnail package schema")
+
+
 def main() -> int:
     args = parse_args()
     package_path = args.package.resolve()
@@ -197,8 +270,18 @@ def main() -> int:
     except (OSError, json.JSONDecodeError) as exc:
         raise SystemExit(f"Cannot read package: {exc}") from exc
 
-    if data.get("schema_version") != "youtube-manual-upload-v1":
-        errors.append("schema_version must be youtube-manual-upload-v1")
+    schema_version = data.get("schema_version")
+    if schema_version not in SCHEMA_VERSIONS:
+        errors.append(
+            f"schema_version must be one of {sorted(SCHEMA_VERSIONS)}"
+        )
+    base = package_path.parent.resolve()
+    try:
+        project_root = find_project_root(base)
+    except ValueError as exc:
+        errors.append(str(exc))
+        project_root = base
+    scope_root = project_root if schema_version == "youtube-manual-upload-v2" else base
 
     channel = require_mapping(data.get("channel"), "channel", errors)
     artifacts = require_mapping(data.get("artifacts"), "artifacts", errors)
@@ -209,11 +292,15 @@ def main() -> int:
     if "id" in channel:
         errors.append("manual packages must not contain channel IDs")
 
-    base = package_path.parent.resolve()
     resolved: dict[str, Path] = {}
     for key in ("video", "thumbnail", "captions", "title_thumbnail_package"):
-        path = resolve_artifact(
-            base, artifacts.get(key), f"artifacts.{key}", errors
+        path = resolve_location(
+            base,
+            scope_root,
+            artifacts.get(key),
+            f"artifacts.{key}",
+            errors,
+            require_file=True,
         )
         if path:
             resolved[key] = path
@@ -241,7 +328,8 @@ def main() -> int:
             with Image.open(thumbnail) as image:
                 if image.size != (1280, 720):
                     errors.append(
-                        f"thumbnail must be 1280x720, got {image.size[0]}x{image.size[1]}"
+                        f"thumbnail must be 1280x720, got "
+                        f"{image.size[0]}x{image.size[1]}"
                     )
         except OSError as exc:
             errors.append(f"thumbnail is unreadable: {exc}")
@@ -262,7 +350,8 @@ def main() -> int:
     visibility = metadata.get("visibility_recommendation")
     if visibility not in ALLOWED_VISIBILITY:
         errors.append(
-            f"metadata.visibility_recommendation must be one of {sorted(ALLOWED_VISIBILITY)}"
+            f"metadata.visibility_recommendation must be one of "
+            f"{sorted(ALLOWED_VISIBILITY)}"
         )
 
     if preparation.get("status") != "ready":
@@ -271,19 +360,104 @@ def main() -> int:
         errors.append("preparation.youtube_actions must be manual_by_user")
 
     keep_files: list[Path] = []
-    raw_keep_files = preparation.get("keep_files", [])
-    if not isinstance(raw_keep_files, list):
-        errors.append("preparation.keep_files must be a list")
+    output_dir: Path | None = None
+    archive_dir: Path | None = None
+    final_output_files: list[str] = []
+
+    if schema_version == "youtube-manual-upload-v2":
+        output_dir = resolve_location(
+            base,
+            project_root,
+            preparation.get("output_dir"),
+            "preparation.output_dir",
+            errors,
+            require_file=False,
+            require_dir=True,
+        )
+        archive_dir = resolve_location(
+            base,
+            project_root,
+            preparation.get("archive_dir"),
+            "preparation.archive_dir",
+            errors,
+            require_file=False,
+        )
+        raw_final = preparation.get("final_output_files")
+        if not isinstance(raw_final, list) or len(raw_final) != 4:
+            errors.append("preparation.final_output_files must contain exactly 4 names")
+        else:
+            for index, value in enumerate(raw_final):
+                if (
+                    not isinstance(value, str)
+                    or not value.strip()
+                    or Path(value).name != value
+                ):
+                    errors.append(
+                        f"preparation.final_output_files[{index}] "
+                        "must be a plain filename"
+                    )
+                else:
+                    final_output_files.append(value)
+        guide_value = preparation.get("guide")
+        guide_path = resolve_location(
+            base,
+            project_root,
+            str(args.guide) if args.guide else guide_value,
+            "preparation.guide",
+            errors,
+            require_file=False,
+        )
+        if output_dir and guide_path and guide_path.parent != output_dir:
+            errors.append("preparation.guide must be inside preparation.output_dir")
+        if output_dir:
+            for key in ("video", "thumbnail", "captions"):
+                if key in resolved and resolved[key].parent != output_dir:
+                    errors.append(
+                        f"artifacts.{key} must be inside preparation.output_dir"
+                    )
+        if guide_path:
+            expected_names = {
+                resolved[key].name
+                for key in ("video", "thumbnail", "captions")
+                if key in resolved
+            }
+            expected_names.add(guide_path.name)
+            if set(final_output_files) != expected_names:
+                errors.append(
+                    "preparation.final_output_files must be exactly the "
+                    "video, thumbnail, captions, and guide filenames"
+                )
+        if archive_dir and output_dir:
+            try:
+                archive_dir.relative_to(output_dir)
+            except ValueError:
+                pass
+            else:
+                errors.append("preparation.archive_dir must be outside output_dir")
+        if preparation.get("keep_files"):
+            errors.append("v2 packages must keep technical files outside outputs")
     else:
-        for index, value in enumerate(raw_keep_files):
-            path = resolve_artifact(
-                base,
-                value,
-                f"preparation.keep_files[{index}]",
-                errors,
-            )
-            if path:
-                keep_files.append(path)
+        raw_keep_files = preparation.get("keep_files", [])
+        if not isinstance(raw_keep_files, list):
+            errors.append("preparation.keep_files must be a list")
+        else:
+            for index, value in enumerate(raw_keep_files):
+                path = resolve_location(
+                    base,
+                    base,
+                    value,
+                    f"preparation.keep_files[{index}]",
+                    errors,
+                    require_file=True,
+                )
+                if path:
+                    keep_files.append(path)
+        guide_path = (
+            args.guide.resolve()
+            if args.guide
+            else package_path.with_name("YOUTUBE-MANUAL-UPLOAD.md")
+        )
+        output_dir = base
 
     if "approval" in data:
         errors.append("manual packages must not contain external-action approvals")
@@ -291,20 +465,7 @@ def main() -> int:
         errors.append("manual packages must not contain a Chrome profile")
 
     if title_package:
-        try:
-            approved = json.loads(title_package.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            errors.append(f"title-thumbnail package is unreadable: {exc}")
-        else:
-            selected = approved.get("title", {}).get("selected")
-            approved_thumbnail = approved.get("thumbnail", {}).get("upload")
-            user_approved = approved.get("validation", {}).get("user_approved")
-            if title and selected != title:
-                errors.append("manual title differs from the approved package")
-            if thumbnail and approved_thumbnail != thumbnail.name:
-                errors.append("manual thumbnail differs from the approved package")
-            if user_approved is not True:
-                errors.append("title-thumbnail package is not user-approved")
+        validate_title_package(title_package, title, thumbnail, errors)
 
     duplicate_warning: str | None = None
     existing = data.get("existing_upload")
@@ -333,16 +494,12 @@ def main() -> int:
             for key in ("video", "thumbnail", "captions")
         }
 
-    guide_path = (
-        args.guide.resolve()
-        if args.guide
-        else package_path.with_name("YOUTUBE-MANUAL-UPLOAD.md")
-    )
     if not errors and not args.check:
         guide_path.parent.mkdir(parents=True, exist_ok=True)
         guide_path.write_text(
             render_guide(
                 package_path,
+                guide_path,
                 data,
                 resolved,
                 keep_files,
@@ -355,16 +512,19 @@ def main() -> int:
 
     output = {
         "status": "ready" if not errors else "invalid",
+        "schema_version": schema_version,
         "package": str(package_path),
-        "guide": str(guide_path) if not args.check else None,
+        "guide": str(guide_path) if guide_path and not args.check else None,
         "artifacts": {key: str(value) for key, value in resolved.items()},
         "hashes": hashes,
         "errors": errors,
         "warnings": warnings,
         "external_actions": "none",
-        "retention": {
-            "keep_files": [str(path) for path in keep_files],
-            "guide": str(guide_path),
+        "finalization": {
+            "output_dir": str(output_dir) if output_dir else None,
+            "final_output_files": final_output_files,
+            "archive_dir": str(archive_dir) if archive_dir else None,
+            "guide": str(guide_path) if guide_path else None,
         },
     }
     print(json.dumps(output, ensure_ascii=False, indent=2))

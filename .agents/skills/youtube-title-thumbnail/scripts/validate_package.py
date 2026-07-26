@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 import hashlib
 import json
 from pathlib import Path
@@ -17,14 +18,24 @@ except ImportError as exc:
     ) from exc
 
 
-SCHEMA_VERSION = "youtube-title-thumbnail-v1"
+SCHEMA_VERSIONS = {
+    "youtube-title-thumbnail-v1",
+    "youtube-title-thumbnail-v2",
+}
+GENERATION_MODES = {"one_shot_imagegen", "local_text_composite"}
+APPROVAL_METHODS = {"explicit_user", "delegated_by_user"}
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Validate title, source, and thumbnail package fields."
+        description="Validate title, copy approvals, and thumbnail package fields."
     )
     parser.add_argument("package", type=Path)
+    parser.add_argument(
+        "--require-approved",
+        action="store_true",
+        help="Fail unless title, copy, image generation, and final visual are approved.",
+    )
     return parser.parse_args()
 
 
@@ -41,15 +52,35 @@ def read_json(path: Path) -> dict[str, Any]:
     return value
 
 
-def resolve_path(base: Path, value: Any, field: str) -> Path:
+def find_project_root(start: Path) -> Path:
+    for candidate in (start, *start.parents):
+        if (
+            (candidate / "PROJECT_RULES.md").is_file()
+            and (candidate / "extension").is_dir()
+        ):
+            return candidate.resolve()
+    raise ValueError("Cannot locate project root from package path")
+
+
+def resolve_path(
+    base: Path,
+    project_root: Path,
+    value: Any,
+    field: str,
+) -> Path:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field} must be a non-empty path")
     candidate = Path(value)
     if not candidate.is_absolute():
         candidate = base / candidate
-    if not candidate.is_file():
-        raise ValueError(f"{field} not found: {candidate}")
-    return candidate.resolve()
+    candidate = candidate.resolve()
+    try:
+        candidate.relative_to(project_root)
+    except ValueError as exc:
+        raise ValueError(f"{field} escapes the project root") from exc
+    if not candidate.is_file() or candidate.stat().st_size == 0:
+        raise ValueError(f"{field} not found or empty: {candidate}")
+    return candidate
 
 
 def require_object(value: Any, field: str) -> dict[str, Any]:
@@ -64,42 +95,35 @@ def require_list(value: Any, field: str) -> list[Any]:
     return value
 
 
-def validate(package_path: Path) -> dict[str, Any]:
-    data = read_json(package_path)
-    errors: list[str] = []
-    warnings: list[str] = []
-    base = package_path.resolve().parent
+def require_text(value: Any, field: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field} must be non-empty text")
+    return value.strip()
 
-    if data.get("schema_version") != SCHEMA_VERSION:
-        errors.append(f"schema_version must be {SCHEMA_VERSION}")
 
+def parse_timestamp(value: Any, field: str) -> datetime:
+    text = require_text(value, field)
     try:
-        source = require_object(data.get("source"), "source")
-        video = resolve_path(base, source.get("video"), "source.video")
-        captions = resolve_path(
-            base, source.get("captions"), "source.captions"
-        )
-        channel_evidence = require_object(
-            source.get("channel_evidence"), "source.channel_evidence"
-        )
-        if channel_evidence.get("status") not in {
-            "verified",
-            "unavailable",
-            "not_provided",
-        }:
-            errors.append(
-                "source.channel_evidence.status must be verified, "
-                "unavailable, or not_provided"
-            )
+        parsed = datetime.fromisoformat(text)
     except ValueError as exc:
-        errors.append(str(exc))
-        video = captions = None
+        raise ValueError(f"{field} must be valid ISO 8601 text") from exc
+    if parsed.tzinfo is None:
+        raise ValueError(f"{field} must include a timezone")
+    return parsed
 
+
+def validate_title(
+    data: dict[str, Any],
+    errors: list[str],
+    *,
+    require_approved: bool,
+) -> tuple[str, int | None, bool]:
+    selected = ""
+    title_length: int | None = None
+    title_approved = False
     try:
         title = require_object(data.get("title"), "title")
-        selected = title.get("selected")
-        if not isinstance(selected, str) or not selected.strip():
-            raise ValueError("title.selected must be a non-empty string")
+        selected = require_text(title.get("selected"), "title.selected")
         if "\n" in selected or "\r" in selected:
             errors.append("title.selected must be one line")
         title_length = len(selected)
@@ -115,11 +139,15 @@ def validate(package_path: Path) -> dict[str, Any]:
             if not isinstance(item, dict):
                 errors.append(f"title.candidates[{index}] must be an object")
                 continue
-            candidate_text = item.get("text")
-            if not isinstance(candidate_text, str) or not candidate_text.strip():
-                errors.append(
-                    f"title.candidates[{index}].text must be non-empty"
+            try:
+                candidate_text = require_text(
+                    item.get("text"), f"title.candidates[{index}].text"
                 )
+                require_text(
+                    item.get("angle"), f"title.candidates[{index}].angle"
+                )
+            except ValueError as exc:
+                errors.append(str(exc))
                 continue
             candidate_texts.append(candidate_text)
             if not 40 <= len(candidate_text) <= 65:
@@ -127,45 +155,195 @@ def validate(package_path: Path) -> dict[str, Any]:
                     f"title.candidates[{index}].text length must be 40-65, "
                     f"got {len(candidate_text)}"
                 )
-            if not isinstance(item.get("angle"), str) or not item["angle"]:
-                errors.append(
-                    f"title.candidates[{index}].angle must be non-empty"
-                )
         if selected not in candidate_texts:
             errors.append("title.selected must appear in title.candidates")
-        if title.get("status") not in {"draft", "approved"}:
+        status = title.get("status")
+        if status not in {"draft", "approved"}:
             errors.append("title.status must be draft or approved")
+        title_approved = status == "approved"
+        if require_approved and not title_approved:
+            errors.append("title.status must be approved")
     except ValueError as exc:
         errors.append(str(exc))
-        selected = ""
-        title_length = None
+    return selected, title_length, title_approved
 
+
+def validate_approval(
+    data: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    generated_at: datetime | None,
+    *,
+    require_approved: bool,
+) -> bool:
+    try:
+        approval = require_object(data.get("approval"), "approval")
+    except ValueError as exc:
+        errors.append(str(exc))
+        return False
+
+    parsed: dict[str, datetime] = {}
+    all_approved = True
+    for name in ("copy", "image_generation", "visual"):
+        try:
+            item = require_object(approval.get(name), f"approval.{name}")
+            status = item.get("status")
+            if status not in {"pending", "approved"}:
+                errors.append(
+                    f"approval.{name}.status must be pending or approved"
+                )
+                all_approved = False
+                continue
+            if status != "approved":
+                all_approved = False
+                message = f"approval.{name} is not approved"
+                if require_approved:
+                    errors.append(message)
+                else:
+                    warnings.append(message)
+                continue
+            method = item.get("method")
+            if method not in APPROVAL_METHODS:
+                errors.append(
+                    f"approval.{name}.method must be one of "
+                    f"{sorted(APPROVAL_METHODS)}"
+                )
+                all_approved = False
+            parsed[name] = parse_timestamp(
+                item.get("approved_at"), f"approval.{name}.approved_at"
+            )
+        except ValueError as exc:
+            errors.append(str(exc))
+            all_approved = False
+
+    if generated_at and {"copy", "image_generation"} <= parsed.keys():
+        if parsed["copy"] > generated_at:
+            errors.append("copy approval must not be later than thumbnail.generated_at")
+        if parsed["image_generation"] > generated_at:
+            errors.append(
+                "image generation approval must not be later than "
+                "thumbnail.generated_at"
+            )
+    if generated_at and "visual" in parsed and parsed["visual"] < generated_at:
+        errors.append("visual approval must not be earlier than thumbnail.generated_at")
+    if {"copy", "image_generation"} <= parsed.keys():
+        if parsed["copy"] > parsed["image_generation"]:
+            errors.append(
+                "copy approval must not be later than image generation approval"
+            )
+    return all_approved
+
+
+def validate(package_path: Path, *, require_approved: bool = False) -> dict[str, Any]:
+    data = read_json(package_path)
+    errors: list[str] = []
+    warnings: list[str] = []
+    base = package_path.resolve().parent
+    project_root = find_project_root(base)
+    schema_version = data.get("schema_version")
+
+    if schema_version not in SCHEMA_VERSIONS:
+        errors.append(
+            f"schema_version must be one of {sorted(SCHEMA_VERSIONS)}"
+        )
+
+    video = captions = None
+    try:
+        source = require_object(data.get("source"), "source")
+        video = resolve_path(
+            base, project_root, source.get("video"), "source.video"
+        )
+        captions = resolve_path(
+            base, project_root, source.get("captions"), "source.captions"
+        )
+        channel_evidence = require_object(
+            source.get("channel_evidence"), "source.channel_evidence"
+        )
+        if channel_evidence.get("status") not in {
+            "verified",
+            "unavailable",
+            "not_provided",
+        }:
+            errors.append(
+                "source.channel_evidence.status must be verified, "
+                "unavailable, or not_provided"
+            )
+    except ValueError as exc:
+        errors.append(str(exc))
+
+    selected, title_length, title_approved = validate_title(
+        data, errors, require_approved=require_approved
+    )
+
+    upload = master = source_image = preview = None
+    generation_mode = "legacy"
+    generated_at: datetime | None = None
+    width = height = upload_bytes = None
+    image_format = upload_sha256 = None
     try:
         thumbnail = require_object(data.get("thumbnail"), "thumbnail")
         upload = resolve_path(
-            base, thumbnail.get("upload"), "thumbnail.upload"
+            base, project_root, thumbnail.get("upload"), "thumbnail.upload"
         )
         master = resolve_path(
-            base, thumbnail.get("master"), "thumbnail.master"
-        )
-        background = resolve_path(
-            base, thumbnail.get("background"), "thumbnail.background"
+            base, project_root, thumbnail.get("master"), "thumbnail.master"
         )
         preview = resolve_path(
-            base, thumbnail.get("mobile_preview"), "thumbnail.mobile_preview"
+            base,
+            project_root,
+            thumbnail.get("mobile_preview"),
+            "thumbnail.mobile_preview",
         )
         text_blocks = require_list(thumbnail.get("text"), "thumbnail.text")
         if not 2 <= len(text_blocks) <= 3:
             errors.append("thumbnail.text must contain 2 or 3 blocks")
         for index, block in enumerate(text_blocks, start=1):
-            if not isinstance(block, str) or not block.strip():
+            try:
+                require_text(block, f"thumbnail.text[{index}]")
+            except ValueError as exc:
+                errors.append(str(exc))
+        require_text(
+            thumbnail.get("generation_prompt"), "thumbnail.generation_prompt"
+        )
+
+        if schema_version == "youtube-title-thumbnail-v2":
+            generation_mode = thumbnail.get("generation_mode")
+            if generation_mode not in GENERATION_MODES:
                 errors.append(
-                    f"thumbnail.text[{index}] must be a non-empty string"
+                    "thumbnail.generation_mode must be one_shot_imagegen "
+                    "or local_text_composite"
                 )
-        if not isinstance(
-            thumbnail.get("generation_prompt"), str
-        ) or not thumbnail["generation_prompt"].strip():
-            errors.append("thumbnail.generation_prompt must be non-empty")
+            source_field = (
+                "generated_source"
+                if generation_mode == "one_shot_imagegen"
+                else "background"
+            )
+            source_image = resolve_path(
+                base,
+                project_root,
+                thumbnail.get(source_field),
+                f"thumbnail.{source_field}",
+            )
+            if generation_mode == "local_text_composite":
+                require_text(thumbnail.get("font"), "thumbnail.font")
+            strategy = require_object(
+                thumbnail.get("copy_strategy"), "thumbnail.copy_strategy"
+            )
+            for key in ("hook", "payoff", "scope"):
+                require_text(
+                    strategy.get(key), f"thumbnail.copy_strategy.{key}"
+                )
+            generated_at = parse_timestamp(
+                thumbnail.get("generated_at"), "thumbnail.generated_at"
+            )
+        else:
+            source_image = resolve_path(
+                base,
+                project_root,
+                thumbnail.get("background"),
+                "thumbnail.background",
+            )
+
         with Image.open(upload) as image:
             width, height = image.size
             image_format = image.format
@@ -185,23 +363,46 @@ def validate(package_path: Path) -> dict[str, Any]:
         upload_sha256 = hashlib.sha256(upload.read_bytes()).hexdigest()
     except ValueError as exc:
         errors.append(str(exc))
-        upload = master = background = preview = None
-        width = height = upload_bytes = None
-        image_format = upload_sha256 = None
 
     validation = data.get("validation")
     if not isinstance(validation, dict):
         errors.append("validation must be an object")
         validation = {}
-    if validation.get("facts_traceable") is not True:
-        errors.append("validation.facts_traceable must be true")
-    if validation.get("mobile_preview_reviewed") is not True:
-        errors.append("validation.mobile_preview_reviewed must be true")
-    if validation.get("user_approved") is not True:
-        warnings.append("Title and thumbnail are not yet user-approved")
+    required_flags = ["facts_traceable", "mobile_preview_reviewed"]
+    if schema_version == "youtube-title-thumbnail-v2":
+        required_flags.extend(
+            [
+                "text_exact",
+                "clickability_reviewed",
+                "title_thumbnail_not_duplicate",
+            ]
+        )
+    for field in required_flags:
+        if validation.get(field) is not True:
+            errors.append(f"validation.{field} must be true")
+
+    if schema_version == "youtube-title-thumbnail-v2":
+        approval_ready = validate_approval(
+            data,
+            errors,
+            warnings,
+            generated_at,
+            require_approved=require_approved,
+        )
+    else:
+        approval_ready = validation.get("user_approved") is True
+        if not approval_ready:
+            message = "Title and thumbnail are not yet user-approved"
+            if require_approved:
+                errors.append(message)
+            else:
+                warnings.append(message)
+        if require_approved and not title_approved:
+            errors.append("title.status must be approved")
 
     return {
         "status": "valid" if not errors else "invalid",
+        "schema_version": schema_version,
         "package": str(package_path.resolve()),
         "selected_title": selected,
         "title_length": title_length,
@@ -212,9 +413,11 @@ def validate(package_path: Path) -> dict[str, Any]:
         "thumbnail_format": image_format,
         "thumbnail_bytes": upload_bytes,
         "thumbnail_sha256": upload_sha256,
+        "generation_mode": generation_mode,
         "master": str(master) if master else None,
-        "background": str(background) if background else None,
+        "source_image": str(source_image) if source_image else None,
         "mobile_preview": str(preview) if preview else None,
+        "approval_ready": approval_ready and title_approved,
         "errors": errors,
         "warnings": warnings,
     }
@@ -223,7 +426,9 @@ def validate(package_path: Path) -> dict[str, Any]:
 def main() -> int:
     args = parse_args()
     try:
-        result = validate(args.package)
+        result = validate(
+            args.package, require_approved=args.require_approved
+        )
     except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
         result = {
             "status": "invalid",
