@@ -8,6 +8,7 @@
   "job_id": "2026-07-25-example-topic",
   "topic": "영상 주제",
   "status": "active",
+  "execution_mode": "review_gated",
   "execution_context": {
     "worktree": {
       "root": "C:/absolute/path/to/worktree",
@@ -44,6 +45,7 @@
       "status": "pending",
       "skill": "notebooklm-generate-video",
       "artifacts": [],
+      "playback_check": null,
       "validation": "",
       "note": ""
     },
@@ -76,6 +78,7 @@
 
 ## 실행 컨텍스트
 
+- `execution_mode`는 `autonomous_local_pipeline` 또는 `review_gated`다. 전자는 로컬 중간 선택을 위임받아 수동 업로드 패키지까지 연속 진행하고, 후자는 제목·썸네일 승인마다 멈춘다. 두 모드 모두 결제·권한 변경·외부 업로드를 승인하지 않는다.
 - `check_worktree.py --root .`의 `status`, `root`, `branch`, `expected_branch`를 그대로 기록한다.
 - 새 작업 생성 전과 단계 전환 전에 다시 검증하고 `checked_at`을 갱신한다.
 - v2 검증기는 현재 root·branch와 기록이 다르면 실패한다.
@@ -86,6 +89,7 @@
 
 - 단계와 skill 이름은 정의된 다섯 개를 정확히 사용한다.
 - 완료 단계에는 실제 존재하는 로컬 산출물 또는 NotebookLM URL과 검증 요약이 있어야 한다.
+- `video` 완료 시 `playback_check`를 `{ "elapsed_seconds": 17.0, "progressed": true, "paused": true }` 형식으로 기록한다. 경과 시간은 0초보다 크고 30초 이하여야 한다.
 - `title_thumbnail` 완료에는 승인된 v1 패키지 또는 문구·생성·시각 승인을 모두 받은 v2 패키지가 필요하다.
 - `upload_package` 완료에는 준비 패키지와 수동 업로드 가이드가 필요하다.
 - v2 최종 output은 MP4·썸네일·SRT·가이드 네 파일만 포함한다.

@@ -33,6 +33,8 @@ $activeBranch = $activation.active_branch
 [references/video-job-format.md](references/video-job-format.md)에 따라 새 작업마다 `extension/work/<job-id>/VIDEO_JOB.json`을 만든다.
 
 - 새 작업은 `video-job-v2`를 사용하고 worktree 검증 결과를 `execution_context`에 기록한다.
+- `execution_mode`는 `autonomous_local_pipeline` 또는 `review_gated`로 기록한다.
+- 사용자가 “수동 업로드 가이드까지 쭉 진행”, “끝까지 진행”, “중간 과정은 알아서 진행”처럼 로컬 제작 전 과정을 맡기면 `autonomous_local_pipeline`을 사용한다. 개별 제목·썸네일 검토를 요청하거나 선택 위임이 불명확하면 `review_gated`를 사용한다.
 - 기본 Chrome 프로필 표시명과 디렉터리는 `Profile 4`, 기본 origin은 NotebookLM이다.
 - 기술 패키지와 생성 원본은 `work/<job-id>/`, 최종 사용자 파일은 `outputs/<job-id>/`에 둔다.
 - `.gitignore`나 추적 정책을 임의로 바꾸지 않는다.
@@ -62,7 +64,7 @@ python .agents/skills/coordinate-video-production/scripts/validate_video_job.py 
 | 단계 | 스킬 | 완료 근거 |
 |---|---|---|
 | `research` | `$notebooklm-research-topic` | 노트북 URL과 출처 품질 |
-| `video` | `$notebooklm-generate-video` | 완성 영상, 길이, 재생·다운로드 상태 |
+| `video` | `$notebooklm-generate-video` | 완성 영상, 길이, 30초 이내 재생 확인 후 일시정지, 다운로드 상태 |
 | `captions` | `$video-to-srt` | MP4, SRT, 원본 전사와 전체 검수 |
 | `title_thumbnail` | `$youtube-title-thumbnail` | 승인된 제목·문구·생성·최종 시각과 썸네일 |
 | `upload_package` | `$prepare-youtube-upload` | 업로드용 네 파일, 별도 archive와 수동 가이드 |
@@ -75,13 +77,13 @@ python .agents/skills/coordinate-video-production/scripts/validate_video_job.py 
 2. 활성·사용자 대기·차단 단계가 있으면 그 상태부터 해결한다.
 3. 다음 스킬 하나만 실행하고 산출물을 검증한다.
 4. 검증 후에만 단계 상태와 경로를 갱신한다.
-5. 사용자의 일괄 진행 지시는 검증된 다음 단계로 계속할 권한이지만 썸네일 승인 생략은 아니다.
+5. `autonomous_local_pipeline`이면 검증 직후 다음 `pending` 단계로 계속한다. `needs_user`, `blocked`, `complete` 또는 아래 외부 경계에 도달할 때만 멈춘다.
 
-썸네일 단계는 다음 순서를 강제한다.
+`review_gated`의 썸네일 단계는 다음 순서를 강제한다.
 
 `문구 후보 → 문구 승인 → 이미지 생성 승인 → 완성형 생성 → 최종 시각 승인`
 
-사용자가 “썸네일 승인 생략”을 명시한 경우에만 해당 승인을 `delegated_by_user`로 기록한다. 기술 검증이나 권장안 위임만으로 최종 시각 승인을 추론하지 않는다.
+`autonomous_local_pipeline`에서는 제목 선정, 썸네일 문구·이미지 생성·최종 시각 선택, 설명·챕터 작성 같은 로컬·가역적 중간 결정을 에이전트가 수행하고 각 승인을 `delegated_by_user`로 기록한다. 이 모드는 결제, 권한 변경, 공유, YouTube 업로드·게시·공개 범위 변경을 승인하지 않는다.
 
 ## 최종 output
 

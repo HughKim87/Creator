@@ -36,6 +36,7 @@ EXPECTED_SKILLS = {
 JOB_STATUSES = {"active", "needs_user", "blocked", "complete"}
 STAGE_STATUSES = {"pending", "in_progress", "needs_user", "blocked", "complete"}
 ACTIVE_STAGE_STATUSES = {"in_progress", "needs_user", "blocked"}
+EXECUTION_MODES = {"autonomous_local_pipeline", "review_gated"}
 CONNECTION_METHODS = {
     "same_runtime",
     "explicit_tab_mention",
@@ -205,6 +206,13 @@ def validate_video_job(
     if job_status not in JOB_STATUSES:
         errors.append(f"job status must be one of {sorted(JOB_STATUSES)}")
 
+    execution_mode_present = "execution_mode" in data
+    execution_mode = data.get("execution_mode", "review_gated")
+    if execution_mode_present and execution_mode not in EXECUTION_MODES:
+        errors.append(
+            f"execution_mode must be one of {sorted(EXECUTION_MODES)}"
+        )
+
     stages = data.get("stages")
     if not isinstance(stages, dict):
         errors.append("stages must be an object")
@@ -259,6 +267,30 @@ def validate_video_job(
                 errors.append(
                     f"stages.{name}.validation is required when status is complete"
                 )
+            if name == "video" and execution_mode_present:
+                playback = stage.get("playback_check")
+                if not isinstance(playback, dict):
+                    errors.append(
+                        "stages.video.playback_check must be an object when video is complete"
+                    )
+                else:
+                    elapsed = playback.get("elapsed_seconds")
+                    if (
+                        isinstance(elapsed, bool)
+                        or not isinstance(elapsed, (int, float))
+                        or not 0 < float(elapsed) <= 30
+                    ):
+                        errors.append(
+                            "stages.video.playback_check.elapsed_seconds must be greater than 0 and at most 30"
+                        )
+                    if playback.get("progressed") is not True:
+                        errors.append(
+                            "stages.video.playback_check.progressed must be true"
+                        )
+                    if playback.get("paused") is not True:
+                        errors.append(
+                            "stages.video.playback_check.paused must be true"
+                        )
             if check_artifacts:
                 if root is None:
                     errors.append("--check-artifacts requires --root")
@@ -420,6 +452,7 @@ def validate_video_job(
         "status": "valid" if not errors else "invalid",
         "schema_version": schema_version,
         "job_id": data.get("job_id"),
+        "execution_mode": execution_mode,
         "stage_statuses": statuses,
         "worktree": worktree_result,
         "errors": errors,
