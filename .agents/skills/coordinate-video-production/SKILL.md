@@ -20,6 +20,7 @@ $activeBranch = $activation.active_branch
 ```
 
 - 사용자가 이번 요청에서 다른 브랜치를 명시한 경우에만 `--expected-branch`로 덮어쓴다. 현재 브랜치를 기대값으로 채우지 않는다.
+- 초기 검사에 `expected_root`가 있으면 활성화 스크립트가 그 경로를 다시 검증한 `active_root`만 사용한다.
 - `activate_worktree.py`가 `redirected: true`를 반환하면 `active_root`가 스킬의 **유일한 작업 기준**이다. 이후 모든 셸 명령은 `workdir=$activeRoot`로 실행하고, 모든 상대 경로·작업 기록·검증 명령은 `$activeRoot`를 기준으로 해석한다.
 - `active_root`를 확보한 뒤에는 원래 세션 cwd의 파일을 다시 조회하지 않는다. `.`를 원래 cwd를 뜻하는 상태로 사용하지 않는다.
 - `active_root`의 재검증이 `valid`가 아니면 영상 파일이나 브라우저를 만지지 않는다. `main`으로 대체하지 않는다.
@@ -32,9 +33,12 @@ $activeBranch = $activation.active_branch
 
 [references/video-job-format.md](references/video-job-format.md)에 따라 새 작업마다 `extension/work/<job-id>/VIDEO_JOB.json`을 만든다.
 
-- 새 작업은 `video-job-v2`를 사용하고 worktree 검증 결과를 `execution_context`에 기록한다.
+- 새 작업은 `video-job-v3`를 사용하고 worktree 검증 결과를 `execution_context`에 기록한다.
 - `execution_mode`는 `autonomous_local_pipeline` 또는 `review_gated`로 기록한다.
-- 사용자가 “수동 업로드 가이드까지 쭉 진행”, “끝까지 진행”, “중간 과정은 알아서 진행”처럼 로컬 제작 전 과정을 맡기면 `autonomous_local_pipeline`을 사용한다. 개별 제목·썸네일 검토를 요청하거나 선택 위임이 불명확하면 `review_gated`를 사용한다.
+- `execution_mode`는 단계 사이의 자동 진행만 제어한다. 제목·문구·이미지·최종 시각의 승인 권한을 부여하지 않는다.
+- `thumbnail_contract`에 `generation_mode`, `allow_local_text_composite`, `approval_mode`, `instruction_source`를 기록한다. 사용자가 별도로 창작 선택권을 위임하지 않으면 `approval_mode`는 `review_gated`다.
+- “끝까지 진행”, “중간 과정은 알아서 진행”은 `autonomous_local_pipeline` 근거일 수 있지만 `approval_mode: delegated_by_user` 근거가 아니다.
+- 사용자가 웹 ChatGPT와 같은 생성을 요구하면 `generation_mode: one_shot_imagegen`, `allow_local_text_composite: false`, `instruction_source: explicit_user`로 기록한다.
 - 기본 Chrome 프로필 표시명과 디렉터리는 `Profile 4`, 기본 origin은 NotebookLM이다.
 - 기술 패키지와 생성 원본은 `work/<job-id>/`, 최종 사용자 파일은 `outputs/<job-id>/`에 둔다.
 - `.gitignore`나 추적 정책을 임의로 바꾸지 않는다.
@@ -79,11 +83,13 @@ python .agents/skills/coordinate-video-production/scripts/validate_video_job.py 
 4. 검증 후에만 단계 상태와 경로를 갱신한다.
 5. `autonomous_local_pipeline`이면 검증 직후 다음 `pending` 단계로 계속한다. `needs_user`, `blocked`, `complete` 또는 아래 외부 경계에 도달할 때만 멈춘다.
 
-`review_gated`의 썸네일 단계는 다음 순서를 강제한다.
+`thumbnail_contract.approval_mode: review_gated`의 썸네일 단계는 다음 순서를 강제한다.
 
 `문구 후보 → 문구 승인 → 이미지 생성 승인 → 완성형 생성 → 최종 시각 승인`
 
-`autonomous_local_pipeline`에서는 제목 선정, 썸네일 문구·이미지 생성·최종 시각 선택, 설명·챕터 작성 같은 로컬·가역적 중간 결정을 에이전트가 수행하고 각 승인을 `delegated_by_user`로 기록한다. 이 모드는 결제, 권한 변경, 공유, YouTube 업로드·게시·공개 범위 변경을 승인하지 않는다.
+`thumbnail_contract.approval_mode: delegated_by_user`는 사용자가 제목·문구·이미지·최종 시각의 임의 확정 또는 승인 생략을 명시한 경우에만 사용한다. 이때만 해당 승인을 `delegated_by_user`로 기록한다. `autonomous_local_pipeline`이어도 `approval_mode: review_gated`이면 썸네일 단계에서 `needs_user`로 멈춘다.
+
+승인 의미와 생성 모드의 세부 계약은 `$youtube-title-thumbnail`의 `references/package-format.md`를 단일 owner로 사용한다.
 
 ## 최종 output
 
@@ -105,7 +111,9 @@ python .agents/skills/coordinate-video-production/scripts/validate_video_job.py 
 - 다섯 단계 `complete`
 - worktree와 작업 기록 검증 통과
 - 제목·썸네일 승인 포함 검증 통과
+- `VIDEO_JOB.json`의 `thumbnail_contract`와 제목·썸네일 패키지의 생성·승인 계약 일치
 - 수동 패키지 errors·warnings 0, `external_actions: none`
+- 수동 패키지에 기록된 네 입력 해시가 현재 영상·썸네일·SRT·제목·썸네일 패키지와 일치
 - archive 적용 후 output 파일 네 개와 archive 재검증 통과
 
 최종 보고에는 job ID, root·branch, 최종 제목, 네 output 파일, archive와 검증 결과를 반환한다. 실제 YouTube 업로드·게시·공개 범위 변경이나 결과 확인은 하지 않는다.

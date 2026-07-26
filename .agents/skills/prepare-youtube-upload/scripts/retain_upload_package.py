@@ -11,7 +11,11 @@ import shutil
 from typing import Any
 
 
-SCHEMA_VERSIONS = {"youtube-manual-upload-v1", "youtube-manual-upload-v2"}
+SCHEMA_VERSIONS = {
+    "youtube-manual-upload-v1",
+    "youtube-manual-upload-v2",
+    "youtube-manual-upload-v3",
+}
 
 
 def _load_package(package_path: Path) -> dict[str, Any]:
@@ -108,7 +112,18 @@ def build_plan(package: Path, guide: Path | None = None) -> dict[str, Any]:
     if not isinstance(preparation, dict):
         raise ValueError("preparation must be an object")
 
-    if schema == "youtube-manual-upload-v2":
+    if schema == "youtube-manual-upload-v3":
+        if preparation.get("status") != "ready":
+            raise ValueError("preparation.status must be ready")
+        if preparation.get("youtube_actions") != "manual_by_user":
+            raise ValueError(
+                "preparation.youtube_actions must be manual_by_user"
+            )
+
+    if schema in {
+        "youtube-manual-upload-v2",
+        "youtube-manual-upload-v3",
+    }:
         output_dir = _resolve(
             base,
             project_root,
@@ -145,6 +160,36 @@ def build_plan(package: Path, guide: Path | None = None) -> dict[str, Any]:
                 raise ValueError(
                     f"artifacts.{key} is outside the final output contract"
                 )
+        if schema == "youtube-manual-upload-v3":
+            title_package = _resolve(
+                base,
+                project_root,
+                artifacts.get("title_thumbnail_package"),
+                "artifacts.title_thumbnail_package",
+                require_file=True,
+            )
+            declared_hashes = data.get("artifact_hashes")
+            if not isinstance(declared_hashes, dict):
+                raise ValueError("artifact_hashes must be an object")
+            resolved_for_hash = {
+                key: _resolve(
+                    base,
+                    project_root,
+                    artifacts.get(key),
+                    f"artifacts.{key}",
+                    require_file=True,
+                )
+                for key in ("video", "thumbnail", "captions")
+            }
+            resolved_for_hash["title_thumbnail_package"] = title_package
+            for key, path in resolved_for_hash.items():
+                declared = declared_hashes.get(key)
+                if (
+                    not isinstance(declared, str)
+                    or len(declared) != 64
+                    or declared.lower() != _sha256(path)
+                ):
+                    raise ValueError(f"artifact hash differs: {key}")
         if guide_path.parent != output_dir or guide_path.name not in final_names:
             raise ValueError("guide is outside the final output contract")
     else:

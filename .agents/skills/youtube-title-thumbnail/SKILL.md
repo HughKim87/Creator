@@ -24,7 +24,7 @@ description: 완성 영상·SRT·리서치 근거와 선택적 채널 패턴을 
 2. 비교형·사용법형·경고형·총정리형을 포함해 40~65자 후보 5개를 만든다.
 3. 핵심 검색어를 앞 4~5단어 안에 두고 과장과 소스에 없는 확정 표현을 제외한다.
 4. 명확성, 검색 의도, 영상 충실도, 호기심과 채널 적합성으로 하나를 `draft`로 선정한다.
-5. 사용자가 승인하거나 선택 권한을 위임한 경우 `approved`로 바꾼다. 상위 작업의 `execution_mode`가 `autonomous_local_pipeline`이면 권장안을 직접 선정하고 `delegated_by_user`로 기록한다.
+5. 사용자가 승인하거나 `thumbnail_contract.approval_mode: delegated_by_user`로 선택 권한을 명시적으로 위임한 경우에만 `approved`로 바꾼다.
 
 ## 썸네일 문구
 
@@ -36,18 +36,19 @@ description: 완성 영상·SRT·리서치 근거와 선택적 채널 패턴을 
 4. 제목을 반복하는 설명형 문구, “뭐부터?”, “입문자 가이드”, 도구 이름 나열만으로 끝나는 문구를 기본안으로 선택하지 않는다.
 5. 후보 3~5개에 클릭 이유와 약점을 붙여 사용자에게 보여준다.
 
-`review_gated`에서는 사용자가 정확한 문구를 승인하기 전 이미지 생성 도구를 호출하지 않는다. `autonomous_local_pipeline`에서는 후보의 클릭 이유와 약점을 내부 검토한 뒤 가장 적합한 문구를 선정하고, 문구와 이미지 생성 승인을 `delegated_by_user`로 기록해 중단 없이 진행한다.
+`thumbnail_contract.approval_mode: review_gated`에서는 사용자가 정확한 문구를 승인하기 전 이미지 생성 도구를 호출하지 않는다. `delegated_by_user`는 사용자가 창작 승인 생략이나 임의 확정을 명시한 계약이 있을 때만 사용한다. 상위 작업의 `execution_mode`만으로 승인 위임을 추정하지 않는다.
 
 ## 이미지 생성
 
 문구와 이미지 생성 승인을 받은 뒤 [references/thumbnail-brief-template.md](references/thumbnail-brief-template.md)를 읽는다.
 
-기본 모드는 `one_shot_imagegen`이다.
+기본 모드는 `one_shot_imagegen`이다. 상위 작업의 `thumbnail_contract`와 패키지의 `generation_contract`를 먼저 대조한다.
 
 - built-in image generation으로 승인 문구·주제·구도·조명을 하나의 완성형 썸네일로 생성한다.
 - 정확한 한글·제품명과 16:9 안전 여백을 프롬프트에 명시한다.
 - 생성 문구가 틀리면 같은 완성형 이미지를 편집하거나 다시 생성한다.
-- `local_text_composite`는 사용자가 정확한 로컬 합성을 요청하거나 문자 오류가 반복되어 대체 방식을 승인한 경우에만 사용한다.
+- `local_text_composite`는 `generation_contract.allow_local_text_composite: true`이고, 사용자가 정확한 로컬 합성을 요청했거나 완성형 생성에서 문자 오류가 두 번 이상 반복된 뒤 전환을 명시적으로 승인한 경우에만 사용한다.
+- 로컬 합성 패키지에는 `local_composite_authorization.reason`, `approved_by`, `approved_at`과 반복 실패 시 `one_shot_attempts`를 기록한다.
 - 로컬 합성 시 `scripts/render_thumbnail.py`를 사용하고 배경·폰트·문구를 패키지에 기록한다.
 
 생성 원본을 보존한 뒤 업로드용 이미지를 정확히 1280×720 JPEG 또는 PNG로 정규화하고 320×180 미리보기를 만든다.
@@ -63,12 +64,13 @@ description: 완성 영상·SRT·리서치 근거와 선택적 채널 패턴을 
 - 일반적인 로봇·UI 템플릿이 아니라 영상의 핵심 메커니즘을 보여줌
 - 배경과 글자가 하나의 완성형 디자인으로 보임
 
-최종 이미지와 320×180 미리보기를 검수한다. `review_gated`에서는 사용자에게 보여주고 승인 또는 명시적 위임 전에는 완료하지 않는다. `autonomous_local_pipeline`에서는 에이전트가 동일한 검수 기준으로 최종 시각을 선택하고 `visual.method`를 `delegated_by_user`로 기록한 뒤 계속한다.
+최종 이미지와 320×180 미리보기를 검수한다. `approval_mode: review_gated`에서는 사용자에게 보여주고 승인 전에는 완료하지 않는다. `approval_mode: delegated_by_user`일 때만 에이전트가 최종 시각을 선택하고 `visual.method`를 `delegated_by_user`로 기록한다.
 
 ## 승인과 패키지
 
-[references/package-format.md](references/package-format.md)에 따라 `youtube-title-thumbnail-v2` 패키지를 `work/<job-id>/`에 만든다.
+[references/package-format.md](references/package-format.md)에 따라 새 작업은 `youtube-title-thumbnail-v3` 패키지를 `work/<job-id>/`에 만든다.
 
+- `generation_contract`와 `approval_policy`를 상위 `thumbnail_contract`와 동일하게 기록한다.
 - `copy`, `image_generation`, `visual` 승인을 각각 기록한다.
 - 문구·생성 승인 시각은 이미지 생성 시각보다 빠르거나 같아야 한다.
 - 시각 승인 시각은 이미지 생성 이후여야 한다.

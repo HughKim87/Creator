@@ -29,7 +29,11 @@ Constraints: no cropped or duplicated text, fake logos, watermarks, random Engli
 
 ## 로컬 문자 합성
 
-`generation_mode: local_text_composite`일 때만 사용한다.
+`generation_mode: local_text_composite`일 때만 사용한다. 또한 v3 계약의
+`generation_contract.allow_local_text_composite`가 `true`이고
+`instruction_source`가 `explicit_user`여야 한다. 사용자가 로컬 합성을
+직접 요청하지 않았다면 완성형 생성에서 문자 오류가 두 번 이상 반복되고,
+차이를 설명한 뒤 사용자가 전환을 승인한 기록까지 있어야 한다.
 
 ```text
 Use case: ads-marketing

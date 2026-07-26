@@ -23,7 +23,11 @@ SPEC.loader.exec_module(MODULE)
 
 
 class UploadRetentionTests(unittest.TestCase):
-    def _package(self) -> tuple[tempfile.TemporaryDirectory[str], Path, Path, Path]:
+    def _package(
+        self,
+        *,
+        schema: str = "youtube-manual-upload-v2",
+    ) -> tuple[tempfile.TemporaryDirectory[str], Path, Path, Path]:
         temporary = tempfile.TemporaryDirectory(
             prefix="youtube-upload-retention-",
             dir=REPO / "extension" / "work",
@@ -41,10 +45,10 @@ class UploadRetentionTests(unittest.TestCase):
         ):
             (output / name).write_text(name, encoding="utf-8")
         package = root / "youtube-manual-upload.json"
-        package.write_text(
-            json.dumps(
-                {
-                    "schema_version": "youtube-manual-upload-v2",
+        title_package = root / "youtube-title-thumbnail.json"
+        title_package.write_text("{}", encoding="utf-8")
+        data = {
+                    "schema_version": schema,
                     "artifacts": {
                         "video": "output/video.mp4",
                         "thumbnail": "output/thumbnail.jpg",
@@ -52,6 +56,8 @@ class UploadRetentionTests(unittest.TestCase):
                         "title_thumbnail_package": "youtube-title-thumbnail.json",
                     },
                     "preparation": {
+                        "status": "ready",
+                        "youtube_actions": "manual_by_user",
                         "output_dir": "output",
                         "guide": "output/YOUTUBE-MANUAL-UPLOAD.md",
                         "archive_dir": "archive",
@@ -62,9 +68,16 @@ class UploadRetentionTests(unittest.TestCase):
                             "YOUTUBE-MANUAL-UPLOAD.md",
                         ],
                     },
-                },
-                ensure_ascii=False,
-            ),
+                }
+        if schema == "youtube-manual-upload-v3":
+            data["artifact_hashes"] = {
+                "video": MODULE._sha256(output / "video.mp4"),
+                "thumbnail": MODULE._sha256(output / "thumbnail.jpg"),
+                "captions": MODULE._sha256(output / "captions.ko.srt"),
+                "title_thumbnail_package": MODULE._sha256(title_package),
+            }
+        package.write_text(
+            json.dumps(data, ensure_ascii=False),
             encoding="utf-8",
         )
         return temporary, package, output, archive
@@ -99,6 +112,30 @@ class UploadRetentionTests(unittest.TestCase):
         data["preparation"]["archive_dir"] = "output/archive"
         package.write_text(json.dumps(data), encoding="utf-8")
         with self.assertRaises(ValueError):
+            MODULE.build_plan(package)
+
+    def test_v3_thumbnail_change_invalidates_retention_plan(self) -> None:
+        temporary, package, output, _ = self._package(
+            schema="youtube-manual-upload-v3"
+        )
+        self.addCleanup(temporary.cleanup)
+        (output / "thumbnail.jpg").write_text("changed", encoding="utf-8")
+        with self.assertRaisesRegex(
+            ValueError, "artifact hash differs: thumbnail"
+        ):
+            MODULE.build_plan(package)
+
+    def test_v3_pending_package_cannot_be_retained_as_final(self) -> None:
+        temporary, package, _, _ = self._package(
+            schema="youtube-manual-upload-v3"
+        )
+        self.addCleanup(temporary.cleanup)
+        data = json.loads(package.read_text(encoding="utf-8"))
+        data["preparation"]["status"] = "pending"
+        package.write_text(json.dumps(data), encoding="utf-8")
+        with self.assertRaisesRegex(
+            ValueError, "preparation.status must be ready"
+        ):
             MODULE.build_plan(package)
 
 

@@ -56,19 +56,43 @@ class ManualUploadPackageTests(unittest.TestCase):
         )
 
         title_package = root / "title-thumbnail.json"
-        if schema.endswith("-v2"):
+        if schema in {
+            "youtube-manual-upload-v2",
+            "youtube-manual-upload-v3",
+        }:
+            title_schema = (
+                "youtube-title-thumbnail-v3"
+                if schema.endswith("-v3")
+                else "youtube-title-thumbnail-v2"
+            )
             title_data = {
-                "schema_version": "youtube-title-thumbnail-v2",
-                "title": {"selected": TITLE, "status": "approved"},
+                "schema_version": title_schema,
+                "title": {
+                    "selected": TITLE,
+                    "status": "approved",
+                    "approval_method": "explicit_user",
+                },
                 "thumbnail": {"upload": "output/thumbnail.jpg"},
                 "approval": {
-                    "copy": {"status": "approved"},
-                    "image_generation": {"status": "approved"},
+                    "copy": {
+                        "status": "approved",
+                        "method": "explicit_user",
+                    },
+                    "image_generation": {
+                        "status": "approved",
+                        "method": "explicit_user",
+                    },
                     "visual": {
-                        "status": "approved" if visual_approved else "pending"
+                        "status": "approved" if visual_approved else "pending",
+                        "method": "explicit_user",
                     },
                 },
             }
+            if schema.endswith("-v3"):
+                title_data["approval_policy"] = {
+                    "mode": "review_gated",
+                    "instruction_source": "explicit_user",
+                }
         else:
             title_data = {
                 "schema_version": "youtube-title-thumbnail-v1",
@@ -90,7 +114,10 @@ class ManualUploadPackageTests(unittest.TestCase):
             "youtube_actions": "manual_by_user",
         }
         artifact_prefix = "" if schema.endswith("-v1") else "output/"
-        if schema.endswith("-v2"):
+        if schema in {
+            "youtube-manual-upload-v2",
+            "youtube-manual-upload-v3",
+        }:
             preparation.update(
                 {
                     "output_dir": "output",
@@ -106,9 +133,7 @@ class ManualUploadPackageTests(unittest.TestCase):
             )
         else:
             preparation["keep_files"] = []
-        package.write_text(
-            json.dumps(
-                {
+        data = {
                     "schema_version": schema,
                     "channel": channel,
                     "artifacts": {
@@ -128,9 +153,16 @@ class ManualUploadPackageTests(unittest.TestCase):
                         "visibility_recommendation": "private",
                     },
                     "preparation": preparation,
-                },
-                ensure_ascii=False,
-            ),
+                }
+        if schema == "youtube-manual-upload-v3":
+            data["artifact_hashes"] = {
+                "video": MODULE.sha256(output / "video.mp4"),
+                "thumbnail": MODULE.sha256(output / "thumbnail.jpg"),
+                "captions": MODULE.sha256(output / "captions.srt"),
+                "title_thumbnail_package": MODULE.sha256(title_package),
+            }
+        package.write_text(
+            json.dumps(data, ensure_ascii=False),
             encoding="utf-8",
         )
         return temporary, package
@@ -176,6 +208,24 @@ class ManualUploadPackageTests(unittest.TestCase):
             "title-thumbnail approval.visual is not approved",
             result["errors"],
         )
+
+    def test_v3_hash_contract_is_ready(self) -> None:
+        temporary, package = self._package(schema="youtube-manual-upload-v3")
+        self.addCleanup(temporary.cleanup)
+        code, result = self._run(package)
+        self.assertEqual(code, 0, result["errors"])
+        self.assertEqual(result["status"], "ready")
+
+    def test_v3_thumbnail_change_invalidates_package(self) -> None:
+        temporary, package = self._package(schema="youtube-manual-upload-v3")
+        self.addCleanup(temporary.cleanup)
+        root = package.parent
+        Image.new("RGB", (1280, 720), "black").save(
+            root / "output" / "thumbnail.jpg"
+        )
+        code, result = self._run(package)
+        self.assertEqual(code, 1)
+        self.assertIn("artifact hash differs: thumbnail", result["errors"])
 
     def test_channel_id_is_rejected_from_manual_package(self) -> None:
         temporary, package = self._package(include_channel_id=True)

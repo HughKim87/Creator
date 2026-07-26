@@ -9,7 +9,7 @@ description: 완성 영상, 승인된 제목·썸네일, SRT, 설명과 설정�
 
 ## 입력과 위치
 
-[references/manual-upload-package-format.md](references/manual-upload-package-format.md)에 따라 새 작업은 `youtube-manual-upload-v2` JSON을 `extension/work/<job-id>/`에 둔다.
+[references/manual-upload-package-format.md](references/manual-upload-package-format.md)에 따라 새 작업은 `youtube-manual-upload-v3` JSON을 `extension/work/<job-id>/`에 둔다.
 
 - 영상·썸네일·SRT는 `extension/outputs/<job-id>/`에 둔다.
 - 제목·썸네일 패키지와 기술 메타데이터는 `work/<job-id>/`에 둔다.
@@ -30,6 +30,8 @@ python scripts/prepare_upload_package.py <youtube-manual-upload.json> --check
 - 썸네일이 정확히 1280×720이고 2MB 이하임
 - 제목과 썸네일이 승인 패키지와 일치함
 - v2 제목·썸네일의 문구·생성·최종 시각 승인이 모두 완료됨
+- 제목·썸네일 패키지의 생성·승인 계약이 작업 계약과 일치함
+- 영상·썸네일·SRT·제목·썸네일 패키지의 현재 SHA-256이 수동 패키지의 `artifact_hashes`와 일치함
 - 채널 ID나 외부 작업 승인이 없음
 - final output 파일명이 정확히 네 개임
 

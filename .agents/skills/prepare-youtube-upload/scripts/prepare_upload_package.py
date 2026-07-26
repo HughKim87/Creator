@@ -15,7 +15,11 @@ except ImportError as exc:
     raise SystemExit("Pillow is required to validate the thumbnail.") from exc
 
 
-SCHEMA_VERSIONS = {"youtube-manual-upload-v1", "youtube-manual-upload-v2"}
+SCHEMA_VERSIONS = {
+    "youtube-manual-upload-v1",
+    "youtube-manual-upload-v2",
+    "youtube-manual-upload-v3",
+}
 ALLOWED_VISIBILITY = {"private", "unlisted", "public", "scheduled"}
 
 
@@ -241,7 +245,10 @@ def validate_title_package(
             errors.append("manual thumbnail differs from the approved package")
 
     schema = approved.get("schema_version")
-    if schema == "youtube-title-thumbnail-v2":
+    if schema in {
+        "youtube-title-thumbnail-v2",
+        "youtube-title-thumbnail-v3",
+    }:
         approval = approved.get("approval")
         if not isinstance(approval, dict):
             errors.append("title-thumbnail approval object is missing")
@@ -250,6 +257,33 @@ def validate_title_package(
             item = approval.get(name)
             if not isinstance(item, dict) or item.get("status") != "approved":
                 errors.append(f"title-thumbnail approval.{name} is not approved")
+        if schema == "youtube-title-thumbnail-v3":
+            policy = approved.get("approval_policy")
+            if not isinstance(policy, dict):
+                errors.append("title-thumbnail approval_policy is missing")
+            else:
+                mode = policy.get("mode")
+                if mode == "review_gated":
+                    if approved.get("title", {}).get(
+                        "approval_method"
+                    ) != "explicit_user":
+                        errors.append(
+                            "review-gated title must use explicit_user approval"
+                        )
+                    for name in ("copy", "image_generation", "visual"):
+                        item = approval.get(name)
+                        if (
+                            isinstance(item, dict)
+                            and item.get("status") == "approved"
+                            and item.get("method") != "explicit_user"
+                        ):
+                            errors.append(
+                                f"review-gated approval.{name} must be explicit_user"
+                            )
+                elif mode != "delegated_by_user":
+                    errors.append(
+                        "title-thumbnail approval_policy.mode is unsupported"
+                    )
     elif schema == "youtube-title-thumbnail-v1":
         if approved.get("validation", {}).get("user_approved") is not True:
             errors.append("title-thumbnail package is not user-approved")
@@ -281,7 +315,14 @@ def main() -> int:
     except ValueError as exc:
         errors.append(str(exc))
         project_root = base
-    scope_root = project_root if schema_version == "youtube-manual-upload-v2" else base
+    scope_root = (
+        project_root
+        if schema_version in {
+            "youtube-manual-upload-v2",
+            "youtube-manual-upload-v3",
+        }
+        else base
+    )
 
     channel = require_mapping(data.get("channel"), "channel", errors)
     artifacts = require_mapping(data.get("artifacts"), "artifacts", errors)
@@ -364,7 +405,10 @@ def main() -> int:
     archive_dir: Path | None = None
     final_output_files: list[str] = []
 
-    if schema_version == "youtube-manual-upload-v2":
+    if schema_version in {
+        "youtube-manual-upload-v2",
+        "youtube-manual-upload-v3",
+    }:
         output_dir = resolve_location(
             base,
             project_root,
@@ -435,7 +479,9 @@ def main() -> int:
             else:
                 errors.append("preparation.archive_dir must be outside output_dir")
         if preparation.get("keep_files"):
-            errors.append("v2 packages must keep technical files outside outputs")
+            errors.append(
+                "v2/v3 packages must keep technical files outside outputs"
+            )
     else:
         raw_keep_files = preparation.get("keep_files", [])
         if not isinstance(raw_keep_files, list):
@@ -488,11 +534,41 @@ def main() -> int:
             warnings.append("existing upload recorded; do not create a duplicate")
 
     hashes: dict[str, str] = {}
-    if not errors:
+    if all(
+        key in resolved
+        for key in (
+            "video",
+            "thumbnail",
+            "captions",
+            "title_thumbnail_package",
+        )
+    ):
         hashes = {
             key: sha256(resolved[key])
-            for key in ("video", "thumbnail", "captions")
+            for key in (
+                "video",
+                "thumbnail",
+                "captions",
+                "title_thumbnail_package",
+            )
         }
+    if schema_version == "youtube-manual-upload-v3":
+        declared_hashes = require_mapping(
+            data.get("artifact_hashes"), "artifact_hashes", errors
+        )
+        for key in (
+            "video",
+            "thumbnail",
+            "captions",
+            "title_thumbnail_package",
+        ):
+            declared = declared_hashes.get(key)
+            if not isinstance(declared, str) or len(declared) != 64:
+                errors.append(
+                    f"artifact_hashes.{key} must be a SHA-256 hex digest"
+                )
+            elif key in hashes and declared.lower() != hashes[key]:
+                errors.append(f"artifact hash differs: {key}")
 
     if not errors and not args.check:
         guide_path.parent.mkdir(parents=True, exist_ok=True)

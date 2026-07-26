@@ -21,9 +21,16 @@ except ImportError as exc:
 SCHEMA_VERSIONS = {
     "youtube-title-thumbnail-v1",
     "youtube-title-thumbnail-v2",
+    "youtube-title-thumbnail-v3",
 }
 GENERATION_MODES = {"one_shot_imagegen", "local_text_composite"}
 APPROVAL_METHODS = {"explicit_user", "delegated_by_user"}
+APPROVAL_POLICY_MODES = {"review_gated", "delegated_by_user"}
+INSTRUCTION_SOURCES = {"explicit_user", "default"}
+LOCAL_COMPOSITE_REASONS = {
+    "explicit_user_request",
+    "repeated_text_errors",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -112,11 +119,77 @@ def parse_timestamp(value: Any, field: str) -> datetime:
     return parsed
 
 
+def validate_v3_contract(
+    data: dict[str, Any],
+    errors: list[str],
+) -> tuple[str | None, bool, str | None]:
+    required_mode: str | None = None
+    allow_local = False
+    approval_mode: str | None = None
+    try:
+        generation = require_object(
+            data.get("generation_contract"), "generation_contract"
+        )
+        required_mode = generation.get("required_mode")
+        if required_mode not in GENERATION_MODES:
+            errors.append(
+                "generation_contract.required_mode must be "
+                "one_shot_imagegen or local_text_composite"
+            )
+        allow_value = generation.get("allow_local_text_composite")
+        if not isinstance(allow_value, bool):
+            errors.append(
+                "generation_contract.allow_local_text_composite "
+                "must be true or false"
+            )
+        else:
+            allow_local = allow_value
+        generation_source = generation.get("instruction_source")
+        if generation_source not in INSTRUCTION_SOURCES:
+            errors.append(
+                "generation_contract.instruction_source must be "
+                "explicit_user or default"
+            )
+        if required_mode == "local_text_composite" and not allow_local:
+            errors.append(
+                "local_text_composite required mode must allow local composite"
+            )
+        if allow_local and generation_source != "explicit_user":
+            errors.append(
+                "local text composite permission requires explicit_user instruction"
+            )
+
+        policy = require_object(data.get("approval_policy"), "approval_policy")
+        approval_mode = policy.get("mode")
+        if approval_mode not in APPROVAL_POLICY_MODES:
+            errors.append(
+                "approval_policy.mode must be review_gated "
+                "or delegated_by_user"
+            )
+        policy_source = policy.get("instruction_source")
+        if policy_source not in INSTRUCTION_SOURCES:
+            errors.append(
+                "approval_policy.instruction_source must be "
+                "explicit_user or default"
+            )
+        if (
+            approval_mode == "delegated_by_user"
+            and policy_source != "explicit_user"
+        ):
+            errors.append(
+                "delegated approval policy requires explicit_user instruction"
+            )
+    except ValueError as exc:
+        errors.append(str(exc))
+    return required_mode, allow_local, approval_mode
+
+
 def validate_title(
     data: dict[str, Any],
     errors: list[str],
     *,
     require_approved: bool,
+    approval_mode: str | None = None,
 ) -> tuple[str, int | None, bool]:
     selected = ""
     title_length: int | None = None
@@ -161,6 +234,17 @@ def validate_title(
         if status not in {"draft", "approved"}:
             errors.append("title.status must be draft or approved")
         title_approved = status == "approved"
+        if title_approved and approval_mode is not None:
+            method = title.get("approval_method")
+            if method not in APPROVAL_METHODS:
+                errors.append(
+                    "title.approval_method must be explicit_user "
+                    "or delegated_by_user"
+                )
+            elif approval_mode == "review_gated" and method != "explicit_user":
+                errors.append(
+                    "review_gated title approval must use explicit_user"
+                )
         if require_approved and not title_approved:
             errors.append("title.status must be approved")
     except ValueError as exc:
@@ -175,6 +259,7 @@ def validate_approval(
     generated_at: datetime | None,
     *,
     require_approved: bool,
+    approval_mode: str | None = None,
 ) -> bool:
     try:
         approval = require_object(data.get("approval"), "approval")
@@ -207,6 +292,15 @@ def validate_approval(
                 errors.append(
                     f"approval.{name}.method must be one of "
                     f"{sorted(APPROVAL_METHODS)}"
+                )
+                all_approved = False
+            elif (
+                approval_mode == "review_gated"
+                and method != "explicit_user"
+            ):
+                errors.append(
+                    f"approval.{name}.method must be explicit_user "
+                    "for review_gated policy"
                 )
                 all_approved = False
             parsed[name] = parse_timestamp(
@@ -247,6 +341,16 @@ def validate(package_path: Path, *, require_approved: bool = False) -> dict[str,
             f"schema_version must be one of {sorted(SCHEMA_VERSIONS)}"
         )
 
+    required_mode: str | None = None
+    allow_local_composite = False
+    approval_mode: str | None = None
+    if schema_version == "youtube-title-thumbnail-v3":
+        (
+            required_mode,
+            allow_local_composite,
+            approval_mode,
+        ) = validate_v3_contract(data, errors)
+
     video = captions = None
     try:
         source = require_object(data.get("source"), "source")
@@ -272,12 +376,16 @@ def validate(package_path: Path, *, require_approved: bool = False) -> dict[str,
         errors.append(str(exc))
 
     selected, title_length, title_approved = validate_title(
-        data, errors, require_approved=require_approved
+        data,
+        errors,
+        require_approved=require_approved,
+        approval_mode=approval_mode,
     )
 
     upload = master = source_image = preview = None
     generation_mode = "legacy"
     generated_at: datetime | None = None
+    authorization_at: datetime | None = None
     width = height = upload_bytes = None
     image_format = upload_sha256 = None
     try:
@@ -306,7 +414,10 @@ def validate(package_path: Path, *, require_approved: bool = False) -> dict[str,
             thumbnail.get("generation_prompt"), "thumbnail.generation_prompt"
         )
 
-        if schema_version == "youtube-title-thumbnail-v2":
+        if schema_version in {
+            "youtube-title-thumbnail-v2",
+            "youtube-title-thumbnail-v3",
+        }:
             generation_mode = thumbnail.get("generation_mode")
             if generation_mode not in GENERATION_MODES:
                 errors.append(
@@ -326,6 +437,54 @@ def validate(package_path: Path, *, require_approved: bool = False) -> dict[str,
             )
             if generation_mode == "local_text_composite":
                 require_text(thumbnail.get("font"), "thumbnail.font")
+                if schema_version == "youtube-title-thumbnail-v3":
+                    if not allow_local_composite:
+                        errors.append(
+                            "generation contract forbids local_text_composite"
+                        )
+                    authorization = require_object(
+                        thumbnail.get("local_composite_authorization"),
+                        "thumbnail.local_composite_authorization",
+                    )
+                    reason = authorization.get("reason")
+                    if reason not in LOCAL_COMPOSITE_REASONS:
+                        errors.append(
+                            "thumbnail.local_composite_authorization.reason "
+                            "must be explicit_user_request or repeated_text_errors"
+                        )
+                    if authorization.get("approved_by") != "explicit_user":
+                        errors.append(
+                            "local composite authorization must be explicit_user"
+                        )
+                    authorization_at = parse_timestamp(
+                        authorization.get("approved_at"),
+                        "thumbnail.local_composite_authorization.approved_at",
+                    )
+                    if reason == "repeated_text_errors":
+                        attempts = authorization.get("one_shot_attempts")
+                        if (
+                            isinstance(attempts, bool)
+                            or not isinstance(attempts, int)
+                            or attempts < 2
+                        ):
+                            errors.append(
+                                "repeated_text_errors requires "
+                                "one_shot_attempts of at least 2"
+                            )
+                    image_approval = (
+                        data.get("approval", {}).get("image_generation", {})
+                        if isinstance(data.get("approval"), dict)
+                        else {}
+                    )
+                    if (
+                        not isinstance(image_approval, dict)
+                        or image_approval.get("status") != "approved"
+                        or image_approval.get("method") != "explicit_user"
+                    ):
+                        errors.append(
+                            "local_text_composite requires explicit_user "
+                            "image generation approval"
+                        )
             strategy = require_object(
                 thumbnail.get("copy_strategy"), "thumbnail.copy_strategy"
             )
@@ -336,6 +495,33 @@ def validate(package_path: Path, *, require_approved: bool = False) -> dict[str,
             generated_at = parse_timestamp(
                 thumbnail.get("generated_at"), "thumbnail.generated_at"
             )
+            if (
+                generation_mode == "local_text_composite"
+                and schema_version == "youtube-title-thumbnail-v3"
+                and authorization_at is not None
+                and authorization_at > generated_at
+            ):
+                errors.append(
+                    "local composite authorization must not be later than "
+                    "thumbnail.generated_at"
+                )
+            if (
+                schema_version == "youtube-title-thumbnail-v3"
+                and required_mode == "one_shot_imagegen"
+                and generation_mode != "one_shot_imagegen"
+                and not allow_local_composite
+            ):
+                errors.append(
+                    "thumbnail.generation_mode differs from required one-shot mode"
+                )
+            if (
+                schema_version == "youtube-title-thumbnail-v3"
+                and required_mode == "local_text_composite"
+                and generation_mode != "local_text_composite"
+            ):
+                errors.append(
+                    "thumbnail.generation_mode differs from required local mode"
+                )
         else:
             source_image = resolve_path(
                 base,
@@ -369,7 +555,10 @@ def validate(package_path: Path, *, require_approved: bool = False) -> dict[str,
         errors.append("validation must be an object")
         validation = {}
     required_flags = ["facts_traceable", "mobile_preview_reviewed"]
-    if schema_version == "youtube-title-thumbnail-v2":
+    if schema_version in {
+        "youtube-title-thumbnail-v2",
+        "youtube-title-thumbnail-v3",
+    }:
         required_flags.extend(
             [
                 "text_exact",
@@ -381,13 +570,17 @@ def validate(package_path: Path, *, require_approved: bool = False) -> dict[str,
         if validation.get(field) is not True:
             errors.append(f"validation.{field} must be true")
 
-    if schema_version == "youtube-title-thumbnail-v2":
+    if schema_version in {
+        "youtube-title-thumbnail-v2",
+        "youtube-title-thumbnail-v3",
+    }:
         approval_ready = validate_approval(
             data,
             errors,
             warnings,
             generated_at,
             require_approved=require_approved,
+            approval_mode=approval_mode,
         )
     else:
         approval_ready = validation.get("user_approved") is True

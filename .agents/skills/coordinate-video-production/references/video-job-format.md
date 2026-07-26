@@ -1,14 +1,20 @@
-# Video job format v2
+# Video job format v3
 
-새 작업은 `video-job-v2`를 사용한다. 작업 기록은 영상 하나의 단계, 실행 worktree와 검증된 산출물만 기록한다.
+새 작업은 `video-job-v3`를 사용한다. 작업 기록은 영상 하나의 단계, 실행 worktree, 썸네일 생성·승인 계약과 검증된 산출물만 기록한다.
 
 ```json
 {
-  "schema_version": "video-job-v2",
+  "schema_version": "video-job-v3",
   "job_id": "2026-07-25-example-topic",
   "topic": "영상 주제",
   "status": "active",
   "execution_mode": "review_gated",
+  "thumbnail_contract": {
+    "generation_mode": "one_shot_imagegen",
+    "allow_local_text_composite": false,
+    "approval_mode": "review_gated",
+    "instruction_source": "explicit_user"
+  },
   "execution_context": {
     "worktree": {
       "root": "C:/absolute/path/to/worktree",
@@ -78,7 +84,11 @@
 
 ## 실행 컨텍스트
 
-- `execution_mode`는 `autonomous_local_pipeline` 또는 `review_gated`다. 전자는 로컬 중간 선택을 위임받아 수동 업로드 패키지까지 연속 진행하고, 후자는 제목·썸네일 승인마다 멈춘다. 두 모드 모두 결제·권한 변경·외부 업로드를 승인하지 않는다.
+- `execution_mode`는 `autonomous_local_pipeline` 또는 `review_gated`다. 이 값은 단계 사이의 자동 진행만 제어하며 창작 승인 권한을 부여하지 않는다.
+- `thumbnail_contract.generation_mode`는 `one_shot_imagegen` 또는 `local_text_composite`다.
+- `thumbnail_contract.allow_local_text_composite`는 불리언이다. 웹 ChatGPT와 같은 완성형 생성을 요구받으면 `false`다.
+- `thumbnail_contract.approval_mode`는 `review_gated` 또는 `delegated_by_user`다. “끝까지 진행”은 전자의 값을 후자로 바꾸는 근거가 아니다.
+- `thumbnail_contract.instruction_source`는 `explicit_user` 또는 `default`다. 로컬 합성 허용이나 승인 위임은 `explicit_user`일 때만 가능하다.
 - `check_worktree.py --root .`의 `status`, `root`, `branch`, `expected_branch`를 그대로 기록한다.
 - 새 작업 생성 전과 단계 전환 전에 다시 검증하고 `checked_at`을 갱신한다.
 - v2 검증기는 현재 root·branch와 기록이 다르면 실패한다.
@@ -90,8 +100,9 @@
 - 단계와 skill 이름은 정의된 다섯 개를 정확히 사용한다.
 - 완료 단계에는 실제 존재하는 로컬 산출물 또는 NotebookLM URL과 검증 요약이 있어야 한다.
 - `video` 완료 시 `playback_check`를 `{ "elapsed_seconds": 17.0, "progressed": true, "paused": true }` 형식으로 기록한다. 경과 시간은 0초보다 크고 30초 이하여야 한다.
-- `title_thumbnail` 완료에는 승인된 v1 패키지 또는 문구·생성·시각 승인을 모두 받은 v2 패키지가 필요하다.
+- `title_thumbnail` 완료에는 승인된 레거시 패키지 또는 작업의 `thumbnail_contract`와 일치하고 문구·생성·시각 승인을 모두 받은 v3 패키지가 필요하다.
 - `upload_package` 완료에는 준비 패키지와 수동 업로드 가이드가 필요하다.
+- v3 수동 업로드 패키지는 영상·썸네일·SRT·제목·썸네일 패키지의 SHA-256을 기록하고 현재 파일과 일치해야 한다.
 - v2 최종 output은 MP4·썸네일·SRT·가이드 네 파일만 포함한다.
 
 상태 규칙은 기존과 같다. job은 `active`, `needs_user`, `blocked`, `complete`; stage는 `pending`, `in_progress`, `needs_user`, `blocked`, `complete`다. 한 번에 하나의 stage만 활성 상태일 수 있고 앞 단계가 완료되기 전에는 뒤 단계가 `pending`이어야 한다.
@@ -105,4 +116,4 @@ python .agents/skills/coordinate-video-production/scripts/validate_video_job.py 
   --check-artifacts
 ```
 
-다음 단계 시작과 전체 완료에는 `status: valid`, `worktree.status: valid`가 필요하다. 기존 `video-job-v1`은 읽기·검증 호환만 유지한다.
+다음 단계 시작과 전체 완료에는 `status: valid`, `worktree.status: valid`가 필요하다. 기존 `video-job-v1`·`video-job-v2`는 읽기·검증 호환만 유지한다.

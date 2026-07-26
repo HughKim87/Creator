@@ -31,6 +31,7 @@ class TitleThumbnailPackageTests(unittest.TestCase):
     def _package(
         self,
         *,
+        schema: str = "youtube-title-thumbnail-v2",
         visual_status: str = "approved",
         visual_time: str = "2026-07-26T08:05:00+09:00",
     ) -> tuple[tempfile.TemporaryDirectory[str], Path]:
@@ -54,10 +55,8 @@ class TitleThumbnailPackageTests(unittest.TestCase):
         ):
             Image.new("RGB", size, "navy").save(path)
         package = root / "youtube-title-thumbnail.json"
-        package.write_text(
-            json.dumps(
-                {
-                    "schema_version": "youtube-title-thumbnail-v2",
+        data = {
+                    "schema_version": schema,
                     "source": {
                         "video": "output/video.mp4",
                         "captions": "output/captions.srt",
@@ -118,9 +117,20 @@ class TitleThumbnailPackageTests(unittest.TestCase):
                         "clickability_reviewed": True,
                         "title_thumbnail_not_duplicate": True,
                     },
-                },
-                ensure_ascii=False,
-            ),
+                }
+        if schema == "youtube-title-thumbnail-v3":
+            data["generation_contract"] = {
+                "required_mode": "one_shot_imagegen",
+                "allow_local_text_composite": False,
+                "instruction_source": "explicit_user",
+            }
+            data["approval_policy"] = {
+                "mode": "review_gated",
+                "instruction_source": "explicit_user",
+            }
+            data["title"]["approval_method"] = "explicit_user"
+        package.write_text(
+            json.dumps(data, ensure_ascii=False),
             encoding="utf-8",
         )
         return temporary, package
@@ -149,6 +159,79 @@ class TitleThumbnailPackageTests(unittest.TestCase):
         self.assertEqual(result["status"], "invalid")
         self.assertIn(
             "visual approval must not be earlier than thumbnail.generated_at",
+            result["errors"],
+        )
+
+    def test_v3_one_shot_review_gated_package_is_valid(self) -> None:
+        temporary, package = self._package(
+            schema="youtube-title-thumbnail-v3"
+        )
+        self.addCleanup(temporary.cleanup)
+        result = MODULE.validate(package, require_approved=True)
+        self.assertEqual(result["status"], "valid", result["errors"])
+
+    def test_v3_review_gated_rejects_delegated_approval(self) -> None:
+        temporary, package = self._package(
+            schema="youtube-title-thumbnail-v3"
+        )
+        self.addCleanup(temporary.cleanup)
+        data = json.loads(package.read_text(encoding="utf-8"))
+        data["approval"]["visual"]["method"] = "delegated_by_user"
+        package.write_text(
+            json.dumps(data, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        result = MODULE.validate(package, require_approved=True)
+        self.assertEqual(result["status"], "invalid")
+        self.assertIn(
+            "approval.visual.method must be explicit_user for review_gated policy",
+            result["errors"],
+        )
+
+    def test_v3_forbids_unapproved_local_text_composite(self) -> None:
+        temporary, package = self._package(
+            schema="youtube-title-thumbnail-v3"
+        )
+        self.addCleanup(temporary.cleanup)
+        data = json.loads(package.read_text(encoding="utf-8"))
+        thumbnail = data["thumbnail"]
+        thumbnail["generation_mode"] = "local_text_composite"
+        thumbnail["background"] = "source.png"
+        thumbnail["font"] = "test-font"
+        thumbnail["local_composite_authorization"] = {
+            "reason": "explicit_user_request",
+            "approved_by": "explicit_user",
+            "approved_at": "2026-07-26T07:55:00+09:00",
+        }
+        package.write_text(
+            json.dumps(data, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        result = MODULE.validate(package, require_approved=True)
+        self.assertEqual(result["status"], "invalid")
+        self.assertIn(
+            "generation contract forbids local_text_composite",
+            result["errors"],
+        )
+
+    def test_v3_delegated_policy_requires_explicit_user_instruction(self) -> None:
+        temporary, package = self._package(
+            schema="youtube-title-thumbnail-v3"
+        )
+        self.addCleanup(temporary.cleanup)
+        data = json.loads(package.read_text(encoding="utf-8"))
+        data["approval_policy"] = {
+            "mode": "delegated_by_user",
+            "instruction_source": "default",
+        }
+        package.write_text(
+            json.dumps(data, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        result = MODULE.validate(package, require_approved=True)
+        self.assertEqual(result["status"], "invalid")
+        self.assertIn(
+            "delegated approval policy requires explicit_user instruction",
             result["errors"],
         )
 

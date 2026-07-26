@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -18,7 +19,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from check_worktree import inspect_worktree
 
 
-SCHEMA_VERSIONS = {"video-job-v1", "video-job-v2"}
+SCHEMA_VERSIONS = {"video-job-v1", "video-job-v2", "video-job-v3"}
 STAGE_ORDER = (
     "research",
     "video",
@@ -37,6 +38,12 @@ JOB_STATUSES = {"active", "needs_user", "blocked", "complete"}
 STAGE_STATUSES = {"pending", "in_progress", "needs_user", "blocked", "complete"}
 ACTIVE_STAGE_STATUSES = {"in_progress", "needs_user", "blocked"}
 EXECUTION_MODES = {"autonomous_local_pipeline", "review_gated"}
+THUMBNAIL_GENERATION_MODES = {
+    "one_shot_imagegen",
+    "local_text_composite",
+}
+THUMBNAIL_APPROVAL_MODES = {"review_gated", "delegated_by_user"}
+INSTRUCTION_SOURCES = {"explicit_user", "default"}
 CONNECTION_METHODS = {
     "same_runtime",
     "explicit_tab_mention",
@@ -89,16 +96,125 @@ def resolve_artifact(root: Path, value: str, errors: list[str]) -> Path | None:
     return candidate
 
 
-def validate_title_package(path: Path, errors: list[str]) -> None:
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def validate_title_package(
+    path: Path,
+    errors: list[str],
+    thumbnail_contract: dict[str, Any] | None = None,
+) -> None:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         errors.append(f"cannot read title-thumbnail package: {exc}")
         return
     schema = data.get("schema_version")
-    if data.get("title", {}).get("status") != "approved":
+    title = data.get("title", {})
+    if title.get("status") != "approved":
         errors.append("title-thumbnail title is not approved")
-    if schema == "youtube-title-thumbnail-v2":
+    if schema == "youtube-title-thumbnail-v3":
+        generation = data.get("generation_contract")
+        policy = data.get("approval_policy")
+        if not isinstance(generation, dict):
+            errors.append("title-thumbnail generation_contract is missing")
+            generation = {}
+        if not isinstance(policy, dict):
+            errors.append("title-thumbnail approval_policy is missing")
+            policy = {}
+        if thumbnail_contract:
+            expected = {
+                "required_mode": thumbnail_contract.get("generation_mode"),
+                "allow_local_text_composite": thumbnail_contract.get(
+                    "allow_local_text_composite"
+                ),
+                "instruction_source": thumbnail_contract.get(
+                    "instruction_source"
+                ),
+            }
+            for field, value in expected.items():
+                if generation.get(field) != value:
+                    errors.append(
+                        "title-thumbnail generation contract differs from "
+                        f"VIDEO_JOB thumbnail_contract: {field}"
+                    )
+            if policy.get("mode") != thumbnail_contract.get("approval_mode"):
+                errors.append(
+                    "title-thumbnail approval policy differs from "
+                    "VIDEO_JOB thumbnail_contract"
+                )
+            if (
+                policy.get("instruction_source")
+                != thumbnail_contract.get("instruction_source")
+            ):
+                errors.append(
+                    "title-thumbnail approval instruction source differs "
+                    "from VIDEO_JOB thumbnail_contract"
+                )
+
+        approval_mode = policy.get("mode")
+        if (
+            approval_mode == "review_gated"
+            and title.get("approval_method") != "explicit_user"
+        ):
+            errors.append(
+                "review_gated title-thumbnail title requires explicit_user approval"
+            )
+
+        thumbnail = data.get("thumbnail")
+        if not isinstance(thumbnail, dict):
+            errors.append("title-thumbnail thumbnail object is missing")
+            thumbnail = {}
+        actual_mode = thumbnail.get("generation_mode")
+        required_mode = generation.get("required_mode")
+        allow_local = generation.get("allow_local_text_composite") is True
+        if (
+            required_mode == "one_shot_imagegen"
+            and actual_mode != "one_shot_imagegen"
+            and not allow_local
+        ):
+            errors.append(
+                "title-thumbnail package violates required one-shot generation"
+            )
+        if (
+            required_mode == "local_text_composite"
+            and actual_mode != "local_text_composite"
+        ):
+            errors.append(
+                "title-thumbnail package violates required local generation"
+            )
+        if actual_mode == "local_text_composite":
+            authorization = thumbnail.get("local_composite_authorization")
+            if not isinstance(authorization, dict):
+                errors.append(
+                    "local_text_composite requires authorization record"
+                )
+            elif authorization.get("approved_by") != "explicit_user":
+                errors.append(
+                    "local_text_composite authorization must be explicit_user"
+                )
+
+        approval = data.get("approval")
+        if not isinstance(approval, dict):
+            errors.append("title-thumbnail approval object is missing")
+            return
+        for name in ("copy", "image_generation", "visual"):
+            item = approval.get(name)
+            if not isinstance(item, dict) or item.get("status") != "approved":
+                errors.append(f"title-thumbnail approval.{name} is not approved")
+            elif (
+                approval_mode == "review_gated"
+                and item.get("method") != "explicit_user"
+            ):
+                errors.append(
+                    f"title-thumbnail approval.{name} must be explicit_user"
+                )
+    elif schema == "youtube-title-thumbnail-v2":
         approval = data.get("approval")
         if not isinstance(approval, dict):
             errors.append("title-thumbnail approval object is missing")
@@ -132,7 +248,11 @@ def validate_manual_package(
         errors.append("manual upload package is not ready")
     if preparation.get("youtube_actions") != "manual_by_user":
         errors.append("manual upload package must remain manual_by_user")
-    if data.get("schema_version") != "youtube-manual-upload-v2":
+    schema = data.get("schema_version")
+    if schema not in {
+        "youtube-manual-upload-v2",
+        "youtube-manual-upload-v3",
+    }:
         return
 
     base = path.parent
@@ -179,6 +299,42 @@ def validate_manual_package(
         errors.append(
             f"final output contains directories or symlinks: {actual_directories}"
         )
+    if schema == "youtube-manual-upload-v3":
+        artifacts = data.get("artifacts")
+        declared_hashes = data.get("artifact_hashes")
+        if not isinstance(artifacts, dict):
+            errors.append("manual upload artifacts object is missing")
+            return
+        if not isinstance(declared_hashes, dict):
+            errors.append("manual upload artifact_hashes object is missing")
+            return
+        for key in (
+            "video",
+            "thumbnail",
+            "captions",
+            "title_thumbnail_package",
+        ):
+            value = artifacts.get(key)
+            if not nonempty_text(value):
+                errors.append(f"manual upload artifacts.{key} is missing")
+                continue
+            artifact_path = (base / value).resolve()
+            try:
+                artifact_path.relative_to(project_root)
+            except ValueError:
+                errors.append(f"manual upload artifacts.{key} escapes project root")
+                continue
+            if not artifact_path.is_file() or artifact_path.stat().st_size == 0:
+                errors.append(
+                    f"manual upload artifacts.{key} not found or empty"
+                )
+                continue
+            declared = declared_hashes.get(key)
+            actual_hash = sha256(artifact_path)
+            if declared != actual_hash:
+                errors.append(
+                    f"manual upload artifact hash differs: {key}"
+                )
 
 
 def validate_video_job(
@@ -212,6 +368,53 @@ def validate_video_job(
         errors.append(
             f"execution_mode must be one of {sorted(EXECUTION_MODES)}"
         )
+
+    thumbnail_contract: dict[str, Any] | None = None
+    if schema_version == "video-job-v3":
+        value = data.get("thumbnail_contract")
+        if not isinstance(value, dict):
+            errors.append("thumbnail_contract must be an object")
+        else:
+            thumbnail_contract = value
+            generation_mode = value.get("generation_mode")
+            if generation_mode not in THUMBNAIL_GENERATION_MODES:
+                errors.append(
+                    "thumbnail_contract.generation_mode must be "
+                    "one_shot_imagegen or local_text_composite"
+                )
+            allow_local = value.get("allow_local_text_composite")
+            if not isinstance(allow_local, bool):
+                errors.append(
+                    "thumbnail_contract.allow_local_text_composite "
+                    "must be true or false"
+                )
+            approval_mode = value.get("approval_mode")
+            if approval_mode not in THUMBNAIL_APPROVAL_MODES:
+                errors.append(
+                    "thumbnail_contract.approval_mode must be "
+                    "review_gated or delegated_by_user"
+                )
+            instruction_source = value.get("instruction_source")
+            if instruction_source not in INSTRUCTION_SOURCES:
+                errors.append(
+                    "thumbnail_contract.instruction_source must be "
+                    "explicit_user or default"
+                )
+            if generation_mode == "local_text_composite" and allow_local is not True:
+                errors.append(
+                    "local_text_composite generation must be explicitly allowed"
+                )
+            if allow_local is True and instruction_source != "explicit_user":
+                errors.append(
+                    "local composite permission requires explicit_user instruction"
+                )
+            if (
+                approval_mode == "delegated_by_user"
+                and instruction_source != "explicit_user"
+            ):
+                errors.append(
+                    "delegated thumbnail approval requires explicit_user instruction"
+                )
 
     stages = data.get("stages")
     if not isinstance(stages, dict):
@@ -354,7 +557,7 @@ def validate_video_job(
             if not nonempty_text(value) or Path(value).is_absolute():
                 errors.append(f"paths.{field} must be a repository-relative path")
 
-    if schema_version == "video-job-v2":
+    if schema_version in {"video-job-v2", "video-job-v3"}:
         execution = data.get("execution_context")
         worktree = (
             execution.get("worktree")
@@ -413,7 +616,11 @@ def validate_video_job(
                     "title_thumbnail complete requires youtube-title-thumbnail.json"
                 )
             else:
-                validate_title_package(package_paths[0], errors)
+                validate_title_package(
+                    package_paths[0],
+                    errors,
+                    thumbnail_contract=thumbnail_contract,
+                )
             if not any(
                 path.suffix.lower() in {".jpg", ".jpeg", ".png"}
                 for path in local_artifacts.get("title_thumbnail", [])

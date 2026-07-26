@@ -134,6 +134,47 @@ class VideoJobValidationTests(unittest.TestCase):
             any("worktree.branch differs" in item for item in result["errors"])
         )
 
+    def test_v3_requires_thumbnail_contract(self) -> None:
+        job = complete_job()
+        job["schema_version"] = "video-job-v3"
+        job["execution_context"] = {
+            "worktree": {
+                "root": "C:/workspace/ainotebook",
+                "branch": "codex/ainotebook",
+                "expected_branch": "codex/ainotebook",
+                "status": "valid",
+                "checked_at": "2026-07-26T00:00:00+09:00",
+            }
+        }
+        result = MODULE.validate_video_job(job)
+        self.assertEqual(result["status"], "invalid")
+        self.assertIn("thumbnail_contract must be an object", result["errors"])
+
+    def test_v3_delegated_approval_requires_explicit_user_instruction(self) -> None:
+        job = complete_job()
+        job["schema_version"] = "video-job-v3"
+        job["execution_context"] = {
+            "worktree": {
+                "root": "C:/workspace/ainotebook",
+                "branch": "codex/ainotebook",
+                "expected_branch": "codex/ainotebook",
+                "status": "valid",
+                "checked_at": "2026-07-26T00:00:00+09:00",
+            }
+        }
+        job["thumbnail_contract"] = {
+            "generation_mode": "one_shot_imagegen",
+            "allow_local_text_composite": False,
+            "approval_mode": "delegated_by_user",
+            "instruction_source": "default",
+        }
+        result = MODULE.validate_video_job(job)
+        self.assertEqual(result["status"], "invalid")
+        self.assertIn(
+            "delegated thumbnail approval requires explicit_user instruction",
+            result["errors"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
