@@ -1,0 +1,89 @@
+{
+  "timeline_version": 1,
+  "timeline_id": "synthetic-video-edit",
+  "source": {
+    "id": "original-main",
+    "path": "media/original-main.mp4",
+    "total_frames": 1200,
+    "frame_rate": {
+      "numerator": 60,
+      "denominator": 1
+    },
+    "video": {
+      "width": 1920,
+      "height": 1080
+    },
+    "audio": {
+      "sample_rate": 48000,
+      "channels": 2
+    }
+  },
+  "sequence": {
+    "name": "synthetic_video_edit",
+    "video_clips": [
+      {
+        "id": "V001",
+        "track": "video",
+        "source_id": "original-main",
+        "source_in": 0,
+        "source_out": 120,
+        "frames": 120,
+        "timeline_start": 0,
+        "timeline_end": 120,
+        "gap_before": 0,
+        "source_order_exception": false,
+        "edit_role": "information",
+        "edit_reason": "첫 정보 단위를 보존한다."
+      },
+      {
+        "id": "V002",
+        "track": "video",
+        "source_id": "original-main",
+        "source_in": 300,
+        "source_out": 420,
+        "frames": 120,
+        "timeline_start": 120,
+        "timeline_end": 240,
+        "gap_before": 0,
+        "source_order_exception": false,
+        "edit_role": "reaction",
+        "edit_reason": "새 상황의 첫 반응을 보존한다."
+      }
+    ],
+    "audio_clips": [
+      {
+        "id": "A001",
+        "track": "audio",
+        "source_id": "original-main",
+        "source_in": 0,
+        "source_out": 118,
+        "frames": 118,
+        "timeline_start": 0,
+        "timeline_end": 118,
+        "gap_before": 0,
+        "source_order_exception": false,
+        "edit_role": "speech",
+        "edit_reason": "첫 발화의 완결된 절을 보존한다."
+      },
+      {
+        "id": "A002",
+        "track": "audio",
+        "source_id": "original-main",
+        "source_in": 300,
+        "source_out": 420,
+        "frames": 120,
+        "timeline_start": 120,
+        "timeline_end": 240,
+        "gap_before": 2,
+        "source_order_exception": false,
+        "edit_role": "reaction",
+        "edit_reason": "의도한 짧은 audio gap 뒤 반응을 연결한다."
+      }
+    ]
+  },
+  "semantic_gate": {
+    "status": "passed",
+    "reviewed_by": "agent:synthetic-fixture",
+    "notes": "보호 데이터를 사용하지 않는 구조 검증 fixture"
+  }
+}

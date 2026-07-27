@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project://extension/schemas/video-edit-timeline-v1.schema.json",
+  "title": "Video edit timeline v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["timeline_version", "timeline_id", "source", "sequence", "semantic_gate"],
+  "properties": {
+    "timeline_version": {"const": 1},
+    "timeline_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 80
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "total_frames", "frame_rate", "video", "audio"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 80
+        },
+        "path": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "total_frames": {"type": "integer", "minimum": 1},
+        "frame_rate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["numerator", "denominator"],
+          "properties": {
+            "numerator": {"type": "integer", "minimum": 1},
+            "denominator": {"type": "integer", "minimum": 1}
+          }
+        },
+        "video": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": {
+            "width": {"type": "integer", "minimum": 1},
+            "height": {"type": "integer", "minimum": 1}
+          }
+        },
+        "audio": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sample_rate", "channels"],
+          "properties": {
+            "sample_rate": {"type": "integer", "minimum": 1},
+            "channels": {"type": "integer", "minimum": 1}
+          }
+        }
+      }
+    },
+    "sequence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "video_clips", "audio_clips"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "maxLength": 200},
+        "video_clips": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/clip"}
+        },
+        "audio_clips": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/clip"}
+        }
+      }
+    },
+    "semantic_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewed_by", "notes"],
+      "properties": {
+        "status": {"enum": ["pending", "passed", "failed"]},
+        "reviewed_by": {"type": ["string", "null"], "maxLength": 200},
+        "notes": {"type": "string", "maxLength": 500}
+      }
+    }
+  },
+  "$defs": {
+    "clip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "track",
+        "source_id",
+        "source_in",
+        "source_out",
+        "frames",
+        "timeline_start",
+        "timeline_end",
+        "gap_before",
+        "source_order_exception",
+        "edit_role",
+        "edit_reason"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "maxLength": 100
+        },
+        "track": {"enum": ["video", "audio"]},
+        "source_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 80
+        },
+        "source_in": {"type": "integer", "minimum": 0},
+        "source_out": {"type": "integer", "minimum": 1},
+        "frames": {"type": "integer", "minimum": 1},
+        "timeline_start": {"type": "integer", "minimum": 0},
+        "timeline_end": {"type": "integer", "minimum": 1},
+        "gap_before": {"type": "integer", "minimum": 0},
+        "source_order_exception": {"type": "boolean"},
+        "edit_role": {
+          "enum": [
+            "information",
+            "action",
+            "reaction",
+            "transition",
+            "atmosphere",
+            "speech",
+            "event"
+          ]
+        },
+        "edit_reason": {"type": "string", "minLength": 1, "maxLength": 500}
+      }
+    }
+  }
+}
