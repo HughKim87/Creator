@@ -131,7 +131,9 @@ class RuleRoutingTests(unittest.TestCase):
         contract = (
             ROOT / "core" / "docs" / "obsidian" / "OBSIDIAN_REVIEW_CONTRACT.md"
         ).read_text(encoding="utf-8")
+        self.assertIn("`PROJECT_RULES.md`의 조건부 route", contract)
         self.assertIn("활성 `core/rules/*.md` 각각을 정확히 한 번", contract)
+        self.assertIn("`AGENTS.md`는 core rule에 직접 연결하지 않고", contract)
         self.assertIn("고아 node로 남기지 않는다", contract)
 
 
@@ -264,7 +266,15 @@ class G4RegressionTests(unittest.TestCase):
             for line in self.master.splitlines()
             if line.startswith("|") and "| 진행 중 |" in line
         ]
-        self.assertEqual(1, len(in_progress_rows))
+        if in_progress_rows:
+            self.assertEqual(1, len(in_progress_rows))
+        else:
+            completed_rows = [
+                line
+                for line in self.master.splitlines()
+                if re.match(r"^\| G[0-5] \|", line) and "| 완료 |" in line
+            ]
+            self.assertEqual(6, len(completed_rows))
         selected = _select_state_document(ROOT, self.project_rules)
         state = (ROOT / selected).read_text(encoding="utf-8")
         self.assertRegex(state, r"(?m)^- 상태: .+")

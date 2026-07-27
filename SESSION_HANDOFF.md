@@ -3,7 +3,7 @@
 - 갱신일: 2026-07-28
 - 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
 - 현재 작업: 문서 기반 지시 준수와 worktree별 상태 관리 개선
-- 상태: G0~G3 완료, G4 필수 시나리오 12개·전체 gate 통과 후 exact-path 커밋 대기
+- 상태: G0~G4 완료, G5 전체 성공 gate 통과 후 최종 보고 커밋 대기
 - 계획 정본: `extension/reports/codex_2026-07-28_문서기반_지시준수와_워크트리상태관리_개선안.md`
 
 ## 읽기 순서
@@ -100,9 +100,9 @@
 
 ## 첫 다음 행동
 
-1. G4 test·plan·handoff 3개만 exact-path로 커밋한다.
-2. G4 commit 확인 후 G5 문서를 읽고 최종 통합 gate를 실행한다.
-3. G5 완료 전에는 완료 상태를 기록하지 않는다.
+1. 최종 보고·Obsidian 계약·회귀·plan·handoff만 exact-path로 검토하고 커밋한다.
+2. final report commit hash를 Master와 보고서에 기록한다.
+3. 두 worktree clean·push 0건을 확인한 뒤 완료 상태를 기록한다.
 
 ## 다음 세션 시작 프롬프트
 
