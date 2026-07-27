@@ -9,6 +9,7 @@
 - Git writes require traceable user approval for the exact action or a standing sequence with scope, exclusions, and boundaries.
 - A commit is required only when the user or active controlled plan defines that boundary. Do not invent micro-commits for `quick` work.
 - Query branch and worktree at execution time. Preserve unrelated changes and review the exact diff before staging.
+- Before restore, clean, or overwrite touches another session's uncommitted change, resolve the exact target, inspect its diff, verify a usable recovery copy, and confirm current user approval for that destructive action. If any condition is missing, leave the change untouched.
 - Stage only approved paths. Never stage or commit `inputs`, `outputs`, secrets, or unrelated user changes.
 - Do not branch, push, publish, destructively restore, or overwrite user work without explicit authority for that action.
 - Use Git history instead of duplicate backup files unless the user requests another backup.
