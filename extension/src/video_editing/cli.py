@@ -8,7 +8,12 @@ from typing import Any
 
 from .legacy_csv import LegacyCsvError, write_legacy_timeline
 from .model import TimelineValidationError, inspect_timeline
-from .premiere_xml import PremiereXmlError, write_premiere_xml
+from .premiere_xml import (
+    SEQUENCE_V5_PROFILE,
+    SUPPORTED_XML_PROFILES,
+    PremiereXmlError,
+    write_premiere_xml,
+)
 from .subtitle import SubtitleError, clean_srt, validate_srt
 
 
@@ -59,6 +64,11 @@ def _parser() -> VideoEditingArgumentParser:
     generate.add_argument("--timeline-json", required=True, type=Path)
     generate.add_argument("--output", required=True, type=Path)
     generate.add_argument("--overwrite", action="store_true")
+    generate.add_argument(
+        "--profile",
+        choices=sorted(SUPPORTED_XML_PROFILES),
+        default=SEQUENCE_V5_PROFILE,
+    )
     subtitle_validate = commands.add_parser(
         "subtitle-validate",
         help="validate one strict UTF-8 SRT without changing it",
@@ -147,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
                 timeline,
                 namespace.output,
                 overwrite=namespace.overwrite,
+                profile=namespace.profile,
             )
         elif namespace.command == "subtitle-validate":
             result = validate_srt(

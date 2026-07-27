@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 from pathlib import Path
 import tempfile
 from typing import Any, Mapping
 from urllib.parse import quote
+import uuid
 import xml.etree.ElementTree as ET
 
 from .model import validate_timeline
@@ -13,6 +15,13 @@ from .model import validate_timeline
 
 class PremiereXmlError(ValueError):
     pass
+
+
+SEQUENCE_V5_PROFILE = "sequence-v5"
+PREMIERE_CS6_V4_PROFILE = "premiere-cs6-v4"
+SUPPORTED_XML_PROFILES = frozenset(
+    {SEQUENCE_V5_PROFILE, PREMIERE_CS6_V4_PROFILE}
+)
 
 
 def _child(parent: ET.Element, tag: str, text: str | int | None = None) -> ET.Element:
@@ -172,7 +181,7 @@ def _add_links(specs: list[dict[str, Any]]) -> None:
                 _child(link, "groupindex", 1)
 
 
-def build_premiere_xml(value: Mapping[str, Any]) -> bytes:
+def _build_sequence_v5(value: Mapping[str, Any]) -> bytes:
     timeline = validate_timeline(value)
     if timeline["semantic_gate"]["status"] != "passed":
         raise PremiereXmlError("semantic_gate must be passed before XML generation")
@@ -277,18 +286,213 @@ def build_premiere_xml(value: Mapping[str, Any]) -> bytes:
     return rendered + b"\n"
 
 
+def _stable_uuid(timeline: Mapping[str, Any], purpose: str) -> str:
+    canonical = json.dumps(
+        timeline,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"video-editing:{purpose}:{canonical}"))
+
+
+def _build_premiere_cs6_v4(value: Mapping[str, Any]) -> bytes:
+    timeline = validate_timeline(value)
+    if timeline["semantic_gate"]["status"] != "passed":
+        raise PremiereXmlError("semantic_gate must be passed before XML generation")
+    source = timeline["source"]
+    sequence_value = timeline["sequence"]
+    duration = sequence_value["video_clips"][-1]["timeline_end"]
+    channels = source["audio"]["channels"]
+
+    root = ET.Element("xmeml", {"version": "4"})
+    project = _child(root, "project")
+    _child(project, "name", sequence_value["name"])
+    project_children = _child(project, "children")
+    source_bin = _child(project_children, "bin")
+    _child(source_bin, "name", "00_source")
+    bin_children = _child(source_bin, "children")
+
+    master = _child(bin_children, "clip")
+    master.set("id", "masterclip-1")
+    master.set("frameBlend", "FALSE")
+    _child(master, "uuid", _stable_uuid(timeline, "master"))
+    _child(master, "masterclipid", "masterclip-1")
+    _child(master, "ismasterclip", "TRUE")
+    _child(master, "duration", source["total_frames"])
+    _rate(
+        master,
+        source["frame_rate"]["numerator"],
+        source["frame_rate"]["denominator"],
+    )
+    _child(master, "name", Path(source["path"]).name)
+    master_media = _child(master, "media")
+    master_video = _child(master_media, "video")
+    master_track = _child(master_video, "track")
+    master_item = _child(master_track, "clipitem")
+    master_item.set("id", "masterclip-1-video")
+    master_item.set("frameBlend", "FALSE")
+    _child(master_item, "masterclipid", "masterclip-1")
+    _child(master_item, "name", Path(source["path"]).name)
+    _child(master_item, "duration", source["total_frames"])
+    _rate(
+        master_item,
+        source["frame_rate"]["numerator"],
+        source["frame_rate"]["denominator"],
+    )
+    _child(master_item, "alphatype", "none")
+    _source_file(master_item, source=source, first_reference=True)
+    master_link = _child(master_item, "link")
+    _child(master_link, "linkclipref", "masterclip-1-video")
+    _child(master_link, "mediatype", "video")
+    _child(master_link, "trackindex", 1)
+    _child(master_link, "clipindex", 1)
+
+    sequence = _child(bin_children, "sequence")
+    sequence.set("id", "sequence-1")
+    _child(sequence, "uuid", _stable_uuid(timeline, "sequence"))
+    _child(sequence, "duration", duration)
+    _rate(
+        sequence,
+        source["frame_rate"]["numerator"],
+        source["frame_rate"]["denominator"],
+    )
+    _child(sequence, "name", sequence_value["name"])
+    _child(sequence, "in", -1)
+    _child(sequence, "out", -1)
+    media = _child(sequence, "media")
+    specs: list[dict[str, Any]] = []
+
+    video = _child(media, "video")
+    video_format = _child(video, "format")
+    _sample_characteristics(video_format, source=source, media_type="video")
+    video_track = _child(video, "track")
+    for clip_index, clip in enumerate(sequence_value["video_clips"], start=1):
+        xml_id = f"video-{clip['id']}"
+        element = _clip_item(
+            video_track,
+            xml_id=xml_id,
+            clip=clip,
+            source=source,
+            media_type="video",
+            channel=None,
+            first_reference=False,
+        )
+        element.set("frameBlend", "FALSE")
+        _child(element, "alphatype", "none")
+        specs.append(
+            {
+                "xml_id": xml_id,
+                "element": element,
+                "clip": clip,
+                "media_type": "video",
+                "track_index": 1,
+                "clip_index": clip_index,
+            }
+        )
+    _child(video_track, "enabled", "TRUE")
+    _child(video_track, "locked", "FALSE")
+
+    audio = _child(media, "audio")
+    audio_format = _child(audio, "format")
+    _sample_characteristics(audio_format, source=source, media_type="audio")
+    outputs = _child(audio, "outputs")
+    for channel in range(1, channels + 1):
+        group = _child(outputs, "group")
+        _child(group, "index", channel)
+        _child(group, "numchannels", 1)
+        _child(group, "downmix", 0)
+        output_channel = _child(group, "channel")
+        _child(output_channel, "index", channel)
+
+    for channel in range(1, channels + 1):
+        audio_track = _child(audio, "track")
+        audio_track.set("currentExplodedTrackIndex", str(channel - 1))
+        audio_track.set("totalExplodedTrackCount", str(channels))
+        audio_track.set(
+            "premiereTrackType",
+            "Stereo" if channels == 2 else "Mono",
+        )
+        for clip_index, clip in enumerate(sequence_value["audio_clips"], start=1):
+            xml_id = f"audio-{channel}-{clip['id']}"
+            element = _clip_item(
+                audio_track,
+                xml_id=xml_id,
+                clip=clip,
+                source=source,
+                media_type="audio",
+                channel=channel,
+                first_reference=False,
+            )
+            element.set("frameBlend", "FALSE")
+            specs.append(
+                {
+                    "xml_id": xml_id,
+                    "element": element,
+                    "clip": clip,
+                    "media_type": "audio",
+                    "track_index": channel,
+                    "clip_index": clip_index,
+                }
+            )
+        _child(audio_track, "enabled", "TRUE")
+        _child(audio_track, "locked", "FALSE")
+        _child(audio_track, "outputchannelindex", channel)
+
+    _add_links(specs)
+    timecode = _child(sequence, "timecode")
+    _rate(
+        timecode,
+        source["frame_rate"]["numerator"],
+        source["frame_rate"]["denominator"],
+    )
+    _child(timecode, "string", "00:00:00:00")
+    _child(timecode, "frame", 0)
+    _child(timecode, "displayformat", "NDF")
+
+    ET.indent(root, space="  ")
+    body = ET.tostring(
+        root,
+        encoding="utf-8",
+        xml_declaration=False,
+        short_empty_elements=True,
+    )
+    return (
+        b'<?xml version="1.0" encoding="UTF-8"?>\n'
+        b"<!DOCTYPE xmeml>\n"
+        + body
+        + b"\n"
+    )
+
+
+def build_premiere_xml(
+    value: Mapping[str, Any],
+    *,
+    profile: str = SEQUENCE_V5_PROFILE,
+) -> bytes:
+    if profile == SEQUENCE_V5_PROFILE:
+        return _build_sequence_v5(value)
+    if profile == PREMIERE_CS6_V4_PROFILE:
+        return _build_premiere_cs6_v4(value)
+    raise PremiereXmlError(
+        f"unsupported Premiere XML profile: {profile}; "
+        f"expected one of {sorted(SUPPORTED_XML_PROFILES)}"
+    )
+
+
 def write_premiere_xml(
     value: Mapping[str, Any],
     output_path: Path | str,
     *,
     overwrite: bool = False,
+    profile: str = SEQUENCE_V5_PROFILE,
 ) -> dict[str, Any]:
     target = Path(output_path)
     if not target.parent.is_dir():
         raise PremiereXmlError(f"output directory does not exist: {target.parent}")
     if target.exists() and not overwrite:
         raise PremiereXmlError(f"output already exists: {target}")
-    rendered = build_premiere_xml(value)
+    rendered = build_premiere_xml(value, profile=profile)
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=f".{target.name}.",
         suffix=".tmp",
@@ -312,4 +516,6 @@ def write_premiere_xml(
         "sha256": hashlib.sha256(rendered).hexdigest(),
         "source_id": value["source"]["id"],
         "source_references": 1,
+        "profile": profile,
+        "validation_status": "structure-validated",
     }

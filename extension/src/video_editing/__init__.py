@@ -18,6 +18,9 @@ from .model import (
     validate_timeline,
 )
 from .premiere_xml import (
+    PREMIERE_CS6_V4_PROFILE,
+    SEQUENCE_V5_PROFILE,
+    SUPPORTED_XML_PROFILES,
     PremiereXmlError,
     build_premiere_xml,
     write_premiere_xml,
@@ -40,6 +43,9 @@ __all__ = [
     "TIMELINE_FIELDS",
     "TIMELINE_VERSION",
     "PremiereXmlError",
+    "PREMIERE_CS6_V4_PROFILE",
+    "SEQUENCE_V5_PROFILE",
+    "SUPPORTED_XML_PROFILES",
     "LegacyCsvError",
     "SubtitleError",
     "TimelineValidationError",
