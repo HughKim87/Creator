@@ -1,9 +1,9 @@
 # 세션 핸드오프
 
 - 갱신일: 2026-07-28
-- 역할: 현재 work·blocker·검증 상태·첫 다음 행동의 단일 owner
+- 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
 - 현재 작업: 문서 기반 지시 준수와 worktree별 상태 관리 개선
-- 상태: G0~G2 완료, G3 규칙 강화·통합 gate 통과 후 exact-path 커밋 대기
+- 상태: G0~G3 완료, G4 필수 시나리오 12개·전체 gate 통과 후 exact-path 커밋 대기
 - 계획 정본: `extension/reports/codex_2026-07-28_문서기반_지시준수와_워크트리상태관리_개선안.md`
 
 ## 읽기 순서
@@ -59,6 +59,7 @@
 - G1에서 AGENTS·CLAUDE를 PROJECT_RULES 포인터로 축소하고 PROJECT_RULES로 startup·분류·worktree 상태 선택·세분화 route를 이전했다. targeted 9개, Core 116개, Extension 113개와 maintenance가 통과했다.
 - G2에서 외부 recovery 2개·SHA-256을 검증하고 ainotebook 현재 상태를 전용 owner로 커밋한 뒤 main 18커밋을 충돌 없이 병합했다. SESSION local diff와 보호 경로는 0건이며 ainotebook 통합 gate가 통과했다.
 - G3에서 기존 core rule 3개와 failure case 2개에 교정 후 중단, 미커밋 변경 보호, 화자 권위 분리, 선택된 상태 owner checkpoint를 최소 강화했고 전체 통합 gate가 통과했다.
+- G4에서 기존 routing test에 필수 부정·긍정 시나리오 12개를 추가했고 targeted 18개, Core 128개, Extension 113개와 maintenance가 통과했다.
 - Master Plan을 단일 계획 owner로, 단계 문서 4개를 derived execution view로 분리했다.
 - AGENTS가 아니라 PROJECT_RULES가 모든 프로젝트 routing을 소유하도록 계획을 수정했다.
 - 외부 recovery, 상태 commit 후 main 병합, 화자 권위 분리, 세션 종료 handoff gate를 계획에 추가했다.
@@ -99,9 +100,9 @@
 
 ## 첫 다음 행동
 
-1. G3 변경 5개와 plan·handoff checkpoint만 exact-path로 커밋한다.
-2. G3 commit 확인 후 G4 필수 시나리오 12개를 자동 회귀로 구현한다.
-3. G4 완료 전 G5 문서는 읽지 않는다.
+1. G4 test·plan·handoff 3개만 exact-path로 커밋한다.
+2. G4 commit 확인 후 G5 문서를 읽고 최종 통합 gate를 실행한다.
+3. G5 완료 전에는 완료 상태를 기록하지 않는다.
 
 ## 다음 세션 시작 프롬프트
 
