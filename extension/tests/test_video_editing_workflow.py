@@ -325,6 +325,15 @@ class VideoEditingTimelineTests(unittest.TestCase):
         self.assertEqual(replay_ids, [f"TC{number:02d}" for number in range(1, 13)])
         self.assertNotIn("local_changes_backup", contract)
         self.assertNotIn("extension/reports", contract)
+        for capability in (
+            "subtitle-validate",
+            "subtitle-clean",
+            "import-csv",
+            "sequence-v5",
+            "premiere-cs6-v4",
+            "semantic_gate: pending",
+        ):
+            self.assertIn(capability, contract)
         readme = (
             self.root / "extension" / "README.md"
         ).read_text(encoding="utf-8")

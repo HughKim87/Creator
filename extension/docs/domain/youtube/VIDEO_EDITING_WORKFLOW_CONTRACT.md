@@ -180,6 +180,12 @@ XML 생성 전에 다음을 완성 타임라인 순서로 검수한다.
 
 스파인 적절성, 발화 자연스러움, 공간 연결, 공포 리듬, 밝기·RMS 합격값은 자동 차단하지 않는다. 구조 gate를 통과한 timeline만 XML adapter에 전달한다.
 
+자막과 과거 cut CSV는 다음 경계를 지킨다.
+
+- SRT 검증·정리는 strict UTF-8, cue 순서·겹침·미디어 범위를 확인하고 명시된 timestamp 보정·제외만 새 파일에 적용한다. 원본 hash와 cue 본문은 바꾸지 않는다.
+- legacy CSV importer는 9열 frame·gap·순서를 그대로 이관하고 의미 역할을 추론하지 않는다. 결과는 `unclassified`와 `semantic_gate: pending`이므로 별도 의미 검수 전 XML을 만들 수 없다.
+- timeline 오류는 가능한 범위에서 모두 수집하며, 각 issue는 `code / message / track / clip_id / index`를 가진다.
+
 XML adapter는 다음을 지킨다.
 
 - 원본 source reference 하나
@@ -187,6 +193,11 @@ XML adapter는 다음을 지킨다.
 - timeline의 frame·gap·예외 보존
 - 기존 출력 기본 덮어쓰기 금지
 - XML 외 부수 미디어 생성 금지
+
+| profile | 용도 | 상태 경계 |
+|---|---|---|
+| `sequence-v5` | 기존 경량 sequence XML, 기본값 | 기존 byte 호환 유지 |
+| `premiere-cs6-v4` | project·bin·masterclip을 포함한 CS6용 FCP XML v4 | 구조 검증이며 실제 Premiere import·재생 검수는 별도 |
 
 ## 9. 승인 범위
 
@@ -247,12 +258,31 @@ python -m video_editing validate `
   --timeline-json extension/examples/video-edit-timeline-v1.json
 ```
 
+자막 검증·정리와 legacy CSV 이관은 다음 실행점이 소유한다.
+
+```powershell
+python -m video_editing subtitle-validate --source <승인된-source.srt>
+python -m video_editing subtitle-clean `
+  --source <승인된-source.srt> `
+  --destination <승인된-cleaned.srt> `
+  --media-end-ms <정수> `
+  --start <cue=ms> `
+  --end <cue=ms> `
+  --exclude <cue>
+python -m video_editing import-csv `
+  --video-csv <승인된-video.csv> `
+  --audio-csv <승인된-audio.csv> `
+  --output <승인된-timeline.json> `
+  <source와 sequence metadata>
+```
+
 XML 생성은 사용자가 exact 출력 항목과 목적을 승인한 작업에서만 실행한다.
 
 ```powershell
 python -m video_editing premiere-xml `
   --timeline-json <승인된-timeline.json> `
-  --output <승인된-output.xml>
+  --output <승인된-output.xml> `
+  --profile premiere-cs6-v4
 ```
 
 Acceptance는 다음을 모두 확인한다.
@@ -263,4 +293,7 @@ Acceptance는 다음을 모두 확인한다.
 4. 의미 gate 미통과 또는 구조 오류는 XML을 만들지 않는다.
 5. 정상 timeline은 원본 reference 하나를 가진 XML 하나만 만든다.
 6. XML의 clip 수·frame 범위·audio gap이 timeline과 일치한다.
-7. Core와 Extension 전체 회귀가 통과한다.
+7. SRT·CSV 원본 hash가 유지되고 실패 시 부분 출력이 없다.
+8. legacy import는 의미 gate를 통과시키지 않는다.
+9. `sequence-v5` byte 회귀와 `premiere-cs6-v4` 구조 회귀가 함께 통과한다.
+10. Core와 Extension 전체 회귀가 통과한다.
