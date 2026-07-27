@@ -10,6 +10,7 @@
 - Put a conditional behavior in the narrowest existing owner whose trigger already covers it.
 - Add a new rule only when the behavior has a distinct trigger and no existing owner can express it without mixing responsibilities.
 - Keep domain procedure with its extension owner. Do not promote one task's facts, wording, or artifacts into project-wide rules.
+- Separate speaker and authority when using conversations, reports, or delegated results as evidence. An agent proposal does not become a user instruction or project policy without explicit approval from the applicable owner.
 - Prefer a compact invariant derived from evidence over copied session narratives, raw logs, or long examples.
 
 ## Rule shape

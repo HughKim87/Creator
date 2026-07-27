@@ -13,7 +13,7 @@
 
 ## 실패·해결 이력
 
-Stage 상태, handoff, 보고서, Obsidian 지도, failure projection에 같은 사실이 반복됐다. 영상 편집 개선에서는 plan이 500줄 이상으로 커지며 분석 원문과 구현 상세를 다시 소유하는 재발이 있었다. 현재는 활성 정보 한 owner와 Git 이력으로 축소했다.
+Stage 상태, handoff, 보고서, Obsidian 지도, failure projection에 같은 사실이 반복됐다. 영상 편집 개선에서는 plan이 500줄 이상으로 커지며 분석 원문과 구현 상세를 다시 소유하는 재발이 있었다. 이후 worktree 전용 상태 문서와 공통 SESSION이 동시에 현재 상태의 단일 owner를 자처하는 재발도 확인됐다. 현재는 활성 정보 한 owner와 Git 이력으로 축소했다.
 
 ## 해결과 검증
 
@@ -25,6 +25,7 @@ Stage 상태, handoff, 보고서, Obsidian 지도, failure projection에 같은 
 - 무엇을 소유하는지와 문서 형식을 별도 축으로 판단한다.
 - 완료 서사를 handoff에 누적하지 않는다.
 - 이미 canonical 문서가 필요한 필드를 소유하면 별도 projection·lifecycle을 만들지 않는다.
+- worktree별 상태 문서를 사용할 때 startup이 선택한 한 문서만 현재 상태 owner를 선언하며, 선택되지 않은 공통 문서에 같은 상태를 복제하지 않는다.
 - plan과 보고서는 결정, 승인 범위, 성공 gate, 미해결 위험, 다음 행동만 남기고 원문·완료 상세는 Git에 맡긴다.
 - 문장을 제거해도 다음 행동·재개·검증·감사 판단이 달라지지 않으면 완료 전에 압축한다.
 - 문서 제목·경로가 바뀌면 링크와 파생물을 같은 checkpoint에서 검증한다.

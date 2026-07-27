@@ -3,7 +3,7 @@
 - 갱신일: 2026-07-28
 - 역할: 현재 work·blocker·검증 상태·첫 다음 행동의 단일 owner
 - 현재 작업: 문서 기반 지시 준수와 worktree별 상태 관리 개선
-- 상태: G0 기준 커밋 `484b7ad` 완료, G1 구현·통합 gate 통과 후 exact-path 커밋 대기
+- 상태: G0~G2 완료, G3 규칙 강화·통합 gate 통과 후 exact-path 커밋 대기
 - 계획 정본: `extension/reports/codex_2026-07-28_문서기반_지시준수와_워크트리상태관리_개선안.md`
 
 ## 읽기 순서
@@ -57,6 +57,8 @@
 - 전체 사용자 대화, 첨부 대화, 현재 규칙, Git·worktree·stash를 재감사했다.
 - 2026-07-28 재측정에서 ainotebook 변경이 stash에서 재적용되었고 top stash와 해시가 일치함을 확인했다.
 - G1에서 AGENTS·CLAUDE를 PROJECT_RULES 포인터로 축소하고 PROJECT_RULES로 startup·분류·worktree 상태 선택·세분화 route를 이전했다. targeted 9개, Core 116개, Extension 113개와 maintenance가 통과했다.
+- G2에서 외부 recovery 2개·SHA-256을 검증하고 ainotebook 현재 상태를 전용 owner로 커밋한 뒤 main 18커밋을 충돌 없이 병합했다. SESSION local diff와 보호 경로는 0건이며 ainotebook 통합 gate가 통과했다.
+- G3에서 기존 core rule 3개와 failure case 2개에 교정 후 중단, 미커밋 변경 보호, 화자 권위 분리, 선택된 상태 owner checkpoint를 최소 강화했고 전체 통합 gate가 통과했다.
 - Master Plan을 단일 계획 owner로, 단계 문서 4개를 derived execution view로 분리했다.
 - AGENTS가 아니라 PROJECT_RULES가 모든 프로젝트 routing을 소유하도록 계획을 수정했다.
 - 외부 recovery, 상태 commit 후 main 병합, 화자 권위 분리, 세션 종료 handoff gate를 계획에 추가했다.
@@ -92,14 +94,14 @@
 | `extension/reports/codex_2026-07-28_문서기반_개선_plan/codex_G3-G4_지시준수_규칙과_회귀검증.md` | active·uncommitted | 규칙 강화·자동 회귀 |
 | `extension/reports/codex_2026-07-28_문서기반_개선_plan/codex_G5_통합검증과_최종보고.md` | active·uncommitted | 최종 gate·보고 |
 | `C:\Users\Hugh\.codex\attachments\87c95a67-f24c-4de7-8a08-d1e02dcafacc\pasted-text.txt` | historical evidence | 다른 세션 대화; 사용자 발언과 에이전트 제안을 분리해 사용 |
-| ainotebook `SESSION_HANDOFF.md` | pending migration·unstaged | 기존 상태 source; G2에서 전용 owner로 이전할 대상 |
-| ainotebook `extension/work/AINOTEBOOK_WORKTREE_STATE.md` | draft·untracked | G2 상태 owner 후보; 현재 SESSION과 중복 |
+| ainotebook `SESSION_HANDOFF.md` | tracked·not selected | main과 동기화됐지만 ainotebook startup에서 읽지 않음 |
+| ainotebook `extension/work/AINOTEBOOK_WORKTREE_STATE.md` | active·committed | ainotebook 현재 상태 단일 owner, commit `19049ba` |
 
 ## 첫 다음 행동
 
-1. G1의 변경 6개와 plan·handoff checkpoint만 exact-path로 커밋하고 object·경로·보호 경로 0건을 검증한다.
-2. G1 commit 확인 후에만 G2 문서를 읽는다.
-3. G2에서 ainotebook 두 문서의 의미 단위와 외부 recovery 절차를 다시 검증한다.
+1. G3 변경 5개와 plan·handoff checkpoint만 exact-path로 커밋한다.
+2. G3 commit 확인 후 G4 필수 시나리오 12개를 자동 회귀로 구현한다.
+3. G4 완료 전 G5 문서는 읽지 않는다.
 
 ## 다음 세션 시작 프롬프트
 
