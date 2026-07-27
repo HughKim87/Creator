@@ -12,6 +12,7 @@
 |---|---|---|
 | 볼트 | 프로젝트 루트 | 복제 볼트 없음 |
 | 시작 화면 | 루트 `README.md` | 별도 router·inventory 없음 |
+| 규칙 탐색 | `AGENTS.md`의 조건부 route | 별도 규칙 index 없이 필요한 규칙만 읽음 |
 | 보호 제외 | `.git/`, `.obsidian/`, `backup/`, `inputs/`, `outputs/` | 내부를 열거·색인하지 않음 |
 | 사용 방식 | 읽기·탐색 우선 | 직접 편집도 project rule을 우회하지 않음 |
 | 설정 공유 | `.obsidian/app.json`의 안전 제외만 | workspace, UI, 테마, plugin 상태는 로컬 |
@@ -28,6 +29,7 @@
 
 - 설정을 바꾸면 보호 제외와 local link를 검사한다.
 - Obsidian이 없어도 루트 Markdown에서 현재 work와 활성 정본에 접근할 수 있어야 한다.
+- `AGENTS.md`는 활성 `core/rules/*.md` 각각을 정확히 한 번 Markdown link로 연결해야 하며, 활성 규칙 문서를 고아 node로 남기지 않는다.
 - 별도 router나 전체 문서 inventory는 distinct user need가 확인되기 전 만들지 않는다.
 
 ## 문서 소유 파생 artifact

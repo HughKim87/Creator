@@ -4,6 +4,38 @@
 - Change authority: the user approves policy changes; agents maintain approved wording.
 - Priority: security > protected-data safety > accuracy > user outcome > efficiency.
 
+## Startup, state selection, and task routing
+
+Read this file completely once at the start of a new session. On Windows PowerShell, read maintained Markdown with `Get-Content -LiteralPath <path> -Raw -Encoding utf8`.
+
+Resolve the repository root with `git rev-parse --show-toplevel`. Normalize it by replacing `\` with `/`, trimming trailing separators, taking the final path segment, and comparing that `root_name` case-insensitively. Do not use the branch name to select current state.
+
+- `root_name == "ainotebook"`: read `extension/work/AINOTEBOOK_WORKTREE_STATE.md` completely and do not read `SESSION_HANDOFF.md`.
+- `root_name != "ainotebook"`: read `SESSION_HANDOFF.md` completely and do not read `extension/work/AINOTEBOOK_WORKTREE_STATE.md`.
+
+Choose the lowest sufficient task class:
+
+- `quick`: safe, reversible local work with no policy, protected-data, external, destructive, or material scope effect.
+- `standard`: multi-file or behavior work that remains local, reversible, and inside established policy.
+- `controlled`: policy or structure changes, any `core/**` change, protected data, deletion or move, external effects, costly recovery, or user-requested gates.
+
+Do not add a numbered plan, score, subagent, separate report, or commit to `quick` or `standard` work unless the user requests it. Controlled work uses an explicit plan and consolidated gate.
+
+Read each matching rule completely once per logical task:
+
+| Action | Read before work |
+|---|---|
+| Create, edit, delete, move, rename, regenerate, or indirectly change anything under `core/` | [Core change control](core/rules/core-change-control.md) |
+| Create or change maintained documents or persistent project data | [Document work](core/rules/document-work.md) |
+| Record or reuse a material, generalizable failure | [Failure records](core/rules/failure-records.md) |
+| Git stage, commit, branch, push, recover, or create a backup | [Version control](core/rules/version-control.md) |
+| Work on an exact user-named item under `inputs/` or `outputs/` | [User data work](core/rules/user-data-work.md) |
+| Add, change, consolidate, or audit project rules; close controlled work | [Rule governance](core/rules/rule-governance.md) |
+| Compare reports or agents, or cross-validate conclusions | [Cross-validation](core/rules/cross-validation.md) |
+| Create or change YouTube, video, production, skill, task, runtime, example, or report data | [Extension entry point](extension/README.md) and its exact active owner |
+
+Detailed completed history is available through Git. Do not load old commits by default. Before completing controlled work, use the rule-governance route to audit the rules that matched the task; do not create a separate audit artifact unless the user requested one.
+
 ## Outcome and authority
 
 - The project exists to reduce manual production work and let agents act autonomously inside approved goals and safety boundaries.
