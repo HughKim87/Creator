@@ -127,7 +127,8 @@
             "transition",
             "atmosphere",
             "speech",
-            "event"
+            "event",
+            "unclassified"
           ]
         },
         "edit_reason": {"type": "string", "minLength": 1, "maxLength": 500}

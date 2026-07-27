@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 from typing import Any
 
+from .legacy_csv import LegacyCsvError, write_legacy_timeline
 from .model import TimelineValidationError, inspect_timeline
 from .premiere_xml import PremiereXmlError, write_premiere_xml
 from .subtitle import SubtitleError, clean_srt, validate_srt
@@ -75,6 +76,30 @@ def _parser() -> VideoEditingArgumentParser:
     subtitle_clean.add_argument("--end", action="append", default=[], metavar="CUE=MS")
     subtitle_clean.add_argument("--exclude", action="append", default=[], type=int)
     subtitle_clean.add_argument("--overwrite", action="store_true")
+    import_csv = commands.add_parser(
+        "import-csv",
+        help="convert validated legacy video/audio cut CSV files to a pending timeline",
+    )
+    import_csv.add_argument("--video-csv", required=True, type=Path)
+    import_csv.add_argument("--audio-csv", required=True, type=Path)
+    import_csv.add_argument("--output", required=True, type=Path)
+    import_csv.add_argument("--timeline-id", required=True)
+    import_csv.add_argument("--sequence-name", required=True)
+    import_csv.add_argument("--source-id", required=True)
+    import_csv.add_argument("--source-path", required=True)
+    import_csv.add_argument("--source-total-frames", required=True, type=int)
+    import_csv.add_argument("--frame-rate-numerator", required=True, type=int)
+    import_csv.add_argument("--frame-rate-denominator", required=True, type=int)
+    import_csv.add_argument("--width", required=True, type=int)
+    import_csv.add_argument("--height", required=True, type=int)
+    import_csv.add_argument("--sample-rate", required=True, type=int)
+    import_csv.add_argument("--channels", required=True, type=int)
+    import_csv.add_argument(
+        "--source-order-exception",
+        action="append",
+        default=[],
+        metavar="CLIP_ID",
+    )
     return parser
 
 
@@ -128,7 +153,7 @@ def main(argv: list[str] | None = None) -> int:
                 namespace.source,
                 media_end_ms=namespace.media_end_ms,
             )
-        else:
+        elif namespace.command == "subtitle-clean":
             result = clean_srt(
                 namespace.source,
                 namespace.destination,
@@ -137,16 +162,51 @@ def main(argv: list[str] | None = None) -> int:
                 excluded_indices=frozenset(namespace.exclude),
                 overwrite=namespace.overwrite,
             )
+        else:
+            result = write_legacy_timeline(
+                namespace.video_csv,
+                namespace.audio_csv,
+                namespace.output,
+                timeline_id=namespace.timeline_id,
+                sequence_name=namespace.sequence_name,
+                source_id=namespace.source_id,
+                source_path=namespace.source_path,
+                source_total_frames=namespace.source_total_frames,
+                frame_rate_numerator=namespace.frame_rate_numerator,
+                frame_rate_denominator=namespace.frame_rate_denominator,
+                width=namespace.width,
+                height=namespace.height,
+                sample_rate=namespace.sample_rate,
+                channels=namespace.channels,
+                source_order_exceptions=frozenset(namespace.source_order_exception),
+            )
         _emit({"ok": True, "result": result})
         return 0
-    except (PremiereXmlError, SubtitleError, TimelineValidationError) as exc:
+    except (
+        LegacyCsvError,
+        PremiereXmlError,
+        SubtitleError,
+        TimelineValidationError,
+    ) as exc:
         if isinstance(exc, TimelineValidationError):
             kind = exc.code
+            details = {"issues": exc.issues}
+        elif isinstance(exc, LegacyCsvError):
+            kind = "legacy_csv_error"
+            details = {"issues": exc.issues}
         elif isinstance(exc, SubtitleError):
             kind = "subtitle_error"
+            details = {}
         else:
             kind = "xml_error"
-        _emit({"ok": False, "error": {"kind": kind, "message": str(exc)}}, error=True)
+            details = {}
+        _emit(
+            {
+                "ok": False,
+                "error": {"kind": kind, "message": str(exc), **details},
+            },
+            error=True,
+        )
         return 2
 
 
