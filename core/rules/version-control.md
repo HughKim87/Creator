@@ -15,3 +15,11 @@
 - On Windows, pass a repository `safe.directory` override as one quoted `key=value` argument when the absolute path contains spaces; do not split that path across command arguments.
 - After a Git write, verify the object, affected paths, protected-path count, and resulting status.
 - If a required commit fails, do not cross the boundary; fix it inside the approved scope or report the blocker.
+
+## Requested backup completion
+
+- Classify the request as a copy, move, or recovery snapshot before acting. These outcomes are not interchangeable.
+- Resolve the exact source set and destination. Place a requested file backup outside the active repository; an in-repository backup snapshot is prohibited by higher policy.
+- Verify the backup with source and destination counts plus size or hashes appropriate to the data.
+- A copy is not completion when the user requested the active paths to be moved or cleared. After exact approval for that destructive step, verify the intended active paths are absent and recheck repository status.
+- Maintained files, rules, and runtime behavior must not depend on the backup. Removing the backup later must not break the improved project.
