@@ -295,6 +295,42 @@ class VideoEditingTimelineTests(unittest.TestCase):
                 ["timeline.json", "timeline.xml"],
             )
 
+    def test_contract_rules_replay_cases_and_owner_routing_are_complete(self) -> None:
+        contract_path = (
+            self.root
+            / "extension"
+            / "docs"
+            / "domain"
+            / "youtube"
+            / "VIDEO_EDITING_WORKFLOW_CONTRACT.md"
+        )
+        contract = contract_path.read_text(encoding="utf-8")
+        for number in range(1, 13):
+            rule_id = f"R{number:02d}"
+            start = contract.index(f"### {rule_id}")
+            next_heading = (
+                contract.index(f"### R{number + 1:02d}", start)
+                if number < 12
+                else contract.index("## 7.", start)
+            )
+            block = contract[start:next_heading]
+            self.assertEqual(contract.count(f"### {rule_id} "), 1)
+            for field in ("조건", "행동", "예외", "검증"):
+                self.assertIn(f"- {field}:", block)
+        replay_ids = [
+            line.split("|")[1].strip()
+            for line in contract.splitlines()
+            if line.startswith("| TC")
+        ]
+        self.assertEqual(replay_ids, [f"TC{number:02d}" for number in range(1, 13)])
+        self.assertNotIn("local_changes_backup", contract)
+        self.assertNotIn("extension/reports", contract)
+        readme = (
+            self.root / "extension" / "README.md"
+        ).read_text(encoding="utf-8")
+        owner = "docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md"
+        self.assertEqual(readme.count(owner), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

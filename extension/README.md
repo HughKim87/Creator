@@ -34,6 +34,8 @@
 
 영상 편집 작업은 두 계약의 범위를 섞지 않는다. 세션 원문·버전별 보고서·작업별 수치를 운영 규칙의 owner로 사용하지 않는다.
 
+영상 편집 timeline의 구조 검증과 Premiere XML 생성은 `python -m video_editing`이 소유한다. 보호 데이터가 없는 기본 입력은 `examples/video-edit-timeline-v1.json`이며, 실제 `inputs/`·`outputs/` 경로는 exact 항목과 목적을 승인받은 작업에서만 사용한다.
+
 ## Core 의존 경계
 
 - extension은 승인된 `file_data` 인터페이스를 사용할 수 있다.

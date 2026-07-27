@@ -235,3 +235,32 @@ XML adapter는 다음을 지킨다.
 - 전용 영상 편집 skill
 
 새 도구는 반복 실패를 줄이는 검증 가능한 이득과 회귀 사례가 없으면 추가하지 않는다.
+
+## 13. 실행점과 acceptance
+
+보호 데이터가 없는 기본 구조 검증:
+
+```powershell
+$env:PYTHONDONTWRITEBYTECODE = '1'
+$env:PYTHONPATH = ((Resolve-Path 'core/src').Path, (Resolve-Path 'extension/src').Path -join ';')
+python -m video_editing validate `
+  --timeline-json extension/examples/video-edit-timeline-v1.json
+```
+
+XML 생성은 사용자가 exact 출력 항목과 목적을 승인한 작업에서만 실행한다.
+
+```powershell
+python -m video_editing premiere-xml `
+  --timeline-json <승인된-timeline.json> `
+  --output <승인된-output.xml>
+```
+
+Acceptance는 다음을 모두 확인한다.
+
+1. 운영 규칙 R01~R12가 네 요소를 유지한다.
+2. TC01~TC12의 기대 판정이 모두 유지된다.
+3. 정상 timeline은 결정론적 진단을 반환한다.
+4. 의미 gate 미통과 또는 구조 오류는 XML을 만들지 않는다.
+5. 정상 timeline은 원본 reference 하나를 가진 XML 하나만 만든다.
+6. XML의 clip 수·frame 범위·audio gap이 timeline과 일치한다.
+7. Core와 Extension 전체 회귀가 통과한다.
