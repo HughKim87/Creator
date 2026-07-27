@@ -25,6 +25,15 @@
 
 새 작업은 이 영역에 추가한다. extension 작업을 이유로 core 구현·계약·규칙을 자동 변경하지 않는다.
 
+## 활성 영상 owner
+
+| 작업 | 단일 owner | 경계 |
+|---|---|---|
+| 촬영 전 근거 패키지 | `docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md` | 대본·편집·파생물 생성 제외 |
+| 촬영 후 영상 분석·컷 편집·Premiere XML | `docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md` | 보호 데이터는 exact 항목·목적 승인 필요 |
+
+영상 편집 작업은 두 계약의 범위를 섞지 않는다. 세션 원문·버전별 보고서·작업별 수치를 운영 규칙의 owner로 사용하지 않는다.
+
 ## Core 의존 경계
 
 - extension은 승인된 `file_data` 인터페이스를 사용할 수 있다.
