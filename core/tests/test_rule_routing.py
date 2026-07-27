@@ -272,7 +272,8 @@ class G4RegressionTests(unittest.TestCase):
             completed_rows = [
                 line
                 for line in self.master.splitlines()
-                if re.match(r"^\| G[0-5] \|", line) and "| 완료 |" in line
+                if re.match(r"^\| [0-5] \| G[0-5](?:\s|\|)", line)
+                and "| 완료 |" in line
             ]
             self.assertEqual(6, len(completed_rows))
         selected = _select_state_document(ROOT, self.project_rules)
