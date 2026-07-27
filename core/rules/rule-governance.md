@@ -2,7 +2,7 @@
 
 - Purpose: keep startup context small while ensuring conditional rules are discoverable, applied, and improved from verified experience.
 - Read when: adding, changing, consolidating, or auditing project rules, and before completing controlled work.
-- Authority: [PROJECT_RULES.md](../../PROJECT_RULES.md) is higher authority; [AGENTS.md](../../AGENTS.md) owns conditional routing.
+- Authority: [PROJECT_RULES.md](../../PROJECT_RULES.md) is higher authority and owns conditional routing.
 
 ## Rule placement
 
@@ -24,8 +24,8 @@ Operational rules should make the condition, required action, exception, and ver
 
 ## Routing and graph
 
-- [AGENTS.md](../../AGENTS.md) is the single rule router. Do not create a parallel rule index.
-- Link every active `core/rules/*.md` file exactly once from its matching route in `AGENTS.md`.
+- [PROJECT_RULES.md](../../PROJECT_RULES.md) is the single rule router. Do not create a parallel rule index.
+- Link every active `core/rules/*.md` file exactly once from its matching route in `PROJECT_RULES.md`.
 - Read only the rules matched by the current task, once per logical task. Do not preload the complete rule set.
 - Markdown links provide both agent routing and Obsidian graph edges; plain code paths are not sufficient navigation.
 

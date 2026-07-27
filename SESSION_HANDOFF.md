@@ -3,7 +3,7 @@
 - 갱신일: 2026-07-28
 - 역할: 현재 work·blocker·검증 상태·첫 다음 행동의 단일 owner
 - 현재 작업: 문서 기반 지시 준수와 worktree별 상태 관리 개선
-- 상태: Master Plan과 G0~G5 실행 문서 작성·전체 대화 재감사 완료, ainotebook stash 재적용과 G0 기준 재검증 완료, 기준 커밋·G1 승인 대기
+- 상태: G0 기준 커밋 `484b7ad` 완료, G1 구현·통합 gate 통과 후 exact-path 커밋 대기
 - 계획 정본: `extension/reports/codex_2026-07-28_문서기반_지시준수와_워크트리상태관리_개선안.md`
 
 ## 읽기 순서
@@ -56,6 +56,7 @@
 
 - 전체 사용자 대화, 첨부 대화, 현재 규칙, Git·worktree·stash를 재감사했다.
 - 2026-07-28 재측정에서 ainotebook 변경이 stash에서 재적용되었고 top stash와 해시가 일치함을 확인했다.
+- G1에서 AGENTS·CLAUDE를 PROJECT_RULES 포인터로 축소하고 PROJECT_RULES로 startup·분류·worktree 상태 선택·세분화 route를 이전했다. targeted 9개, Core 116개, Extension 113개와 maintenance가 통과했다.
 - Master Plan을 단일 계획 owner로, 단계 문서 4개를 derived execution view로 분리했다.
 - AGENTS가 아니라 PROJECT_RULES가 모든 프로젝트 routing을 소유하도록 계획을 수정했다.
 - 외부 recovery, 상태 commit 후 main 병합, 화자 권위 분리, 세션 종료 handoff gate를 계획에 추가했다.
@@ -75,11 +76,11 @@
 ## blocker·위험
 
 - 다음 세션의 G1·G3는 `core/**`를 변경하므로 그 세션에서 exact 경로·이유를 제시하고 명시적 승인을 다시 받아야 한다.
-- 현재 plan과 handoff는 아직 커밋되지 않았다. G0 성공 게이트 후 승인된 exact 6개 문서만 기준 commit으로 고정해야 한다.
+- G0 plan·handoff 기준은 exact 6개 문서만 `484b7ad`로 커밋했고 보호 경로·관련 없는 변경은 0건이다.
 - ainotebook 변경은 stash와 현재 파일로 보존되어 있으나, G2 mutation 전에는 계획에 따라 exact source와 외부 recovery copy·SHA-256을 다시 검증해야 한다.
 - 전용 상태 commit 뒤 main을 병합해야 한다. main-only commit 전체가 사용자 목표와 맞는지 확인하지 않고 merge하면 안 된다.
 - 현재 세션은 ainotebook을 읽기 검증만 했으며 그 worktree 파일을 수정하지 않았다.
-- G0 기준은 현재 상태로 확정됐고, 다음 mutation 전 plan·handoff 기준 커밋 승인과 G1 exact core 승인만 남아 있다.
+- G1의 exact core 범위는 `core/rules/rule-governance.md`, `core/tests/test_rule_routing.py`이며 PROJECT_RULES 단일 router 계약과 회귀 검증을 일치시키기 위해 필요하다.
 
 ## 중요 문서
 
@@ -96,9 +97,9 @@
 
 ## 첫 다음 행동
 
-1. 사용자에게 plan·handoff 기준 commit 승인과 G1 exact core 범위·이유 승인을 확인한다.
-2. 승인된 경우에만 G0 기준 커밋 후 G1만 진행한다. G2 문서는 G1 완료 전 읽지 않는다.
-3. G1 완료 뒤 G2에서 ainotebook 두 문서의 의미 단위와 외부 recovery 절차를 다시 검증한다.
+1. G1의 변경 6개와 plan·handoff checkpoint만 exact-path로 커밋하고 object·경로·보호 경로 0건을 검증한다.
+2. G1 commit 확인 후에만 G2 문서를 읽는다.
+3. G2에서 ainotebook 두 문서의 의미 단위와 외부 recovery 절차를 다시 검증한다.
 
 ## 다음 세션 시작 프롬프트
 
