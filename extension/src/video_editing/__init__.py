@@ -11,6 +11,11 @@ from .model import (
     inspect_timeline,
     validate_timeline,
 )
+from .premiere_xml import (
+    PremiereXmlError,
+    build_premiere_xml,
+    write_premiere_xml,
+)
 
 __all__ = [
     "CLIP_FIELDS",
@@ -19,7 +24,10 @@ __all__ = [
     "SOURCE_FIELDS",
     "TIMELINE_FIELDS",
     "TIMELINE_VERSION",
+    "PremiereXmlError",
     "TimelineValidationError",
+    "build_premiere_xml",
     "inspect_timeline",
     "validate_timeline",
+    "write_premiere_xml",
 ]

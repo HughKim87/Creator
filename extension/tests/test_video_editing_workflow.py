@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import hashlib
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 
 from video_editing import (
     CLIP_FIELDS,
@@ -11,9 +17,12 @@ from video_editing import (
     SEQUENCE_FIELDS,
     SOURCE_FIELDS,
     TIMELINE_FIELDS,
+    PremiereXmlError,
     TimelineValidationError,
+    build_premiere_xml,
     inspect_timeline,
     validate_timeline,
+    write_premiere_xml,
 )
 
 
@@ -138,6 +147,153 @@ class VideoEditingTimelineTests(unittest.TestCase):
             set(schema["$defs"]["clip"]["required"]),
             set(CLIP_FIELDS),
         )
+
+    def test_premiere_xml_is_deterministic_and_uses_one_original_source(self) -> None:
+        timeline = self._timeline()
+        first = build_premiere_xml(timeline)
+        second = build_premiere_xml(deepcopy(timeline))
+        self.assertEqual(first, second)
+        self.assertEqual(hashlib.sha256(first).hexdigest(), hashlib.sha256(second).hexdigest())
+        root = ET.fromstring(first)
+        self.assertEqual(root.tag, "xmeml")
+        self.assertEqual(root.attrib["version"], "5")
+        self.assertEqual(root.findtext("./sequence/duration"), "240")
+        file_ids = {element.attrib["id"] for element in root.findall(".//file")}
+        self.assertEqual(file_ids, {"file-1"})
+        path_urls = [
+            element.text for element in root.findall(".//file/pathurl")
+        ]
+        self.assertEqual(path_urls, ["file://localhost/media/original-main.mp4"])
+
+    def test_premiere_xml_preserves_clip_ranges_audio_gap_and_stereo_tracks(self) -> None:
+        root = ET.fromstring(build_premiere_xml(self._timeline()))
+        video_items = root.findall("./sequence/media/video/track/clipitem")
+        audio_tracks = root.findall("./sequence/media/audio/track")
+        audio_items = root.findall("./sequence/media/audio/track/clipitem")
+        self.assertEqual(len(video_items), 2)
+        self.assertEqual(len(audio_tracks), 2)
+        self.assertEqual(len(audio_items), 4)
+        self.assertEqual(
+            [
+                (
+                    item.findtext("name"),
+                    item.findtext("start"),
+                    item.findtext("end"),
+                    item.findtext("in"),
+                    item.findtext("out"),
+                )
+                for item in video_items
+            ],
+            [
+                ("V001", "0", "120", "0", "120"),
+                ("V002", "120", "240", "300", "420"),
+            ],
+        )
+        first_channel = audio_tracks[0].findall("clipitem")
+        self.assertEqual(
+            [(item.findtext("start"), item.findtext("end")) for item in first_channel],
+            [("0", "118"), ("120", "240")],
+        )
+        linked = video_items[1].findall("link")
+        self.assertEqual(len(linked), 3)
+
+    def test_xml_generation_requires_semantic_gate_and_supported_rate(self) -> None:
+        timeline = self._timeline()
+        timeline["semantic_gate"].update(
+            {"status": "pending", "reviewed_by": None, "notes": ""}
+        )
+        with self.assertRaisesRegex(PremiereXmlError, "semantic_gate"):
+            build_premiere_xml(timeline)
+        timeline = self._timeline()
+        timeline["source"]["frame_rate"] = {"numerator": 25, "denominator": 2}
+        with self.assertRaisesRegex(PremiereXmlError, "unsupported frame rate"):
+            build_premiere_xml(timeline)
+
+    def test_writer_is_atomic_and_refuses_overwrite_by_default(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="video-edit-xml-") as raw:
+            root = Path(raw)
+            output = root / "timeline.xml"
+            result = write_premiere_xml(self._timeline(), output)
+            self.assertTrue(output.is_file())
+            self.assertEqual(result["bytes"], output.stat().st_size)
+            self.assertEqual(
+                result["sha256"],
+                hashlib.sha256(output.read_bytes()).hexdigest(),
+            )
+            self.assertEqual([item.name for item in root.iterdir()], ["timeline.xml"])
+            with self.assertRaisesRegex(PremiereXmlError, "already exists"):
+                write_premiere_xml(self._timeline(), output)
+
+    def test_invalid_timeline_creates_no_xml_or_temporary_file(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="video-edit-invalid-") as raw:
+            root = Path(raw)
+            output = root / "timeline.xml"
+            timeline = self._timeline()
+            timeline["sequence"]["video_clips"][0]["frames"] = 119
+            with self.assertRaises(TimelineValidationError):
+                write_premiere_xml(timeline, output)
+            self.assertEqual(list(root.iterdir()), [])
+
+    def test_cli_validates_and_generates_only_requested_xml(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="video-edit-cli-") as raw:
+            root = Path(raw)
+            timeline_path = root / "timeline.json"
+            output_path = root / "timeline.xml"
+            timeline_path.write_text(
+                json.dumps(self._timeline(), ensure_ascii=False),
+                encoding="utf-8",
+            )
+            environment = os.environ.copy()
+            environment["PYTHONPATH"] = os.pathsep.join(
+                [
+                    str(self.root / "core" / "src"),
+                    str(self.root / "extension" / "src"),
+                ]
+            )
+            environment["PYTHONDONTWRITEBYTECODE"] = "1"
+            environment["PYTHONUTF8"] = "1"
+            validate_command = [
+                sys.executable,
+                "-m",
+                "video_editing",
+                "validate",
+                "--timeline-json",
+                str(timeline_path),
+            ]
+            validated = subprocess.run(
+                validate_command,
+                text=True,
+                encoding="utf-8",
+                capture_output=True,
+                env=environment,
+                check=False,
+            )
+            self.assertEqual(validated.returncode, 0, validated.stderr)
+            self.assertTrue(json.loads(validated.stdout)["ok"])
+            generate_command = [
+                sys.executable,
+                "-m",
+                "video_editing",
+                "premiere-xml",
+                "--timeline-json",
+                str(timeline_path),
+                "--output",
+                str(output_path),
+            ]
+            generated = subprocess.run(
+                generate_command,
+                text=True,
+                encoding="utf-8",
+                capture_output=True,
+                env=environment,
+                check=False,
+            )
+            self.assertEqual(generated.returncode, 0, generated.stderr)
+            self.assertTrue(json.loads(generated.stdout)["ok"])
+            self.assertEqual(
+                sorted(item.name for item in root.iterdir()),
+                ["timeline.json", "timeline.xml"],
+            )
 
 
 if __name__ == "__main__":
