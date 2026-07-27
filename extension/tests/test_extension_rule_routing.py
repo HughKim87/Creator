@@ -1,0 +1,123 @@
+from collections import Counter
+from pathlib import Path
+import re
+import unittest
+
+
+ROOT = Path(__file__).resolve().parents[2]
+EXTENSION = ROOT / "extension"
+RULES_DIR = EXTENSION / "rules"
+
+
+class ExtensionRuleRoutingTests(unittest.TestCase):
+    def test_extension_readme_routes_every_rule_exactly_once(self):
+        readme = (EXTENSION / "README.md").read_text(encoding="utf-8")
+        routed = re.findall(r"\[[^\]]+\]\((rules/[^)]+\.md)\)", readme)
+        expected = {
+            path.relative_to(EXTENSION).as_posix()
+            for path in RULES_DIR.glob("*.md")
+        }
+
+        self.assertEqual(expected, set(routed))
+        self.assertEqual(
+            {path: 1 for path in expected},
+            dict(Counter(routed)),
+        )
+        for relative_path in routed:
+            self.assertTrue((EXTENSION / relative_path).is_file(), relative_path)
+
+    def test_every_rule_declares_routing_metadata(self):
+        for path in RULES_DIR.glob("*.md"):
+            text = path.read_text(encoding="utf-8")
+            with self.subTest(path=path.name):
+                self.assertRegex(text, r"(?m)^- Purpose:")
+                self.assertRegex(text, r"(?m)^- Read when:")
+                self.assertRegex(text, r"(?m)^- Authority:")
+
+    def test_rule_and_replay_ids_have_single_owners(self):
+        rule_documents = {
+            path.name: path.read_text(encoding="utf-8")
+            for path in sorted(RULES_DIR.glob("*.md"))
+        }
+        rules_text = "\n".join(rule_documents.values())
+        rule_ids = re.findall(r"(?m)^### (R\d{2}) —", rules_text)
+        replay_ids = re.findall(r"(?m)^\| (TC\d{2}) \|", rules_text)
+
+        expected_rules = {f"R{number:02d}" for number in range(1, 17)}
+        expected_replays = {f"TC{number:02d}" for number in range(1, 17)}
+        self.assertEqual(expected_rules, set(rule_ids))
+        self.assertEqual(expected_replays, set(replay_ids))
+        self.assertEqual(
+            {item: 1 for item in expected_rules},
+            dict(Counter(rule_ids)),
+        )
+        self.assertEqual(
+            {item: 1 for item in expected_replays},
+            dict(Counter(replay_ids)),
+        )
+
+        for name, text in rule_documents.items():
+            sections = re.split(r"(?m)(?=^### R\d{2} —)", text)
+            for section in sections[1:]:
+                rule_id = re.match(r"### (R\d{2}) —", section).group(1)
+                with self.subTest(path=name, rule=rule_id):
+                    self.assertIn("- 조건:", section)
+                    self.assertIn("- 행동:", section)
+                    self.assertIn("- 예외:", section)
+                    self.assertIn("- 검증:", section)
+
+    def test_original_replay_expectations_are_preserved(self):
+        rules_text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in sorted(RULES_DIR.glob("*.md"))
+        )
+        rows = {
+            match.group(1): match.group(2)
+            for match in re.finditer(
+                r"(?m)^\| (TC\d{2}) \| [^|]+ \| ([^|]+) \|$",
+                rules_text,
+            )
+        }
+        expected_phrases = {
+            "TC01": "지루함을 계약으로 받고",
+            "TC02": "최신 지시를 적용하고 재확인하지 않는다",
+            "TC03": "보호 데이터를 열지 않는다",
+            "TC04": "XML 외 산출물을 만들지 않는다",
+            "TC05": "microbeat로 2차 편집한다",
+            "TC06": "최소 공간·행동 연결을 유지한다",
+            "TC07": "cue 전체 보존을 강제하지 않는다",
+            "TC08": "audio-only gap으로 파편을 제거한다",
+            "TC09": "새 상황의 첫 반응은 유지한다",
+            "TC10": "대사를 임의 추가하지 않는다",
+            "TC11": "수정 clip과 인접 경계의 이전 승인만 무효화",
+            "TC12": "기술 통과·의미 실패",
+        }
+        for replay_id, phrase in expected_phrases.items():
+            with self.subTest(replay=replay_id):
+                self.assertIn(phrase, rows[replay_id])
+
+    def test_contract_does_not_duplicate_rule_bodies(self):
+        contract = (
+            EXTENSION
+            / "docs"
+            / "domain"
+            / "youtube"
+            / "VIDEO_EDITING_WORKFLOW_CONTRACT.md"
+        ).read_text(encoding="utf-8")
+        self.assertNotRegex(contract, r"(?m)^### R\d{2} —")
+        self.assertIn("R01~R16", contract)
+        self.assertIn("TC01~TC16", contract)
+
+    def test_candidate_reference_is_routed_but_not_active_rule(self):
+        readme = (EXTENSION / "README.md").read_text(encoding="utf-8")
+        relative = "docs/domain/youtube/VIDEO_EDITING_RULE_CANDIDATES.md"
+        self.assertEqual(readme.count(f"]({relative})"), 1)
+        candidate = EXTENSION / relative
+        self.assertTrue(candidate.is_file())
+        text = candidate.read_text(encoding="utf-8")
+        self.assertIn("현재 운영 규칙이나 기본 합격값이 아니다", text)
+        self.assertIn("두 번째 독립 영상", text)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -295,7 +295,7 @@ class VideoEditingTimelineTests(unittest.TestCase):
                 ["timeline.json", "timeline.xml"],
             )
 
-    def test_contract_rules_replay_cases_and_owner_routing_are_complete(self) -> None:
+    def test_contract_capabilities_and_owner_routing_are_complete(self) -> None:
         contract_path = (
             self.root
             / "extension"
@@ -305,24 +305,9 @@ class VideoEditingTimelineTests(unittest.TestCase):
             / "VIDEO_EDITING_WORKFLOW_CONTRACT.md"
         )
         contract = contract_path.read_text(encoding="utf-8")
-        for number in range(1, 13):
-            rule_id = f"R{number:02d}"
-            start = contract.index(f"### {rule_id}")
-            next_heading = (
-                contract.index(f"### R{number + 1:02d}", start)
-                if number < 12
-                else contract.index("## 7.", start)
-            )
-            block = contract[start:next_heading]
-            self.assertEqual(contract.count(f"### {rule_id} "), 1)
-            for field in ("조건", "행동", "예외", "검증"):
-                self.assertIn(f"- {field}:", block)
-        replay_ids = [
-            line.split("|")[1].strip()
-            for line in contract.splitlines()
-            if line.startswith("| TC")
-        ]
-        self.assertEqual(replay_ids, [f"TC{number:02d}" for number in range(1, 13)])
+        self.assertNotRegex(contract, r"(?m)^### R\d{2} —")
+        self.assertIn("R01~R16", contract)
+        self.assertIn("TC01~TC16", contract)
         self.assertNotIn("local_changes_backup", contract)
         self.assertNotIn("extension/reports", contract)
         for capability in (
