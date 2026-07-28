@@ -41,6 +41,7 @@ class MaintenanceService:
         self,
         project_root: Path | str,
         *,
+        artifact_owners: Mapping[str, str] | None = None,
         _write_capability: object | None = None,
     ) -> None:
         self.root = Path(project_root).resolve()
@@ -58,7 +59,7 @@ class MaintenanceService:
             _write_capability=_write_capability,
         )
         self.document_data = DocumentDataService(self.root)
-        self.artifacts = ArtifactService(self.root)
+        self.artifacts = ArtifactService(self.root, artifact_owners=artifact_owners)
 
     def _git(self, *arguments: str) -> list[str]:
         result = subprocess.run(

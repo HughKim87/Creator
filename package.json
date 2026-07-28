@@ -1,0 +1,11 @@
+{
+  "name": "kim-silver-project-foundation",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=20 <22"
+  },
+  "scripts": {
+    "verify": "node scripts/node_verify.mjs"
+  }
+}

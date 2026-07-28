@@ -101,6 +101,7 @@ from .maintenance import (
 from .document_data import (
     ARTIFACT_OWNERS,
     ArtifactService,
+    CORE_ARTIFACT_OWNERS,
     DocumentDataError,
     DocumentDataService,
     DocumentWorkService,
@@ -192,6 +193,7 @@ __all__ = [
     "MaintenanceError",
     "MaintenanceService",
     "ARTIFACT_OWNERS",
+    "CORE_ARTIFACT_OWNERS",
     "ArtifactService",
     "DocumentDataError",
     "DocumentDataService",

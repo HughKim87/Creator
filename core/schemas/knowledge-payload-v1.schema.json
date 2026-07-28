@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kim-silver-youtube:schema:knowledge-payload:v1",
+  "$id": "project://core/schemas/knowledge-payload-v1.schema.json",
   "title": "Knowledge Payload v1",
   "type": "object",
   "additionalProperties": false,

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kim-silver-youtube:schema:common-record:v1",
+  "$id": "project://core/schemas/common-record-v1.schema.json",
   "title": "Common Record v1",
   "description": "Domain-neutral file record envelope.",
   "type": "object",

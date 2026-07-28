@@ -2,7 +2,7 @@
 
 - 문서 역할: `phase-design`
 - 단계 ID: `M1`
-- lifecycle: `draft`
+- lifecycle: `passed`
 - 목적: 임의 경로의 tracked clone에서 기반 검증을 재현하고 Core의 domain 역의존을 제거한다.
 - 상위 설계: [재현 가능한 프로젝트 기반 전체 설계](../PROJECT_FOUNDATION_DESIGN.md)
 - 현재 상태: [세션 핸드오프](../../../SESSION_HANDOFF.md)
@@ -67,6 +67,14 @@ ASCII·한글·공백 경로에서 bootstrap과 Q0~Q3을 같은 진입점으로 
 
 Gate `M1-S5-G`: clean checkout에서 환경·계약·test·external failure가 구분된다.
 
+### M1 gate evidence
+
+- `M1-S1-G`: Python 3.12·Node 20.11.1 runtime, stdlib 필수 dependency, Pillow 선택 dependency, browser `needs_user` preflight 통과.
+- `M1-S2-G`: 현재 workspace와 한글·공백 clean clone Core 회귀 통과; repository root 거부와 isolated fixture 허용 확인.
+- `M1-S3-G`: `project://core/schemas/...` namespace와 storage root injection, protected storage 경계 통과.
+- `M1-S4-G`: Core neutral registry 17개와 Extension registry 3개를 합친 20개 artifact drift 검증 통과; Core의 YouTube 직접 열거 0.
+- `M1-S5-G`: working-tree overlay clean clone의 ASCII·한글·공백 3경로에서 bootstrap·Core 133·Extension 121·maintenance 통과.
+
 ## Exit gate
 
 - `M1-X1`: 임의 경로 clone의 bootstrap·Q0~Q3 전건 통과
@@ -88,4 +96,4 @@ clone-to-green 시간, 사용자 행동 수, 추가 설정·script·test 수, �
 
 ## 첫 활성화 행동
 
-M0 결정표를 읽고 M1-S1의 exact root·Core·Extension 변경 경로와 이유를 산출한다. Core 변경은 현재 대화에서 exact 범위가 승인되기 전까지 실행하지 않는다.
+M1 S1~S5와 M1-X1~X5를 통과했다. 다음은 transition gate 기록과 M2 활성화다.

@@ -2,7 +2,7 @@
 
 - 문서 역할: `phase-design`
 - 단계 ID: `M2`
-- lifecycle: `planned`
+- lifecycle: `in_progress`
 - 목적: 작업 크기에 맞는 설계를 실행보다 먼저 고정하고 사용자 교정 시 기존 설계를 무효화한다.
 - 상위 설계: [재현 가능한 프로젝트 기반 전체 설계](../PROJECT_FOUNDATION_DESIGN.md)
 - 현재 상태: [세션 핸드오프](../../../SESSION_HANDOFF.md)
@@ -78,4 +78,4 @@ Gate `M2-S4-G`: 완료 상세가 startup 문서에 누적되지 않고 이전 wo
 
 ## 첫 활성화 행동
 
-M1 결과와 기존 work request schema를 대조해 최소 추가 필드와 호환 전략을 제시한다.
+M1 결과와 기존 work request schema를 대조해 최소 추가 필드와 호환 전략을 제시하고 M2-S1 phase 계약을 실행한다.

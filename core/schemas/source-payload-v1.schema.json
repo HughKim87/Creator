@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kim-silver-youtube:schema:source-payload:v1",
+  "$id": "project://core/schemas/source-payload-v1.schema.json",
   "title": "Source Payload v1",
   "type": "object",
   "additionalProperties": false,

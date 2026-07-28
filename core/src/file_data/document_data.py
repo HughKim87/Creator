@@ -76,7 +76,7 @@ KNOWLEDGE_CLASSES = frozenset({"fact", "inference", "procedure", "constraint"})
 VERIFICATION_STATUSES = frozenset({"candidate", "verified"})
 APPROVAL_KINDS = frozenset({"user", "standing_policy", "agent_in_scope"})
 
-ARTIFACT_OWNERS: dict[str, str] = {
+CORE_ARTIFACT_OWNERS: dict[str, str] = {
     "core/schemas/common-record-v1.schema.json": "core/docs/FILE_DATA_CONTRACT.md",
     "core/schemas/work-request-payload-v1.schema.json": "core/docs/WORK_STATE_CONTRACT.md",
     "core/schemas/work-event-payload-v1.schema.json": "core/docs/WORK_STATE_CONTRACT.md",
@@ -94,16 +94,7 @@ ARTIFACT_OWNERS: dict[str, str] = {
         "core/docs/KNOWLEDGE_LIFECYCLE_CONTRACT.md"
     ),
     "core/schemas/context-package-v1.schema.json": "core/docs/CONTEXT_PACKAGE_CONTRACT.md",
-    "extension/schemas/youtube-evidence-request-v1.schema.json": (
-        "extension/docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md"
-    ),
-    "extension/schemas/youtube-evidence-pack-v1.schema.json": (
-        "extension/docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md"
-    ),
     ".obsidian/app.json": "core/docs/obsidian/OBSIDIAN_REVIEW_CONTRACT.md",
-    "extension/examples/youtube/foundation-evidence.request.json": (
-        "extension/docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md"
-    ),
     "core/tests/fixtures/file_data/valid/neutral-record.json": "core/docs/FILE_DATA_CONTRACT.md",
     "core/tests/fixtures/file_data/invalid/missing-field.json": "core/docs/FILE_DATA_CONTRACT.md",
     "core/tests/fixtures/file_data/invalid/tampered-content.json": (
@@ -112,6 +103,9 @@ ARTIFACT_OWNERS: dict[str, str] = {
     "core/tests/fixtures/file_data/invalid/wrong-id.json": "core/docs/FILE_DATA_CONTRACT.md",
     "core/tests/fixtures/file_data/invalid/wrong-version.json": "core/docs/FILE_DATA_CONTRACT.md",
 }
+
+# Compatibility name for callers that only validate the foundation registry.
+ARTIFACT_OWNERS = CORE_ARTIFACT_OWNERS
 
 
 class DocumentDataError(InputContractError):
@@ -731,14 +725,24 @@ class DocumentWorkService:
 class ArtifactService:
     """Check and rebuild exact JSON artifacts from Markdown owner blocks."""
 
-    def __init__(self, project_root: Path | str) -> None:
+    def __init__(
+        self,
+        project_root: Path | str,
+        *,
+        artifact_owners: Mapping[str, str] | None = None,
+    ) -> None:
         self.root = Path(project_root).resolve(strict=True)
+        self.artifact_owners = dict(artifact_owners or CORE_ARTIFACT_OWNERS)
 
     def has_blocks(self) -> bool:
-        return any(
-            "<!-- project-artifact:v1 " in _read_markdown(path)
-            for path in _markdown_files(self.root)
-        )
+        for path in _markdown_files(self.root):
+            text = _read_markdown(path)
+            for marker, _ in _extract_blocks(
+                text, ARTIFACT_MARKER, "<!-- /project-artifact -->"
+            ):
+                if marker.group("path") in self.artifact_owners:
+                    return True
+        return False
 
     def _blocks(self) -> dict[str, dict[str, Any]]:
         blocks: dict[str, dict[str, Any]] = {}
@@ -749,16 +753,16 @@ class ArtifactService:
                 text, ARTIFACT_MARKER, "<!-- /project-artifact -->"
             ):
                 target = marker.group("path")
-                if target not in ARTIFACT_OWNERS:
-                    raise DocumentDataError(f"artifact target is not approved: {target}")
-                if ARTIFACT_OWNERS[target] != owner:
+                if target not in self.artifact_owners:
+                    continue
+                if self.artifact_owners[target] != owner:
                     raise DocumentDataError(
-                        f"artifact target {target} must be owned by {ARTIFACT_OWNERS[target]}"
+                        f"artifact target {target} must be owned by {self.artifact_owners[target]}"
                     )
                 if target in blocks:
                     raise DocumentDataError(f"duplicate artifact target: {target}")
                 blocks[target] = _decode_json(raw, f"{owner} artifact {target}")
-        missing = sorted(set(ARTIFACT_OWNERS) - set(blocks))
+        missing = sorted(set(self.artifact_owners) - set(blocks))
         if missing:
             raise DocumentDataError("missing artifact blocks: " + ", ".join(missing))
         return blocks
