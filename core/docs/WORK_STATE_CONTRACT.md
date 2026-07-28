@@ -28,6 +28,9 @@
 - `protection_boundaries`
 - `required_decisions`
 - `verification_levels`
+- 선택적 `execution`: `quick`, `standard`, `controlled` 등급과 controlled 단계 설계의 `phase_id`, 상대 `design_ref`, 승인 시점의 `design_fingerprint`를 가리킨다. 상세 phase scope와 gate는 phase-design 문서가 소유하며 work snapshot은 이 포인터를 복제하지 않는다.
+
+`quick`은 영구 plan file을 만들지 않고, `standard`는 비영구 실행 계약으로 처리한다. `controlled` mutation은 설계 파일이 존재하고 저장된 SHA-256 지문과 현재 지문이 일치할 때만 시작·진행할 수 있다. 요청 목표·범위·gate 또는 execution pointer가 바뀌면 이전 설계는 무효화되고 재승인이 필요하다.
 
 보호 데이터 원문, 전체 명령 출력, 채팅 전문은 저장하지 않고 승인된 참조만 기록한다.
 
@@ -88,7 +91,7 @@ PowerShell에서는 요청 JSON을 UTF-8 stdin으로 보내고 `work-create --re
 
 <!-- project-artifact:v1 path=core/schemas/work-request-payload-v1.schema.json verify=json-semantic -->
 ```json
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"project://core/schemas/work-request-payload-v1.schema.json","title":"Work Request Payload v1","type":"object","additionalProperties":false,"required":["desired_outcome","authorized_actions","excluded_scope","input_refs","protection_boundaries","required_decisions","verification_levels"],"properties":{"desired_outcome":{"type":"string","minLength":1},"authorized_actions":{"type":"array","items":{"type":"string","minLength":1}},"excluded_scope":{"type":"array","items":{"type":"string","minLength":1}},"input_refs":{"type":"array","items":{"type":"string","minLength":1}},"protection_boundaries":{"type":"array","items":{"type":"string","minLength":1}},"required_decisions":{"type":"array","items":{"type":"string","minLength":1}},"verification_levels":{"type":"array","items":{"type":"string","minLength":1}}}}
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"project://core/schemas/work-request-payload-v1.schema.json","title":"Work Request Payload v1","type":"object","additionalProperties":false,"required":["desired_outcome","authorized_actions","excluded_scope","input_refs","protection_boundaries","required_decisions","verification_levels"],"properties":{"desired_outcome":{"type":"string","minLength":1},"authorized_actions":{"type":"array","items":{"type":"string","minLength":1}},"excluded_scope":{"type":"array","items":{"type":"string","minLength":1}},"input_refs":{"type":"array","items":{"type":"string","minLength":1}},"protection_boundaries":{"type":"array","items":{"type":"string","minLength":1}},"required_decisions":{"type":"array","items":{"type":"string","minLength":1}},"verification_levels":{"type":"array","items":{"type":"string","minLength":1}},"execution":{"type":"object","additionalProperties":false,"required":["tier"],"properties":{"tier":{"enum":["quick","standard","controlled"]},"phase_id":{"type":["string","null"],"minLength":1},"design_ref":{"type":["string","null"],"minLength":1},"design_fingerprint":{"type":["string","null"],"pattern":"^sha256:[0-9a-f]{64}$"}}}}}
 ```
 <!-- /project-artifact -->
 

@@ -23,6 +23,7 @@ from file_data import (  # noqa: E402
     ProjectionPendingError,
     RecordValidationError,
     REQUEST_FIELDS,
+    OPTIONAL_REQUEST_FIELDS,
     WorkStateService,
 )
 from test_support import TEST_WRITE_CAPABILITY  # noqa: E402
@@ -78,7 +79,7 @@ class WorkStateServiceTests(unittest.TestCase):
             (ROOT / "core" / "schemas" / "work-event-payload-v1.schema.json").read_text(encoding="utf-8")
         )
         self.assertEqual(set(request_schema["required"]), REQUEST_FIELDS)
-        self.assertEqual(set(request_schema["properties"]), REQUEST_FIELDS)
+        self.assertEqual(set(request_schema["properties"]), REQUEST_FIELDS | OPTIONAL_REQUEST_FIELDS)
         self.assertEqual(set(event_schema["required"]), EVENT_FIELDS)
         self.assertEqual(set(event_schema["properties"]), EVENT_FIELDS)
         self.assertEqual(set(event_schema["properties"]["outcome"]["enum"]), EVENT_OUTCOMES)

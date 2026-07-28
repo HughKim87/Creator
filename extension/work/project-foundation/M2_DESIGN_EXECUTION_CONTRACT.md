@@ -2,7 +2,7 @@
 
 - 문서 역할: `phase-design`
 - 단계 ID: `M2`
-- lifecycle: `in_progress`
+- lifecycle: `passed`
 - 목적: 작업 크기에 맞는 설계를 실행보다 먼저 고정하고 사용자 교정 시 기존 설계를 무효화한다.
 - 상위 설계: [재현 가능한 프로젝트 기반 전체 설계](../PROJECT_FOUNDATION_DESIGN.md)
 - 현재 상태: [세션 핸드오프](../../../SESSION_HANDOFF.md)
@@ -78,4 +78,16 @@ Gate `M2-S4-G`: 완료 상세가 startup 문서에 누적되지 않고 이전 wo
 
 ## 첫 활성화 행동
 
-M1 결과와 기존 work request schema를 대조해 최소 추가 필드와 호환 전략을 제시하고 M2-S1 phase 계약을 실행한다.
+M1 결과와 기존 work request schema를 대조해 최소 추가 필드와 호환 전략을 제시하고 M2-S1 phase 계약을 실행했다. M2 exit gate를 통과했으므로 다음은 M3 single quality gate activation이다.
+
+## M2 gate evidence
+
+- `M2-S1-G`: 기존 7개 request field와 event replay owner를 유지하면서 선택적 `execution` 포인터를 추가했다. ready design 판정과 지문 비교는 `core/src/file_data/execution.py` 한 곳에 둔다.
+- `M2-S2-G`: controlled design file의 SHA-256 지문이 변경되면 `DesignInvalidatedError`와 재승인 필요 상태를 반환하고, `WorkStateService.transition`은 event append 전에 mutation을 차단한다. request contract 변경은 `compare_request_contract`가 변경 필드와 재승인 여부를 계산한다.
+- `M2-S3-G`: `quick`과 `standard`는 phase design pointer를 거부해 영구 plan file을 만들지 않으며, `controlled`는 phase ID·상대 design ref·지문을 모두 요구한다.
+- `M2-S4-G`: execution이 없는 기존 request는 그대로 정규화·replay되고, work state는 상세 phase design을 복제하지 않는다. Core 137개와 Extension 121개 회귀가 통과했다.
+
+## M2 exit evidence
+
+- `M2-X1~X5`: controlled ready-design 차단, correction invalidation, quick plan 0, 단일 owner 구조, Core·Extension regression을 확인했다.
+- 전환 조건: single verify와 ASCII·한글·공백 clone conformance를 현재 M2 계약 위에서 재실행한 뒤 M3 single quality gate를 활성화한다.
