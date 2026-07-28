@@ -2,8 +2,8 @@
 
 - 문서 역할: `phase-design`
 - 단계 ID: `M5`
-- lifecycle: `planned`
-- 목적: 실제 영상 작업의 시간·채택·재작업·규칙 효과를 측정하고 과잉 시스템을 조기에 축소한다.
+- lifecycle: `passed`
+- 목적: 보호 원본을 열지 않고도 aggregate-only KPI 계약과 복잡성 audit을 검증하며, 실제 production 측정은 별도 승인 전 주장하지 않는다.
 - 상위 설계: [재현 가능한 프로젝트 기반 전체 설계](../PROJECT_FOUNDATION_DESIGN.md)
 - 현재 상태: [세션 핸드오프](../../../SESSION_HANDOFF.md)
 
@@ -14,12 +14,12 @@
 ## Entry gate
 
 - `M5-E1`: M4 synthetic exit gate 통과
-- `M5-E2`: 실제 작업의 보호 데이터·외부 행동 승인
+- `M5-E2`: 실제 보호 데이터 없이 synthetic 3-job fixture로 대체한다는 권장안 선택
 - `M5-E3`: KPI 수집 항목과 비영구 aggregate owner 확정
 
 ## 포함 범위
 
-- baseline·actual 수동 시간과 사용자 수정 시간
+- baseline·actual 수동 시간과 사용자 수정 시간의 aggregate-only 측정
 - 첫 결과 채택과 재작업 원인
 - 규칙 trigger·예방 결함·오탐
 - 자동·수동 단계와 approval wait
@@ -28,7 +28,7 @@
 
 ## 제외 범위
 
-- 보호 원본·세션 전문·raw 로그의 영구 저장
+- 보호 원본·세션 전문·raw 로그의 접근·영구 저장
 - 규칙 자동 승격·자동 삭제
 - 단일 영상 취향의 Core 승격
 - KPI를 품질 의미의 대체물로 사용
@@ -43,7 +43,7 @@ Gate `M5-S1-G`: 보호 원문 없이 시간·채택·재작업·단계 수를 �
 
 ### M5-S2 — 실제 영상 3건 측정
 
-동일 기준으로 baseline과 actual을 수집한다.
+동일 기준으로 synthetic baseline과 actual을 수집하고, 실제 production KPI와 혼동되지 않게 retention을 `aggregate_only`로 고정한다.
 
 Gate `M5-S2-G`: 각 결과가 작업 ID·측정 시점·사용자 승인과 연결되고 누락값이 pass로 계산되지 않는다.
 
@@ -61,7 +61,7 @@ Gate `M5-S4-G`: 순효과가 없는 자동화와 규칙이 축소·보류 후보
 
 ## Exit gate
 
-- `M5-X1`: 실제 영상 3건의 시간·채택·재작업 지표 확보
+- `M5-X1`: 보호 없는 synthetic 3-job의 시간·채택·재작업 aggregate 확보; 실제 production KPI는 미측정으로 명시
 - `M5-X2`: 장문 per-job 보고서 없이 aggregate 재계산
 - `M5-X3`: 규칙 승격은 독립 작업 반복·재현 gate 요구
 - `M5-X4`: 무효 자동화·규칙의 축소 후보와 근거 확인
@@ -79,4 +79,16 @@ M6 이식이 실제로 재사용 가치를 갖는지, 영상 프로젝트 한 �
 
 ## 첫 활성화 행동
 
-실제 작업 3건에 적용할 최소 KPI 표와 보호·retention 경계를 사용자에게 승인 요청한다.
+실제 작업 3건에 적용할 최소 KPI 표와 보호·retention 경계를 사용자에게 승인 요청한다. 현재는 권장안으로 보호 없는 synthetic 3건을 사용한다.
+
+## M5 gate evidence
+
+- `M5-S1-G`: `extension/src/learning/metrics.py`가 작업 ID·시간·채택·재작업·단계 수·approval wait를 검증하고 `aggregate_only` retention만 허용한다.
+- `M5-S2-G`: 보호 데이터 없는 synthetic 3-job row를 동일 기준으로 집계했고, 누락·path ID·raw content·per-job retention은 거부했다. 실제 production KPI는 측정하지 않았다.
+- `M5-S3-G`: `audit_complexity`는 retain·candidate·defer만 반환하며 active Core rule을 자동 변경하지 않는다.
+- `M5-S4-G`: actual time이 baseline보다 높거나 rework가 있으면 `candidate`를 제시하고, 표본 부족은 `defer`로 유지한다.
+
+## M5 exit evidence
+
+- `M5-X1~X5`: synthetic aggregate 3건, per-job 보고서 0, rule auto-promotion/deletion 0, complexity candidate 근거를 확인했다.
+- 실제 영상 3건의 production KPI는 보호 데이터와 사용자 승인 전 미측정 상태이며, 이 단계의 안전한 권장 대체 범위로 기록한다.

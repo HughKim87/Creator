@@ -2,7 +2,7 @@
 
 - 문서 역할: `phase-design`
 - 단계 ID: `M6`
-- lifecycle: `planned`
+- lifecycle: `in_progress`
 - 목적: 동일 Core revision을 영상과 최소 게임 개발 extension에서 수정 없이 검증한다.
 - 상위 설계: [재현 가능한 프로젝트 기반 전체 설계](../PROJECT_FOUNDATION_DESIGN.md)
 - 현재 상태: [세션 핸드오프](../../../SESSION_HANDOFF.md)
