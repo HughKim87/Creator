@@ -4,7 +4,7 @@
 - 읽는 시점: `core_change_required` 실패를 진단하거나 사용자 승인 후 작업을 재개할 때.
 - 책임: 실패한 자동 작업이 항목을 추가하고, 사용자가 core 변경 여부를 결정한다.
 - 상태: 활성 append-only 작업 기록.
-- 관련 권위: 루트 `PROJECT_RULES.md`, `core/rules/core-change-control.md`.
+- 관련 권위: 루트 `PROJECT_RULES.md`가 선택한 core-change-control 절차.
 
 ## 기록 형식
 

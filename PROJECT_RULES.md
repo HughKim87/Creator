@@ -31,6 +31,7 @@ Read each matching rule completely once per logical task:
 | Git stage, commit, branch, push, recover, or create a backup | [Version control](core/rules/version-control.md) |
 | Work on an exact user-named item under `inputs/` or `outputs/` | [User data work](core/rules/user-data-work.md) |
 | Add, change, consolidate, or audit project rules; close controlled work | [Rule governance](core/rules/rule-governance.md) |
+| Add, change, or audit a foundation↔domain boundary link, route, schema, import, storage path, or boundary test | [Boundary routing and dependency](core/rules/boundary-routing-and-dependency.md) |
 | Compare reports or agents, or cross-validate conclusions | [Cross-validation](core/rules/cross-validation.md) |
 | Create or change YouTube, video, production, skill, task, runtime, example, or report data | [Extension entry point](extension/README.md) and its exact active owner |
 

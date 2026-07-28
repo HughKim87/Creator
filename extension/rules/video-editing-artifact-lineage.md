@@ -7,14 +7,15 @@
 ### R04 — 원본 단일 계보와 산출물 예산
 
 - 조건: 영구 증거, timeline, XML 또는 검토 산출물을 만든다.
-- 행동: 영구 화면·오디오·전사·XML clip은 exact 원본 미디어에서 직접 유도하고, 사용자에게 약속한 산출물만 만든다. 기존 출력은 기본적으로 덮어쓰지 않는다.
+- 행동: 영구 화면·오디오·전사·XML clip은 exact 원본 미디어에서 직접 유도하고, 사용자에게 약속한 산출물만 만든다. 분석을 위해 만든 contact sheet·WAV·RMS·보조 전사는 필요한 범위에서만 만들고, 여러 자료를 후속 작업에서 다시 찾아야 할 때만 하나의 evidence index로 묶는다. 기존 출력은 기본적으로 덮어쓰지 않는다.
 - 예외: 편집본은 사용자 재생 비교와 결함 확인에만 사용할 수 있으며 후속 편집 source나 영구 증거가 될 수 없다.
-- 검증: source lineage와 신규 파일 목록을 대조하고, 원본 이외 source reference와 요청하지 않은 미디어가 각각 0개인지 확인한다.
+- 검증: source lineage와 신규 파일 목록을 대조하고, 원본 이외 source reference와 요청하지 않은 미디어가 각각 0개인지 확인한다. 보존하는 evidence index와 자료명에 source 범위·자료 유형·장면 의미·검증 상태가 드러나며, 추출이 끝난 자료는 active rule·candidate·current state·historical detail·disposable derivative 중 하나로 재분류한다.
 
 ## 수명
 
 - timeline·XML·사용자 deliverable은 보호 파생물이며 Git에서 제외한다.
 - 분석 cache·RMS 배열·임시 frame·재전사는 재생성 가능한 runtime으로 유지한다.
+- 재사용 가능한 분석 자료를 남길 때는 `자료유형_시작시각[-종료시각]_장면-의미.ext`처럼 source 범위와 목적이 드러나는 이름을 사용하고, index는 자료의 목록·용도·검증 상태만 소유한다. 단일 영상의 정확한 시각·프레임·파일명은 일반 rule에 복사하지 않는다.
 - 세션 원문과 버전별 보고서는 운영 규칙이나 runtime 의존성이 될 수 없다.
 
 ## 재현 사례

@@ -51,12 +51,19 @@
 | validator 실행, XML 생성, 완료·전달 상태 보고 | [검증·전달 규칙](rules/video-editing-validation-and-delivery.md) |
 | 독립 영상에서 실패가 반복되어 보류 항목의 규칙 승격을 검토 | [영상 편집 규칙 후보](docs/domain/youtube/VIDEO_EDITING_RULE_CANDIDATES.md) |
 
+## 파일 추출·정리 규칙
+
+| 행동 | 읽을 규칙 |
+|---|---|
+| 파일·과거 영상 분석 자료에서 규칙·실패·현재 상태·계보만 추출 | [파일 추출 규칙](rules/file-extraction.md) |
+| 추출이 끝난 파일을 유지·정리·삭제·이동 후보로 분류 | [파일 정리 규칙](rules/file-cleanup.md) |
+
 규칙 본문은 각 파일만 소유한다. workflow 계약·보고서·작업 기록에 복제하지 않는다.
 
 ## Core 의존 경계
 
-- extension은 승인된 `file_data` 인터페이스를 사용할 수 있다.
-- core는 extension을 import하거나 extension 도메인 개념을 소유하지 않는다.
-- 필요한 core 기능이 없으면 임시 우회 구현을 조용히 추가하지 않는다.
-- interactive 작업은 core 변경 필요성을 사용자에게 설명한다.
-- 자동 작업은 `core_change_required`로 실패하고 `work/CORE_CHANGE_FAILURES.md`에 기록한다.
+- extension은 `PROJECT_RULES.md`가 선택한 승인된 foundation interface만 사용한다.
+- extension 문서와 규칙은 foundation rule을 직접 라우팅하지 않고, 사용자의 상위 route를 따른다.
+- foundation은 domain extension을 import하거나 extension owner를 소유하지 않는다.
+- foundation interface가 부족하면 임시 우회 구현을 조용히 추가하지 않고, boundary rule의 새 interface 검토 gate를 따른다.
+- foundation 변경이 필요하면 사용자의 exact 승인 경계를 먼저 확인한다.
