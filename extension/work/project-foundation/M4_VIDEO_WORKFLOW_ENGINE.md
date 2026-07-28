@@ -2,7 +2,7 @@
 
 - 문서 역할: `phase-design`
 - 단계 ID: `M4`
-- lifecycle: `in_progress`
+- lifecycle: `passed`
 - 목적: 검증된 단계 계약 위에서 영상 제작의 다음 단계를 선택·실행·검증·재개한다.
 - 상위 설계: [재현 가능한 프로젝트 기반 전체 설계](../PROJECT_FOUNDATION_DESIGN.md)
 - 현재 상태: [세션 핸드오프](../../../SESSION_HANDOFF.md)
@@ -84,4 +84,17 @@ Gate `M4-S5-G`: 승인 단계에서 `needs_user`, 최종 네 파일 계약에서
 
 ## 첫 활성화 행동
 
-현재 VIDEO_JOB과 단계별 skill 계약을 읽고 next-step selector가 필요한 최소 상태 필드를 확정한다.
+현재 VIDEO_JOB과 단계별 skill 계약을 읽고 next-step selector가 필요한 최소 상태 필드를 확정했다. M4 synthetic acceptance를 통과했으므로 다음은 M5 learning·complexity audit이다.
+
+## M4 gate evidence
+
+- `M4-S1-G`: `WorkflowEngine.next_step()`이 첫 pending 또는 기존 active stage 하나만 선택하고 `needs_user`·`blocked`를 성공으로 승격하지 않는다.
+- `M4-S2-G`: `preflight`·`execute`·`verify`·`transition` 인터페이스가 입력 job, 결과 artifact, 검증·복구 상태를 분리해 반환한다.
+- `M4-S3-G`: `LocalSyntheticAdapter`와 `ExternalAgentAdapter`를 분리했고 external unavailable은 blocked boundary로 기록되며 synthetic success가 되지 않는다.
+- `M4-S4-G`: `artifact_hashes`를 재검증해 동일 artifact를 재실행하지 않고, hash drift는 adapter 실행 전에 차단한다.
+- `M4-S5-G`: 보호 데이터 없는 v3 `VIDEO_JOB` fixture에서 research·video·captions를 진행하고 title/thumbnail user approval에서 `needs_user`로 멈춘 뒤 승인 후 다섯 단계 complete와 `next_action: none`을 확인했다.
+
+## M4 exit evidence
+
+- `M4-X1~X5`: 5개 synthetic engine 테스트와 실제 `validate_video_job` 결합, Core 137개·Extension 126개·maintenance 20개 artifact 회귀가 통과했다.
+- external boundary는 `unavailable`, 사용자 승인 boundary는 `needs_user`로 남겼으며 브라우저·NotebookLM·보호 데이터는 실행하지 않았다.
