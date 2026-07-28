@@ -2,10 +2,10 @@
 
 - 갱신일: 2026-07-29
 - 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
-- 현재 작업: 재현 가능한 프로젝트 기반 M2 설계·실행 계약 (in_progress)
-- 상태: M0-S1~S3·M0-X1~X4, M1-S1~S5·M1-X1~X5, M2-S1~S4·M2-X1~X5 통과; M2 gate 커밋 직전
+- 현재 작업: 재현 가능한 프로젝트 기반 M4 영상 제작 workflow 실행 엔진 (in_progress)
+- 상태: M0-S1~S3·M0-X1~X4, M1-S1~S5·M1-X1~X5, M2-S1~S4·M2-X1~X5, M3-S1~S4·M3-X1~X5 통과; M4 실행 중
 - 활성 전체 설계: `extension/work/PROJECT_FOUNDATION_DESIGN.md`
-- 활성 단계 설계: `extension/work/project-foundation/M2_DESIGN_EXECUTION_CONTRACT.md`
+- 활성 단계 설계: `extension/work/project-foundation/M4_VIDEO_WORKFLOW_ENGINE.md`
 - 선택 근거: `extension/reports/codex_2026-07-28_재현가능한_프로젝트_기반_방향분석과_개선계획.md`
 - 읽기 순서: `PROJECT_RULES.md` → 이 문서 → 활성 전체 설계 → 활성 단계 설계 → 다음 행동에 matching된 규칙
 
@@ -55,7 +55,7 @@
 
 ## blocker·남은 gate
 
-- M1 exit·transition gate는 통과했고 `747ea2e`로 커밋했다. M2 exit gate는 Node 재검증과 ASCII·한글·공백 clone conformance까지 확인했다.
+- M1 exit·transition gate는 통과했고 `747ea2e`로 커밋했다. M2 exit gate는 `8bf21cf`, M3 single quality gate는 다음 커밋으로 확정하며 Node·3경로 clone conformance까지 확인했다.
 - dependency 설치, CI·hook, 삭제·이동은 별도 승인 전 실행하지 않는다.
 - M0 exit gate는 종료됐고, M1 exact Core 승인·구현·검증은 완료됐다.
 - ainotebook의 별도 영상 작업은 전용 상태 문서에 기록된 사용자 승인 gate를 유지한다.
@@ -67,13 +67,15 @@
 | `extension/work/PROJECT_FOUNDATION_DESIGN.md` | active overall-design | 장기 목표·불변식·M0~M6 단계 지도 |
 | `extension/work/project-foundation/M0_BASELINE_AND_SUCCESS_GATES.md` | passed phase-design | M0 exact 범위·slice·entry/exit/transition gate |
 | `extension/work/project-foundation/M1_FRESH_CLONE_AND_CORE_PURITY.md` | passed phase-design | M1 exact 범위·slice·entry/exit/transition gate |
-| `extension/work/project-foundation/M2_DESIGN_EXECUTION_CONTRACT.md` | active phase-design·in_progress | M2 exact 범위·slice·entry/exit/transition gate |
+| `extension/work/project-foundation/M2_DESIGN_EXECUTION_CONTRACT.md` | passed phase-design | M2 exact 범위·slice·entry/exit/transition gate |
+| `extension/work/project-foundation/M3_SINGLE_QUALITY_GATE.md` | passed phase-design | M3 exact 범위·slice·entry/exit/transition gate |
+| `extension/work/project-foundation/M4_VIDEO_WORKFLOW_ENGINE.md` | active phase-design·in_progress | M4 exact 범위·slice·entry/exit/transition gate |
 | `extension/work/CORE_CHANGE_FAILURES.md` | active failure owner | 자동 Core 변경 차단 기록 |
 | `extension/reports/codex_2026-07-28_재현가능한_프로젝트_기반_방향분석과_개선계획.md` | reference-evidence | 선택적 방향 분석·측정·대안 근거 |
 | ainotebook `extension/work/AINOTEBOOK_WORKTREE_STATE.md` | active | ainotebook 현재 상태 단일 owner |
 
 ## 첫 다음 행동
 
-1. M2 지정 변경을 stage·commit하고 M3 single quality gate phase를 `in_progress`로 활성화한다.
+1. M3 지정 변경을 stage·commit하고 M4 synthetic VIDEO_JOB workflow contract를 실행한다.
 
 > M0 설계 커밋은 `a1977a5`, M1 구현 커밋은 `747ea2e`다. Core 변경 승인이 확인됐으며, dependency 설치·CI·보호 데이터 접근은 정의된 별도 경계를 유지한다.

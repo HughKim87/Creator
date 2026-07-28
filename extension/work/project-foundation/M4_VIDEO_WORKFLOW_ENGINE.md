@@ -2,7 +2,7 @@
 
 - 문서 역할: `phase-design`
 - 단계 ID: `M4`
-- lifecycle: `planned`
+- lifecycle: `in_progress`
 - 목적: 검증된 단계 계약 위에서 영상 제작의 다음 단계를 선택·실행·검증·재개한다.
 - 상위 설계: [재현 가능한 프로젝트 기반 전체 설계](../PROJECT_FOUNDATION_DESIGN.md)
 - 현재 상태: [세션 핸드오프](../../../SESSION_HANDOFF.md)

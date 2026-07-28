@@ -2,7 +2,7 @@
 
 - 문서 역할: `phase-design`
 - 단계 ID: `M3`
-- lifecycle: `planned`
+- lifecycle: `passed`
 - 목적: 사람이 명령을 기억하지 않아도 비보호 결정론적 품질 검사가 같은 진입점에서 실행되게 한다.
 - 상위 설계: [재현 가능한 프로젝트 기반 전체 설계](../PROJECT_FOUNDATION_DESIGN.md)
 - 현재 상태: [세션 핸드오프](../../../SESSION_HANDOFF.md)
@@ -78,4 +78,16 @@ verify 시간, 실패 원인 해석 시간, 수동 명령 수를 baseline과 비
 
 ## 첫 활성화 행동
 
-M1 bootstrap과 현재 검증 명령 목록을 기준으로 single verify의 입력·출력·failure taxonomy를 설계한다.
+M1 bootstrap과 현재 검증 명령 목록을 기준으로 single verify의 입력·출력·failure taxonomy를 설계했고 no-clone 회귀와 전체 clone conformance의 exit code parity를 확인했다. 다음은 M4 synthetic workflow engine이다.
+
+## M3 gate evidence
+
+- `M3-S1-G`: `scripts/verify.py`가 bootstrap·Node·Core·Extension·maintenance를 한 번에 실행하고 기본 실행에서는 clone conformance까지 포함하는 유일한 exit-code owner가 됐다.
+- `M3-S2-G`: 결과에 setup·contract·test·conformance·external taxonomy를 남긴다. browser user session은 `needs_user`로 분류되지만 결정론적 local gate를 실패로 오인하지 않는다.
+- `M3-S3-G`: ASCII·한글·공백 경로 3개에서 기본 full-clone verify가 모두 통과했다.
+- `M3-S4-G`: `package.json`의 `npm run verify`가 동일한 `scripts/verify.py`를 호출하며, 별도 CI·hook은 범위 밖으로 유지했다.
+
+## M3 exit evidence
+
+- `M3-X1~X5`: full verify exit code 0, Core 137개, Extension 121개, maintenance 20개 artifact, Node 20.11.1, clone conformance 3개 경로를 확인했다.
+- 외부 capability: browser user session은 의도적으로 `needs_user`이며 자동 실행 성공으로 승격하지 않았다.

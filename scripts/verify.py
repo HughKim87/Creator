@@ -1,4 +1,4 @@
-"""Run the deterministic Q0-Q3 verification gate for this checkout."""
+"""Run the single deterministic Q0-Q3 verification gate for this checkout."""
 
 from __future__ import annotations
 
@@ -95,6 +95,42 @@ def _maintenance_gate() -> dict[str, Any]:
     }
 
 
+def _failure_taxonomy(
+    *,
+    bootstrap: dict[str, Any],
+    bootstrap_payload: dict[str, Any],
+    node: dict[str, Any],
+    tests: dict[str, Any],
+    maintenance: dict[str, Any],
+    clone: dict[str, Any] | str,
+) -> list[dict[str, str]]:
+    """Map gate failures to the next recovery owner without changing exit semantics."""
+
+    failures: list[dict[str, str]] = []
+    if not bootstrap["ok"] or not bootstrap_payload.get("ok"):
+        failures.append({"stage": "bootstrap", "class": "setup", "status": "failed"})
+    if not node["ok"]:
+        failures.append({"stage": "node", "class": "setup", "status": "failed"})
+    if not tests["core"]["ok"]:
+        failures.append({"stage": "core-tests", "class": "test", "status": "failed"})
+    if not tests["extension"]["ok"]:
+        failures.append({"stage": "extension-tests", "class": "test", "status": "failed"})
+    if not maintenance["ok"]:
+        failures.append({"stage": "maintenance", "class": "contract", "status": "failed"})
+    if isinstance(clone, dict) and not clone["ok"]:
+        failures.append({"stage": "clone-conformance", "class": "conformance", "status": "failed"})
+    for name, capability in bootstrap_payload.get("external_capabilities", {}).items():
+        if capability.get("status") != "ready":
+            failures.append(
+                {
+                    "stage": name,
+                    "class": "external",
+                    "status": str(capability.get("status", "unavailable")),
+                }
+            )
+    return failures
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--no-clone", action="store_true", help="skip the outer clone conformance run")
@@ -107,6 +143,9 @@ def main() -> int:
     node = _run(["node", "scripts/node_verify.mjs"])
     tests = _test_gate()
     maintenance = _maintenance_gate()
+    clone: dict[str, Any] | str = "skipped"
+    if not arguments.no_clone:
+        clone = _run([sys.executable, "-B", "scripts/clone_conformance.py"])
     result = {
         "ok": bool(
             bootstrap["ok"]
@@ -115,14 +154,23 @@ def main() -> int:
             and tests["core"]["ok"]
             and tests["extension"]["ok"]
             and maintenance["ok"]
+            and (arguments.no_clone or clone["ok"])
         ),
         "bootstrap": bootstrap_payload,
         "node": node,
         "tests": tests,
         "maintenance": maintenance,
-        "clone_conformance": "skipped" if arguments.no_clone else "pending",
+        "clone_conformance": clone,
     }
-    print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+    result["failure_taxonomy"] = _failure_taxonomy(
+        bootstrap=bootstrap,
+        bootstrap_payload=bootstrap_payload,
+        node=node,
+        tests=tests,
+        maintenance=maintenance,
+        clone=clone,
+    )
+    print(json.dumps(result, ensure_ascii=True, sort_keys=True))
     return 0 if result["ok"] else 1
 
 

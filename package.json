@@ -6,6 +6,7 @@
     "node": ">=20 <22"
   },
   "scripts": {
-    "verify": "node scripts/node_verify.mjs"
+    "verify": "python -B scripts/verify.py",
+    "verify:node": "node scripts/node_verify.mjs"
   }
 }
