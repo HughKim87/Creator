@@ -37,6 +37,8 @@
 
 영상 편집 SRT 검증·명시 정리, legacy cut CSV 이관, timeline 다중 진단, `sequence-v5`·`premiere-cs6-v4` XML 생성은 `python -m video_editing`이 소유한다. 보호 데이터가 없는 기본 입력은 `examples/video-edit-timeline-v1.json`이며, 실제 `inputs/`·`outputs/` 경로는 exact 항목과 목적을 승인받은 작업에서만 사용한다.
 
+과거 영상 spine·분석 문서에서 영상 편집 지식을 환류할 때도 촬영 후 영상 편집 workflow 계약을 domain owner로 사용한다. 범용 파일 추출·정리 절차는 `PROJECT_RULES.md`가 별도로 선택하며 extension이 다시 소유하거나 foundation rule을 직접 라우팅하지 않는다.
+
 ## 조건부 영상 편집 규칙
 
 영상 편집 workflow 계약을 읽은 뒤 현재 행동과 일치하는 규칙만 한 번 읽는다.
@@ -50,15 +52,6 @@
 | 작업 재개, revision 전환, 사용자 수정본·승인 반영 | [상태·승인 규칙](rules/video-editing-state-and-approval.md) |
 | validator 실행, XML 생성, 완료·전달 상태 보고 | [검증·전달 규칙](rules/video-editing-validation-and-delivery.md) |
 | 독립 영상에서 실패가 반복되어 보류 항목의 규칙 승격을 검토 | [영상 편집 규칙 후보](docs/domain/youtube/VIDEO_EDITING_RULE_CANDIDATES.md) |
-
-## 파일 추출·정리 규칙
-
-| 행동 | 읽을 규칙 |
-|---|---|
-| 파일·과거 영상 분석 자료에서 규칙·실패·현재 상태·계보만 추출 | [파일 추출 규칙](rules/file-extraction.md) |
-| 추출이 끝난 파일을 유지·정리·삭제·이동 후보로 분류 | [파일 정리 규칙](rules/file-cleanup.md) |
-
-규칙 본문은 각 파일만 소유한다. workflow 계약·보고서·작업 기록에 복제하지 않는다.
 
 ## Core 의존 경계
 

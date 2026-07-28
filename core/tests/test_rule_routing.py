@@ -85,6 +85,22 @@ class RuleRoutingTests(unittest.TestCase):
                 self.assertRegex(text, r"(?m)^- Read when:")
                 self.assertRegex(text, r"(?m)^- Authority:")
 
+    def test_rule_governance_places_rules_by_reusable_trigger(self):
+        governance = (
+            ROOT / "core" / "rules" / "rule-governance.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("not from the path, report, domain task", governance)
+        self.assertIn("applies unchanged across domains", governance)
+        self.assertIn("split it before routing", governance)
+        self.assertIn(
+            "not a reason to place a foundation rule in extension",
+            governance,
+        )
+        self.assertIn(
+            "Core and extension rule files must not route each other",
+            governance,
+        )
+
     def test_project_rules_routes_extension_entry_point(self):
         project_rules = (ROOT / "PROJECT_RULES.md").read_text(encoding="utf-8")
         self.assertRegex(

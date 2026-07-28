@@ -120,6 +120,20 @@ XML 생성 전에 완성 타임라인 순서로 다음을 검수한다.
 
 규칙으로 승격하지 않은 수치·자동화·skill 후보는 `docs/domain/youtube/VIDEO_EDITING_RULE_CANDIDATES.md`만 소유하며 일반 편집의 기본 읽기 대상이 아니다.
 
+### 과거 영상 자료의 domain 지식 환류
+
+과거 영상 spine·방향안·검수 문서·분석 파생물을 추출하거나 정리할 때 범용 절차는 상위 router가 선택한 foundation owner가 담당한다. 이 계약은 추출 결과 중 영상 편집 domain의 배치만 소유한다.
+
+| 추출 내용 | 영상 domain owner |
+|---|---|
+| 독립 영상에서 반복되고 일반화된 편집 조건 | R01~R16의 가장 좁은 기존 rule owner |
+| 한 영상에서만 확인된 판단·수치·자동화·skill 가능성 | `VIDEO_EDITING_RULE_CANDIDATES.md`의 기존 후보 또는 task evidence |
+| exact frame·파일명·해시·길이·영상별 사용자 승인 | 원래 검수·보호 자료 또는 현재 영상 task owner |
+| 현재 revision·승인 범위·source fingerprint | 상태·승인 rule이 선택한 current owner |
+| 세션 원문·버전별 중복 보고·완료 명령 | active owner로 승격하지 않고 Git 이력 또는 사용자 요청 보고서 |
+
+같은 영상 spine의 직접 연결 자료만 목적 범위에서 다루며 sibling 자료를 넓게 열거하지 않는다. 단일 영상 사실을 전역 규칙으로 승격하거나, 범용 파일 절차를 extension 규칙으로 복제하지 않는다.
+
 ## 9. 실행점
 
 보호 데이터가 없는 기본 구조 검증:

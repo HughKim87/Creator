@@ -34,6 +34,13 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
                 self.assertRegex(text, r"(?m)^- Read when:")
                 self.assertRegex(text, r"(?m)^- Authority:")
 
+    def test_generic_file_lifecycle_rules_are_not_extension_owners(self):
+        readme = (EXTENSION / "README.md").read_text(encoding="utf-8")
+        for name in ("file-extraction.md", "file-cleanup.md"):
+            with self.subTest(path=name):
+                self.assertFalse((RULES_DIR / name).exists())
+                self.assertNotIn(f"(rules/{name})", readme)
+
     def test_rule_and_replay_ids_have_single_owners(self):
         rule_documents = {
             path.name: path.read_text(encoding="utf-8")

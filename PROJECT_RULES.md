@@ -27,6 +27,8 @@ Read each matching rule completely once per logical task:
 |---|---|
 | Create, edit, delete, move, rename, regenerate, or indirectly change anything under `core/` | [Core change control](core/rules/core-change-control.md) |
 | Create or change maintained documents or persistent project data | [Document work](core/rules/document-work.md) |
+| Extract reusable rules, failures, current state, lineage, or evidence from files, including before cleanup | [File knowledge extraction](core/rules/file-extraction.md) |
+| Classify files or documents for retention, cleanup, deletion, move, or rename after extraction | [File cleanup](core/rules/file-cleanup.md) |
 | Record or reuse a material, generalizable failure | [Failure records](core/rules/failure-records.md) |
 | Git stage, commit, branch, push, recover, or create a backup | [Version control](core/rules/version-control.md) |
 | Work on an exact user-named item under `inputs/` or `outputs/` | [User data work](core/rules/user-data-work.md) |
