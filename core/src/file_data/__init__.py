@@ -77,6 +77,12 @@ from .execution import (
     normalize_execution,
     validate_execution_contract,
 )
+from .export import (
+    CORE_EXPORT_MANIFEST,
+    ExportContractError,
+    get_export_manifest,
+    validate_export_manifest,
+)
 from .lifecycle import (
     ACTIONS as LIFECYCLE_ACTIONS,
     APPROVAL_KINDS as LIFECYCLE_APPROVAL_KINDS,
@@ -188,6 +194,10 @@ __all__ = [
     "compute_design_fingerprint",
     "normalize_execution",
     "validate_execution_contract",
+    "CORE_EXPORT_MANIFEST",
+    "ExportContractError",
+    "get_export_manifest",
+    "validate_export_manifest",
     "LIFECYCLE_ACTIONS",
     "LIFECYCLE_APPROVAL_KINDS",
     "CURRENT_APPROVAL_KINDS",

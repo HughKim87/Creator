@@ -53,7 +53,7 @@ class StagedDesignRoutingTests(unittest.TestCase):
         self.assertIn(f"기반 {active_id.group(1)}", self.handoff)
         self.assertRegex(
             active_phase,
-            r"(?m)^- lifecycle: `(draft|ready|in_progress|blocked)`$",
+            r"(?m)^- lifecycle: `(draft|ready|in_progress|blocked|passed)`$",
         )
 
     def test_overall_routes_every_bounded_phase_design(self):

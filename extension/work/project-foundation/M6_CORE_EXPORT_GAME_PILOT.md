@@ -2,7 +2,7 @@
 
 - 문서 역할: `phase-design`
 - 단계 ID: `M6`
-- lifecycle: `in_progress`
+- lifecycle: `passed`
 - 목적: 동일 Core revision을 영상과 최소 게임 개발 extension에서 수정 없이 검증한다.
 - 상위 설계: [재현 가능한 프로젝트 기반 전체 설계](../PROJECT_FOUNDATION_DESIGN.md)
 - 현재 상태: [세션 핸드오프](../../../SESSION_HANDOFF.md)
@@ -84,4 +84,17 @@ Core 제품화 완료 뒤에도 version·migration·conformance 유지 비용이
 
 ## 첫 활성화 행동
 
-M1~M5 결과에서 domain-neutral Core 파일과 영상 전용 파일의 export 후보 목록을 산출한다.
+M1~M5 결과에서 domain-neutral Core 파일과 영상 전용 파일의 export 후보 목록을 산출했다. M6 conformance를 통과했으므로 추가 repository 분리는 하지 않는다.
+
+## M6 gate evidence
+
+- `M6-S1-G`: `file_data-v1` export manifest에 version·compatibility·migration·exports만 두고 domain identity·task evidence·보호 데이터는 넣지 않았다.
+- `M6-S2-G`: domain owner가 없는 empty startup과 Extension-owned domain consumer가 동일 Core manifest로 pass했다.
+- `M6-S3-G`: `extension.game_pilot`이 Core 변경 없이 owner를 등록하고 empty artifact acceptance를 통과했다.
+- `M6-S4-G`: YouTube Extension과 game pilot이 같은 `file-data-v1`·manifest version을 소비했고 Core leakage는 0이었다.
+- `M6-S5-G`: 별도 package/repository 분리나 push는 하지 않고 현재 monorepo Extension boundary를 유지하는 결정을 기록했다.
+
+## M6 exit evidence
+
+- `M6-X1~X5`: Core 139개·Extension 131개 회귀, export conformance, empty-domain startup, game pilot, dual-domain comparison이 통과했다.
+- 실제 게임 제작·배포, YouTube 업로드·게시, protected data 접근은 실행하지 않았다.
