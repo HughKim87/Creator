@@ -13,8 +13,8 @@
 
 ### main
 
-- 현재 branch는 `main`, HEAD는 `ea98bd6`이며 M0~M5 게이트 커밋이 완료되고 M6 성공 게이트 커밋 직전이다.
-- 현재 dirty 범위는 M6 export manifest·conformance·game pilot·최종 phase 문서와 사전 존재한 설계 규칙·라우팅 변경이며, 보호 `inputs/`·`outputs/`는 포함하지 않는다.
+- 현재 branch는 `main`, HEAD는 `2754086`이며 M0~M6 단계 게이트 커밋과 post-commit 회귀가 완료됐다.
+- 현재 dirty 범위는 작업 시작 전부터 존재한 `PROJECT_RULES.md`, `core/rules/document-work.md`, `core/tests/test_rule_routing.py`, `core/rules/staged-work-design.md`뿐이며 M0~M6 변경·보호 `inputs/`·`outputs/`는 포함하지 않는다.
 - 최종 회귀 기준: Core 139개·Extension 131개, maintenance 20개 artifact·문서 81개·링크 109개·Python 31개·schema 14개가 통과했다.
 - `scripts/verify.py` 기본 full-clone와 no-clone 모두 exit code 0이며, Node 20.11.1·ASCII·한글·공백 clone conformance를 확인했다.
 - HEAD `07a26a3`를 한글·공백 포함 임의 경로에 `--no-hardlinks --no-local` clean clone해 재측정한 결과, Core 129개 중 `test_test_write_capability_rejects_active_project_root` 1개가 source-root 판정으로 실패했고 Extension 114개와 `maintenance-verify`(문서 71·링크 80·Python 22·schema 14)는 통과했다.
@@ -56,7 +56,7 @@
 
 ## blocker·남은 gate
 
-- M1 `747ea2e`, M2 `8bf21cf`, M3 `eff982b`, M4 `821ae83`, M5 `ea98bd6`로 단계별 게이트를 커밋했고 M6 게이트 검증도 통과했다.
+- M1 `747ea2e`, M2 `8bf21cf`, M3 `eff982b`, M4 `821ae83`, M5 `ea98bd6`, M6 `2754086`으로 단계별 게이트를 커밋했고 post-commit 검증도 통과했다.
 - dependency 설치, CI·hook, 삭제·이동은 별도 승인 전 실행하지 않는다.
 - M0 exit gate는 종료됐고, M1 exact Core 승인·구현·검증은 완료됐다.
 - ainotebook의 별도 영상 작업은 전용 상태 문서에 기록된 사용자 승인 gate를 유지한다.
@@ -79,6 +79,6 @@
 
 ## 첫 다음 행동
 
-1. M6 지정 변경을 stage·commit하고 최종 회귀·점수 보고를 작성한다.
+1. 없음. M0~M6 개선과 단계별 커밋·최종 회귀가 완료됐으며 점수 보고를 반환한다.
 
-> M0 설계 커밋은 `a1977a5`, M1 구현 커밋은 `747ea2e`다. Core 변경 승인이 확인됐으며, dependency 설치·CI·보호 데이터 접근은 정의된 별도 경계를 유지한다.
+> M0 설계 커밋은 `a1977a5`, M1~M6 게이트 커밋은 `747ea2e`, `8bf21cf`, `eff982b`, `821ae83`, `ea98bd6`, `2754086`이다. Core 변경 승인이 확인됐으며, dependency 설치·CI·보호 데이터 접근은 정의된 별도 경계를 유지한다.
