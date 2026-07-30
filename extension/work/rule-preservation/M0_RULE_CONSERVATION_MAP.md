@@ -1,7 +1,7 @@
 # M0 규칙 보존 지도
 
 - 문서 분류: `reference-evidence`
-- 상태: `active-for-M0-M2`
+- 상태: `active-for-M0-M3`
 - startup-required: 아니오. M0 phase가 exact 행을 지목할 때만 읽는다.
 - owner: `M0_RULE_LINEAGE_AND_LOSS_AUDIT.md`
 - 독자: M0 판정·M1 변경안·M2 의미 보존 검증을 수행하는 agent와 승인자.
@@ -38,10 +38,11 @@
 | 후보 | 수 | startup route 연결 | 상태 |
 |---|---:|---|---|
 | `extension/work/project-foundation/M0~M6` | 7 | 없음 | 완료된 이전 이니셔티브 phase-design |
-| `extension/work/PROJECT_FOUNDATION_DESIGN.md` | 1 | 없음 | 위 이니셔티브의 overall-design, 완료 |
-| `extension/reports/*` | 12 | 없음(1건은 설계가 참조) | 시점 보고서, 약 212KB |
-| `docs.md`, `codex_2026-07-28_문서기반_개선_plan` | 2 | 없음 | 0-byte |
-| `extension/work/2026-06-30-00-23-03/` | 1 | 없음 | 빈 디렉토리 |
+| `extension/work/PROJECT_FOUNDATION_DESIGN.md` | 1 | 없음 | 위 이니셔티브 overall-design, 완료 |
+| `extension/reports/*.md` | 10 | 없음(2건은 설계·handoff/evidence가 참조) | top-level 시점 보고서, 직접 재측정 |
+| `extension/reports/codex_2026-07-28_문서기반_개선_plan/*.md` | 4 | 없음 | legacy plan files, 직접 재측정 |
+| `docs.md` | 1 | 없음 | 0-byte |
+| `extension/work/2026-06-30-00-23-03/xml_build/` 및 부모 | 2 | 없음 | 빈 디렉터리 2개 |
 
 ## handoff baseline
 
