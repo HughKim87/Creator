@@ -37,6 +37,7 @@ Treat a rule as a maintained operational interface with this lifecycle:
 - Before creating a file, search for an existing owner, classify the rule as foundation or domain from its trigger, and explain why updating the owner would mix responsibilities or leave a distinct trigger without an owner.
 - Rule IDs, replay IDs, and local anchors must have one owner and must not be duplicated across active rule files.
 - Evidence from one video, one user preference, one frame range, one filename, or one report may create a candidate, but does not become a general active rule without the applicable promotion evidence.
+- Use a numeric limit only to define where work or a document ends. Do not create a count cap that blocks an in-progress judgement; how many artifacts a task needs is decided by that task, not by a standing ceiling.
 
 ## Rule routing
 

@@ -1,10 +1,10 @@
 # Document-Based Data Work Rules
 
 - Purpose: govern maintained documents and persistent project data without turning documentation into the work product.
-- Read when: creating or changing maintained Markdown, root controls, records, events, snapshots, or indexes.
+- Read when: creating or changing a maintained design, plan, report, Markdown document, root control, record, event, snapshot, or index.
 - Authority: task-specific; `PROJECT_RULES.md` remains higher authority.
 
-## Rules
+## General rules
 
 - Before writing, define the exact artifact budget: owner, path, purpose, reader, and number of files.
 - Before the first mutation in controlled work, read each controlling document to EOF and record its applicable clause and any conflict with the latest user instruction in the active plan.
@@ -20,3 +20,23 @@
 - Validate a logical batch at its completion checkpoint: strict UTF-8, NUL 0, relevant structure and links, trailing whitespace, and the scoped diff.
 - Run full maintenance only for controlled structural work or when the active plan requires it; otherwise use the smallest direct document checks that cover the change.
 - Generated or structure-valid does not mean user-approved.
+
+## Design document rules
+
+- Condition: these rules apply when a maintained document will authorize, guide, resume, or verify future execution.
+- Before writing, classify the artifact as exactly one of `overall-design`, `phase-design`, or `reference-evidence`.
+- An active design must state its outcome, reader, authority, included and excluded scope, approvals, success gates, stop or recovery conditions, and next executable action.
+- An `overall-design` owns stable intent, invariants, stage order, dependencies, and one-line stage outcomes. It must not own current progress, command logs, file-by-file implementation, or detailed future-stage procedures.
+- A `phase-design` owns only one stage's exact decisions, scope, execution slices, verification, success gate, recovery, and transition condition. It must not restate the whole roadmap or another stage's implementation.
+- A `reference-evidence` may preserve long analysis, alternatives, and success or failure evidence. It must not be a startup-required read, active authority, current-state owner, or next-action owner.
+- Every required-read `overall-design` must fit within both 120 lines and 8,000 Unicode characters. Every required-read `phase-design` must fit within both 160 lines and 12,000 Unicode characters.
+- If an active design exceeds its read budget, do not route a summary followed by an unread long body. Remove copied policy, state, history, raw evidence, and future-stage detail; then split the work into smaller stages or move optional evidence to an exact reference.
+- A user-requested long analysis is a `reference-evidence`, not an exception to the active-design read budget.
+- Link to the current-state owner and optional evidence instead of copying them. Completed execution detail remains in Git; only durable decisions that change later action stay in the design owner.
+
+## Design verification
+
+- Count lines and decoded Unicode characters for every required-read design before routing it.
+- Confirm that a new session can read the selected current-state document, the overall design, and the active phase design in full and identify the outcome, current stage, first action, prohibitions, and success gate without opening reference evidence.
+- Confirm that no active design claims policy authority, current execution state, or completed history owned elsewhere.
+- Treat a read-budget excess, missing success gate, duplicate owner, or required long-reference read as a design failure; revise the document before execution.

@@ -1,84 +1,82 @@
 # 세션 핸드오프
 
-- 갱신일: 2026-07-29
+- 갱신일: 2026-07-31
 - 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
-- 현재 작업: 재현 가능한 프로젝트 기반 M6 Core export·게임 pilot (complete; M0~M6 종료)
-- 상태: M0-S1~S3·M0-X1~X4, M1-S1~S5·M1-X1~X5, M2-S1~S4·M2-X1~X5, M3-S1~S4·M3-X1~X5, M4-S1~S5·M4-X1~X5, M5-S1~S4·M5-X1~X5, M6-S1~S5·M6-X1~X5 통과
-- 활성 전체 설계: `extension/work/PROJECT_FOUNDATION_DESIGN.md`
-- 활성 단계 설계: `extension/work/project-foundation/M6_CORE_EXPORT_GAME_PILOT.md`
-- 선택 근거: `extension/reports/codex_2026-07-28_재현가능한_프로젝트_기반_방향분석과_개선계획.md`
+- 현재 작업: 규칙 무손실 통합 개선 M0 규칙 계보·손실 감사
+- 상태: `M0-S1` passed, `M0-S2` unstarted. 이번 세션은 Codex 작업의 직접 사용자 발언으로 프로젝트 방향과 설계·인계를 교정했으며 M0 계보 실행은 시작하지 않았다.
+- 활성 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
+- 활성 단계 설계: `extension/work/rule-preservation/M0_RULE_LINEAGE_AND_LOSS_AUDIT.md`
+- M0 evidence: `extension/work/rule-preservation/M0_RULE_CONSERVATION_MAP.md`
+- 선택 근거: `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md`
+- 프로젝트 방향: `PROJECT_DIRECTION.md`
 - 읽기 순서: `PROJECT_RULES.md` → 이 문서 → 활성 전체 설계 → 활성 단계 설계 → 다음 행동에 matching된 규칙
+- handoff mode: `portable`; 필수 방향·설계·evidence와 승인된 규칙 변경을 이번 Git checkpoint에서 함께 보존한다.
+
+## 직접 사용자 근거로 교정한 방향
+
+관련 Codex 작업 3개와 현재 작업에서 에이전트 요약이 아닌 직접 사용자 발언을 대조했다.
+
+| Codex task | 확인된 사용자 방향 |
+|---|---|
+| `019fa4d3-728d-7c03-91ef-67cb0628148e` | 반복 영상 작업, 지식 추출 뒤 문서 정리, clean clone 품질, 자동화, 설계→실행, 성공·실패 환류, 복잡성 감사, Core 이식 |
+| `019fa9f6-3956-7ac3-8a87-a9461be04da3` | 단계별 자동 실행·gate·커밋, 불필요한 규칙 증가 감사, 위임 시 목표·의도 보존 |
+| `019faf75-037f-7e92-ac69-420f40b82324` | 데이터 근거의 출처 분리, 문서 제거가 현재 정리 이니셔티브의 1차 목표, 제거는 선행 개선 종료 뒤 exact 승인 단계 |
+
+- 기존 `PROJECT_DIRECTION.md`가 실제 유튜브 산출물을 단독 최상위 결과로 두고 Core 이식·재현 가능한 운영 기반을 후순위 수단으로 낮춘 해석은 사용자 직접 발언과 맞지 않아 교정했다.
+- 현재 이니셔티브의 1차 목표는 역할이 끝난 문서 제거다. 의미 보존·규칙 통합·참조 해제·검증은 제거 전 선행 조건이다.
+- M0~M3에서는 삭제·이동하지 않는다. M3 통과 뒤 exact 처분 목록을 사용자에게 승인받고 M4에서 한 번에 처분한다.
 
 ## 검증된 현재 상태
 
-### main
+- branch `main`, 이번 checkpoint의 부모 HEAD는 `3810abc`이고 `origin/main`보다 11 commit ahead였다.
+- 이번 checkpoint 범위는 tracked modified 7건·untracked 6건, 합계 13파일이다. 최종 방향·설계·규칙·회귀를 함께 커밋하며, 서로만 참조하던 대체 완료 임시 초안 2건은 작업 파일을 건드리지 않고 휴지통으로 제거했다.
+- `M0-S1` corpus: `rule-surface` 19파일·9,650토큰, `normative-corpus` 37파일·18,433토큰(HEAD 18,010), candidate 1파일·675토큰.
+- `rule-surface` 의미 78개, 19파일 전부 매핑, 미매핑 0. 파일당 최대 11개로 `D3` 12행 상한과 `D4` 400줄·30,000자 예산을 확정했다.
+- 기존 `37파일·18,844단어`와 `19,519단어`는 재현되지 않아 후속 성공 기준에서 제외한다.
+- 방향·설계 교정 뒤 Core 139개·Extension 132개 회귀, design budget, UTF-8·NUL·후행 공백·`git diff --check`가 통과했다.
+- 사용자 지시에 따라 기존 작업 내용을 되돌리지 않고 Core 4경로를 이번 checkpoint에 포함했다. Core 139개·Extension 132개와 `maintenance-verify --allow-core-changes`가 통과했다.
 
-- 현재 branch는 `main`, HEAD는 `2754086`이며 M0~M6 단계 게이트 커밋과 post-commit 회귀가 완료됐다.
-- 현재 dirty 범위는 작업 시작 전부터 존재한 `PROJECT_RULES.md`, `core/rules/document-work.md`, `core/tests/test_rule_routing.py`, `core/rules/staged-work-design.md`뿐이며 M0~M6 변경·보호 `inputs/`·`outputs/`는 포함하지 않는다.
-- 최종 회귀 기준: Core 139개·Extension 131개, maintenance 20개 artifact·문서 81개·링크 109개·Python 31개·schema 14개가 통과했다.
-- `scripts/verify.py` 기본 full-clone와 no-clone 모두 exit code 0이며, Node 20.11.1·ASCII·한글·공백 clone conformance를 확인했다.
-- HEAD `07a26a3`를 한글·공백 포함 임의 경로에 `--no-hardlinks --no-local` clean clone해 재측정한 결과, Core 129개 중 `test_test_write_capability_rejects_active_project_root` 1개가 source-root 판정으로 실패했고 Extension 114개와 `maintenance-verify`(문서 71·링크 80·Python 22·schema 14)는 통과했다.
-- 같은 clone의 `python -S -B -m unittest extension/tests/test_manual_upload_package.py -q`는 `PIL`/Pillow가 선언된 환경 계약 없이 host package에 의존해 import 단계에서 실패했다.
-- M0-S1-G: 통과. 각 결과에 환경·명령·pass/fail·확인 원인을 남겼고, 미실행 검사를 pass로 기록하지 않았다.
-- M0-S2-G: 최신 사용자 지시의 권장안 자동선택으로 Q0~Q5·재현성 정의를 승인 기준으로 확정했다.
-- M0-S3-G: runtime·dependency·bootstrap·namespace·storage·artifact registry·clone·CI 경계와 각 exact 후보 범위를 M0 phase design 결정표에 기록했다.
-- M0-X1~X4: 통과. baseline, 승인 기준, M1 입력, required-read 문서 예산과 reference-evidence 분리가 확인됐다.
-- M1-S1~S5-G: runtime preflight, source-root/storage, neutral namespace, one-way artifact registry, ASCII·한글·공백 clean clone conformance가 통과했다.
-- M1-X1~X5: bootstrap·Q0~Q3 전건, Core project/YouTube identity 0, Core artifact direct enumeration 0, Extension 121개 회귀, protected/external gate 분리가 확인됐다.
-- M1 transition evidence: 3개 clone path, 약 95초 conformance, 자동 실행 사용자 행동 0, root script 4개·manifest 2개·registry/test 추가, 잔여 domain leakage 0.
-- M2 transition evidence: legacy request 호환, quick·standard 비영구 계약, controlled 지문 검증·무효화·mutation 차단을 단일 Core validator와 4개 execution 테스트로 확인했다.
-- M3~M6 transition evidence: single verify, VIDEO_JOB synthetic engine, aggregate-only KPI, domain-neutral export·empty/game pilot·dual-domain conformance를 통과했다.
-- 전체 설계는 이 gap과 Core의 project URN·YouTube artifact 역의존을 M0 이후 M1에서 설계하도록 제한한다.
-- 보호 `inputs/`·`outputs/` 접근·변경은 0건이고 dependency 설치·CI/hook·push·실제 브라우저/NotebookLM·게임 제작/배포는 수행하지 않았다.
+## 이번 checkpoint와 후속 승인 경계
 
-### ainotebook
+아래 rule-surface 5경로는 이번 checkpoint에 보존한다. 그중 `core/**`는 4경로이며, 이번 정리에서는 기존 작업 내용을 되돌리거나 재작성하지 않았다.
 
-- 전용 상태 owner commit은 `19049ba`, main 병합 commit은 `762e650`이다.
-- G2 병합 직후 Core 116개, Extension 113개, maintenance 68문서·78링크가 통과했다.
-- ainotebook의 현재 작업·승인 gate는 `extension/work/AINOTEBOOK_WORKTREE_STATE.md`만 소유한다.
-- `SESSION_HANDOFF.md` local diff는 0건이며 이 문서는 ainotebook에서 선택되지 않는다.
+| 경로 | 상태 | SHA-256 / 판정 |
+|---|---|---|
+| `PROJECT_RULES.md` | checkpoint | `725beca47d5a8d53ce35817e7193459ea11f6002640a5c1858761845951794cd` |
+| `core/rules/document-work.md` | checkpoint | `c29ba6d3796db5b08bf84f55e83fdd61796bb4d0f663dca468c774fac1f30a9b` |
+| `core/rules/rule-governance.md` | checkpoint | `b5b68e8268da424b72a9c7b61539efd4583fc93b679d70da44f9f64b8334f63e` |
+| `core/tests/test_rule_routing.py` | checkpoint | `1d618aa1ed5a71c5669a15eb5345867dc83b475ec6a96b5c7e9c75eb18b764c1` |
+| `core/rules/staged-work-design.md` | checkpoint | `83d8dbe22e0e45c9910f346d2843130a7269c8b4cd5a94ae758df4cc17c453bb` |
 
-## 결정과 복구
-
-- `AGENTS.md`와 `CLAUDE.md`는 `PROJECT_RULES.md`만 가리킨다.
-- `PROJECT_RULES.md`가 startup·작업 분류·worktree 상태 선택·조건부 rule routing을 단독 소유한다.
-- 사용자 교정은 기존 plan과 대기 mutation을 무효화하며, 다른 세션의 미커밋 변경은 exact target·diff·recovery·사용자 승인 없이 restore하지 않는다.
-- ainotebook 상태 이전 전 저장소 밖 recovery copy 2개의 SHA-256 일치를 확인했다. 프로젝트 문서는 실제 destination을 링크하거나 의존하지 않는다.
-- 이전에 restore된 6개 파일의 정확한 byte diff는 Git backup이 없어 복구할 수 없으며, 재구성 자료를 backup으로 부르지 않는다.
-
-## 실패 ledger
-
-| objective | attempt·result | 확인 원인 | 연속 횟수 | 다음 조건 |
-|---|---|---|---:|---|
-| arbitrary-path clean clone Core | `07a26a3` temp clone에서 1 failure | repository root를 isolated temp fixture로 오인하는 source-root 판정 | 1 | M0-S1에서 현재 revision 재측정 |
-| package 차단 upload test | `07a26a3`의 `python -S`에서 import failure | Pillow가 선언된 환경 계약 없이 host package에 의존 | 1 | M0-S1에서 현재 revision 재측정 |
-| M1 Core purity mutation | `20260728T183445Z` 자동 실행에서 차단 | exact Core 경로·이유에 대한 현재 대화의 명시적 승인 부재 | 1 | 사용자 승인 확인됨; M1-S1~S5 재검증·`747ea2e` 커밋 완료 |
-
-## blocker·남은 gate
-
-- M1 `747ea2e`, M2 `8bf21cf`, M3 `eff982b`, M4 `821ae83`, M5 `ea98bd6`, M6 `2754086`으로 단계별 게이트를 커밋했고 post-commit 검증도 통과했다.
-- dependency 설치, CI·hook, 삭제·이동은 별도 승인 전 실행하지 않는다.
-- M0 exit gate는 종료됐고, M1 exact Core 승인·구현·검증은 완료됐다.
-- ainotebook의 별도 영상 작업은 전용 상태 문서에 기록된 사용자 승인 gate를 유지한다.
+- `rule-governance.md`의 숫자 상한 문장은 중단된 외부 에이전트 세션에서 추가됐지만, 이번 사용자가 작업 내용을 되돌리지 말고 현재 변경을 커밋하라고 지시해 checkpoint 범위에 포함했다.
+- 이전 대화의 Core 승인은 현재 대화로 자동 승계되지 않는다. 후속 Core mutation은 exact 경로·이유·대안이 확정된 뒤 현재 대화에서 다시 승인받는다.
+- 삭제·이동, dependency 설치, 외부 상태 변경, stage·commit·push는 별도 승인 전 수행하지 않는다.
 
 ## 중요 문서
 
 | 경로 | 상태 | 역할 |
 |---|---|---|
-| `extension/work/PROJECT_FOUNDATION_DESIGN.md` | active overall-design | 장기 목표·불변식·M0~M6 단계 지도 |
-| `extension/work/project-foundation/M0_BASELINE_AND_SUCCESS_GATES.md` | passed phase-design | M0 exact 범위·slice·entry/exit/transition gate |
-| `extension/work/project-foundation/M1_FRESH_CLONE_AND_CORE_PURITY.md` | passed phase-design | M1 exact 범위·slice·entry/exit/transition gate |
-| `extension/work/project-foundation/M2_DESIGN_EXECUTION_CONTRACT.md` | passed phase-design | M2 exact 범위·slice·entry/exit/transition gate |
-| `extension/work/project-foundation/M3_SINGLE_QUALITY_GATE.md` | passed phase-design | M3 exact 범위·slice·entry/exit/transition gate |
-| `extension/work/project-foundation/M4_VIDEO_WORKFLOW_ENGINE.md` | passed phase-design | M4 exact 범위·slice·entry/exit/transition gate |
-| `extension/work/project-foundation/M5_LEARNING_AND_COMPLEXITY_AUDIT.md` | passed phase-design | M5 exact 범위·slice·entry/exit/transition gate |
-| `extension/work/project-foundation/M6_CORE_EXPORT_GAME_PILOT.md` | passed phase-design | M6 exact 범위·slice·entry/exit/transition gate |
+| `PROJECT_DIRECTION.md` | active reference-evidence | 직접 사용자 발언으로 교정한 장기 결과·판단 기준 |
+| `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md` | active overall-design | 문서 제거 1차 목표, M0~M4 단계와 전체 gate |
+| `extension/work/rule-preservation/M0_RULE_LINEAGE_AND_LOSS_AUDIT.md` | in-progress phase-design | M0 exact 범위·slice·gate |
+| `extension/work/rule-preservation/M0_RULE_CONSERVATION_MAP.md` | optional reference-evidence | corpus·의미 단위·lineage·교차검증 판정 owner |
+| `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md` | reported / unverified reference | 교차검증 대상 에이전트 보고서 |
 | `extension/work/CORE_CHANGE_FAILURES.md` | active failure owner | 자동 Core 변경 차단 기록 |
-| `extension/reports/codex_2026-07-28_재현가능한_프로젝트_기반_방향분석과_개선계획.md` | reference-evidence | 선택적 방향 분석·측정·대안 근거 |
-| ainotebook `extension/work/AINOTEBOOK_WORKTREE_STATE.md` | active | ainotebook 현재 상태 단일 owner |
+
+## 실패 ledger
+
+| objective | attempt | result / cause | count | next condition |
+|---|---|---|---:|---|
+| 프로젝트 방향 정본화 | 2026-07-30 기존 초안 | 에이전트가 일부 결과를 우선순위로 재해석해 사용자가 반박 | 1 | 직접 사용자 발언 source map으로 교정 완료 |
+| 규칙·설계·핸드오프 정비 | 첨부 외부 세션 | `rule-governance.md` 일부 변경 뒤 API 529로 중단 | 1 | Core draft는 보류하고 비-Core 문서 교정·검증 |
+| M0-S2 계보 조회 | 이전 에이전트 시도 | Git 조회 명령 승인 거부, mutation 없음 | 1 | 다음 실행에서 read-only Git으로 재시작 |
 
 ## 첫 다음 행동
 
-1. 없음. M0~M6 개선과 단계별 커밋·최종 회귀가 완료됐으며 점수 보고를 반환한다.
+1. 후속 실행 요청이 이어지면 `M0-S2`에서 `D6` 순서로 78개 의미의 직접 계보를 read-only Git으로 역추적한다.
+2. M0-S2에서는 Core·규칙·보호 데이터·외부 상태를 변경하지 않고 보존 지도의 source anchor만 갱신한다.
+3. 문서 처분은 M0~M3 동안 후보 목록만 누적하고, M3 통과 뒤 M4 exact 승인 gate까지 실행하지 않는다.
 
-> M0 설계 커밋은 `a1977a5`, M1~M6 게이트 커밋은 `747ea2e`, `8bf21cf`, `eff982b`, `821ae83`, `ea98bd6`, `2754086`이다. Core 변경 승인이 확인됐으며, dependency 설치·CI·보호 데이터 접근은 정의된 별도 경계를 유지한다.
+## 다음 session 시작 prompt
+
+`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → M0 phase-design`을 읽고 `M0-S2`부터 재개한다. 현재 checkpoint를 기준선으로 보존하고 Core mutation·삭제·stage·commit·push 없이 read-only 계보와 보존 지도만 갱신한다.

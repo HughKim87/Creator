@@ -26,7 +26,8 @@ Read each matching rule completely once per logical task:
 | Action | Read before work |
 |---|---|
 | Create, edit, delete, move, rename, regenerate, or indirectly change anything under `core/` | [Core change control](core/rules/core-change-control.md) |
-| Create or change maintained documents or persistent project data | [Document work](core/rules/document-work.md) |
+| Create or change a maintained design, plan, report, document, or persistent project datum | [Document work](core/rules/document-work.md) |
+| Design, execute, resume, or transition controlled work with dependent stages or stage-specific gates | [Staged work design](core/rules/staged-work-design.md) |
 | Extract reusable rules, failures, current state, lineage, or evidence from files, including before cleanup | [File knowledge extraction](core/rules/file-extraction.md) |
 | Classify files or documents for retention, cleanup, deletion, move, or rename after extraction | [File cleanup](core/rules/file-cleanup.md) |
 | Record or reuse a material, generalizable failure | [Failure records](core/rules/failure-records.md) |
@@ -42,6 +43,7 @@ Detailed completed history is available through Git. Do not load old commits by 
 ## Outcome and authority
 
 - The project exists to reduce manual production work and let agents act autonomously inside approved goals and safety boundaries.
+- [Project direction](PROJECT_DIRECTION.md) records the stable user outcome and tradeoff priorities. Read it before defining or revising project-wide goals, roadmaps, major architecture, or broad improvement priorities; it is reference evidence, not policy or action approval.
 - Within project-local instructions, authority is: latest user instruction > this policy > the exact active task owner. The task owner is the current user request unless an approved plan is explicitly named.
 - `SESSION_HANDOFF.md` reports current state; it is not a policy or authority source.
 - Agents own in-scope research, safe defaults, reversible implementation, proportionate validation, and failure recovery.

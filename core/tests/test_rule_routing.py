@@ -108,6 +108,32 @@ class RuleRoutingTests(unittest.TestCase):
             r"\[[^\]]+\]\(extension/README\.md\)",
         )
 
+    def test_design_documents_are_bounded_and_role_separated(self):
+        document_work = (
+            ROOT / "core" / "rules" / "document-work.md"
+        ).read_text(encoding="utf-8")
+
+        for role in ("`overall-design`", "`phase-design`", "`reference-evidence`"):
+            self.assertIn(role, document_work)
+        self.assertIn("120 lines and 8,000 Unicode characters", document_work)
+        self.assertIn("160 lines and 12,000 Unicode characters", document_work)
+        self.assertIn("must not be a startup-required read", document_work)
+        self.assertIn("Treat a read-budget excess", document_work)
+
+    def test_staged_work_has_one_active_phase_and_four_gates(self):
+        staged = (
+            ROOT / "core" / "rules" / "staged-work-design.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("at most one active `phase-design`", staged)
+        self.assertIn("Do not create detailed documents for all future phases", staged)
+        for gate in ("`entry gate`", "`slice gate`", "`exit gate`", "`transition gate`"):
+            self.assertIn(gate, staged)
+        self.assertIn(
+            "[Staged work design](core/rules/staged-work-design.md)",
+            (ROOT / "PROJECT_RULES.md").read_text(encoding="utf-8"),
+        )
+
     def test_agents_is_only_a_project_rules_pointer(self):
         agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
         links = re.findall(r"\[[^\]]+\]\(([^)]+)\)", agents)
