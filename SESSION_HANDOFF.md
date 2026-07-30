@@ -3,9 +3,10 @@
 - 갱신일: 2026-07-31
 - 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
 - 현재 작업: 규칙 무손실 통합 개선 M0 규칙 계보·손실 감사
-- 상태: `M0-S1` passed, `M0-S2` unstarted. 이번 세션은 Codex 작업의 직접 사용자 발언으로 프로젝트 방향과 설계·인계를 교정했으며 M0 계보 실행은 시작하지 않았다.
+- 상태: `M0-S1`·`M0-S2`·`M0-S3`·`M0-S4` 및 M0 exit/transition gate passed. M1은 exact Core 승인 전 대기.
 - 활성 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
 - 활성 단계 설계: `extension/work/rule-preservation/M0_RULE_LINEAGE_AND_LOSS_AUDIT.md`
+- 활성 phase 상태: M0 passed; M1 phase-design 미생성; exact Core 승인 전 대기
 - M0 evidence: `extension/work/rule-preservation/M0_RULE_CONSERVATION_MAP.md`
 - 선택 근거: `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md`
 - 프로젝트 방향: `PROJECT_DIRECTION.md`
@@ -28,8 +29,8 @@
 
 ## 검증된 현재 상태
 
-- branch `main`, 이번 checkpoint의 부모 HEAD는 `3810abc`이고 `origin/main`보다 11 commit ahead였다.
-- 이번 checkpoint 범위는 tracked modified 7건·untracked 6건, 합계 13파일이다. 최종 방향·설계·규칙·회귀를 함께 커밋하며, 서로만 참조하던 대체 완료 임시 초안 2건은 작업 파일을 건드리지 않고 휴지통으로 제거했다.
+- branch `main`, 현재 기준 HEAD는 `f6e180d`이고 `origin/main`보다 12 commit ahead였다. M0 closeout 변경은 이 문서·phase-design·보존 지도에 한정한다.
+- 현재 작업트리는 M0 closeout 전까지 해당 3파일만 변경하며, 보호 `inputs/outputs`, 삭제·이동, Core mutation, 외부 상태 변경은 없다.
 - `M0-S1` corpus: `rule-surface` 19파일·9,650토큰, `normative-corpus` 37파일·18,433토큰(HEAD 18,010), candidate 1파일·675토큰.
 - `rule-surface` 의미 78개, 19파일 전부 매핑, 미매핑 0. 파일당 최대 11개로 `D3` 12행 상한과 `D4` 400줄·30,000자 예산을 확정했다.
 - 기존 `37파일·18,844단어`와 `19,519단어`는 재현되지 않아 후속 성공 기준에서 제외한다.
@@ -58,7 +59,7 @@
 |---|---|---|
 | `PROJECT_DIRECTION.md` | active reference-evidence | 직접 사용자 발언으로 교정한 장기 결과·판단 기준 |
 | `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md` | active overall-design | 문서 제거 1차 목표, M0~M4 단계와 전체 gate |
-| `extension/work/rule-preservation/M0_RULE_LINEAGE_AND_LOSS_AUDIT.md` | in-progress phase-design | M0 exact 범위·slice·gate |
+| `extension/work/rule-preservation/M0_RULE_LINEAGE_AND_LOSS_AUDIT.md` | passed phase-design | M0 exact 범위·slice·gate·closeout |
 | `extension/work/rule-preservation/M0_RULE_CONSERVATION_MAP.md` | optional reference-evidence | corpus·의미 단위·lineage·교차검증 판정 owner |
 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md` | reported / unverified reference | 교차검증 대상 에이전트 보고서 |
 | `extension/work/CORE_CHANGE_FAILURES.md` | active failure owner | 자동 Core 변경 차단 기록 |
@@ -69,14 +70,14 @@
 |---|---|---|---:|---|
 | 프로젝트 방향 정본화 | 2026-07-30 기존 초안 | 에이전트가 일부 결과를 우선순위로 재해석해 사용자가 반박 | 1 | 직접 사용자 발언 source map으로 교정 완료 |
 | 규칙·설계·핸드오프 정비 | 첨부 외부 세션 | `rule-governance.md` 일부 변경 뒤 API 529로 중단 | 1 | Core draft는 보류하고 비-Core 문서 교정·검증 |
-| M0-S2 계보 조회 | 이전 에이전트 시도 | Git 조회 명령 승인 거부, mutation 없음 | 1 | 다음 실행에서 read-only Git으로 재시작 |
+| M0-S2 계보 조회 | 2026-07-31 Codex | 19개 active path의 follow 및 predecessor 보완 완료, 78/78 anchor·successor 기록 | resolved | M1에서 candidate-loss·migrated delta 재검증 |
 
 ## 첫 다음 행동
 
-1. 후속 실행 요청이 이어지면 `M0-S2`에서 `D6` 순서로 78개 의미의 직접 계보를 read-only Git으로 역추적한다.
-2. M0-S2에서는 Core·규칙·보호 데이터·외부 상태를 변경하지 않고 보존 지도의 source anchor만 갱신한다.
+1. 다음 실행은 M1 entry에서 L01~L05·L08~L10의 candidate-loss/migrated delta를 검증하고 exact Core 승인 여부를 확인한다.
+2. 승인 전에는 `PROJECT_RULES.md`, `core/rules/{boundary-routing-and-dependency,cross-validation,document-work,file-extraction}.md`를 변경하지 않는다.
 3. 문서 처분은 M0~M3 동안 후보 목록만 누적하고, M3 통과 뒤 M4 exact 승인 gate까지 실행하지 않는다.
 
 ## 다음 session 시작 prompt
 
-`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → M0 phase-design`을 읽고 `M0-S2`부터 재개한다. 현재 checkpoint를 기준선으로 보존하고 Core mutation·삭제·stage·commit·push 없이 read-only 계보와 보존 지도만 갱신한다.
+`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → M0 phase-design`을 읽고 M1 entry를 확인한다. M0 evidence는 `M0_RULE_CONSERVATION_MAP.md`의 78개 anchor와 L01~L12 판정을 기준으로 하며, exact Core 승인·삭제·이동·보호 데이터·외부 상태 변경 없이는 mutation하지 않는다.

@@ -154,11 +154,132 @@
 | F19-2 | 검증 결과를 상태로 기록 | 상위 단계 자동 추론 방지 | `semantic → structure → media → app → user` 중 증거 있는 단계만 기록 | 보고 문구가 최고 검증 단계 이하 | 동 R15 |
 | F19-3 | 새 validator 추가·검사 묶음 | 계층 혼합 합격 방지 | `비보호 구조/선언 metadata/보호 미디어/의미 검수`로 분류해 독립 반환 | 보호 미디어 검사는 승인 없이 미실행 | 동 R16 |
 
-### S2·S3 판정 (미착수)
+## M0-S2 직접 계보 결과
+
+- checked-at: `2026-07-31 Asia/Seoul`; reviewer는 이 세션의 Codex agent이며 Claude 보고서 저자와 분리한다.
+- 현재 19파일을 `git log --follow`로 조회해 78개 source anchor와 successor를 기록했다. 전환·삭제 4건은 아래 predecessor 표로 보완했고 `backup/**` bulk read는 0건이다.
+
+### S2·S3 판정
 
 | ID | source anchor | evidence | disposition | M1 decision |
 |---|---|---|---|---|
-| F01-1 ~ F19-3 | `M0-S2`에서 기록 | `M0-S2`에서 부여 | `M0-S3`에서 판정 | `M0-S4`에서 확정 |
+| F01-1 | `e6c6328:PROJECT_RULES.md#L7` | git-lineage | preserved | retain |
+| F01-2 | `e6c6328:PROJECT_RULES.md#L18` | git-lineage | preserved | retain |
+| F01-3 | `e6c6328:PROJECT_RULES.md#L20` | git-lineage | preserved | retain |
+| F01-4 | `3db88dd:PROJECT_RULES.md#L43` | git-lineage | preserved | retain |
+| F01-5 | `3db88dd:PROJECT_RULES.md#L47` | git-lineage | preserved | retain |
+| F01-6 | `c5c078a:PROJECT_RULES.md#L51` | git-lineage | preserved | retain |
+| F01-7 | `c5c078a:PROJECT_RULES.md#L53` | git-lineage | preserved | retain |
+| F01-8 | `f9b244c:PROJECT_RULES.md#L59` | git-lineage | preserved | retain |
+| F01-9 | `8dc034e:PROJECT_RULES.md#L68` | git-lineage | preserved | retain |
+| F01-10 | `3db88dd:PROJECT_RULES.md#L74` | git-lineage | preserved | retain |
+| F01-11 | `153758f:PROJECT_RULES.md#L87` | git-lineage | preserved | retain |
+| F02-1 | `8ae37b5:core/rules/boundary-routing-and-dependency.md#L7` | git-lineage | preserved | retain |
+| F02-2 | `8ae37b5:core/rules/boundary-routing-and-dependency.md#L14` | git-lineage | preserved | retain |
+| F02-3 | `8ae37b5:core/rules/boundary-routing-and-dependency.md#L21` | git-lineage | preserved | retain |
+| F02-4 | `8ae37b5:core/rules/boundary-routing-and-dependency.md#L28` | git-lineage | preserved | retain |
+| F03-1 | `f9b244c:core/rules/core-change-control.md#L7` | git-lineage | preserved | retain |
+| F03-2 | `f9b244c:core/rules/core-change-control.md#L17` | git-lineage | preserved | retain |
+| F03-3 | `f9b244c:core/rules/core-change-control.md#L33` | git-lineage | preserved | retain |
+| F04-1 | `25237fe:core/rules/cross-validation.md#L7` | git-lineage | preserved | retain |
+| F04-2 | `25237fe:core/rules/cross-validation.md#L18` | git-lineage | preserved | retain |
+| F04-3 | `25237fe:core/rules/cross-validation.md#L29` | git-lineage | preserved | retain |
+| F05-1 | `f6e180d:core/rules/document-work.md#L7` | git-lineage | preserved | retain |
+| F05-2 | `06a2adc:core/rules/document-work.md#L10` | git-lineage | preserved | retain |
+| F05-3 | `12f7bc6:core/rules/document-work.md#L11` | git-lineage | preserved | retain |
+| F05-4 | `3db88dd:core/rules/document-work.md#L12` | git-lineage | preserved | retain |
+| F05-5 | `06a2adc:core/rules/document-work.md#L15` | git-lineage | preserved | retain |
+| F05-6 | `153758f:core/rules/document-work.md#L20` | git-lineage | preserved | retain |
+| F05-7 | `f6e180d:core/rules/document-work.md#L24` | git-lineage | preserved | retain |
+| F05-8 | `f6e180d:core/rules/document-work.md#L32` | git-lineage | preserved | retain |
+| F06-1 | `153758f:core/rules/failure-records.md#L7` | git-lineage | preserved | retain |
+| F06-2 | `8dc034e:core/rules/failure-records.md#L18` | git-lineage | preserved | retain |
+| F06-3 | `8dc034e:core/rules/failure-records.md#L18` | git-lineage | preserved | retain |
+| F06-4 | `8dc034e:core/rules/failure-records.md#L18` | git-lineage | preserved | retain |
+| F07-1 | `8ae37b5:core/rules/file-cleanup.md#L7` | git-lineage | migrated | retain current core owner |
+| F07-2 | `3633551:core/rules/file-cleanup.md#L27` | git-lineage | migrated | retain current core owner |
+| F07-3 | `8ae37b5:core/rules/file-cleanup.md#L48` | git-lineage | migrated | retain current core owner |
+| F08-1 | `07a26a3:extension/rules/file-extraction.md→core/rules/file-extraction.md#L7` | git-lineage | migrated | retain current core owner |
+| F08-2 | `07a26a3:extension/rules/file-extraction.md→core/rules/file-extraction.md#L28` | git-lineage | migrated | retain current core owner |
+| F09-1 | `25237fe:core/rules/rule-governance.md#L7` | git-lineage | preserved | retain |
+| F09-2 | `8ae37b5:core/rules/rule-governance.md#L20` | git-lineage | preserved | retain |
+| F09-3 | `8ae37b5:core/rules/rule-governance.md#L32` | git-lineage | preserved | retain |
+| F09-4 | `8ae37b5:core/rules/rule-governance.md#L42` | git-lineage | preserved | retain |
+| F09-5 | `8ae37b5:core/rules/rule-governance.md#L51` | git-lineage | preserved | retain |
+| F09-6 | `06a2adc:core/rules/rule-governance.md#L51` | git-lineage | preserved | retain |
+| F09-7 | `25237fe:core/rules/rule-governance.md#L77` | git-lineage | preserved | retain |
+| F10-1 | `f6e180d:core/rules/staged-work-design.md#L7` | git-lineage | preserved | retain |
+| F10-2 | `f6e180d:core/rules/staged-work-design.md#L14` | git-lineage | preserved | retain |
+| F10-3 | `f6e180d:core/rules/staged-work-design.md#L21` | git-lineage | preserved | retain |
+| F10-4 | `f6e180d:core/rules/staged-work-design.md#L29` | git-lineage | preserved | retain |
+| F10-5 | `f6e180d:core/rules/staged-work-design.md#L29` | git-lineage | preserved | retain |
+| F10-6 | `f6e180d:core/rules/staged-work-design.md#L43` | git-lineage | preserved | retain |
+| F10-7 | `f6e180d:core/rules/staged-work-design.md#L43` | git-lineage | preserved | retain |
+| F11-1 | `8dc034e:core/rules/user-data-work.md#L8` | git-lineage | preserved | retain |
+| F11-2 | `8dc034e:core/rules/user-data-work.md#L8` | git-lineage | preserved | retain |
+| F12-1 | `8dc034e:core/rules/version-control.md#L7` | git-lineage | preserved | retain |
+| F12-2 | `8dc034e:core/rules/version-control.md#L7` | git-lineage | preserved | retain |
+| F12-3 | `12f7bc6:core/rules/version-control.md#L20` | git-lineage | preserved | retain |
+| F13-1 | `f9b244c:extension/README.md#L9` | git-lineage | preserved | retain |
+| F13-2 | `532b41e:extension/README.md#L29` | git-lineage | preserved | retain |
+| F13-3 | `a89a1dd:extension/README.md#L42` | git-lineage | preserved | retain |
+| F13-4 | `8ae37b5:extension/README.md#L56` | git-lineage | preserved | retain |
+| F14-1 | `a89a1dd:extension/rules/video-editing-artifact-lineage.md#L7` | git-lineage | preserved | retain |
+| F14-2 | `a89a1dd:extension/rules/video-editing-artifact-lineage.md#L14` | git-lineage | preserved | retain |
+| F15-1 | `a89a1dd:extension/rules/video-editing-boundary-quality.md#L7` | git-lineage | preserved | retain |
+| F15-2 | `a89a1dd:extension/rules/video-editing-boundary-quality.md#L14` | git-lineage | preserved | retain |
+| F16-1 | `a89a1dd:extension/rules/video-editing-intake-and-instructions.md#L7` | git-lineage | preserved | retain |
+| F16-2 | `a89a1dd:extension/rules/video-editing-intake-and-instructions.md#L14` | git-lineage | preserved | retain |
+| F16-3 | `a89a1dd:extension/rules/video-editing-intake-and-instructions.md#L21` | git-lineage | preserved | retain |
+| F17-1 | `a89a1dd:extension/rules/video-editing-state-and-approval.md#L7` | git-lineage | preserved | retain |
+| F17-2 | `a89a1dd:extension/rules/video-editing-state-and-approval.md#L14` | git-lineage | preserved | retain |
+| F17-3 | `a89a1dd:extension/rules/video-editing-state-and-approval.md#L21` | git-lineage | preserved | retain |
+| F18-1 | `a89a1dd:extension/rules/video-editing-story-and-cut-design.md#L7` | git-lineage | preserved | retain |
+| F18-2 | `a89a1dd:extension/rules/video-editing-story-and-cut-design.md#L14` | git-lineage | preserved | retain |
+| F18-3 | `a89a1dd:extension/rules/video-editing-story-and-cut-design.md#L21` | git-lineage | preserved | retain |
+| F18-4 | `a89a1dd:extension/rules/video-editing-story-and-cut-design.md#L28` | git-lineage | preserved | retain |
+| F19-1 | `a89a1dd:extension/rules/video-editing-validation-and-delivery.md#L7` | git-lineage | preserved | retain |
+| F19-2 | `a89a1dd:extension/rules/video-editing-validation-and-delivery.md#L14` | git-lineage | preserved | retain |
+| F19-3 | `a89a1dd:extension/rules/video-editing-validation-and-delivery.md#L21` | git-lineage | preserved | retain |
+
+### 삭제·rename predecessor 보완
+
+| predecessor | source anchor | successor / gap | 판정 |
+|---|---|---|---|
+| `rules/history-review.md` | `c5c078a^:rules/history-review.md` | `core/rules/file-extraction.md`와 `PROJECT_RULES.md`에 부분 승계; exact historical-read 절차는 공백 | candidate-loss 일부 |
+| `rules/stage-work.md` | `c5c078a^:rules/stage-work.md` | `core/rules/staged-work-design.md`로 단계 topology·gate 승계 | superseded |
+| `extension/rules/file-extraction.md` | `07a26a3^:extension/rules/file-extraction.md` | `core/rules/file-extraction.md`로 이동·승계 | migrated |
+| `extension/rules/file-cleanup.md` | `07a26a3^:extension/rules/file-cleanup.md` | `core/rules/file-cleanup.md`로 R081 rename | migrated |
+
+### 과거 후보 L01~L12 판정
+
+| ID | source anchor | evidence | current owner | disposition | M1 decision |
+|---|---|---|---|---|---|
+| L01 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L87` | direct-remeasurement | 없음 | candidate-loss | 후보 owner·extension-only 대안 검토 |
+| L02 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L88` | direct-remeasurement | 부분: `PROJECT_RULES.md` Approval/Protected | candidate-loss | exact delta 검토; 자동 Core 복원 금지 |
+| L03 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L89` | direct-remeasurement | 없음 | candidate-loss | `core/rules/boundary-routing-and-dependency.md` 배치 검토 |
+| L04 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L90` | direct-remeasurement | `core/rules/cross-validation.md` 부분 | migrated | 약한 출처·버전 주장 delta 검토 |
+| L05 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L91` | direct-remeasurement | 없음 | candidate-loss | 조건부 `document-work` 배치 검토 |
+| L06 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L92` | unresolved | `PROJECT_RULES.md` Verification과 충돌 | superseded | D7에서 사용자 의도 확인 |
+| L07 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L93`; successor `core/rules/document-work.md#L22` | direct-remeasurement | `core/rules/document-work.md`, 영상 validation owner | preserved | 복원하지 않음 |
+| L08 | `c5c078a^:rules/history-review.md`; successor `core/rules/file-extraction.md` | direct-remeasurement | `core/rules/file-extraction.md` 부분 | migrated | historical-read exact delta 검토 |
+| L09 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L115`; successor `extension/rules/video-editing-validation-and-delivery.md#L7` | direct-remeasurement | domain owner 부분; Core 정의 없음 | migrated | domain 보존·foundation 필요성 비교 |
+| L10 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L134`; successor `core/rules/document-work.md#L20` | direct-remeasurement | `core/rules/document-work.md` 부분 | migrated | write-success·복구 delta 검토 |
+| L11 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L155`; successor `PROJECT_RULES.md#L87` | unresolved | `PROJECT_RULES.md` | superseded | D7에서 사용자 의도 확인 |
+| L12 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L168` | report-only | `core/failures/` | task-specific | M1 변경 대상 아님; 표본 범위는 미검증 |
+
+### M0-S2·S3 결과 요약
+
+- 현재 의미: 78/78 source anchor·owner 연결, 고아 0. predecessor 4건도 successor 또는 공백을 기록했다.
+- 과거 후보: candidate-loss 4건(L01·L02·L03·L05)+history-review delta; migrated 4건; superseded 2건; preserved 1건; task-specific 1건.
+- L01~L05·L08~L10은 현재 owner와 직접 비교했고, L06·L11은 사용자 의도 미확정으로 복원하지 않는다.
+
+### M0-S4 M1 입력 고정
+
+- 권장 M1 순서: candidate-loss와 migrated delta만 검증한다. Core 후보는 `PROJECT_RULES.md`, `core/rules/boundary-routing-and-dependency.md`, `core/rules/cross-validation.md`, `core/rules/document-work.md`, `core/rules/file-extraction.md`의 기존 owner 강화로 한정한다.
+- extension-only 대안은 L09(영상 validation)에는 가능하지만 L01~L05·L08·L10은 foundation 범용 경계라 대체하지 못한다. L06·L11은 사용자 결정 전 보류한다.
+- 예상 효과(미검증): candidate-loss 0, 중복 owner 0, 신규 active rule 0. 실제 효과는 M1/M2 gate에서 직접 재측정한다.
+- 현재 Core diff 0. 후속 승인 시 검증은 Core·Extension 회귀, maintenance gate, UTF-8/NUL/links/diff와 의미 대조이며 literal-only 테스트는 제외한다.
 
 파일별 의미 수: `PROJECT_RULES` 11, `document-work` 8, `rule-governance` 7, `staged-work-design` 7, `boundary-routing` 4, `failure-records` 4, `extension/README` 4, `story-and-cut-design` 4, `core-change-control` 3, `cross-validation` 3, `file-cleanup` 3, `version-control` 3, `intake-and-instructions` 3, `state-and-approval` 3, `validation-and-delivery` 3, `file-extraction` 2, `user-data-work` 2, `artifact-lineage` 2, `boundary-quality` 2. 합계 78, 최대 11(`PROJECT_RULES`).
 

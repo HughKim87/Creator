@@ -2,8 +2,8 @@
 
 - 문서 분류: `phase-design`
 - phase ID: `M0`
-- lifecycle: `in_progress`
-- 진행 상태: `M0-S1` passed, `M0-S2` unstarted
+- lifecycle: `passed`
+- 진행 상태: `M0-S1`·`M0-S2`·`M0-S3`·`M0-S4` passed
 - 결과: 현재 규칙과 직접 역사 계보의 의미를 대조해 복원·통합 전에 사용할 보존 지도를 확정한다.
 - 권위: 최신 사용자 지시와 `PROJECT_RULES.md`가 상위 권위이며 이 단계는 Core 변경을 승인하지 않는다.
 - 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
@@ -109,4 +109,11 @@
 - 같은 조회 목적이 세 번 실패하면 확인된 blocker를 보존하고 authorized scope 안에서 조회 방법을 바꾼다. `D6` 전환은 이 계수에 포함하지 않는다. 새 권한·보호 자료·외부 상태가 필요하면 `blocked`로 전환한다.
 - 준비 checkpoint 전 Core dirty 때문에 기본 maintenance가 `core_change_required`로 끝난 것은 예상 실패였다. 승인된 checkpoint 검증은 `--allow-core-changes`로 통과했으며, 커밋 뒤 M0에서는 기본 maintenance를 사용하고 새 Core diff가 생기면 중단한다.
 - M0가 passed이고 `M0-T1`이 M1을 필요하다고 판정한 뒤에만 M1 phase-design을 만든다. 후속 Core mutation 승인은 해당 agent의 현재 대화에서 다시 확인한다.
-- 첫 다음 행동: `M0-S2`에서 `D6` 순서로 현재 78개 의미의 직접 계보를 역추적하고 source anchor를 보존 지도에 기록한다.
+- 첫 다음 행동: M0 exit·transition checkpoint 뒤 M1 entry에서 candidate-loss와 migrated delta를 재검증한다. M1은 exact Core 승인 전에는 mutation하지 않는다.
+
+## M0 closeout record
+
+- `M0-S2-G`: 19개 active rule-surface 경로의 `git log --follow`와 삭제·rename predecessor 보완을 완료했다. 보존 지도에 78/78 source anchor·successor를 기록했고 `backup/**` bulk read는 0건이다.
+- `M0-S3-G`: 현재 78개 의미와 L01~L12에 evidence·owner·disposition을 부여했다. `candidate-loss` 4건과 history-review delta, `migrated` 4건, `superseded` 2건, `preserved` 1건, `task-specific` 1건이다.
+- `M0-S4-G`: M1 exact Core 후보 5경로, extension-only 대안, 예상 효과와 후속 검증을 보존 지도에 고정했다. 현재 Core diff는 0이다.
+- `M0-X1~X6`, `M0-T1`: passed. 현재 지도는 322줄·29,886자·NUL 0·trailing whitespace 0·scoped diff check passed이며, overall/phase/read budgets를 지킨다. `M0-T2`는 closeout에서 matching rule audit로 판정하고 `M0-T3`는 이 phase commit으로 완료한다.
