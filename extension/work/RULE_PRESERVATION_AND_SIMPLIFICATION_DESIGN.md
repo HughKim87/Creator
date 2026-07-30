@@ -9,7 +9,7 @@
 - 권위: 최신 사용자 지시와 `PROJECT_RULES.md`가 상위 권위이며, 이 문서는 정책이나 Core 변경 승인이 아니다.
 - 프로젝트 방향: [장기 사용자 결과와 선택 기준](../../PROJECT_DIRECTION.md)
 - 현재 상태 owner: `SESSION_HANDOFF.md`
-- 활성 단계: [M3 시작 경로·회귀·종료](rule-preservation/M3_STARTUP_ROUTE_REGRESSION_AND_DISPOSITION.md)
+- 활성 단계: [M4 완료 후 문서 처분·최종 보고](rule-preservation/M4_EXACT_DISPOSITION_AND_FINAL_REPORT.md)
 - M0 evidence: [M0 규칙 보존 지도](rule-preservation/M0_RULE_CONSERVATION_MAP.md) — optional reference, startup-required 아님
 - reference-evidence: [Claude 규칙 손실 이력 분석](../reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md)
 
@@ -88,4 +88,4 @@ M0 결과 candidate-loss가 0이면 복원할 손실이 없으므로 M1·M2를 �
 
 ## 다음 실행
 
-`M0`·`M1`·`M2`의 exit/transition gate는 통과했다. 다음 실행은 [M3 시작 경로·회귀·종료](rule-preservation/M3_STARTUP_ROUTE_REGRESSION_AND_DISPOSITION.md)의 `M3-S1`이며, 삭제·이동 없이 active startup route와 M4 exact 처분 후보를 검증한다.
+`M0`·`M1`·`M2`·`M3`의 exit/transition gate는 통과했다. 다음 실행은 [M4 완료 후 문서 처분·최종 보고](rule-preservation/M4_EXACT_DISPOSITION_AND_FINAL_REPORT.md)의 `M4-S1`이며, 권장 exact 처분 목록에 대한 현재 대화의 사용자 승인을 확인한다.

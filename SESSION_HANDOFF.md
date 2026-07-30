@@ -2,11 +2,11 @@
 
 - 갱신일: 2026-07-31
 - 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
-- 현재 작업: 규칙 무손실 통합 개선 M3 시작 경로·회귀·종료
-- 상태: M0·M1·M2·M3 exit/transition gate passed. startup route·inbound reference·회귀가 통과했고, M4 exact 처분 승인만 남았다.
+- 현재 작업: 규칙 무손실 통합 개선 M4 완료 후 문서 처분·최종 보고
+- 상태: M0·M1·M2·M3 exit/transition gate passed. M4 phase-design에 권장 exact 처분 목록을 고정했으며, 현재 대화의 exact 삭제 승인을 기다린다.
 - 활성 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
-- 활성 단계 설계: `extension/work/rule-preservation/M3_STARTUP_ROUTE_REGRESSION_AND_DISPOSITION.md`
-- 활성 phase 상태: M3 passed; 현재 startup route는 M3 하나다. M4 후보 22개 파일·2개 빈 디렉터리는 exact 사용자 승인 전 처분하지 않는다.
+- 활성 단계 설계: `extension/work/rule-preservation/M4_EXACT_DISPOSITION_AND_FINAL_REPORT.md`
+- 활성 phase 상태: M4 ready / `pending_user_exact_approval`; 권장 목록은 22개 파일·2개 빈 디렉터리이며 exact 승인 전 삭제·이동하지 않는다.
 - M0 evidence: `extension/work/rule-preservation/M0_RULE_CONSERVATION_MAP.md`
 - 선택 근거: `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md`
 - 프로젝트 방향: `PROJECT_DIRECTION.md`
@@ -62,7 +62,8 @@
 | `extension/work/rule-preservation/M0_RULE_LINEAGE_AND_LOSS_AUDIT.md` | passed phase-design | M0 exact 범위·slice·gate·closeout |
 | `extension/work/rule-preservation/M1_PRESERVATION_VALIDATION_AND_MINIMAL_CHANGE.md` | passed phase-design | M1 검증·M2 최소 변경 계약·transition gate |
 | `extension/work/rule-preservation/M2_RESTORE_INTEGRATE_AND_SINGLE_GATE.md` | passed phase-design | M2 exact delta·통합 회귀·exit gate |
-| `extension/work/rule-preservation/M3_STARTUP_ROUTE_REGRESSION_AND_DISPOSITION.md` | active phase-design | M3 startup route·회귀·M4 exact 후보 |
+| `extension/work/rule-preservation/M3_STARTUP_ROUTE_REGRESSION_AND_DISPOSITION.md` | passed phase-design | M3 startup route·회귀·M4 exact 후보 |
+| `extension/work/rule-preservation/M4_EXACT_DISPOSITION_AND_FINAL_REPORT.md` | active phase-design | M4 exact 승인·처분·최종 보고 gate |
 | `extension/work/rule-preservation/M0_RULE_CONSERVATION_MAP.md` | optional reference-evidence | corpus·의미 단위·lineage·교차검증 판정 owner |
 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md` | reported / unverified reference | 교차검증 대상 에이전트 보고서 |
 | `extension/work/CORE_CHANGE_FAILURES.md` | active failure owner | 자동 Core 변경 차단 기록 |
@@ -77,10 +78,10 @@
 
 ## 첫 다음 행동
 
-1. 다음 실행은 M4 phase-design에 exact 처분 목록·bundle dependency·복구 경계를 기록한다.
-2. 사용자에게 권장 exact 목록을 승인받기 전에는 파일·디렉터리를 삭제·이동하지 않는다. 승인 뒤 M4에서 처분하고 최종 보고서를 갱신한다.
+1. 다음 실행은 M4-S1에서 권장 exact 목록을 현재 사용자에게 승인받는다.
+2. 승인 전에는 파일·디렉터리를 삭제·이동하지 않는다. 승인 뒤 M4-S2~S4를 실행하고 최종 보고서를 갱신한다.
 3. 문서 처분은 M0~M3 동안 후보 목록만 누적하고, M3 통과 뒤 M4 exact 승인 gate까지 실행하지 않는다.
 
 ## 다음 session 시작 prompt
 
-`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → M3 phase-design`을 읽고 M4 approval boundary를 준비한다. M0 evidence는 `M0_RULE_CONSERVATION_MAP.md`의 78개 anchor와 L01~L12 판정을 기준으로 하며, exact 사용자 승인 전 삭제·이동·보호 데이터·Core·외부 상태를 변경하지 않는다.
+`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → M4 phase-design`을 읽고 M4-S1 exact approval boundary를 확인한다. M0 evidence는 `M0_RULE_CONSERVATION_MAP.md`의 78개 anchor와 L01~L12 판정을 기준으로 하며, exact 사용자 승인 전 삭제·이동·보호 데이터·Core·외부 상태를 변경하지 않는다.
