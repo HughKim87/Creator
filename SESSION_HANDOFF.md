@@ -29,7 +29,7 @@
 
 ## 검증된 현재 상태
 
-- branch `main`, M0 단계 커밋은 `48a11dd`이며 현재 closeout report checkpoint까지 작업트리는 clean이다. `origin/main`보다 14 commit ahead이고, 보정 checkpoint 변경은 이 문서·phase-design·보존 지도·최종 보고서에 한정한다.
+- branch `main`, M0 단계 커밋은 `48a11dd`이며 현재 closeout report checkpoint까지 작업트리는 clean이다. `origin/main` 대비 local commits가 남아 있고 정확한 수는 실행 시 Git status로 확인한다. 보정 checkpoint 변경은 이 문서·phase-design·보존 지도·최종 보고서에 한정한다.
 - 현재 작업트리는 M0 closeout 전까지 해당 3파일만 변경하며, 보호 `inputs/outputs`, 삭제·이동, Core mutation, 외부 상태 변경은 없다.
 - `M0-S1` direct remeasurement (2026-07-31, HEAD `48a11dd`): `rule-surface` 19파일·9,759토큰·59,493자, `normative-corpus` 38파일·19,653토큰·130,428자, candidate 1파일·675토큰·2,772자. 이전 37/18,433 값은 재현 불가로 제외.
 - `rule-surface` 의미 78개, 19파일 전부 매핑, 미매핑 0. 파일당 최대 11개로 `D3` 12행 상한과 `D4` 400줄·30,000자 예산을 확정했다.
