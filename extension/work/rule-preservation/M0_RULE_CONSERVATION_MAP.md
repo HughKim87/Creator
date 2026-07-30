@@ -17,7 +17,7 @@
 - evidence label은 `direct-remeasurement / repository-source / git-lineage / shared-source-agreement / report-only / unresolved` 중 하나다.
 - disposition은 `preserved / migrated / superseded / task-specific / unsafe-outdated / candidate-loss` 중 하나다.
 - 보고서나 과거 규칙은 evidence이며 현재 권위가 아니다. 원문·명령 로그·전체 commit narrative는 복제하지 않고 exact path·commit만 가리킨다.
-- 행 입도는 phase-design `D3`을, 이 문서의 상한은 `D4`를 따른다. `M0-S1` 실측으로 두 수치를 **확정**했다: 파일당 최대 11행이 관측되어 `D3`의 12행 상한이 유효하고, 전체 78행 기록 뒤에도 `D4`의 400줄·30,000자에 여유가 있다(199줄·18,023자). 상한에 닿으면 행을 늘리지 말고 입도를 상향한다.
+- 행 입도는 phase-design `D3`을, 이 문서의 상한은 `D4`를 따른다. `M0-S1` 실측으로 파일당 최대 11행·`D3` 12행 상한을 확정했고, 현재 78행 기록은 322줄·29,756자로 `D4` 이내다. 상한에 닿으면 행을 늘리지 말고 입도를 상향한다.
 
 ## corpus 정의
 
@@ -25,13 +25,13 @@
 
 | corpus | exact glob | 용도 | 파일 수 | 토큰 수 | 문자 수 |
 |---|---|---|---:|---:|---:|
-| `rule-surface` | `PROJECT_RULES.md`, `core/rules/*.md`, `extension/rules/*.md`, `extension/README.md` | 의미 인벤토리 대상 | 19 | 9,650 | 58,813 |
-| `normative-corpus` | `rule-surface` + `core/failures/*.md` + `core/docs/**/*.md` + `extension/docs/**/*.md` − candidate | 읽기 비용 기준 | 37 | 18,433 | — |
+| `rule-surface` | `PROJECT_RULES.md`, `core/rules/*.md`, `extension/rules/*.md`, `extension/README.md` | 의미 인벤토리 대상 | 19 | 9,759 | 59,493 |
+| `normative-corpus` | `rule-surface` + `core/failures/*.md` + `core/docs/**/*.md` + `extension/docs/**/*.md` − candidate | 읽기 비용 기준 | 38 | 19,653 | 130,428 |
 | `candidate/reference` | `extension/docs/domain/youtube/VIDEO_EDITING_RULE_CANDIDATES.md` | 판정 제외 | 1 | 675 | 2,772 |
 
-재현 명령: UTF-8 디코드 후 공백 분리 토큰 수와 `len(text)` 문자 수를 파일별로 출력하고 정렬된 경로 목록을 함께 남긴다. 같은 glob을 `git show HEAD:<path>`로 측정하면 `normative-corpus`는 37파일·18,010토큰이다.
+재현 명령: UTF-8 디코드 후 공백 분리 토큰 수와 `len(text)` 문자 수를 파일별로 출력하고 정렬된 경로 목록을 함께 남긴다. 2026-07-31 HEAD `48a11dd`와 작업트리 모두 `normative-corpus` 38파일·19,653토큰이다.
 
-기존 수치 판정(`direct-remeasurement`): `37파일·18,844단어`와 보고서의 `19,519단어` 모두 **재현되지 않았다.** 파일 수 37은 일치하나 토큰 수는 작업트리 18,433, HEAD 18,010으로 어느 쪽과도 맞지 않는다. 두 수치 모두 산출 glob과 명령이 기록되지 않아 재구성할 수 없으므로 `unresolved`로 두고, 후속 성공 기준은 위 표의 값만 사용한다. 이전 세션의 `18,844 + 675 = 19,519` 계산은 candidate가 이미 제외된 값에서 candidate를 다시 빼는 이중 차감으로 보이나 원본 정의가 없어 확정하지 않는다.
+기존 수치 판정(`direct-remeasurement`): `37파일·18,844단어`, 보고서의 `19,519단어`, 이전 M0-S1의 `37파일·18,433토큰` 모두 **재현되지 않았다.** 현재 exact glob의 직접 재측정은 `19파일·9,759토큰`, `38파일·19,653토큰`, candidate `675토큰`이다. 산출 glob·명령이 불명확한 이전 수치는 `unresolved`로 두고 후속 기준은 위 표만 사용한다.
 
 제거 후보 인벤토리(기록 전용). 사용자 지시에 따라 이 이니셔티브의 어떤 단계에서도 삭제·이동하지 않으며, 전체 완료 뒤 exact 목록으로 승인을 받아 처분한다.
 

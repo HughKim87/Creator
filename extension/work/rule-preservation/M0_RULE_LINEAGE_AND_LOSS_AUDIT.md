@@ -116,4 +116,6 @@
 - `M0-S2-G`: 19개 active rule-surface 경로의 `git log --follow`와 삭제·rename predecessor 보완을 완료했다. 보존 지도에 78/78 source anchor·successor를 기록했고 `backup/**` bulk read는 0건이다.
 - `M0-S3-G`: 현재 78개 의미와 L01~L12에 evidence·owner·disposition을 부여했다. `candidate-loss` 4건과 history-review delta, `migrated` 4건, `superseded` 2건, `preserved` 1건, `task-specific` 1건이다.
 - `M0-S4-G`: M1 exact Core 후보 5경로, extension-only 대안, 예상 효과와 후속 검증을 보존 지도에 고정했다. 현재 Core diff는 0이다.
-- `M0-X1~X6`, `M0-T1`: passed. 현재 지도는 322줄·29,886자·NUL 0·trailing whitespace 0·scoped diff check passed이며, overall/phase/read budgets를 지킨다. `M0-T2`는 closeout에서 matching rule audit로 판정하고 `M0-T3`는 이 phase commit으로 완료한다.
+- `M0-S1` recheck: exact glob·파일 목록 기준으로 corpus 수치를 19/9,759, 38/19,653, 1/675로 정정했고 이전 재현 불가 수치는 후속 기준에서 제외했다.
+- `M0-T2` rule audit: `document-work`, `staged-work-design`, `file-extraction`, `cross-validation`, `rule-governance`, `core-change-control`, `version-control`은 모두 무결점 적용; 기존 owner 보강·failure 승격·새 owner 생성은 0건이다.
+- `M0-X1~X6`, `M0-T1~T2`: passed. 현재 지도는 322줄·29,756자·NUL 0·trailing whitespace 0·scoped diff check passed이며, overall/phase/read budgets를 지킨다. `M0-T3`는 이 phase commit으로 완료한다.

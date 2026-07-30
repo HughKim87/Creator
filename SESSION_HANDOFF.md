@@ -29,9 +29,9 @@
 
 ## 검증된 현재 상태
 
-- branch `main`, 현재 기준 HEAD는 `f6e180d`이고 `origin/main`보다 12 commit ahead였다. M0 closeout 변경은 이 문서·phase-design·보존 지도에 한정한다.
+- branch `main`, M0 단계 커밋은 `48a11dd`이고 `origin/main`보다 13 commit ahead였다. 보정 checkpoint 변경도 이 문서·phase-design·보존 지도에 한정한다.
 - 현재 작업트리는 M0 closeout 전까지 해당 3파일만 변경하며, 보호 `inputs/outputs`, 삭제·이동, Core mutation, 외부 상태 변경은 없다.
-- `M0-S1` corpus: `rule-surface` 19파일·9,650토큰, `normative-corpus` 37파일·18,433토큰(HEAD 18,010), candidate 1파일·675토큰.
+- `M0-S1` direct remeasurement (2026-07-31, HEAD `48a11dd`): `rule-surface` 19파일·9,759토큰·59,493자, `normative-corpus` 38파일·19,653토큰·130,428자, candidate 1파일·675토큰·2,772자. 이전 37/18,433 값은 재현 불가로 제외.
 - `rule-surface` 의미 78개, 19파일 전부 매핑, 미매핑 0. 파일당 최대 11개로 `D3` 12행 상한과 `D4` 400줄·30,000자 예산을 확정했다.
 - 기존 `37파일·18,844단어`와 `19,519단어`는 재현되지 않아 후속 성공 기준에서 제외한다.
 - 방향·설계 교정 뒤 Core 139개·Extension 132개 회귀, design budget, UTF-8·NUL·후행 공백·`git diff --check`가 통과했다.
