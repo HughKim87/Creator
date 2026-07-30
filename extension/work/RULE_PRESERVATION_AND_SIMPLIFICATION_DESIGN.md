@@ -9,7 +9,7 @@
 - 권위: 최신 사용자 지시와 `PROJECT_RULES.md`가 상위 권위이며, 이 문서는 정책이나 Core 변경 승인이 아니다.
 - 프로젝트 방향: [장기 사용자 결과와 선택 기준](../../PROJECT_DIRECTION.md)
 - 현재 상태 owner: `SESSION_HANDOFF.md`
-- 활성 단계: [M0 규칙 계보·손실 감사](rule-preservation/M0_RULE_LINEAGE_AND_LOSS_AUDIT.md)
+- 활성 단계: [M1 보존 검증·최소 변경안](rule-preservation/M1_PRESERVATION_VALIDATION_AND_MINIMAL_CHANGE.md)
 - M0 evidence: [M0 규칙 보존 지도](rule-preservation/M0_RULE_CONSERVATION_MAP.md) — optional reference, startup-required 아님
 - reference-evidence: [Claude 규칙 손실 이력 분석](../reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md)
 
@@ -88,4 +88,4 @@ M0 결과 candidate-loss가 0이면 복원할 손실이 없으므로 M1·M2를 �
 
 ## 다음 실행
 
-`M0-S1`은 통과했다. 다음 실행은 `SESSION_HANDOFF.md`에 기록된 `M0-S2` 직접 계보 추적이며, M0가 exact Core 경로와 보존 지도를 확정하기 전에는 규칙 복원·압축을 구현하지 않는다.
+`M0`의 exit/transition gate는 통과했다. 다음 실행은 [M1 보존 검증·최소 변경안](rule-preservation/M1_PRESERVATION_VALIDATION_AND_MINIMAL_CHANGE.md)의 `M1-S1`이며, L01~L05·L08~L10을 의미 단위로 재검증한 뒤 M2 exact 변경 범위를 확정한다. M1 검증이 끝나기 전에는 규칙 본문을 변경하지 않는다.
