@@ -71,7 +71,7 @@ class StagedDesignRoutingTests(unittest.TestCase):
         self.assertEqual({"M0", "M1", "M2", "M3", "M4"}, stage_ids)
 
     def test_active_phase_owns_exact_execution_gates(self):
-        self.assertEqual("M1", _metadata_value(self.active_phase, "phase ID"))
+        self.assertEqual("M2", _metadata_value(self.active_phase, "phase ID"))
         self.assertRegex(
             self.active_phase,
             r"(?m)^- lifecycle: `(draft|ready|in_progress|blocked|passed|invalidated|superseded)`$",

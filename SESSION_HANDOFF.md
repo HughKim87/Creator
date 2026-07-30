@@ -2,11 +2,11 @@
 
 - 갱신일: 2026-07-31
 - 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
-- 현재 작업: 규칙 무손실 통합 개선 M1 보존 검증·최소 변경안
-- 상태: M0 exit/transition gate passed. M1 phase-design을 활성화했고, 삭제·이동 없이 L01~L05·L08~L10의 의미 보존과 M2 exact 변경 경계를 검증 중이다.
+- 현재 작업: 규칙 무손실 통합 개선 M2 복원·통합 단일 체크포인트
+- 상태: M0·M1·M2 exit/transition gate passed. M2 exact delta와 통합 회귀가 완료됐고, 다음은 삭제·이동 없는 M3 종료 검증이다.
 - 활성 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
-- 활성 단계 설계: `extension/work/rule-preservation/M1_PRESERVATION_VALIDATION_AND_MINIMAL_CHANGE.md`
-- 활성 phase 상태: M1 in_progress; M2 Core 후보는 M0-S4의 5개 exact 경로로 제한하고 M1 검증 뒤 적용한다.
+- 활성 단계 설계: `extension/work/rule-preservation/M2_RESTORE_INTEGRATE_AND_SINGLE_GATE.md`
+- 활성 phase 상태: M2 passed; M3 phase-design entry 전환을 준비한다. M2는 M0-S4에서 고정한 5개 Core 경로와 1개 영상 Extension 경로만 변경했다.
 - M0 evidence: `extension/work/rule-preservation/M0_RULE_CONSERVATION_MAP.md`
 - 선택 근거: `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md`
 - 프로젝트 방향: `PROJECT_DIRECTION.md`
@@ -30,7 +30,7 @@
 ## 검증된 현재 상태
 
 - branch `main`, M0 closeout·handoff 보정 기준은 `c575c7d3a23eb39fb919f8a2091ed71e5efdd2b2`이며 entry 작업트리는 clean이다. `origin/main` 대비 local commits는 status로 확인한다.
-- M1 진입 변경은 전체 설계·M1 phase-design·이 current-state 문서에 한정하며, 보호 `inputs/outputs`, 삭제·이동, Core mutation, 외부 상태 변경은 없다.
+- M1 checkpoint는 `69ef5d0`이다. M2 변경은 승인된 exact 6개 경로에 한정하며, 보호 `inputs/outputs`, 삭제·이동, 외부 상태 변경은 없다.
 - `M0-S1` direct remeasurement (2026-07-31, HEAD `48a11dd`): `rule-surface` 19파일·9,759토큰·59,493자, `normative-corpus` 38파일·19,653토큰·130,428자, candidate 1파일·675토큰·2,772자. 이전 37/18,433 값은 재현 불가로 제외.
 - `rule-surface` 의미 78개, 19파일 전부 매핑, 미매핑 0. 파일당 최대 11개로 `D3` 12행 상한과 `D4` 400줄·30,000자 예산을 확정했다.
 - 기존 `37파일·18,844단어`와 `19,519단어`는 재현되지 않아 후속 성공 기준에서 제외한다.
@@ -60,7 +60,8 @@
 | `PROJECT_DIRECTION.md` | active reference-evidence | 직접 사용자 발언으로 교정한 장기 결과·판단 기준 |
 | `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md` | active overall-design | 문서 제거 1차 목표, M0~M4 단계와 전체 gate |
 | `extension/work/rule-preservation/M0_RULE_LINEAGE_AND_LOSS_AUDIT.md` | passed phase-design | M0 exact 범위·slice·gate·closeout |
-| `extension/work/rule-preservation/M1_PRESERVATION_VALIDATION_AND_MINIMAL_CHANGE.md` | active phase-design | M1 검증·M2 최소 변경 계약·transition gate |
+| `extension/work/rule-preservation/M1_PRESERVATION_VALIDATION_AND_MINIMAL_CHANGE.md` | passed phase-design | M1 검증·M2 최소 변경 계약·transition gate |
+| `extension/work/rule-preservation/M2_RESTORE_INTEGRATE_AND_SINGLE_GATE.md` | active phase-design | M2 exact delta·통합 회귀·exit gate |
 | `extension/work/rule-preservation/M0_RULE_CONSERVATION_MAP.md` | optional reference-evidence | corpus·의미 단위·lineage·교차검증 판정 owner |
 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md` | reported / unverified reference | 교차검증 대상 에이전트 보고서 |
 | `extension/work/CORE_CHANGE_FAILURES.md` | active failure owner | 자동 Core 변경 차단 기록 |
@@ -75,10 +76,10 @@
 
 ## 첫 다음 행동
 
-1. 다음 실행은 M1-S1에서 historical peak와 현재 owner를 의미 단위로 직접 대조하고 L01~L05·L08~L10의 적용/공백 판정을 기록한다.
-2. M1-S3에서 위 5개 Core 경로와 영상 Extension owner의 최소 delta, 검증 명령, 예상 효과를 확정한다. M1 중에는 규칙 본문을 변경하지 않는다.
+1. 다음 실행은 M3 phase-design을 만들고 전체 설계의 active phase link를 M3로 전환한다.
+2. M3에서 startup-required 경로·inbound reference·회귀·음성 대조를 검증하고, M4에서 처분할 exact 후보 목록만 확정한다.
 3. 문서 처분은 M0~M3 동안 후보 목록만 누적하고, M3 통과 뒤 M4 exact 승인 gate까지 실행하지 않는다.
 
 ## 다음 session 시작 prompt
 
-`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → M1 phase-design`을 읽고 M1-S1을 수행한다. M0 evidence는 `M0_RULE_CONSERVATION_MAP.md`의 78개 anchor와 L01~L12 판정을 기준으로 하며, M1 검증 전 규칙 본문·삭제·이동·보호 데이터·외부 상태는 변경하지 않는다.
+`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → M2 phase-design`을 읽고 M3 phase entry를 수행한다. M0 evidence는 `M0_RULE_CONSERVATION_MAP.md`의 78개 anchor와 L01~L12 판정을 기준으로 하며, M3에서는 삭제·이동·보호 데이터·외부 상태를 변경하지 않는다.

@@ -31,3 +31,10 @@
 - 행동: `PROJECT_RULES.md` → 현재 상태 owner → 이 boundary rule → affected foundation rule/interface → affected extension owner 순서로 읽고, 각 문서는 EOF까지 한 번만 읽는다.
 - 예외: protected data는 exact 대상·목적 승인 없이는 읽지 않는다. machine schema만 검증하는 경우에도 해당 schema의 owner와 compatibility test만 읽는다.
 - 검증: 변경한 쪽의 direct reference scan, 반대쪽의 orphan route scan, 관련 Core/Extension 회귀를 모두 실행한다.
+
+## BND05 — 새 도구 경로의 최소 성공 호출
+
+- 조건: 승인된 작업에 새 외부 tool, API, agent, CLI, MCP server 또는 interface route를 연결하려 한다.
+- 행동: 실제 연결을 채택하기 전에 최소 1회의 read-only 또는 별도 승인된 성공 호출로 auth, 호출 경로, 옵션명, 출력 형태, 설치 버전 동작, 실패 비용을 확인한다. 작업에 필요하지 않은 새 경로는 추가하지 않는다.
+- 예외: 이미 검증된 동일 route·버전·호출 계약을 재사용할 때는 기존 검증 기록을 직접 확인하고 중복 호출을 만들지 않는다. 상태 변경 호출은 이 규칙만으로 승인되지 않는다.
+- 검증: 최소 호출의 대상·시점·결과와 route owner를 기록하고, 실패·권한 부족·출력 계약 불일치를 성공으로 보고하거나 active route로 남기지 않는다.

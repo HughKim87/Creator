@@ -20,6 +20,8 @@
 - Validate a logical batch at its completion checkpoint: strict UTF-8, NUL 0, relevant structure and links, trailing whitespace, and the scoped diff.
 - Run full maintenance only for controlled structural work or when the active plan requires it; otherwise use the smallest direct document checks that cover the change.
 - Generated or structure-valid does not mean user-approved.
+- For a report carrying a decision or material risk, identify material unverified claims and plausible failure or abuse cases before completion, then record the mitigation or decision. Do not add red-team boilerplate to routine reports.
+- A successful write call is not proof of correct content: reread the maintained file and check strict UTF-8, NUL 0, expected content or structure, and a hash when the artifact contract requires it. Keep a corrupt file out of the success state and use the approved version-control recovery path; never silently overwrite the last good version.
 
 ## Design document rules
 

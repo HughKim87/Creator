@@ -25,6 +25,13 @@
   - 정확한 rule route가 존재하고 기존 rule·candidate·failure owner와 중복되지 않는다.
   - 보호 자료의 내용, 비밀, 사용자 원본, task-specific 사실을 규칙·보고서·캐시에 복제하지 않는다.
 
+## FEX02 — 역사 자료의 제한적 열람
+
+- 조건: historical report, superseded proposal, prior implementation evidence, 또는 삭제된 rule의 의미를 확인해야 한다.
+- 행동: 읽기 전에 exact historical question·material·purpose를 고정한다. `git ls-files` 기반 inventory에서 `inputs`·`outputs`를 제외하고, 질문에 직접 필요한 exact path만 읽는다. historical rule·route·code·handoff는 evidence이지 active authority나 runtime dependency가 아니다.
+- 예외: 사용자 승인·현재 상태·source lineage를 입증하는 유일 자료는 보존 owner로 남기며, backup 전체나 관련 sibling을 편의상 열거하지 않는다.
+- 검증: 결과를 confirmed historical fact, current applicability, new inference로 분리하고, 유지·부분 승계·폐기 이유와 canonical owner를 각각 기록한다.
+
 ## 추출 결과의 owner
 
 | 추출 내용 | 보존 owner |

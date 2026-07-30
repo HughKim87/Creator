@@ -1,7 +1,7 @@
 # M0 규칙 보존 지도
 
 - 문서 분류: `reference-evidence`
-- 상태: `active-for-M0`
+- 상태: `active-for-M0-M2`
 - startup-required: 아니오. M0 phase가 exact 행을 지목할 때만 읽는다.
 - owner: `M0_RULE_LINEAGE_AND_LOSS_AUDIT.md`
 - 독자: M0 판정·M1 변경안·M2 의미 보존 검증을 수행하는 agent와 승인자.
@@ -255,16 +255,16 @@
 
 | ID | source anchor | evidence | current owner | disposition | M1 decision |
 |---|---|---|---|---|---|
-| L01 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L87` | direct-remeasurement | 없음 | candidate-loss | M1 passed: `PROJECT_RULES.md` owner 강화 확정 |
-| L02 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L88` | direct-remeasurement | 부분: `PROJECT_RULES.md` Approval/Protected | candidate-loss | M1 passed: `PROJECT_RULES.md`의 최소 데이터·권한 delta 확정 |
-| L03 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L89` | direct-remeasurement | 없음 | candidate-loss | M1 passed: `boundary-routing-and-dependency.md` owner 강화 확정 |
-| L04 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L90` | direct-remeasurement | `core/rules/cross-validation.md` 부분 | migrated | M1 passed: primary/weak/volatile claim delta 확정 |
-| L05 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L91` | direct-remeasurement | 없음 | candidate-loss | M1 passed: 조건부 `document-work` owner 강화 확정 |
+| L01 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L87` | direct-remeasurement | 없음 | candidate-loss | M2 passed: `PROJECT_RULES.md` |
+| L02 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L88` | direct-remeasurement | 부분: `PROJECT_RULES.md` Approval/Protected | candidate-loss | M2 passed: `PROJECT_RULES.md` |
+| L03 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L89` | direct-remeasurement | 없음 | candidate-loss | M2 passed: `boundary-routing-and-dependency.md` |
+| L04 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L90` | direct-remeasurement | `core/rules/cross-validation.md` 부분 | migrated | M2 passed: `cross-validation.md` |
+| L05 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L91` | direct-remeasurement | 없음 | candidate-loss | M2 passed: `document-work.md` |
 | L06 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L92` | unresolved | `PROJECT_RULES.md` Verification과 충돌 | superseded | D7에서 사용자 의도 확인 |
 | L07 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L93`; successor `core/rules/document-work.md#L22` | direct-remeasurement | `core/rules/document-work.md`, 영상 validation owner | preserved | 복원하지 않음 |
-| L08 | `c5c078a^:rules/history-review.md`; successor `core/rules/file-extraction.md` | direct-remeasurement | `core/rules/file-extraction.md` 부분 | migrated | M1 passed: historical evidence/authority·exact-read delta 확정 |
-| L09 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L115`; successor `extension/rules/video-editing-validation-and-delivery.md#L7` | direct-remeasurement | domain owner 부분; Core 정의 없음 | migrated | M1 passed: 영상 generated/parsed/tool ladder delta 확정 |
-| L10 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L134`; successor `core/rules/document-work.md#L20` | direct-remeasurement | `core/rules/document-work.md` 부분 | migrated | M1 passed: write-success·재읽기·복구 분리 delta 확정 |
+| L08 | `c5c078a^:rules/history-review.md`; successor `core/rules/file-extraction.md` | direct-remeasurement | `core/rules/file-extraction.md` 부분 | migrated | M2 passed: `file-extraction.md` |
+| L09 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L115`; successor `extension/rules/video-editing-validation-and-delivery.md#L7` | direct-remeasurement | domain owner 부분; Core 정의 없음 | migrated | M2 passed: video validation owner |
+| L10 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L134`; successor `core/rules/document-work.md#L20` | direct-remeasurement | `core/rules/document-work.md` 부분 | migrated | M2 passed: `document-work.md` |
 | L11 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L155`; successor `PROJECT_RULES.md#L87` | unresolved | `PROJECT_RULES.md` | superseded | D7에서 사용자 의도 확인 |
 | L12 | `extension/reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md#L168` | report-only | `core/failures/` | task-specific | M1 변경 대상 아님; 표본 범위는 미검증 |
 

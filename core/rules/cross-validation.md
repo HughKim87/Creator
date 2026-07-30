@@ -22,6 +22,7 @@ Shared-source agreement and duplicated report text are not independent corrobora
 - Prefer primary files, tests, and direct measurements over another report's conclusion.
 - Mark contradictions and unverified claims explicitly; do not turn absence of contrary evidence into confirmation.
 - For dynamic repository state, record the checked-at time, branch or revision, and relevant counts or paths.
+- For current, official, version-sensitive, pricing, API, security, permission, or availability claims, prefer official or primary sources, cross-check the material claim, and label weak or secondary evidence. If the claim remains unresolved, report it as unverified.
 - Do not access protected data merely to raise confidence. Exact user authorization remains required for each protected item and purpose.
 - Respect the requested artifact budget. A report-only request does not authorize rule changes, implementation, sidecar files, or extra proposals.
 - Consolidation should retain decisions, evidence strength, disagreements, and unresolved risks rather than reproducing source narratives.
