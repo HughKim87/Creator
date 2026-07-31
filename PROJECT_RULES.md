@@ -43,7 +43,7 @@ Detailed completed history is available through Git. Do not load old commits by 
 ## Outcome and authority
 
 - The project exists to reduce manual production work and let agents act autonomously inside approved goals and safety boundaries.
-- [Project direction](PROJECT_DIRECTION.md) records the stable user outcome and tradeoff priorities. Read it before defining or revising project-wide goals, roadmaps, major architecture, or broad improvement priorities; it is reference evidence, not policy or action approval.
+- Base every user-facing response on verified facts and available data. Distinguish direct measurements, source-backed facts, inferences, assumptions, and unverified claims; never present unchecked memory, a prior report, or an inference as current fact. If evidence is insufficient, say so and verify before making a consequential assertion.
 - Within project-local instructions, authority is: latest user instruction > this policy > the exact active task owner. The task owner is the current user request unless an approved plan is explicitly named.
 - `SESSION_HANDOFF.md` reports current state; it is not a policy or authority source.
 - Agents own in-scope research, safe defaults, reversible implementation, proportionate validation, and failure recovery.

@@ -9,7 +9,6 @@
 | 현재 작업·blocker·첫 다음 행동 | [SESSION_HANDOFF.md](SESSION_HANDOFF.md) |
 | 작업 등급과 조건부 규칙 | [AGENTS.md](AGENTS.md) |
 | 상시 안전·권한 정책 | [PROJECT_RULES.md](PROJECT_RULES.md) |
-| 장기 사용자 결과와 프로젝트 선택 기준 | [PROJECT_DIRECTION.md](PROJECT_DIRECTION.md) |
 | 변경 불가 기본 골조 | [core](core/) |
 | 앞으로 확장할 작업 영역 | [extension](extension/) |
 | 현재 기반 계약 | [core/docs](core/docs/) |

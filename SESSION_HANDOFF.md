@@ -23,7 +23,7 @@
 
 - Core 141, Extension 139, bootstrap·Node·maintenance·clean-clone 3종 통과
 - runtime actual probe 통과
-- inputs 제외 tracked 183, untracked 0, ignored 71, filesystem 254
+- inputs 제외 tracked 182, untracked 0, ignored 71, filesystem 253
 - ignored 71 = runtime 67 + current output 4
 - tracked input·output·cache 0, Git status clean
 
@@ -31,7 +31,6 @@
 
 | 경로 | 역할 |
 |---|---|
-| `PROJECT_DIRECTION.md` | 장기 사용자 결과·방향 |
 | `PROJECT_RULES.md` | startup·권한·보호·Core·검증 정책 |
 | `SESSION_HANDOFF.md` | 현재 idle 상태와 로컬 보존 allowlist |
 | `extension/config/local-runtime-v1.json` | ignored runtime manifest |
