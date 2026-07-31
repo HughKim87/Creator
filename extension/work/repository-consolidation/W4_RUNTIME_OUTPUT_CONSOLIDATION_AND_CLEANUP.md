@@ -8,8 +8,8 @@
 - 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
 - 상태 owner: `SESSION_HANDOFF.md`
 - optional evidence owner: `extension/work/repository-consolidation/W3_DISPOSITION_MANIFEST.md` — startup-required 아님, W3 수치의 역사 근거이며 현재 runtime·input 판정 권위가 아님
-- 권위: 최신 사용자 지시와 `PROJECT_RULES.md`; 사용자는 삭제 후보를 ignore 조정으로 Git에 먼저 보존한 뒤 삭제하라고 명시했다. 이는 outputs 197개의 일회성 snapshot 승인이고 Core 변경·Git prune 승인은 아니다.
-- 첫 다음 행동: ignore 예외로 output 197개와 cache/local 75개를 노출해 삭제 전 recovery commit을 만든다.
+- 권위: 최신 사용자 지시와 `PROJECT_RULES.md`; 사용자는 `e705f71` 보존, 아래 exact Core 보강, 300개·6디렉터리 처분, Git object 위생과 단계 commit을 현재 대화에서 승인했다. push·publish는 제외한다.
+- 첫 다음 행동: `e705f71` 복구성을 기준으로 승인된 Core 보강과 300개 처분 집합을 다시 대조한다.
 
 ## Entry gate
 
@@ -17,11 +17,11 @@
 - 현재 분석 범위는 `extension/outputs/**`, `extension/.runtime/**`, 처분 후보 tracked·cache·local state, `.git` 위생이다.
 - `extension/inputs/**` 전체는 수치·순위·보존 적합성·처분 분석에서 제외하고 보호 원본으로 그대로 둔다.
 - runtime은 67개·816,338,813 bytes, outputs는 201개·604,959,116 bytes다.
-- 삭제·Core·Git prune는 exact 승인을 받기 전 0이어야 한다.
+- pre-delete snapshot `e705f71`은 실제 파일 272개를 추가했고, 기존 tracked 28개와 합쳐 300개·488,962,975 bytes를 복구한다.
 
 ## 불변 경계
 
-- 보호 input·output을 stage·commit하거나 exact 이름·원문을 tracked evidence에 복제하지 않는다.
+- `e705f71`은 사용자가 명시한 삭제 전 일회성 복구 commit으로 기록한다. 이후 보호 input·output의 추가 stage·commit은 0이어야 하며 push하지 않는다.
 - runtime binary·model은 ignored 상태를 유지하고 Git에 넣지 않는다.
 - 현재 `video-to-srt`의 faster-whisper primary 계약을 whisper.cpp로 암묵 교체하지 않는다.
 - media content 재생·전사·이미지 분석은 metadata·sidecar로 판정할 수 없고 사용자가 exact 항목·목적을 승인한 경우에만 한다.
@@ -111,19 +111,19 @@ media 113개는 sidecar·hash·버전명으로 먼저 판정하고, content 검�
 
 처분 기준은 tracked history 28개·319,521 bytes, cache/local 75개·906,581 bytes, output candidate 197개·487,736,873 bytes다. 합계 300개·488,962,975 bytes이며 runtime 67개·inputs·output keep 4개는 제외한다.
 
-먼저 ignored 후보 272개를 exact 예외로 노출해 tracked 후보 28개와 함께 recovery commit에 고정한다. 그 commit을 검증한 뒤 `core/tests/test_rule_routing.py` exact 승인을 받아 current fixture로 전환하고 300개를 삭제하며 ignore 예외를 원복한다. 빈 디렉터리 6개는 child-before-parent로 제거한다.
+`e705f71`의 272개 raw blob·worktree hash는 272/272 일치했고 삭제 집합 300개는 누락 0으로 현재 존재한다. Core는 `test_rule_routing.py`의 역사 fixture 전환, `maintenance.py`의 tracked protected 검사, `test_maintenance.py` 회귀와 cache 25개·빈 `core/docs/domain/` 처분만 허용한다. 300개와 빈 디렉터리 6개를 child-before-parent로 제거하고 ignore·attributes 임시 설정을 원복한다.
 
 ### W4-S4 gate
 
-- pre-delete commit tree가 300개 삭제 대상의 path·count·bytes를 복구하고 keep·runtime·inputs 포함이 0; 이 checkpoint의 maintenance `protected_change` 197만 expected이며 삭제 commit에서 0
-- exact Core 승인과 snapshot 뒤 삭제 승인이 충족되고 실행 집합의 path·count·bytes·digest가 100% 일치
+- pre-delete commit tree가 300개 삭제 대상을 복구하고 keep·runtime·inputs 포함이 0; raw blob mismatch 0
+- 승인된 Core·삭제 범위와 실행 집합의 path·count·bytes·digest 100% 일치
 - 삭제 후 tracked·ignored·filesystem 예상치와 실제치 일치
 - 보호 keep 4, runtime 67, inputs 전체의 mutation·stage 0
-- ignore 예외 원복, Core·Extension·maintenance·route·clean-clone 통과 후 별도 처분 commit
+- ignore·attributes 예외 원복, tracked output·cache·local-state 0, Core·Extension·maintenance·route·clean-clone 통과 후 별도 처분 commit
 
 ## W4-S5 — Git object 위생
 
-artifact 분석과 분리해 `.git` 6.428 GiB를 감사한다. 현재 확인된 3.284 GiB unreachable pack과 2.895 GiB temporary garbage는 백업으로 간주하지 않는다. `main`, 모든 branch·tag, stash 2개, reflog와 HEAD의 reachable objects를 보존하고 exact Git maintenance 승인 뒤 Git-native prune/repack을 수행한다.
+artifact 분석과 분리해 `.git` 7,359,669,349 bytes를 감사한다. garbage 2.89 GiB와 pack 3.32 GiB를 대상으로 하되 `main`, 모든 branch·tag, stash 2개, reflog, `e705f71`과 reachable objects를 보존하고 Git-native prune/repack을 수행한다. snapshot은 main에 reachable하므로 push하지 않고 해당 blob은 회수량에서 제외한다.
 
 ### W4-S5 gate
 

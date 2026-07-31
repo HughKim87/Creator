@@ -31,7 +31,7 @@
 
 - `.git/**`는 artifact 지식 선별 대상이 아니지만 W4-S5에서 refs·stash·recovery를 보존하는 별도 object 위생 대상으로 감사한다.
 - secret·credential 내용은 읽거나 inventory에 복제하지 않고 `sensitive-unread`로 분류한다.
-- 보호 `inputs/**`는 분석·처분 범위에서 제외한다. `outputs/**`만 단계별 최소 metadata와 승인된 exact 후보를 분석하되 stage·commit하지 않는다.
+- 보호 `inputs/**`는 분석·처분 범위에서 제외한다. `outputs/**`는 승인된 exact 범위만 분석한다. 사용자가 명시한 삭제 전 1회성 Git 보존은 `e705f71`에서 완료됐고, 이후 보호 output의 추가 stage·commit은 금지한다.
 - Core mutation은 exact 경로·이유·extension 대안을 제시해 현재 대화에서 별도 승인받기 전까지 금지한다.
 - 삭제·이동·원본 덮어쓰기는 W4 exact 처분 목록 승인 전까지 실행하지 않는다.
 
@@ -55,7 +55,7 @@
 | current-state 1 | `SESSION_HANDOFF.md`; 상태·blocker·첫 행동 | 현재 사실만 유지 |
 | final report 1 | 기존 M0~M4 보고 경로를 W5에서 전역 보고로 갱신 | 중간 단계에서 별도 보고서 신설 금지 |
 
-현재 handoff mode는 ignored runtime·보호 output 때문에 `same-workspace`다. 각 phase exit gate 뒤 task-owned maintained files만 commit하며, push와 보호 경로 stage는 하지 않는다.
+현재 handoff mode는 ignored runtime·보호 output 때문에 `same-workspace`다. 각 phase gate 뒤 task-owned 변경만 commit하고 push하지 않으며, `e705f71` 이후 보호 경로는 stage하지 않는다.
 
 ## 단계 지도
 
@@ -87,4 +87,4 @@
 
 ## 다음 실행
 
-[W4 runtime 보존·output 지식 통합·승인 정리](repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md)에서 runtime owner를 먼저 만들고 outputs 201개를 교차검증한 뒤, 300개 파일·빈 디렉터리 6개와 Git garbage의 승인을 분리해 실행한다.
+[W4 runtime 보존·output 지식 통합·승인 정리](repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md)에서 완료된 runtime·output 판정·`e705f71` 복구점을 기준으로 300개 파일·6개 빈 디렉터리 정리와 Git object 위생을 분리 실행한다.
