@@ -2,13 +2,13 @@
 
 - 갱신일: 2026-07-31
 - 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
-- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W1
-- 상태: W1-S1~S4와 전체 gate가 passed했고, task-owned 5경로의 단계 checkpoint commit을 준비한다.
+- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W2
+- 상태: W2-S1~S4와 전체 single gate가 passed했고, task-owned 7경로의 단계 checkpoint commit을 준비한다.
 - 활성 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
-- 활성 단계 설계: `extension/work/repository-consolidation/W1_REUSABLE_KNOWLEDGE_EXTRACTION_AND_OWNER_MAPPING.md`
+- 활성 단계 설계: `extension/work/repository-consolidation/W2_SELECTIVE_ABSORPTION_AND_FOUNDATION_STRENGTHENING.md`
 - 프로젝트 방향: `PROJECT_DIRECTION.md`
-- 읽기 순서: `PROJECT_RULES.md` → 이 문서 → 활성 전체 설계 → W1 phase-design → W1 다음 행동에 matching된 규칙
-- handoff mode: `same-workspace`; W1 closeout이 uncommitted이므로 fresh clone은 W0 checkpoint까지만 재개 가능하다.
+- 읽기 순서: `PROJECT_RULES.md` → 이 문서 → 활성 전체 설계 → W2 phase-design → W2 다음 행동에 matching된 규칙
+- handoff mode: `same-workspace`; W2 phase activation이 uncommitted이므로 fresh clone은 W1 checkpoint까지만 재개 가능하다.
 
 ## 현재 사용자 의도
 
@@ -29,6 +29,9 @@
 - W0 gate는 Core 139·Extension 132, maintenance 93문서·122링크(errors/drift/duplicates 0), overall 90줄·5,017자, W0 140줄·6,358자, strict UTF-8·NUL·후행 공백·diff check·보호 staged 0으로 통과했다.
 - W1은 과거 문서 21/21, 선행 evidence 7/7, 보호 opaque output 10/10을 대조해 K01~K04만 W2로 넘겼다. 신규 owner·Core 후보는 0이고 exact W2 owner는 `README.md`, `extension/README.md`, 영상 R01이다.
 - W1 gate는 Core 139·Extension 132, Node v20.11.1, maintenance 95문서·122링크, ASCII·한글+공백·공백 경로 clean clone 3/3으로 통과했다.
+- W1 commit `f02c304`는 task-owned 5경로만 포함했고 Core·보호 path count가 0이며 commit 뒤 status는 clean이었다.
+- W2는 K01~K04를 기존 owner 3개에 순증가 20줄로 흡수했다. 신규 file·rule·replay·schema·code·dependency와 Core diff는 0이다.
+- W2 gate는 focused 56 tests, Core 139·Extension 132, Node ready, maintenance 96문서·130링크, clean clone 3/3으로 통과했다.
 
 ## 권한·보호 경계
 
@@ -49,6 +52,7 @@
 | `extension/work/repository-consolidation/W0_FILE_CLASSIFICATION.md` | optional reference-evidence | 555파일 그룹 분류·보호 aggregate·W1/W3 queue |
 | `extension/work/repository-consolidation/W1_REUSABLE_KNOWLEDGE_EXTRACTION_AND_OWNER_MAPPING.md` | passed phase-design | report·plan·보호 text/structure의 재사용 지식·owner mapping |
 | `extension/work/repository-consolidation/W1_REUSABLE_KNOWLEDGE_MAP.md` | optional reference-evidence | 21+7 source와 보호 output 10그룹의 owner·판정·W2 exact 입력 |
+| `extension/work/repository-consolidation/W2_SELECTIVE_ABSORPTION_AND_FOUNDATION_STRENGTHENING.md` | passed phase-design | K01~K04를 기존 owner 3개에 최소 병합 |
 | `extension/work/rule-preservation/M4_EXACT_DISPOSITION_AND_FINAL_REPORT.md` | invalidated phase-design | 이전 22파일 후보의 historical evidence; 실행 금지 |
 | `extension/reports/2026-07-31_규칙_무손실_통합_M0_작업_보고.md` | historical partial evidence | 규칙·문서 슬라이스 검증; 프로젝트 전역 최종보고 아님 |
 | `extension/work/rule-preservation/M0_RULE_CONSERVATION_MAP.md` | optional prior evidence | 규칙 의미 78개 계보·owner |
@@ -68,10 +72,10 @@
 
 ## 첫 다음 행동
 
-1. W1 task-owned 5경로만 stage하고 보호·Core·unrelated staged count 0을 확인한다.
-2. W1 단계 commit을 만든 뒤 commit path와 Git 상태를 검증한다.
-3. W2 phase-design을 활성화하고 K01~K04의 기존 owner 3개만 최소 보강한다.
+1. W2 task-owned 7경로만 stage하고 보호·Core·unrelated staged count 0을 확인한다.
+2. W2 단계 commit을 만든 뒤 commit path와 Git 상태를 검증한다.
+3. W3 phase-design을 활성화하고 전역 allowlist와 exact disposition manifest를 작성한다.
 
 ## 다음 session 시작 prompt
 
-`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → W1 phase-design → W1 evidence`를 읽고 W1 commit gate부터 실행한다. 보호 원문·exact 이름·secret·Core·삭제·이동·외부 상태는 해당 exact 승인 없이 변경하지 않는다.
+`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → W2 phase-design → W1 evidence`를 읽고 W2 commit gate부터 실행한다. 보호 원문·exact 이름·secret·Core·삭제·이동·외부 상태는 해당 exact 승인 없이 변경하지 않는다.

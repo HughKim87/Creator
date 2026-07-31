@@ -41,11 +41,21 @@
 
 ## 검증
 
+전체 deterministic gate는 다음 한 명령으로 실행한다.
+
+```powershell
+python -B scripts/verify.py
+```
+
+이 명령은 bootstrap·Node·Core·Extension·maintenance와 ASCII·한글·공백 경로 clean clone을 함께 검사한다. 로그인 browser session 같은 외부 capability는 `needs_user`로 분리하며 품질 통과로 대신하지 않는다.
+
+특정 Python 회귀 실패를 좁힐 때만 아래 명령을 직접 실행한다.
+
 ```powershell
 $env:PYTHONDONTWRITEBYTECODE = '1'
 $env:PYTHONPATH = ((Resolve-Path 'core/src').Path, (Resolve-Path 'extension/src').Path, (Resolve-Path 'core/tests').Path -join ';')
-python -m unittest discover -s core/tests -q
-python -m unittest discover -s extension/tests -q
+python -B -m unittest discover -s core/tests -q
+python -B -m unittest discover -s extension/tests -q
 ```
 
 완료 이력과 복구는 Git을 사용하며 프로젝트 내부에 별도 백업 복제본을 만들지 않는다.

@@ -133,4 +133,4 @@ W0 opaque group별로 확장자·schema key·heading·validator 상태를 먼저
 - W1-S3: `passed` — 보호 output 10/10 구조 검토, exact persistent 기록 0
 - W1-S4: `passed` — K01~K04를 기존 owner 3개와 W2 exact path로 고정
 - W1 exit: `passed`
-- W2 transition: `ready-after-commit` — Core 변경 없이 root·Extension owner 3개만 보강
+- W2 transition: `passed` — W1 checkpoint `f02c304`, clean status 확인 뒤 W2 활성화

@@ -21,7 +21,7 @@
 | `data/` | 실행 시 생성되는 disposable record·event |
 | `inputs/` | 영상별 보호 원본; Git 제외 |
 | `outputs/` | 영상·SRT·썸네일·업로드 패키지 같은 보호 파생물; Git 제외 |
-| `.runtime/` | 프로젝트 로컬 도구·모델·의존성; Git 제외 |
+| `.runtime/` | active owner와 설치·재구축 경로가 있는 로컬 도구·모델·의존성 cache; Git 제외 |
 | `../.agents/skills/` | 저장소 전체에서 자동 발견되는 Codex skill source |
 
 새 작업은 이 영역에 추가한다. extension 작업을 이유로 core 구현·계약·규칙을 자동 변경하지 않는다.
@@ -38,6 +38,16 @@
 영상 편집 SRT 검증·명시 정리, legacy cut CSV 이관, timeline 다중 진단, `sequence-v5`·`premiere-cs6-v4` XML 생성은 `python -m video_editing`이 소유한다. 보호 데이터가 없는 기본 입력은 `examples/video-edit-timeline-v1.json`이며, 실제 `inputs/`·`outputs/` 경로는 exact 항목과 목적을 승인받은 작업에서만 사용한다.
 
 과거 영상 spine·분석 문서에서 영상 편집 지식을 환류할 때도 촬영 후 영상 편집 workflow 계약을 domain owner로 사용한다. 범용 파일 추출·정리 절차는 `PROJECT_RULES.md`가 별도로 선택하며 extension이 다시 소유하거나 foundation rule을 직접 라우팅하지 않는다.
+
+## 기반 adapter와 증거 경계
+
+| 책임 | 구현·검증 owner | 경계 |
+|---|---|---|
+| `VIDEO_JOB` next-step·resume·boundary | [workflow engine](src/video_workflow/engine.py), [engine 회귀](tests/test_video_workflow_engine.py) | deterministic 상태 엔진이며 실제 browser·NotebookLM 실행과 사용자 승인은 [영상 제작 조정 skill](../.agents/skills/coordinate-video-production/SKILL.md)이 소유 |
+| workflow 학습·복잡성 후보 | [aggregate learning](src/learning/metrics.py), [learning 회귀](tests/test_learning_metrics.py) | 보호 원문·개별 보고를 보존하지 않는 aggregate-only 계산; 실제 production 표본 전 효과를 주장하거나 rule을 자동 변경하지 않음 |
+| Core export consumer·game pilot | [domain conformance](src/domain_conformance.py), [통합 실행점](../scripts/export_conformance.py), [conformance 회귀](tests/test_export_conformance.py) | 같은 Core manifest의 empty·YouTube·최소 game consumer 구조 검증이며 실제 게임 제작·독립 배포 증거가 아님 |
+
+synthetic fixture 통과는 production 작업 완료, 실제 앱 검증, 사용자 승인으로 승격하지 않는다. `.runtime/` 항목은 현재 skill·code에서 참조되고 설치 또는 재구축 방법을 설명할 수 있을 때만 active capability로 유지한다. 과거 보고서의 tool 사용 사실이나 output 존재만으로 참조 없는 binary를 현재 runtime evidence로 보존하지 않는다.
 
 ## 조건부 영상 편집 규칙
 
