@@ -2,8 +2,8 @@
 
 - 갱신일: 2026-07-31
 - 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
-- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W4-S2 승인 경계
-- 상태: W4-S1은 runtime 67개를 검증 가능한 ignored local capability로 전환해 passed다. 다음은 structure/text outputs 84개 보호 열람의 exact 승인이다.
+- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W4-S4 승인 경계
+- 상태: W4-S1~S3가 passed다. 다음은 exact Core fixture 변경과 300파일·빈 디렉터리 6개 처분 승인을 분리해 받는 것이다.
 - 활성 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
 - 활성 단계 설계: `extension/work/repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md`
 - 프로젝트 방향: `PROJECT_DIRECTION.md`
@@ -46,6 +46,11 @@
 - W4-S1은 manifest·schema·verifier·14개 focused regression으로 runtime 67/67개·816,338,813 bytes를 관리화했다. FFmpeg tree digest `a31ffe4d…e09a`, whisper.cpp `6dadd287…d8de`와 critical hash가 일치한다.
 - W4-S1 actual probe는 FFmpeg·FFprobe version, synthetic audio 생성/probe, whisper CLI help·model-load 5/5가 성공했다. clean clone 전체 부재는 optional `absent`이며 faster-whisper primary 계약은 유지된다.
 - W4-S1 점수는 구성 5, 실행 5, 역할/clone 5, 출처/복구 4로 전체 4.8/5다. 공식 source·license·model hash는 확인했고 외부 reinstall 실행만 잔여 위험이다.
+- 사용자는 현재 대화에서 structure/text outputs 84개·11,793,473 bytes의 owner·lineage·재사용 지식 추출 목적 읽기를 승인했다. 해당 읽기 범위는 W4-S2로 소진됐고 mutation 승인은 아니다.
+- W4-S2는 outputs 201/201을 `current-deliverable 4 / absorbed 14 / regenerable 183 / unique-evidence 0 / unresolved 0`으로 판정했다. candidate 197개·487,736,873 bytes의 W3 path+size digest가 재현됐다.
+- structure/text 84/84는 UTF-8이며 JSON 22, XML 17, SRT 15가 모두 parse됐다. media 113은 content/hash 신규 접근 없이 metadata·sidecar로 113/113 lineage를 확인했다.
+- W1 총계 JSON 23·XML 18·SRT 16, XML clip 7,452를 keep 항목과 합쳐 재현했다. MD line 14 차이는 파일당 trailing newline을 line으로 세는지의 계수 방식 차이로 확인됐다.
+- W4-S3는 MD 14/14를 기존 영상 계약·R04~R15·candidate owner에 mapping했고 새 owner·rule·schema·test delta 0으로 passed다. W4-S2·S3 점수는 각각 5/5다.
 
 ## 권한·보호 경계
 
@@ -53,7 +58,7 @@
 - W0는 보호 path를 포함한 최소 metadata inventory만 수행한다. 보호 content·exact filename을 reusable evidence나 Git에 복제하지 않고 보호 path를 stage·commit하지 않는다.
 - secret·credential·cookie·token·browser profile 내용은 읽지 않고 `sensitive-unread`로 분류한다.
 - Core mutation은 exact 경로·이유·extension 대안을 제시한 뒤 현재 대화의 별도 승인이 필요하다.
-- 보호 output 내용 열람, 삭제·이동·rename·overwrite, Git object prune는 W4의 분리된 exact 승인 전까지 금지한다.
+- W4-S2의 structure/text 84개 읽기 승인은 완료·소진됐다. 보호 output 삭제·이동·rename·overwrite와 추가 content 접근, Git object prune는 각각 새 exact 승인 전까지 금지한다.
 - 단계 exit commit은 사용자가 요청한 단계 규칙을 따르되 task-owned maintained path만 포함하고 push하지 않는다.
 
 ## 중요 artifact
@@ -69,7 +74,7 @@
 | `extension/work/repository-consolidation/W2_SELECTIVE_ABSORPTION_AND_FOUNDATION_STRENGTHENING.md` | passed phase-design | K01~K04를 기존 owner 3개에 최소 병합 |
 | `extension/work/repository-consolidation/W3_DEPENDENCY_RELEASE_AND_EXACT_DISPOSITION_MANIFEST.md` | passed phase-design | 유지 allowlist·reference·rebuild/recovery·W4 exact 처분 후보 |
 | `extension/work/repository-consolidation/W3_DISPOSITION_MANIFEST.md` | partially superseded evidence | runtime 삭제·input 분석 제외 전 수치의 역사 근거 |
-| `extension/work/repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md` | ready phase-design | runtime owner·outputs 선별·승인 처분·Git 위생 실행 계약 |
+| `extension/work/repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md` | in_progress phase-design | runtime owner·outputs 선별·승인 처분·Git 위생 실행 계약 |
 | `extension/work/rule-preservation/M4_EXACT_DISPOSITION_AND_FINAL_REPORT.md` | invalidated phase-design | 이전 22파일 후보의 historical evidence; 실행 금지 |
 | `extension/reports/2026-07-31_규칙_무손실_통합_M0_작업_보고.md` | historical partial evidence | 규칙·문서 슬라이스 검증; 프로젝트 전역 최종보고 아님 |
 | `extension/work/rule-preservation/M0_RULE_CONSERVATION_MAP.md` | optional prior evidence | 규칙 의미 78개 계보·owner |
@@ -77,7 +82,7 @@
 ## blocker·위험
 
 - `core/tests/test_rule_routing.py`가 처분 후보 역사 보고서를 직접 읽는다. W4에서 현재 canonical owner로 fixture를 전환하려면 exact Core 승인이 필요하다.
-- structure/text output 84개의 보호 열람 승인과 300개 처분 승인, Core 승인, Git object maintenance 승인은 서로 대체하지 않는다.
+- structure/text output 84개 읽기는 완료됐으며 300개 처분 승인, Core 승인, Git object maintenance 승인은 서로 대체하지 않는다.
 - `.git` 정리 전 branch·tag·stash 2개·reflog와 모든 reachable commit의 recovery를 검증해야 한다.
 
 ## 실패 ledger
@@ -94,10 +99,10 @@
 
 ## 첫 다음 행동
 
-1. structure/text outputs 84개(XML 17·JSON 22·TXT 16·MD 14·SRT 15, 11,793,473 bytes)의 owner·lineage·재사용 지식 추출 목적 보호 열람을 exact 승인받는다.
-2. 승인 뒤 원문·exact 이름을 tracked evidence에 남기지 않고 84/84 owner mapping과 media 113/113 metadata lineage를 확정한다.
-3. W4-S3 canonical absorption 전 Core 후보와 삭제 후보를 다시 분리해 각각 별도 승인 경계로 보고한다.
+1. `core/tests/test_rule_routing.py` 한 파일을 역사 보고서 fixture 대신 현재 `core/rules/staged-work-design.md`를 읽게 바꾸는 exact Core 승인을 받는다.
+2. W3 tracked 28개, cache/local 75개, output candidate 197개와 빈 디렉터리 6개의 exact 처분 승인을 별도로 받는다.
+3. 승인 집합을 재측정해 digest·containment·reparse·keep/runtime/input overlap gate 뒤 W4-S4를 실행한다.
 
 ## 다음 session 시작 prompt
 
-`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → W4 phase-design`을 읽고 W4-S2 보호 output 승인 경계부터 재개한다. inputs는 분석하지 않고 runtime은 stage·삭제하지 않으며, output 열람·Core·삭제·Git prune는 각각 exact 승인 뒤 수행한다.
+`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → W4 phase-design`을 읽고 W4-S4 Core·처분 승인 경계부터 재개한다. inputs는 분석하지 않고 runtime은 stage·삭제하지 않으며, 추가 output 접근·Core·삭제·Git prune는 각각 exact 승인 뒤 수행한다.

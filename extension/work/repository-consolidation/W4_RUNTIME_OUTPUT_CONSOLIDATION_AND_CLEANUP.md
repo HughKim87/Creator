@@ -8,8 +8,8 @@
 - 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
 - 상태 owner: `SESSION_HANDOFF.md`
 - optional evidence owner: `extension/work/repository-consolidation/W3_DISPOSITION_MANIFEST.md` — startup-required 아님, W3 수치의 역사 근거이며 현재 runtime·input 판정 권위가 아님
-- 권위: 최신 사용자 지시와 `PROJECT_RULES.md`; 이 문서는 설계만 승인하며 보호자료 열람·Core 변경·삭제·Git object prune를 승인하지 않는다.
-- 첫 다음 행동: W4-S2 structure/text output 84개의 보호 열람 범위와 목적을 exact 승인받는다.
+- 권위: 최신 사용자 지시와 `PROJECT_RULES.md`; 사용자는 현재 대화에서 W4-S2 structure/text 84개 읽기만 승인했으며 Core 변경·삭제·Git object prune는 승인하지 않았다.
+- 첫 다음 행동: W4-S4의 exact Core fixture 변경과 처분 집합 승인을 분리해 요청한다.
 
 ## Entry gate
 
@@ -57,22 +57,10 @@
 - runtime staged 0, clean clone에서는 `absent/optional`로 정상 판정
 - W4-S1 전용 commit 후 status clean
 
-### W4-S1 실제 결과 — passed
+### W4-S1 실제 결과 — passed, 4.8/5
 
-- tracked manifest·schema·read-only verifier·14개 focused regression을 만들고 runtime binary·model은 ignored 상태로 유지했다.
-- 독립 Python·Node 계산이 일치하는 ordinal POSIX tree 계약으로 67/67개·816,338,813 bytes를 검증했다. FFmpeg 45개 digest는 `a31ffe4d…e09a`, whisper.cpp 22개 digest는 `6dadd287…d8de`다.
-- FFmpeg·FFprobe version, synthetic audio 생성/probe, whisper CLI help, `ggml-small.bin` model-load가 모두 성공했다.
-- 한글 workspace 절대 model 경로에서 발생한 whisper.cpp 비정상 종료를 CLI cwd 기준 상대 model 경로로 교정했고 clean-clone 전체 부재는 optional `absent`로 검증했다.
-- 공식 release/source·license·model SHA-1을 대조했다. 외부 재다운로드 자체는 수행하지 않아 reinstall 문구의 실다운로드 재현성만 잔여 위험이다.
-- 입력·output·Core content 접근/변경과 runtime stage는 0이다.
-
-| W4-S1 교차검증 | 점수 | 이유 |
-|---|---:|---|
-| 구성·무결성 | 5/5 | count·bytes·tree·critical hash를 실제 tree와 독립 계산으로 일치시켰다. |
-| 실행 준비성 | 5/5 | 두 component의 5개 실제 probe가 모두 성공했다. |
-| 역할·clone 경계 | 5/5 | shared/optional/primary를 분리하고 absent 회귀를 통과했다. |
-| 출처·복구 | 4/5 | 공식 source·license·model hash는 확인했지만 재다운로드는 실행하지 않았다. |
-| W4-S1 전체 | 4.8/5 | 관리·실행·clone gate는 완결됐고 감점은 외부 reinstall 미실행뿐이다. |
+- commit `0ec2960`; runtime 67/67·816,338,813 bytes와 5개 actual probe, 14개 focused test가 통과했고 ignored/stage 경계를 유지했다.
+- 구성·실행·역할/clone은 각 5/5, 출처·복구는 외부 reinstall 미실행으로 4/5다.
 
 ## W4-S2 — outputs 201개의 lineage와 재사용 가치 확정
 
@@ -94,6 +82,13 @@ media 113개는 sidecar·hash·버전명으로 먼저 판정하고, content 검�
 - protected 원문·exact 이름의 tracked evidence·stage 0
 - unresolved는 exact 이유·다음 확인·삭제 제외 조건을 가짐
 
+### W4-S2 실제 결과 — passed, 5/5
+
+- 승인 structure/text 84/84·11,793,473 bytes는 UTF-8이며 JSON 22/22, XML 17/17, SRT 15/15가 parse됐다. MD 14는 기존 owner에 흡수된 지식, 나머지 70은 재생성 파생물이다.
+- media 113/113·475,943,400 bytes는 내용·신규 hash 없이 metadata와 sidecar로 계보를 확인했다. 103개는 직접 참조, 10개는 같은 evidence group의 sibling이다.
+- 전체 201개 판정은 `current-deliverable 4 / absorbed 14 / regenerable 183 / unique-evidence 0 / unresolved 0`이며 candidate 197의 W3 path+size digest가 일치한다.
+- W1과 JSON 23·XML 18·SRT 16 총계와 XML clip 7,452를 재현했다. MD line 차이 14는 trailing newline 계수 방식 차이다.
+
 ## W4-S3 — 재사용 지식 흡수와 보존 방식 결정
 
 재사용 단위는 영상별 수치·문구가 아니라 반복 가능한 조건·행동·예외·검증·실패 예방으로만 추출한다. owner 우선순위는 `VIDEO_EDITING_WORKFLOW_CONTRACT.md` → `video-editing-artifact-lineage.md` → 기존 schema/test → 필요한 경우에만 최소 새 owner다.
@@ -106,6 +101,11 @@ raw 보호 output은 현재 규칙상 `git add -f` 보존 대상이 아니다. �
 - 새 file·rule·schema·test 증가는 기존 owner로 표현할 수 없는 책임만 허용
 - runtime·startup이 과거 output이나 보고서를 active authority로 참조하지 않음
 - 흡수 commit에는 보호·runtime·Core 경로 0, 전체 gate 통과
+
+### W4-S3 실제 결과 — passed, 5/5
+
+- MD 14개는 분석·spine 5→계약/R05~R09, evidence·anchor 4→R04, 검증 4→R10~R15, 통합 revision 1→기존 규칙·candidate로 14/14 mapping됐다.
+- 새 재사용 trigger·owner gap이 없어 canonical owner·rule·schema·test delta는 0이고 보호 원문 복제도 0이다.
 
 ## W4-S4 — exact 승인 처분과 reference release
 
