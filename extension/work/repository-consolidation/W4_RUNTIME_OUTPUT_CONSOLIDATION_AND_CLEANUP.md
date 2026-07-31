@@ -120,6 +120,9 @@ media 113개는 sidecar·hash·버전명으로 먼저 판정하고, content 검�
 - 삭제 후 tracked·ignored·filesystem 예상치와 실제치 일치
 - 보호 keep 4, runtime 67, inputs 전체의 mutation·stage 0
 - ignore·attributes 예외 원복, tracked output·cache·local-state 0, Core·Extension·maintenance·route·clean-clone 통과 후 별도 처분 commit
+### W4-S4 실제 결과 — passed, 5/5
+- 승인 집합 그대로 300개·488,962,975 bytes와 빈 디렉터리 26개를 제거했고 staged tree는 삭제 300·변경 7·추가 0, untracked 0이다. keep output 4·117,222,243 bytes와 runtime 67·816,338,813 bytes는 ignored·실재·stage 0이다.
+- Core 140·Extension 138·maintenance 71문서/85링크·clean-clone 3종·runtime actual probe·`git diff --check`가 통과했고 tracked input·output·cache는 0이다.
 
 ## W4-S5 — Git object 위생
 

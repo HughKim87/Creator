@@ -478,6 +478,52 @@ class MaintenanceServiceTests(unittest.TestCase):
             approved = maintenance.verify(allow_core_changes=True)
             self.assertTrue(approved["ok"], approved["errors"])
 
+    def test_verify_rejects_protected_path_already_committed(self) -> None:
+        with self._root() as raw_root:
+            maintenance, _, _ = self._fixture(raw_root)
+            root = Path(raw_root)
+            protected = root / "extension" / "outputs" / "artifact.txt"
+            protected.parent.mkdir(parents=True)
+            protected.write_text("protected\n", encoding="utf-8")
+            subprocess.run(
+                ["git", "add", "extension/outputs/artifact.txt"],
+                cwd=root,
+                check=True,
+                capture_output=True,
+            )
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=fixture",
+                    "-c",
+                    "user.email=fixture@example.invalid",
+                    "commit",
+                    "-qm",
+                    "protected fixture",
+                ],
+                cwd=root,
+                check=True,
+                capture_output=True,
+            )
+
+            failed = maintenance.verify()
+
+            self.assertFalse(failed["ok"])
+            self.assertIn(
+                "protected_tracked:extension/outputs/artifact.txt",
+                failed["errors"],
+            )
+
+            subprocess.run(
+                ["git", "rm", "-q", "extension/outputs/artifact.txt"],
+                cwd=root,
+                check=True,
+                capture_output=True,
+            )
+            cleaned = maintenance.verify()
+            self.assertTrue(cleaned["ok"], cleaned["errors"])
+
     def test_context_evaluation_reruns_with_current_baseline(self) -> None:
         with self._root() as raw_root:
             maintenance, _, claim = self._fixture(raw_root)

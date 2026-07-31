@@ -18,31 +18,3 @@ __pycache__/
 
 # Generated extension work data
 extension/data/
-
-# W4 one-time pre-delete recovery snapshot; remove in the deletion commit.
-!extension/outputs/
-!extension/outputs/**
-extension/outputs/2026-06-30 00-23-03.cleaned.srt
-extension/outputs/2026-06-30 00-23-03.full-edit-v18.xml
-extension/outputs/2026-06-30 00-23-03.representative-sample-v4.cuts.json
-extension/outputs/2026-06-30 00-23-03.representative-sample-v4.mp4
-!core/src/file_data/__pycache__/
-!core/src/file_data/__pycache__/**
-!core/tests/__pycache__/
-!core/tests/__pycache__/**
-!extension/src/__pycache__/
-!extension/src/__pycache__/**
-!extension/src/learning/__pycache__/
-!extension/src/learning/__pycache__/**
-!extension/src/video_editing/__pycache__/
-!extension/src/video_editing/__pycache__/**
-!extension/src/video_workflow/__pycache__/
-!extension/src/video_workflow/__pycache__/**
-!extension/src/youtube_domain/__pycache__/
-!extension/src/youtube_domain/__pycache__/**
-!extension/tests/__pycache__/
-!extension/tests/__pycache__/**
-!.obsidian/appearance.json
-!.obsidian/core-plugins.json
-!.obsidian/graph.json
-!.obsidian/workspace.json

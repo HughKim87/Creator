@@ -2,8 +2,8 @@
 
 - 갱신일: 2026-07-31
 - 역할: ainotebook 이외 worktree의 현재 상태·blocker·검증·첫 다음 행동 단일 owner
-- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W4-S4 exact disposition
-- 상태: W4-S1~S3 passed, pre-delete recovery commit `e705f71` 검증 완료. 사용자가 권장 Core 보강·300파일·6디렉터리 처분·Git object 위생·W5 마감을 승인했다.
+- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W4-S4 처분 커밋 경계
+- 상태: W4-S1~S4 gate passed. 삭제 300개·변경 7개의 staged tree와 보호 output 4개·runtime 67개를 교차검증했고 전체 단일 gate가 통과했다.
 - 활성 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
 - 활성 단계 설계: `extension/work/repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md`
 - handoff mode: `same-workspace`; `uncommitted` ignored runtime·보호 keep output이 후속 gate 입력이다.
@@ -18,10 +18,10 @@
 
 ## resume checkpoint
 
-- branch `main`, HEAD `e705f71`, `origin/main` 대비 28 commits ahead, status clean.
+- branch `main`, HEAD `9b18748`; 삭제 300개·변경 7개가 staged이고 untracked 0이다.
 - snapshot 신규 272개·488,643,454 bytes는 filesystem·HEAD blob 272/272 byte-identical이다.
 - exact 처분 집합은 300개·488,962,975 bytes: 역사 문서 28, output 197, Python cache 71, Obsidian local state 4. 누락·untracked 0.
-- 현재 inputs 제외 inventory는 tracked 493, untracked 0, ignored 71, filesystem 564이며 Git union·filesystem 차이 0이다.
+- 처분 후 inputs 제외 inventory는 tracked 193, untracked 0, ignored 71, filesystem 264이며 tracked input·output·cache는 0이다.
 - Core cache 처분은 `core/src/file_data/__pycache__/` 13개·273,629 bytes와 `core/tests/__pycache__/` 12개·228,750 bytes다.
 - 빈 디렉터리 6개는 다시 확인했고 parent 1개는 empty child 1개만 가진다.
 
@@ -35,10 +35,10 @@
 
 ## 현재 검증
 
-- 2026-07-31 direct remeasurement: Core 139, Extension 138, maintenance 99문서·131링크, errors·drift·duplicates 0.
+- 2026-07-31 staged-tree 전체 gate: Core 140, Extension 138, maintenance 71문서·85링크, errors·drift·duplicates 0, clean-clone ASCII·한글·공백 3종 통과.
 - local runtime actual probe: FFmpeg 45개·318,594,126 bytes, whisper.cpp 22개·497,744,687 bytes, 모두 `ready`.
 - `.git` 7,359,669,349 bytes; loose 648.20 MiB, pack 3.32 GiB, garbage 2.89 GiB, stash 2.
-- 주의: 현 maintenance는 clean commit에 이미 들어간 protected path를 검사하지 않는다. W4 Core 보강과 final `git ls-files` gate로 닫는다.
+- maintenance의 clean-commit protected-path 사각지대는 Core 회귀 38건과 전체 gate로 닫혔다.
 
 ## 실패 ledger
 
@@ -60,10 +60,10 @@
 
 ## 첫 다음 행동
 
-1. Core 3파일의 exact 보강을 적용한다.
-2. 300파일·6디렉터리를 삭제하고 ignore·attributes 임시 설정을 원복한다.
-3. 전체·clean-clone gate 통과 후 W4-S4 처분 commit을 만든다.
+1. 검증된 staged tree 307개를 W4-S4 처분 commit으로 고정한다.
+2. refs·stash·reflog·reachable digest와 `e705f71`을 전후 대조하며 W4-S5 Git object 위생을 수행한다.
+3. W5 전역 회귀·initiative self-clean·최종 보고서·clean commit으로 마감한다.
 
 ## 다음 session 시작 prompt
 
-`PROJECT_RULES.md → SESSION_HANDOFF.md → overall → W4`를 읽고 W4-S4 Core 보강·exact disposition부터 재개한다. keep output 4·runtime 67·inputs는 유지하고 push하지 않는다.
+`PROJECT_RULES.md → SESSION_HANDOFF.md → overall → W4`를 읽고 staged 307개를 재검증한 뒤 W4-S4 commit부터 재개한다. keep output 4·runtime 67·inputs는 유지하고 push하지 않는다.

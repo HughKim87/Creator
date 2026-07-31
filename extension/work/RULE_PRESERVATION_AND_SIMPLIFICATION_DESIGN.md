@@ -8,7 +8,7 @@
 - 프로젝트 방향: [장기 사용자 결과와 선택 기준](../../PROJECT_DIRECTION.md)
 - 현재 상태 owner: `SESSION_HANDOFF.md`
 - 활성 단계: [W4 runtime 보존·output 지식 통합·승인 정리](repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md)
-- 이전 규칙·문서 슬라이스 evidence: [M0 보존 지도](rule-preservation/M0_RULE_CONSERVATION_MAP.md), [M0~M4 검증 보고](../reports/2026-07-31_규칙_무손실_통합_M0_작업_보고.md) — optional, startup-required 아님
+- 이전 규칙·문서 슬라이스 evidence: [M0~M4 검증 보고](../reports/2026-07-31_규칙_무손실_통합_M0_작업_보고.md) — optional, startup-required 아님; 세부 계보는 Git이 소유
 
 ## 이번 세션에서 확정한 사용자 의도
 

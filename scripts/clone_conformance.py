@@ -36,7 +36,10 @@ def _overlay_worktree(clone: Path) -> None:
     """Apply tracked edits and copy untracked non-protected files into a test clone."""
 
     diff = subprocess.run(
-        ["git", "-c", "core.quotepath=false", "diff", "--binary"],
+        [
+            "git", "-c", "core.quotepath=false", "-c",
+            f"safe.directory={ROOT.as_posix()}", "diff", "--binary", "HEAD",
+        ],
         cwd=ROOT,
         capture_output=True,
         check=True,
@@ -50,7 +53,11 @@ def _overlay_worktree(clone: Path) -> None:
             check=True,
         )
     status = subprocess.run(
-        ["git", "-c", "core.quotepath=false", "status", "--short", "--untracked-files=all", "-z"],
+        [
+            "git", "-c", "core.quotepath=false", "-c",
+            f"safe.directory={ROOT.as_posix()}", "status", "--short",
+            "--untracked-files=all", "-z",
+        ],
         cwd=ROOT,
         capture_output=True,
         check=True,
@@ -66,6 +73,12 @@ def _overlay_worktree(clone: Path) -> None:
         destination = clone / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
+    subprocess.run(
+        ["git", "add", "-A"],
+        cwd=clone,
+        capture_output=True,
+        check=True,
+    )
 
 
 def main() -> int:

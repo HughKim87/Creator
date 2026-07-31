@@ -185,11 +185,8 @@ class G4RegressionTests(unittest.TestCase):
         cls.project_rules = (ROOT / "PROJECT_RULES.md").read_text(encoding="utf-8")
         cls.agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
         cls.claude = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
-        cls.master = (
-            ROOT
-            / "extension"
-            / "reports"
-            / "codex_2026-07-28_문서기반_지시준수와_워크트리상태관리_개선안.md"
+        cls.staged = (
+            ROOT / "core" / "rules" / "staged-work-design.md"
         ).read_text(encoding="utf-8")
 
     def test_g4_s01_main_root_selects_only_session_handoff(self):
@@ -277,10 +274,15 @@ class G4RegressionTests(unittest.TestCase):
             _validate_unique_owner_scopes(session, duplicate)
 
     def test_g4_s09_controlled_plan_invalidates_on_user_correction(self):
-        self.assertIn("사용자가 의도 오해를 지적하면 즉시 중단한다.", self.master)
         self.assertIn(
-            "기존 계획을 무효화하고 master를 갱신하기 전에는 다음 mutation을 실행하지 않는다.",
-            self.master,
+            "A user correction that changes the desired outcome, scope, or gate "
+            "invalidates the active phase design.",
+            self.staged,
+        )
+        self.assertIn(
+            "Stop queued mutation, mark the phase `invalidated`, revise the design, "
+            "and obtain any newly required approval.",
+            self.staged,
         )
 
     def test_g4_s10_destructive_git_requires_target_recovery_and_approval(self):
@@ -303,21 +305,6 @@ class G4RegressionTests(unittest.TestCase):
         )
 
     def test_g4_s12_incomplete_stage_has_selected_state_checkpoint(self):
-        in_progress_rows = [
-            line
-            for line in self.master.splitlines()
-            if line.startswith("|") and "| 진행 중 |" in line
-        ]
-        if in_progress_rows:
-            self.assertEqual(1, len(in_progress_rows))
-        else:
-            completed_rows = [
-                line
-                for line in self.master.splitlines()
-                if re.match(r"^\| [0-5] \| G[0-5](?:\s|\|)", line)
-                and "| 완료 |" in line
-            ]
-            self.assertEqual(6, len(completed_rows))
         selected = _select_state_document(ROOT, self.project_rules)
         state = (ROOT / selected).read_text(encoding="utf-8")
         self.assertRegex(state, r"(?m)^- 상태: .+")
