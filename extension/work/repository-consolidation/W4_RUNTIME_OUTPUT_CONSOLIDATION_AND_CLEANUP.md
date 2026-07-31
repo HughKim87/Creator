@@ -2,14 +2,14 @@
 
 - 문서 분류: `phase-design`
 - phase ID: `W4`
-- lifecycle: `ready`
+- lifecycle: `in_progress`
 - 결과: `inputs/**`를 분석에서 제외하고, runtime 67개를 검증 가능한 선택적 capability로 보존하며, outputs 197개에서 재사용 지식만 canonical owner에 흡수한 뒤 승인된 잔여물과 Git garbage를 정리한다.
 - 독자: W4 실행 agent, 보호 output·Core·삭제·Git maintenance 승인자
 - 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
 - 상태 owner: `SESSION_HANDOFF.md`
 - optional evidence owner: `extension/work/repository-consolidation/W3_DISPOSITION_MANIFEST.md` — startup-required 아님, W3 수치의 역사 근거이며 현재 runtime·input 판정 권위가 아님
 - 권위: 최신 사용자 지시와 `PROJECT_RULES.md`; 이 문서는 설계만 승인하며 보호자료 열람·Core 변경·삭제·Git object prune를 승인하지 않는다.
-- 첫 다음 행동: W4-S1에서 runtime 67개를 content 변경 없이 tree hash·version·entrypoint·license·source 기준으로 재측정한다.
+- 첫 다음 행동: W4-S2 structure/text output 84개의 보호 열람 범위와 목적을 exact 승인받는다.
 
 ## Entry gate
 
@@ -56,6 +56,23 @@
 - source·license·reinstall 경로가 검증되거나 `reinstall-unverified` 위험이 명시됨
 - runtime staged 0, clean clone에서는 `absent/optional`로 정상 판정
 - W4-S1 전용 commit 후 status clean
+
+### W4-S1 실제 결과 — passed
+
+- tracked manifest·schema·read-only verifier·14개 focused regression을 만들고 runtime binary·model은 ignored 상태로 유지했다.
+- 독립 Python·Node 계산이 일치하는 ordinal POSIX tree 계약으로 67/67개·816,338,813 bytes를 검증했다. FFmpeg 45개 digest는 `a31ffe4d…e09a`, whisper.cpp 22개 digest는 `6dadd287…d8de`다.
+- FFmpeg·FFprobe version, synthetic audio 생성/probe, whisper CLI help, `ggml-small.bin` model-load가 모두 성공했다.
+- 한글 workspace 절대 model 경로에서 발생한 whisper.cpp 비정상 종료를 CLI cwd 기준 상대 model 경로로 교정했고 clean-clone 전체 부재는 optional `absent`로 검증했다.
+- 공식 release/source·license·model SHA-1을 대조했다. 외부 재다운로드 자체는 수행하지 않아 reinstall 문구의 실다운로드 재현성만 잔여 위험이다.
+- 입력·output·Core content 접근/변경과 runtime stage는 0이다.
+
+| W4-S1 교차검증 | 점수 | 이유 |
+|---|---:|---|
+| 구성·무결성 | 5/5 | count·bytes·tree·critical hash를 실제 tree와 독립 계산으로 일치시켰다. |
+| 실행 준비성 | 5/5 | 두 component의 5개 실제 probe가 모두 성공했다. |
+| 역할·clone 경계 | 5/5 | shared/optional/primary를 분리하고 absent 회귀를 통과했다. |
+| 출처·복구 | 4/5 | 공식 source·license·model hash는 확인했지만 재다운로드는 실행하지 않았다. |
+| W4-S1 전체 | 4.8/5 | 관리·실행·clone gate는 완결됐고 감점은 외부 reinstall 미실행뿐이다. |
 
 ## W4-S2 — outputs 201개의 lineage와 재사용 가치 확정
 

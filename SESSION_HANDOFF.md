@@ -2,13 +2,13 @@
 
 - 갱신일: 2026-07-31
 - 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
-- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W4-S1 준비
-- 상태: inputs 제외·runtime 67개 보존·outputs 중심 W4 phase-design과 전체 gate가 passed했고 W4-S1 runtime 관리화 구현이 ready다.
+- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W4-S2 승인 경계
+- 상태: W4-S1은 runtime 67개를 검증 가능한 ignored local capability로 전환해 passed다. 다음은 structure/text outputs 84개 보호 열람의 exact 승인이다.
 - 활성 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
 - 활성 단계 설계: `extension/work/repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md`
 - 프로젝트 방향: `PROJECT_DIRECTION.md`
 - 읽기 순서: `PROJECT_RULES.md` → 이 문서 → 활성 전체 설계 → W4 phase-design → W4 첫 다음 행동에 matching된 규칙
-- handoff mode: `same-workspace`; ignored runtime·보호 output과 W4 uncommitted design 때문에 현재 workspace를 재개 checkpoint로 사용한다.
+- handoff mode: `same-workspace`; ignored runtime·보호 output이 후속 검증 입력이므로 현재 workspace를 재개 checkpoint로 사용한다.
 
 ## 현재 사용자 의도
 
@@ -43,6 +43,9 @@
 - runtime 보존으로 수정된 처분 예상은 tracked 28개, cache/local 75개, outputs 197개로 합계 300개·488,962,975 bytes다.
 - `.git`은 6.428 GiB이며 현재 refs에 없는 pack 약 3.284 GiB와 temporary garbage 약 2.895 GiB를 별도 위생 대상으로 확인했다. stash 2개는 보존해야 한다.
 - W4 design gate는 focused 27개, Core 139·Extension 132, maintenance 99문서·130링크, clean clone 3/3으로 passed다. 설계 점수는 4.5/5다.
+- W4-S1은 manifest·schema·verifier·14개 focused regression으로 runtime 67/67개·816,338,813 bytes를 관리화했다. FFmpeg tree digest `a31ffe4d…e09a`, whisper.cpp `6dadd287…d8de`와 critical hash가 일치한다.
+- W4-S1 actual probe는 FFmpeg·FFprobe version, synthetic audio 생성/probe, whisper CLI help·model-load 5/5가 성공했다. clean clone 전체 부재는 optional `absent`이며 faster-whisper primary 계약은 유지된다.
+- W4-S1 점수는 구성 5, 실행 5, 역할/clone 5, 출처/복구 4로 전체 4.8/5다. 공식 source·license·model hash는 확인했고 외부 reinstall 실행만 잔여 위험이다.
 
 ## 권한·보호 경계
 
@@ -74,7 +77,6 @@
 ## blocker·위험
 
 - `core/tests/test_rule_routing.py`가 처분 후보 역사 보고서를 직접 읽는다. W4에서 현재 canonical owner로 fixture를 전환하려면 exact Core 승인이 필요하다.
-- runtime은 현재 faster-whisper primary 계약과 다른 도구이므로 FFmpeg shared tool·whisper.cpp optional backend로 구분하고 source·license·hash·smoke test owner를 만들어야 한다.
 - structure/text output 84개의 보호 열람 승인과 300개 처분 승인, Core 승인, Git object maintenance 승인은 서로 대체하지 않는다.
 - `.git` 정리 전 branch·tag·stash 2개·reflog와 모든 reachable commit의 recovery를 검증해야 한다.
 
@@ -87,13 +89,15 @@
 | W3 통합 dry-run | 구형 PowerShell 상대경로 API | `GetRelativePath` 미지원으로 첫 통합 집계가 무효 | 1 | 호환 substring 방식으로 재실행해 모든 수치·해시 일치 |
 | W3 전체 gate | sandbox·실행시간 | Node 상위 경로 EPERM 뒤 권한 실행이 124초 제한 초과 | 2 | 승인된 환경에서 139.1초 재실행, 전체 exit 0 |
 | W3 closeout 문서 gate | 증거 상세화 | active phase 162줄·same-workspace marker 누락 | 1 | phase 160줄로 압축·uncommitted 경계 복구, focused 6개와 전체 no-clone gate 통과 |
+| W4-S1 tree 검증 | Windows path 정렬 | `Path` 정렬이 명시되지 않아 최초 tree digest와 verifier 값 불일치 | 1 | POSIX 상대경로 ordinal 정렬을 계약화하고 Python·Node 독립 계산 일치 |
+| W4-S1 whisper smoke | 한글 workspace 절대 model 경로 | CLI가 `3221226505`로 비정상 종료 | 1 | CLI cwd 기준 상대 model 경로로 전달해 model-load·transcript 생성 성공 |
 
 ## 첫 다음 행동
 
-1. runtime 67개를 변경 없이 tree hash·version·entrypoint·license·source 기준으로 재측정한다.
-2. local runtime manifest·schema·read-only verifier·synthetic test의 최소 구현 delta를 확정한다.
-3. runtime owner commit 뒤 structure/text outputs 84개의 exact 보호 열람 승인을 요청한다.
+1. structure/text outputs 84개(XML 17·JSON 22·TXT 16·MD 14·SRT 15, 11,793,473 bytes)의 owner·lineage·재사용 지식 추출 목적 보호 열람을 exact 승인받는다.
+2. 승인 뒤 원문·exact 이름을 tracked evidence에 남기지 않고 84/84 owner mapping과 media 113/113 metadata lineage를 확정한다.
+3. W4-S3 canonical absorption 전 Core 후보와 삭제 후보를 다시 분리해 각각 별도 승인 경계로 보고한다.
 
 ## 다음 session 시작 prompt
 
-`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → W4 phase-design`을 읽고 W4-S1부터 실행한다. inputs는 분석하지 않고 runtime은 stage·삭제하지 않으며, output 열람·Core·삭제·Git prune는 각각 exact 승인 뒤 수행한다.
+`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → W4 phase-design`을 읽고 W4-S2 보호 output 승인 경계부터 재개한다. inputs는 분석하지 않고 runtime은 stage·삭제하지 않으며, output 열람·Core·삭제·Git prune는 각각 exact 승인 뒤 수행한다.

@@ -13,6 +13,7 @@
 | `rules/` | YouTube·영상·제작 행동에만 적용되는 조건부 작업 규칙 |
 | `docs/` | YouTube·영상·workflow 계약과 사용자 가이드 |
 | `src/` | 도메인·workflow 구현 |
+| `config/` | Git 제외 local capability의 버전·무결성·재설치 metadata |
 | `schemas/` | extension payload 구조 |
 | `tests/` | extension 회귀와 수직 acceptance test |
 | `examples/` | 보호 데이터가 아닌 실행 예시 |
@@ -48,6 +49,20 @@
 | Core export consumer·game pilot | [domain conformance](src/domain_conformance.py), [통합 실행점](../scripts/export_conformance.py), [conformance 회귀](tests/test_export_conformance.py) | 같은 Core manifest의 empty·YouTube·최소 game consumer 구조 검증이며 실제 게임 제작·독립 배포 증거가 아님 |
 
 synthetic fixture 통과는 production 작업 완료, 실제 앱 검증, 사용자 승인으로 승격하지 않는다. `.runtime/` 항목은 현재 skill·code에서 참조되고 설치 또는 재구축 방법을 설명할 수 있을 때만 active capability로 유지한다. 과거 보고서의 tool 사용 사실이나 output 존재만으로 참조 없는 binary를 현재 runtime evidence로 보존하지 않는다.
+
+## 관리되는 local runtime
+
+[`local-runtime-v1.json`](config/local-runtime-v1.json)은 ignored `.runtime/` binary·model 자체가 아니라 component role·version·tree hash·critical file hash·license·source·reinstall 경계를 소유한다. FFmpeg는 공용 영상 probe·변환 도구이고, whisper.cpp는 선택적 offline backend다. 기존 `video-to-srt`의 faster-whisper primary backend를 암묵 교체하지 않는다.
+
+tree hash는 각 파일의 `POSIX 상대경로|byte 크기|SHA-256` 행을 상대경로 기준 ordinal 정렬하고 LF와 마지막 LF로 직렬화한 뒤 SHA-256을 계산한다.
+
+clean clone에서 runtime 전체가 없으면 optional `absent`이며 전체 프로젝트 실패가 아니다. 현재 workspace에서 보존 runtime을 요구하고 실제 실행까지 검증할 때는 다음 gate를 사용한다.
+
+```powershell
+python -B extension/src/local_runtime.py --require-present --probe
+```
+
+manifest와 실제 tree·critical hash가 다르거나 component 일부만 존재하면 `drift/incomplete`로 실패한다. runtime 파일은 계속 Git에서 제외하며 manifest·schema·verifier·synthetic test만 commit한다.
 
 ## 조건부 영상 편집 규칙
 
