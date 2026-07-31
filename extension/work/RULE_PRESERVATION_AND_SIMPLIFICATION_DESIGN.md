@@ -7,7 +7,7 @@
 - 권위: 최신 사용자 지시와 `PROJECT_RULES.md`; 이 문서는 Core 변경, 보호 데이터 mutation, 삭제·이동, commit·push의 독립 승인이 아니다.
 - 프로젝트 방향: [장기 사용자 결과와 선택 기준](../../PROJECT_DIRECTION.md)
 - 현재 상태 owner: `SESSION_HANDOFF.md`
-- 활성 단계: [W2 선택적 흡수·기반 강화](repository-consolidation/W2_SELECTIVE_ABSORPTION_AND_FOUNDATION_STRENGTHENING.md)
+- 활성 단계: [W3 의존성 해제·exact disposition manifest](repository-consolidation/W3_DEPENDENCY_RELEASE_AND_EXACT_DISPOSITION_MANIFEST.md)
 - 이전 규칙·문서 슬라이스 evidence: [M0 보존 지도](rule-preservation/M0_RULE_CONSERVATION_MAP.md), [M0~M4 검증 보고](../reports/2026-07-31_규칙_무손실_통합_M0_작업_보고.md) — optional, startup-required 아님
 
 ## 이번 세션에서 확정한 사용자 의도
@@ -50,7 +50,7 @@
 | artifact | owner·역할 | 유지 조건 |
 |---|---|---|
 | overall-design 1 | 이 문서; 안정된 의도·단계 지도 | initiative 종료까지 active |
-| active phase-design 1 | 현재 W2 문서; exact 실행·gate | W2 commit 뒤 active route에서 교체 |
+| active phase-design 1 | 현재 W3 문서; exact 실행·gate | W3 commit 뒤 active route에서 교체 |
 | optional phase evidence 최대 1 | W0가 필요성을 입증한 비보호 file classification | startup 제외, 후속 처분 뒤 Git history로 회수 |
 | current-state 1 | `SESSION_HANDOFF.md`; 상태·blocker·첫 행동 | 현재 사실만 유지 |
 | final report 1 | 기존 M0~M4 보고 경로를 W5에서 전역 보고로 갱신 | 중간 단계에서 별도 보고서 신설 금지 |
@@ -87,4 +87,4 @@
 
 ## 다음 실행
 
-[W2 선택적 흡수·기반 강화](repository-consolidation/W2_SELECTIVE_ABSORPTION_AND_FOUNDATION_STRENGTHENING.md)에서 K01~K04를 기존 owner 3개에 최소 병합하고 단일 gate·복잡성·보호 경계를 검증한다.
+[W3 의존성 해제·exact disposition manifest](repository-consolidation/W3_DEPENDENCY_RELEASE_AND_EXACT_DISPOSITION_MANIFEST.md)는 passed다. W4는 exact Core fixture 전환과 367개 파일·빈 디렉터리 6개의 처분 승인을 받은 뒤에만 시작한다.

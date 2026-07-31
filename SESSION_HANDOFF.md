@@ -2,13 +2,13 @@
 
 - 갱신일: 2026-07-31
 - 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
-- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W2
-- 상태: W2-S1~S4와 전체 single gate가 passed했고, task-owned 7경로의 단계 checkpoint commit을 준비한다.
+- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W3 exit
+- 상태: W3 의존성 해제·exact disposition manifest와 전체 gate가 passed했고, W4 exact Core·처분 승인만 기다린다.
 - 활성 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
-- 활성 단계 설계: `extension/work/repository-consolidation/W2_SELECTIVE_ABSORPTION_AND_FOUNDATION_STRENGTHENING.md`
+- 활성 단계 설계: `extension/work/repository-consolidation/W3_DEPENDENCY_RELEASE_AND_EXACT_DISPOSITION_MANIFEST.md`
 - 프로젝트 방향: `PROJECT_DIRECTION.md`
-- 읽기 순서: `PROJECT_RULES.md` → 이 문서 → 활성 전체 설계 → W2 phase-design → W2 다음 행동에 matching된 규칙
-- handoff mode: `same-workspace`; W2 phase activation이 uncommitted이므로 fresh clone은 W1 checkpoint까지만 재개 가능하다.
+- 읽기 순서: `PROJECT_RULES.md` → 이 문서 → 활성 전체 설계 → W3 phase-design → W3 다음 행동에 matching된 규칙
+- handoff mode: `same-workspace`; 보호 allowlist와 처분 후보는 Git 밖의 uncommitted filesystem state이므로 W3 exit commit과 현재 workspace를 함께 재개 checkpoint로 사용한다.
 
 ## 현재 사용자 의도
 
@@ -32,6 +32,11 @@
 - W1 commit `f02c304`는 task-owned 5경로만 포함했고 Core·보호 path count가 0이며 commit 뒤 status는 clean이었다.
 - W2는 K01~K04를 기존 owner 3개에 순증가 20줄로 흡수했다. 신규 file·rule·replay·schema·code·dependency와 Core diff는 0이다.
 - W2 gate는 focused 56 tests, Core 139·Extension 132, Node ready, maintenance 96문서·130링크, clean clone 3/3으로 통과했다.
+- W2 commit `5ed6bb6`는 task-owned 7경로만 포함했고 Core·보호 path count가 0이며 commit 뒤 status는 clean이었다.
+- W3 기준 inventory는 manifest 생성 전 tracked 214·untracked 1·ignored 345·Git union/filesystem 560/560이었고 양방향 차이·중복·reparse가 0이었다.
+- W3은 최종 tracked allowlist 180개와 보호 입력 2개·보호 출력 4개를 고정했다. W4 처분 후보는 파일 367개·1,305,301,788 bytes와 빈 디렉터리 6개다.
+- W3 dry-run은 exact tracked 28개, 비보호 ignored 142개, 보호 출력 197개의 존재·용량·집계 해시를 재계산했고 duplicate·보호 겹침·workspace 이탈이 0이었다.
+- W3 gate는 Core 139·Extension 132, Node v20.11.1, maintenance 98문서·130링크, clean clone 3/3으로 passed다.
 
 ## 권한·보호 경계
 
@@ -53,15 +58,17 @@
 | `extension/work/repository-consolidation/W1_REUSABLE_KNOWLEDGE_EXTRACTION_AND_OWNER_MAPPING.md` | passed phase-design | report·plan·보호 text/structure의 재사용 지식·owner mapping |
 | `extension/work/repository-consolidation/W1_REUSABLE_KNOWLEDGE_MAP.md` | optional reference-evidence | 21+7 source와 보호 output 10그룹의 owner·판정·W2 exact 입력 |
 | `extension/work/repository-consolidation/W2_SELECTIVE_ABSORPTION_AND_FOUNDATION_STRENGTHENING.md` | passed phase-design | K01~K04를 기존 owner 3개에 최소 병합 |
+| `extension/work/repository-consolidation/W3_DEPENDENCY_RELEASE_AND_EXACT_DISPOSITION_MANIFEST.md` | passed phase-design | 유지 allowlist·reference·rebuild/recovery·W4 exact 처분 후보 |
+| `extension/work/repository-consolidation/W3_DISPOSITION_MANIFEST.md` | current reference-evidence | exact tracked·ignored 처분, 보호 opaque allowlist, Core 승인 경계 |
 | `extension/work/rule-preservation/M4_EXACT_DISPOSITION_AND_FINAL_REPORT.md` | invalidated phase-design | 이전 22파일 후보의 historical evidence; 실행 금지 |
 | `extension/reports/2026-07-31_규칙_무손실_통합_M0_작업_보고.md` | historical partial evidence | 규칙·문서 슬라이스 검증; 프로젝트 전역 최종보고 아님 |
 | `extension/work/rule-preservation/M0_RULE_CONSERVATION_MAP.md` | optional prior evidence | 규칙 의미 78개 계보·owner |
 
 ## blocker·위험
 
-- runtime 67파일은 exact tracked reference가 0이지만 설치 source·rebuild command가 없어 unresolved다.
-- protected outputs 201파일은 Git 복구가 없고 current deliverable·재생성·외부 복구가 미확정이라 W1/W3 전 자동 처분하지 않는다.
-- W1 first single-gate는 sandbox 상위 경로 EPERM과 optional evidence metadata 누락으로 실패했다. metadata를 복구했고 권한 있는 Node·clean-clone 및 전체 회귀가 통과해 환경·구현 실패를 분리했다.
+- `core/tests/test_rule_routing.py`가 처분 후보 역사 보고서를 직접 읽는다. W4에서 현재 canonical owner로 fixture를 전환하려면 exact Core 승인이 필요하다.
+- 보호 출력 제거 후보 197개와 runtime 67개는 byte-identical Git 복구가 불가능하다. 보호 출력 4개와 입력 2개는 보존한다.
+- W4 삭제·빈 디렉터리 제거는 exact 승인 전 금지다. 승인 뒤에도 집계 해시가 달라지면 실행하지 않고 재측정한다.
 
 ## 실패 ledger
 
@@ -69,13 +76,16 @@
 |---|---|---|---:|---|
 | 프로젝트 전역 정리 설계 | 이전 M0~M4 | 문서·규칙 슬라이스를 전체 목표로 좁게 해석 | 1 | 사용자 직접 의도를 overall 상단에 고정하고 W0 전역 inventory로 재시작 |
 | 전체 읽기 비용 비증가 | 이전 M2 | rule-surface +430 tokens(+4.41%) | 1 | W2에서 재사용 가치·중복 상쇄를 함께 검증, Core 변경은 exact 승인 |
+| W3 통합 dry-run | 구형 PowerShell 상대경로 API | `GetRelativePath` 미지원으로 첫 통합 집계가 무효 | 1 | 호환 substring 방식으로 재실행해 모든 수치·해시 일치 |
+| W3 전체 gate | sandbox·실행시간 | Node 상위 경로 EPERM 뒤 권한 실행이 124초 제한 초과 | 2 | 승인된 환경에서 139.1초 재실행, 전체 exit 0 |
+| W3 closeout 문서 gate | 증거 상세화 | active phase 162줄·same-workspace marker 누락 | 1 | phase 160줄로 압축·uncommitted 경계 복구, focused 6개와 전체 no-clone gate 통과 |
 
 ## 첫 다음 행동
 
-1. W2 task-owned 7경로만 stage하고 보호·Core·unrelated staged count 0을 확인한다.
-2. W2 단계 commit을 만든 뒤 commit path와 Git 상태를 검증한다.
-3. W3 phase-design을 활성화하고 전역 allowlist와 exact disposition manifest를 작성한다.
+1. 사용자에게 `core/tests/test_rule_routing.py`의 exact fixture routing 변경 승인을 받는다.
+2. tracked 28개, 비보호 ignored 142개, 보호 출력 197개, 빈 디렉터리 6개의 exact 처분 승인을 받는다.
+3. 두 승인이 모두 있으면 mutation 직전 해시·containment를 재검증하고 W4를 시작한다.
 
 ## 다음 session 시작 prompt
 
-`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → W2 phase-design → W1 evidence`를 읽고 W2 commit gate부터 실행한다. 보호 원문·exact 이름·secret·Core·삭제·이동·외부 상태는 해당 exact 승인 없이 변경하지 않는다.
+`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → W3 phase-design → W3 disposition manifest`를 읽는다. 현재 대화의 exact Core 승인과 exact 처분 승인이 모두 있을 때만 W4를 설계·실행하고, 보호 보존 6개는 stage·commit·삭제하지 않는다.

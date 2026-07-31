@@ -126,4 +126,4 @@ W1 K01~K04가 최종 owner 하나씩에 존재하고, D01~D21·보호 output 원
 - W2-S3: `passed`
 - W2-S4: `passed`
 - W2 exit: `passed`
-- W3 transition: `ready-after-commit`
+- W3 transition: `passed` — W2 checkpoint `5ed6bb6`, clean status 확인 뒤 W3 활성화
