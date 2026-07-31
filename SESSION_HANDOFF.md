@@ -18,6 +18,7 @@
 - FFmpeg·whisper.cpp runtime 67개·816,338,813 bytes와 current output 4개·117,222,243 bytes는 ignored 상태로 보존했다.
 - Git GC 전후 refs 11·stash 2·reflog 393·reachable object 4,640·graph 224의 count/SHA-256이 같고 `.git`은 7,359,690,190→361,424,219 bytes로 줄었다.
 - 삭제 자료의 규칙·지식 109행(F78+L12+K4+O15)을 source→추출→owner/disposition으로 최종 보고했다.
+- 전체 rule-surface는 M0 9,759→현재 10,476 tokens(+7.35%)지만, 필수 startup과 matching owner를 합친 대표 명령 경로는 M0 대비 39.4~65.5% 감소했다.
 
 ## 최종 검증 기준
 
@@ -40,7 +41,7 @@
 ## 잔여 제한
 
 - runtime source 재설치 자동화는 없지만 현재 version·digest·실행 probe는 통과했다.
-- rule-surface tokens는 M0 9,759→현재 10,476으로 7.35% 증가했다. 안전 의미를 보존한 결과이며 비증가 목표는 미충족이다.
+- 명령별 읽기 개선은 결정적 문서 token 측정이며 실제 모델별 과금·latency 표본은 없다. 새 controlled 작업에서는 그 작업의 active design만 추가된다.
 - browser-user-session은 deterministic clone bootstrap 밖의 의도된 `needs_user`다.
 
 ## 첫 다음 행동
