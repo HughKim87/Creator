@@ -74,6 +74,20 @@ Operational rules should make the condition, required action, exception, and ver
 - Read only the rules matched by the current task, once per logical task. Do not preload the complete rule set.
 - Markdown links provide both agent routing and Obsidian graph edges; plain code paths are not sufficient navigation.
 
+## Task-rule absorption
+
+- A task-rule document is a temporary task owner, not an active project rule. Do not add it to `PROJECT_RULES.md`, `extension/README.md`, or another permanent rule index.
+
+| Closeout disposition | Action |
+|---|---|
+| `merge-core` | Merge verified cross-domain behavior only after exact Core approval. |
+| `merge-extension` | Merge verified domain behavior into the narrowest existing extension owner. |
+| `candidate` | Move behavior lacking promotion evidence only to an existing candidate owner. |
+| `reject` | Do not preserve task-specific, duplicated, superseded, unverified, or non-actionable content. |
+
+- Do not retain the whole task-rule because one row is unresolved. Complete an authorized disposition, keep the task open with the exact blocker, or reject the unpromoted row while preserving completed history through the approved Git checkpoint.
+- Verify canonical owners and routes, then retire the task-rule in the same checkpoint; completed work has zero active task-rule documents or links.
+
 ## Controlled closeout
 
 Before completing controlled work, review each rule that matched the task and classify the evidence:

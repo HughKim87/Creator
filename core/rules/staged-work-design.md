@@ -8,6 +8,7 @@
 
 - Use staged design when work has at least two dependent stages, cannot be safely completed in one execution checkpoint, or requires different approvals or success gates by stage.
 - Keep one short `overall-design`, at most one active `phase-design`, and the current-state document selected by `PROJECT_RULES.md`.
+- A file-producing active phase may have exactly one task-rule owner under the document-work lifecycle. Prefer a section in the phase owner; if separate, the phase links that one file and owns its lifecycle state.
 - The overall design owns stable direction and the stage map. The active phase design owns exact execution and gate definitions for that stage. The selected current-state document owns verified progress, blockers, gate results, and the first next action.
 - Long analysis and historical evidence are optional `reference-evidence`; they never become a required link in the startup chain.
 
@@ -33,6 +34,8 @@
 3. `exit gate`: require every exact acceptance item and evidence owner for the current phase.
 4. `commit checkpoint`: when a phase changes maintained project files or produces a persistent result, define the phase exit as a Git commit boundary. After the exit gate passes and before transition, commit only the approved task-owned paths; do not create a commit boundary for each slice unless the phase design explicitly requires it. The `version-control` rule still governs approval, protected paths, unrelated baseline changes, and post-write verification.
 5. `transition gate`: self-review scope growth, document count, read budget, remaining risk, and whether the next phase is still necessary.
+
+Before an exit gate can pass, freeze and absorb the active task-rule, clean its approved scratch root, and retire the task-rule owner. A phase may remain resumable with an `active` task-rule, but it may not become `passed` while that owner or scratch residue remains active.
 
 - Only one phase may be `ready` or `in_progress` as the active execution target.
 - Do not create detailed documents for all future phases in advance.
@@ -62,8 +65,9 @@ For an active staged task, read in this order:
 1. `PROJECT_RULES.md` and the current-state document it selects;
 2. the short overall design;
 3. the one active phase design;
-4. only the conditional rules matched by the phase's next action;
-5. exact reference evidence only when a named decision cannot be resolved from the active documents.
+4. the one task-rule owner when the phase declares one;
+5. only the conditional rules matched by the phase's next action;
+6. exact reference evidence only when a named decision cannot be resolved from the active documents.
 
 Do not follow a phase document into every future phase or historical report.
 
@@ -75,4 +79,5 @@ Do not follow a phase document into every future phase or historical report.
 - Confirm each active phase has entry, slice, exit, and transition gates with no duplicated exact gate owner.
 - Confirm future phases are summaries, optional evidence is not startup-required, and completed detail is recoverable through Git.
 - Confirm delegated work passes the delegation gate and does not claim portability or approval that its recorded artifacts cannot prove.
+- Confirm a passed or completed phase has zero active task-rule owners and zero current-task scratch residue, while an interrupted phase links exactly one resumable task-rule owner when it has one.
 - Before closeout, run the verification required by every changed rule and the approved Core gate when Core files changed.

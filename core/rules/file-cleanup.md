@@ -45,6 +45,13 @@
   - active rule·candidate·검증된 실패·현재 상태·사용자 승인·source lineage가 삭제 대상에만 남아 있지 않다.
   - 링크·고아 문서·관련 회귀·유지보수 검증을 통과하며, 삭제된 경로와 보호 경로가 staged diff에 섞이지 않는다.
 
+## FCL03 — 현재 작업 scratch 일괄 정리
+
+- 조건: 현재 task-rule이 생성 전에 고정한 하나의 scratch root를 작업 closeout에서 정리한다.
+- 행동: task baseline에서 root가 없었고 현재 작업만 그 root를 생성했는지 확인한다. maintained project file·final deliverable·사용자 승인·source lineage·보호 경로가 0이고 task-rule이 실행 중 발견한 재사용 지식을 소유하면, 동일 생성 목적의 scratch family를 파일별 의미 재분석 없이 한 번에 제거한다.
+- 예외: pre-existing·shared·unknown-owner 경로, `inputs`·`outputs`, task-rule 밖에 유일한 판단이나 증거가 남은 경로는 이 간소화 경계를 사용할 수 없다. 해당 파일은 FCL01·FCL02와 상위 router가 선택한 추출 규칙으로 돌아간다.
+- 검증: exact scratch root가 없어지고, final·maintained·protected 경로 변화가 0이며, task-rule 후보의 `merge-core / merge-extension / candidate / reject` 처분과 별도 task-rule 파일 또는 active link 제거가 같은 closeout checkpoint에 포함됐는지 확인한다.
+
 ## 정리 판정의 경계
 
 | 파일 상태 | 기본 판정 |

@@ -115,10 +115,40 @@ class RuleRoutingTests(unittest.TestCase):
 
         for role in ("`overall-design`", "`phase-design`", "`reference-evidence`"):
             self.assertIn(role, document_work)
-        self.assertIn("120 lines and 8,000 Unicode characters", document_work)
+        self.assertIn("120 lines or 8,000 Unicode characters", document_work)
         self.assertIn("160 lines and 12,000 Unicode characters", document_work)
         self.assertIn("must not be a startup-required read", document_work)
         self.assertIn("Treat a read-budget excess", document_work)
+
+    def test_task_rule_lifecycle_is_single_absorbed_and_retired(self):
+        project_rules = (ROOT / "PROJECT_RULES.md").read_text(encoding="utf-8")
+        document_work = (
+            ROOT / "core" / "rules" / "document-work.md"
+        ).read_text(encoding="utf-8")
+        staged = (
+            ROOT / "core" / "rules" / "staged-work-design.md"
+        ).read_text(encoding="utf-8")
+        governance = (
+            ROOT / "core" / "rules" / "rule-governance.md"
+        ).read_text(encoding="utf-8")
+        cleanup = (
+            ROOT / "core" / "rules" / "file-cleanup.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("task-rule document for file-producing work", project_rules)
+        for state in ("`created`", "`active`", "`frozen`", "`absorbed`", "`retired`"):
+            self.assertIn(state, document_work)
+        self.assertIn("exactly one task-rule owner", document_work)
+        self.assertIn(
+            "without waiting for a separate user request",
+            document_work.lower(),
+        )
+        self.assertIn("120 lines or 8,000 Unicode characters", document_work)
+        self.assertIn("zero active task-rule owners", staged)
+        for disposition in ("`merge-core`", "`merge-extension`", "`candidate`", "`reject`"):
+            self.assertIn(disposition, governance)
+        self.assertIn("파일별 의미 재분석 없이", cleanup)
+        self.assertIn("`inputs`·`outputs`", cleanup)
 
     def test_staged_work_has_one_active_phase_and_four_gates(self):
         staged = (
