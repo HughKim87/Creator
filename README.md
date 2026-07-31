@@ -12,7 +12,6 @@
 | 변경 불가 기본 골조 | [core](core/) |
 | 앞으로 확장할 작업 영역 | [extension](extension/) |
 | 현재 기반 계약 | [core/docs](core/docs/) |
-| 과거 핵심 결정 | [프로젝트 역사 요약](core/docs/PROJECT_HISTORY.md) |
 
 완료 작업의 상세 과정과 삭제된 과거 문서는 Git 이력에서 필요할 때만 찾는다.
 
@@ -32,7 +31,7 @@
 | 루트 | 시작 경로, 상시 정책, 현재 상태, 사용자 개요 |
 | `core/` | 사용자 승인 없이는 변경할 수 없는 Agent 기본 골조 |
 | `core/rules/` | matching action에서만 읽는 기반 절차 |
-| `core/docs/` | 기반 계약과 짧은 역사 요약 |
+| `core/docs/` | 현재 기반 계약과 유지 설명 |
 | `core/failures/` | material하고 재사용 가능한 기반 실패 지식 |
 | `core/src/`, `core/schemas/`, `core/tests/` | 기반 구현·파생 계약·회귀 |
 | `extension/` | 영상·스킬·작업 상태·runtime·예시·보고서 |

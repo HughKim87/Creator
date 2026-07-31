@@ -80,7 +80,7 @@ Detailed completed history is available through Git. Do not load old commits by 
 - Each material active fact has one human-readable owner. Link to it instead of copying it.
 - `PROJECT_RULES.md` owns always-on policy; `core/rules/*.md` owns foundation procedures.
 - `SESSION_HANDOFF.md` owns only current work, blockers, verified state, and first next action.
-- `core/docs/` owns foundation contracts and the concise project history; `core/failures/` owns reusable resolved-failure knowledge.
+- `core/docs/` owns current foundation contracts and maintenance explanations; `core/failures/` owns reusable resolved-failure knowledge.
 - `extension/` owns YouTube, video, production, skill, task, runtime, example, report, and other work-specific data. New domain work must not be added to `core/`.
 - `extension/work/CORE_CHANGE_FAILURES.md` owns automatic-task failures caused by the immutable core boundary.
 - Machine-readable maintained data must be a deterministic document derivative. Runtime and temporary data remain disposable and untracked.
