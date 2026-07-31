@@ -2,14 +2,14 @@
 
 - 문서 분류: `phase-design`
 - phase ID: `W4`
-- lifecycle: `in_progress`
-- 결과: `inputs/**`를 분석에서 제외하고, runtime 67개를 검증 가능한 선택적 capability로 보존하며, outputs 197개에서 재사용 지식만 canonical owner에 흡수한 뒤 승인된 잔여물과 Git garbage를 정리한다.
+- lifecycle: `passed`
+- 결과: runtime 67개와 current output 4개를 보존하고 재사용 지식은 기존 owner에 병합했으며, 승인된 300개·488,962,975 bytes와 Git garbage 6,998,265,971 bytes를 무결성 손실 없이 정리했다.
 - 독자: W4 실행 agent, 보호 output·Core·삭제·Git maintenance 승인자
 - 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
 - 상태 owner: `SESSION_HANDOFF.md`
 - optional evidence owner: `extension/work/repository-consolidation/W3_DISPOSITION_MANIFEST.md` — startup-required 아님, W3 수치의 역사 근거이며 현재 runtime·input 판정 권위가 아님
 - 권위: 최신 사용자 지시와 `PROJECT_RULES.md`; 사용자는 `e705f71` 보존, 아래 exact Core 보강, 300개·6디렉터리 처분, Git object 위생과 단계 commit을 현재 대화에서 승인했다. push·publish는 제외한다.
-- 첫 다음 행동: `e705f71` 복구성을 기준으로 승인된 Core 보강과 300개 처분 집합을 다시 대조한다.
+- 첫 다음 행동: W5에서 규칙별 원문→추출→owner 계보를 최종 보고하고 initiative 문서를 self-clean한다.
 
 ## Entry gate
 
@@ -124,37 +124,25 @@ media 113개는 sidecar·hash·버전명으로 먼저 판정하고, content 검�
 - 승인 집합 그대로 300개·488,962,975 bytes와 빈 디렉터리 26개를 제거했고 staged tree는 삭제 300·변경 7·추가 0, untracked 0이다. keep output 4·117,222,243 bytes와 runtime 67·816,338,813 bytes는 ignored·실재·stage 0이다.
 - Core 140·Extension 138·maintenance 71문서/85링크·clean-clone 3종·runtime actual probe·`git diff --check`가 통과했고 tracked input·output·cache는 0이다.
 
-## W4-S5 — Git object 위생
+## W4-S5 실제 결과 — passed, 5/5
 
-artifact 분석과 분리해 `.git` 7,359,669,349 bytes를 감사한다. garbage 2.89 GiB와 pack 3.32 GiB를 대상으로 하되 `main`, 모든 branch·tag, stash 2개, reflog, `e705f71`과 reachable objects를 보존하고 Git-native prune/repack을 수행한다. snapshot은 main에 reachable하므로 push하지 않고 해당 blob은 회수량에서 제외한다.
+- 전: `.git` 7,359,690,190 bytes, loose 3,709·648.26 MiB, pack 2·3.32 GiB, garbage 38·2.89 GiB, `fsck` exit 0.
+- reflog 만료를 `never`로 고정한 Git-native GC 후 `.git`은 361,424,219 bytes, pack 1·344.50 MiB, loose·garbage 0이 됐다. 회수량은 6,998,265,971 bytes(95.1%)다.
+- refs 11·stash 2·reflog 393·reachable 4,640·graph 224의 count/SHA-256이 전후 동일하고 `e705f71` commit/tree도 동일하다. post `fsck` 출력 0, status clean이다.
 
-### W4-S5 gate
+## Exit·commit·transition 실제 결과
 
-- prune 전후 `fsck`, refs·stash 목록, HEAD·commit graph·bundle 또는 동등한 reachable recovery 검증
-- 제거 대상은 unreachable/temporary object로만 한정
-- 예상 최대 회수 약 6.18 GiB와 실제 회수량 보고
-- 작업트리·index·commit 내용 불변, `git status` clean
+- W4-S1~S5가 모두 passed이고 inputs 밖 잔여 파일은 canonical tracked 193, 보호 output 4, managed runtime 67로 설명된다.
+- 처분·보호 게이트는 `53607e9`; Core 140·Extension 138·maintenance·runtime probe·clean-clone 3종이 통과했다.
+- W5만 활성화해 규칙별 계보 최종 보고, initiative self-clean, idle handoff와 final clean commit을 수행한다.
 
-## Exit·commit·transition gate
+## 단계·슬라이스 교차검증 점수
 
-- W4-S1~S5가 passed이고 inputs 밖 모든 잔여 파일이 canonical tracked, 보호 current output, managed runtime 중 하나로 설명된다.
-- strict UTF-8·NUL·후행 공백·link·`git diff --check`, Core 139+·Extension 132+, clean-clone 3종이 통과한다.
-- W4 점수는 S1 runtime readiness, S2 coverage, S3 absorption, S4 disposition, S5 Git integrity를 각 5점으로 교차검증한다.
-- W5는 initiative 문서를 self-clean하고 handoff를 idle truth로 갱신하며 단일 최종 보고서와 final clean commit을 만든다.
-
-## 설계 교차검증 점수
-
-| 설계 슬라이스 | 점수 | 이유 |
+| 슬라이스 | 점수 | 이유 |
 |---|---:|---|
-| 범위·수치 | 5/5 | inputs를 제외하고 runtime·outputs·처분 합계를 실제 filesystem과 대조했다. |
-| runtime 관리 | 4/5 | primary/optional 역할과 owner·smoke gate는 명확하지만 source·reinstall은 실행 단계에서 검증해야 한다. |
-| output 선별 | 5/5 | 201개를 keep 4·media 113·structure 84로 완전 분할하고 raw Git 보존 경계를 분리했다. |
-| 승인·복구 | 4/5 | 보호 열람·Core·삭제·Git prune를 분리했지만 실제 승인은 아직 없고 Git recovery 구현도 남았다. |
-| 설계 전체 | 4.5/5 | 실행 가능한 순서와 정량 gate가 완결됐으며 감점은 의도적으로 실행 단계에 남긴 외부 검증·승인이다. |
-
-## 복구·중단 조건
-
-- runtime smoke test나 source 검증이 실패해도 파일을 삭제하지 않고 `retained-unverified`로 격리한다.
-- structure/text 84개 중 unique evidence가 있으면 해당 항목을 삭제 집합에서 제외한다.
-- 승인 뒤 digest가 달라지거나 새 output이 생기면 mutation을 중단하고 manifest를 갱신한다.
-- Git fsck·refs·stash·recovery 검증 중 하나라도 실패하면 object cleanup을 수행하지 않는다.
+| W4-S1 runtime | 4.8/5 | 67/67 파일·digest·실행 probe를 통과했고 source 재설치 자동화만 미구현이다. |
+| W4-S2 output | 5/5 | 201/201을 keep 4·candidate 197로 완전 분류했다. |
+| W4-S3 흡수 | 5/5 | MD 14/14를 기존 규칙·계약 owner와 대조해 신규 중복 owner 0을 확인했다. |
+| W4-S4 처분 | 5/5 | 승인 300개와 실제 삭제의 path·count·bytes가 일치하고 보호 overlap 0이다. |
+| W4-S5 Git | 5/5 | 보존 해시 불변, fsck 정상, 6.998 GB 회수와 garbage 0을 입증했다. |
+| W4 전체 | 4.96/5 | 모든 성공 gate가 통과했고 감점은 runtime 재설치 자동화 부재뿐이다. |

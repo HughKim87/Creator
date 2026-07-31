@@ -7,7 +7,7 @@
 - 권위: 최신 사용자 지시와 `PROJECT_RULES.md`; 이 문서는 Core 변경, 보호 데이터 mutation, 삭제·이동, commit·push의 독립 승인이 아니다.
 - 프로젝트 방향: [장기 사용자 결과와 선택 기준](../../PROJECT_DIRECTION.md)
 - 현재 상태 owner: `SESSION_HANDOFF.md`
-- 활성 단계: [W4 runtime 보존·output 지식 통합·승인 정리](repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md)
+- 활성 단계: [W5 전역 회귀·규칙 계보 보고·clean closeout](repository-consolidation/W5_GLOBAL_REGRESSION_RULE_LINEAGE_AND_CLEAN_CLOSEOUT.md)
 - 이전 규칙·문서 슬라이스 evidence: [M0~M4 검증 보고](../reports/2026-07-31_규칙_무손실_통합_M0_작업_보고.md) — optional, startup-required 아님; 세부 계보는 Git이 소유
 
 ## 이번 세션에서 확정한 사용자 의도
@@ -87,4 +87,4 @@
 
 ## 다음 실행
 
-[W4 runtime 보존·output 지식 통합·승인 정리](repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md)에서 완료된 runtime·output 판정·`e705f71` 복구점을 기준으로 300개 파일·6개 빈 디렉터리 정리와 Git object 위생을 분리 실행한다.
+[W5 전역 회귀·규칙 계보 보고·clean closeout](repository-consolidation/W5_GLOBAL_REGRESSION_RULE_LINEAGE_AND_CLEAN_CLOSEOUT.md)에서 삭제 자료의 규칙·지식을 원문→추출→현재 owner로 추적해 최종 보고하고 initiative 문서를 self-clean한다.
