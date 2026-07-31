@@ -12,15 +12,6 @@ __pycache__/
 **/inputs/
 **/outputs/
 
-# Temporary recovery checkpoint allowlist for the approved 2026-06-30 result cleanup.
-# Remove these exceptions in the cleanup commit after the exact files are preserved.
-!extension/outputs/
-extension/outputs/*
-!extension/outputs/2026-06-30 00-23-03.cleaned.srt
-!extension/outputs/2026-06-30 00-23-03.full-edit-v18.xml
-!extension/outputs/2026-06-30 00-23-03.representative-sample-v4.cuts.json
-!extension/outputs/2026-06-30 00-23-03.representative-sample-v4.mp4
-
 # Obsidian local UI and workspace state; keep only the shared safety config
 .obsidian/*
 !.obsidian/app.json

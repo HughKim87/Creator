@@ -29,6 +29,7 @@ VALIDATE_SPEC = importlib.util.spec_from_file_location("validate_srt", VALIDATE_
 assert VALIDATE_SPEC and VALIDATE_SPEC.loader
 VALIDATE_MODULE = importlib.util.module_from_spec(VALIDATE_SPEC)
 VALIDATE_SPEC.loader.exec_module(VALIDATE_MODULE)
+SKILL_ROOT = SCRIPT.parents[1]
 
 
 class VideoToSrtRuntimeTests(unittest.TestCase):
@@ -50,6 +51,16 @@ class VideoToSrtRuntimeTests(unittest.TestCase):
             VALIDATE_MODULE.DEFAULT_RUNTIME_DEPENDENCIES,
             MODULE.DEFAULT_RUNTIME_DEPENDENCIES,
         )
+
+    def test_skill_references_do_not_retain_task_glossaries(self) -> None:
+        references = SKILL_ROOT / "references"
+        self.assertEqual([], sorted(path.name for path in references.glob("*.json")))
+        skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        glossary_format = (references / "glossary-format.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("영상별 용어 사전은 `.agents/skills/video-to-srt/references/`에 두지 않는다", skill)
+        self.assertIn("task glossary는 후속 소비자가 없으면 제거", glossary_format)
 
 if __name__ == "__main__":
     unittest.main()
