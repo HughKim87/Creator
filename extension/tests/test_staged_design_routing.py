@@ -6,11 +6,13 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def _handoff_route(handoff: str, label: str) -> Path:
+def _handoff_route(handoff: str, label: str) -> Path | None:
     match = re.search(rf"(?m)^- {re.escape(label)}: `([^`]+)`$", handoff)
-    if match is None:
-        raise ValueError(f"missing handoff route: {label}")
-    return ROOT / match.group(1)
+    if match is not None:
+        return ROOT / match.group(1)
+    if re.search(rf"(?m)^- {re.escape(label)}: 없음$", handoff):
+        return None
+    raise ValueError(f"missing handoff route: {label}")
 
 
 def _metadata_value(document: str, label: str) -> str:
@@ -29,10 +31,24 @@ class StagedDesignRoutingTests(unittest.TestCase):
         cls.handoff = (ROOT / "SESSION_HANDOFF.md").read_text(encoding="utf-8")
         cls.overall_path = _handoff_route(cls.handoff, "활성 전체 설계")
         cls.active_phase_path = _handoff_route(cls.handoff, "활성 단계 설계")
+        if (cls.overall_path is None) != (cls.active_phase_path is None):
+            raise ValueError("overall and active phase routes must become idle together")
+        cls.idle = cls.overall_path is None
+        if cls.idle:
+            cls.overall = ""
+            cls.active_phase = ""
+            return
         cls.overall = cls.overall_path.read_text(encoding="utf-8")
         cls.active_phase = cls.active_phase_path.read_text(encoding="utf-8")
 
     def test_handoff_routes_one_existing_active_document_set(self):
+        if self.idle:
+            for label in ("활성 전체 설계", "활성 단계 설계"):
+                self.assertEqual(
+                    1,
+                    len(re.findall(rf"(?m)^- {re.escape(label)}: 없음$", self.handoff)),
+                )
+            return
         routed = (self.overall_path, self.active_phase_path)
         self.assertTrue(all(path.is_file() for path in routed))
         self.assertEqual(len(routed), len(set(routed)))
@@ -43,6 +59,9 @@ class StagedDesignRoutingTests(unittest.TestCase):
             )
 
     def test_required_designs_are_bounded_and_have_distinct_roles(self):
+        if self.idle:
+            self.assertFalse((ROOT / "extension" / "work" / "repository-consolidation").exists())
+            return
         self.assertLessEqual(len(self.overall.splitlines()), 120)
         self.assertLessEqual(len(self.overall), 8_000)
         self.assertLessEqual(len(self.active_phase.splitlines()), 160)
@@ -51,6 +70,9 @@ class StagedDesignRoutingTests(unittest.TestCase):
         self.assertEqual("phase-design", _metadata_value(self.active_phase, "문서 분류"))
 
     def test_overall_routes_only_the_active_detailed_phase(self):
+        if self.idle:
+            self.assertNotRegex(self.handoff, r"(?m)^- 활성 (전체|단계) 설계: `")
+            return
         relative_phase = self.active_phase_path.relative_to(self.overall_path.parent).as_posix()
         active_links = re.findall(
             r"(?m)^- 활성 단계:\s*\[[^\]]+\]\(([^)]+)\)$",
@@ -61,6 +83,8 @@ class StagedDesignRoutingTests(unittest.TestCase):
         self.assertEqual({"W0", "W1", "W2", "W3", "W4", "W5"}, stage_ids)
 
     def test_active_phase_owns_exact_execution_gates(self):
+        if self.idle:
+            return
         phase_id = _metadata_value(self.active_phase, "phase ID")
         self.assertRegex(phase_id, r"^W[0-5]$")
         self.assertIn(phase_id, self.active_phase_path.name)
@@ -80,6 +104,9 @@ class StagedDesignRoutingTests(unittest.TestCase):
 
     def test_optional_evidence_is_not_routed_as_required_state(self):
         self.assertNotRegex(self.handoff, r"(?m)^- (M0 evidence|선택 근거):")
+        if self.idle:
+            self.assertNotIn("optional evidence owner", self.handoff)
+            return
         self.assertIn("optional evidence owner", self.active_phase)
         self.assertIn("startup-required 아님", self.active_phase)
 
