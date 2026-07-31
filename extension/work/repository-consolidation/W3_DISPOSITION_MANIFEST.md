@@ -3,6 +3,8 @@
 - 문서 분류: `reference-evidence`
 - 기준 checkpoint: `5ed6bb6`
 - 기준일: 2026-07-31
+- 상태: `partially-superseded`
+- 후속 권위: `W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md`; inputs 분석 제외와 runtime 67개 보존, 수정 처분 300개 판정이 이 문서의 해당 절보다 우선한다.
 - 목적: W4가 다시 판단하지 않고도 승인 범위, 보존 범위, 참조 해제, 복구 경계를 검증할 수 있게 한다.
 - 보호 경계: 보호 입력·출력의 자식 이름과 내용은 기록하지 않고 opaque ID·개수·용량·집계 해시만 기록한다.
 - 실행 경계: 이 문서는 dry-run 명세이며 삭제·이동·Core 변경을 승인하지 않는다.

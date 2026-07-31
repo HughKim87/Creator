@@ -7,12 +7,12 @@
 - 권위: 최신 사용자 지시와 `PROJECT_RULES.md`; 이 문서는 Core 변경, 보호 데이터 mutation, 삭제·이동, commit·push의 독립 승인이 아니다.
 - 프로젝트 방향: [장기 사용자 결과와 선택 기준](../../PROJECT_DIRECTION.md)
 - 현재 상태 owner: `SESSION_HANDOFF.md`
-- 활성 단계: [W3 의존성 해제·exact disposition manifest](repository-consolidation/W3_DEPENDENCY_RELEASE_AND_EXACT_DISPOSITION_MANIFEST.md)
+- 활성 단계: [W4 runtime 보존·output 지식 통합·승인 정리](repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md)
 - 이전 규칙·문서 슬라이스 evidence: [M0 보존 지도](rule-preservation/M0_RULE_CONSERVATION_MAP.md), [M0~M4 검증 보고](../reports/2026-07-31_규칙_무손실_통합_M0_작업_보고.md) — optional, startup-required 아님
 
 ## 이번 세션에서 확정한 사용자 의도
 
-- 범위는 ignored 파일을 추적하는 작업이 아니다. tracked·untracked·ignored 파일, 백룸 작업과 개선 작업에서 생성된 문서·코드·데이터·중간물·파생물, `outputs/`와 `extension/data/`를 포함한 저장소 작업트리 전체가 대상이다.
+- 범위는 ignored 파일을 추적하는 작업이 아니다. `inputs/**`를 제외한 tracked·untracked·ignored 파일, 백룸·개선 문서·코드·데이터·중간물·파생물, `outputs/`와 `extension/data/`가 대상이다.
 - 모든 내용을 무조건 흡수하지 않는다. 이후 반복 작업의 workflow·규칙·계약·검증·재현성·실패 예방에 실제로 재사용할 수 있는 내용만 선별한다.
 - 재사용 항목은 가장 좁은 기존 canonical owner에 우선 흡수·병합한다. 기존 owner로 서로 다른 책임이 섞일 때만 최소한의 새 owner를 만든다.
 - 정리의 목적은 파일 수 감소 자체가 아니라, 일회성·중복·재생성 가능·역할 종료 항목을 걷어내면서 프로젝트 기반을 더 단단하고 재현 가능하게 만드는 것이다.
@@ -29,9 +29,9 @@
 
 제외·제한 범위:
 
-- `.git/**` object 내부와 저장소 밖 경로는 파일 정리 대상이 아니다.
+- `.git/**`는 artifact 지식 선별 대상이 아니지만 W4-S5에서 refs·stash·recovery를 보존하는 별도 object 위생 대상으로 감사한다.
 - secret·credential 내용은 읽거나 inventory에 복제하지 않고 `sensitive-unread`로 분류한다.
-- 보호 `inputs/outputs`는 현재 사용자 지시로 전역 정리 범위에 포함하되, 단계별 최소 metadata와 exact 후보만 접근하고 stage·commit하지 않는다.
+- 보호 `inputs/**`는 분석·처분 범위에서 제외한다. `outputs/**`만 단계별 최소 metadata와 승인된 exact 후보를 분석하되 stage·commit하지 않는다.
 - Core mutation은 exact 경로·이유·extension 대안을 제시해 현재 대화에서 별도 승인받기 전까지 금지한다.
 - 삭제·이동·원본 덮어쓰기는 W4 exact 처분 목록 승인 전까지 실행하지 않는다.
 
@@ -50,12 +50,12 @@
 | artifact | owner·역할 | 유지 조건 |
 |---|---|---|
 | overall-design 1 | 이 문서; 안정된 의도·단계 지도 | initiative 종료까지 active |
-| active phase-design 1 | 현재 W3 문서; exact 실행·gate | W3 commit 뒤 active route에서 교체 |
-| optional phase evidence 최대 1 | W0가 필요성을 입증한 비보호 file classification | startup 제외, 후속 처분 뒤 Git history로 회수 |
+| active phase-design 1 | 현재 W4 문서; runtime·output·처분·Git 위생 gate | W4 commit 뒤 active route에서 교체 |
+| optional phase evidence 최대 1 | W3 disposition manifest; 선행 수치·digest | startup 제외, W4 최신 판정이 우선 |
 | current-state 1 | `SESSION_HANDOFF.md`; 상태·blocker·첫 행동 | 현재 사실만 유지 |
 | final report 1 | 기존 M0~M4 보고 경로를 W5에서 전역 보고로 갱신 | 중간 단계에서 별도 보고서 신설 금지 |
 
-현재 handoff mode는 uncommitted baseline 때문에 `same-workspace`다. 각 phase exit gate 뒤 task-owned maintained files만 commit하며, push와 보호 경로 stage는 하지 않는다.
+현재 handoff mode는 ignored runtime·보호 output 때문에 `same-workspace`다. 각 phase exit gate 뒤 task-owned maintained files만 commit하며, push와 보호 경로 stage는 하지 않는다.
 
 ## 단계 지도
 
@@ -65,7 +65,7 @@
 | W1 재사용 지식 추출·owner mapping | W0 passed | 재사용 후보만 exact source·evidence·기존 owner·미흡수 이유와 연결됨 |
 | W2 선택적 흡수·기반 강화 | W1 passed, 필요한 Core exact 승인 | 승인된 지식·계약·검증만 기존 owner 중심으로 병합되고 중복·무효 증가가 0임 |
 | W3 의존성 해제·처분 manifest | W2 passed | 유지 allowlist와 tracked·untracked·ignored·보호 exact 처분 후보가 reference·rebuild·recovery와 함께 확정됨 |
-| W4 승인 처분 | W3 passed, exact delete/move 승인 | 승인된 항목만 처리되고 사용자 원본·유일 evidence·복구 가능성이 보존됨 |
+| W4 runtime·output 통합·승인 처분 | W3 passed, latest scope correction | runtime 67개가 관리되는 local capability가 되고 output 재사용 지식만 흡수된 뒤 승인 항목과 Git garbage만 정리됨 |
 | W5 전역 회귀·clean closeout | W4 passed | 전체 회귀·재현성·링크·물리 inventory·Git clean이 통과하고 단일 최종 보고와 commit이 남음 |
 
 ## 전체 성공 기준
@@ -73,7 +73,7 @@
 - W0 기준 작업트리 항목 100%가 분류되고 `unresolved`는 blocker·다음 확인 조건을 가진다.
 - 재사용 가능 항목은 기존 canonical owner 우선으로 반영되며, 미흡수·폐기 항목은 근거가 있다.
 - 보호 원본·파생물과 secrets는 reusable 문서·cache·Git에 복제되거나 stage되지 않는다.
-- 유지 항목마다 현재 owner·runtime 필요성·재생성 또는 보존 근거가 있고, 삭제 항목은 exact 승인·복구 경계와 일치한다.
+- 유지 항목마다 현재 owner·runtime 필요성·검증·재설치 또는 보존 근거가 있고, 삭제 항목은 exact 승인·복구 경계와 일치한다.
 - Core·Extension·workflow·문서·schema·link gate가 통과하고 startup-required 읽기 비용과 활성 규칙 복잡성이 근거 없이 증가하지 않는다.
 - 최종 commit 뒤 `git status --porcelain`이 비고, reviewed allowlist 밖의 untracked·ignored·임시·백룸·개선 산출물이 0이다.
 - “Git에서 보이지 않음”을 clean 근거로 사용하지 않고 filesystem inventory와 Git inventory가 서로 일치한다.
@@ -87,4 +87,4 @@
 
 ## 다음 실행
 
-[W3 의존성 해제·exact disposition manifest](repository-consolidation/W3_DEPENDENCY_RELEASE_AND_EXACT_DISPOSITION_MANIFEST.md)는 passed다. W4는 exact Core fixture 전환과 367개 파일·빈 디렉터리 6개의 처분 승인을 받은 뒤에만 시작한다.
+[W4 runtime 보존·output 지식 통합·승인 정리](repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md)에서 runtime owner를 먼저 만들고 outputs 201개를 교차검증한 뒤, 300개 파일·빈 디렉터리 6개와 Git garbage의 승인을 분리해 실행한다.

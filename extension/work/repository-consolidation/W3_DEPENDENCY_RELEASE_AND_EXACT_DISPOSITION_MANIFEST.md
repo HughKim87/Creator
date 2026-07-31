@@ -157,4 +157,4 @@ W4용 manifest는 다음 세 묶음으로 만든다.
 - W3-S3: `passed`
 - W3-S4: `passed`
 - W3 exit: `passed`
-- W4 transition: `awaiting_exact_core_and_disposition_approval`
+- W4 transition: `superseded-by-user-corrected-W4-design` — inputs 분석 제외, runtime 67개 보존
