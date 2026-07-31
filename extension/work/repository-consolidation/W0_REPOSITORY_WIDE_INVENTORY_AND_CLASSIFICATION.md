@@ -137,4 +137,4 @@ protected·sensitive 후보는 content를 열지 않는다. 경로 출력이 사
 - W0-S3: `passed` — owner·reference·rebuild/recovery 연결, runtime 67·protected outputs 201은 다음 조건과 함께 unresolved
 - W0-S4: `passed` — reuse/disposition 합계 555, W1·W3 queue 분리
 - W0 exit: `passed`
-- W1 transition: `pending_phase_commit`
+- W1 transition: `passed` — W0 checkpoint `16f87cc`, clean status 확인 뒤 W1 활성화

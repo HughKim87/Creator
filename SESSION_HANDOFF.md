@@ -2,13 +2,13 @@
 
 - 갱신일: 2026-07-31
 - 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
-- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W0
-- 상태: W0-S1~S4와 exit gate가 passed다. 전 작업트리 555파일의 Git/filesystem inventory와 1차 분류를 완료했고 W0 phase commit 뒤 W1로 전환한다.
+- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W1
+- 상태: W1-S1~S4와 전체 gate가 passed했고, task-owned 5경로의 단계 checkpoint commit을 준비한다.
 - 활성 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
-- 활성 단계 설계: `extension/work/repository-consolidation/W0_REPOSITORY_WIDE_INVENTORY_AND_CLASSIFICATION.md`
+- 활성 단계 설계: `extension/work/repository-consolidation/W1_REUSABLE_KNOWLEDGE_EXTRACTION_AND_OWNER_MAPPING.md`
 - 프로젝트 방향: `PROJECT_DIRECTION.md`
-- 읽기 순서: `PROJECT_RULES.md` → 이 문서 → 활성 전체 설계 → W0 phase-design → W0 다음 행동에 matching된 규칙
-- handoff mode: `same-workspace`; 현재 설계·감사 변경이 uncommitted이므로 fresh clone에서 재개 가능하다고 주장하지 않는다.
+- 읽기 순서: `PROJECT_RULES.md` → 이 문서 → 활성 전체 설계 → W1 phase-design → W1 다음 행동에 matching된 규칙
+- handoff mode: `same-workspace`; W1 closeout이 uncommitted이므로 fresh clone은 W0 checkpoint까지만 재개 가능하다.
 
 ## 현재 사용자 의도
 
@@ -20,14 +20,15 @@
 
 ## 검증된 baseline
 
-- branch `main`, HEAD `11a6031d93e9ea86b11a477450b37d459c847943`, `origin/main` 대비 20 commits ahead다.
-- 사용자 범위 교정 전 entry dirty baseline은 이전 감사의 task-owned 6문서다: `SESSION_HANDOFF.md`, 기존 최종 보고서, M1·M2·M3·M4 phase-design. restore·discard하지 않는다.
-- 현재 설계·W0 실행 변경은 `PROJECT_DIRECTION.md`, overall, W0 phase/evidence, handoff, M4 invalidation, 이전 보고 scope label, route test를 포함하며 모두 task-owned·uncommitted다.
+- branch `main`, HEAD `16f87cc961dd1a216697b218eb30cb84d705526b`, `origin/main` 대비 21 commits ahead이며 W1 entry status는 clean이었다.
+- W0 commit은 11개 비보호 task-owned path만 포함했고 Core·보호 path count가 0이었다.
 - 기존 M0~M3은 규칙·문서 슬라이스 evidence로 유효하다. M4는 exact delete 승인 전에 `invalidated`됐고 삭제·이동은 0이다.
 - W0 direct inventory는 tracked 209·untracked 1·ignored 345·filesystem 555/555, 5,223,547,559 bytes이며 양방향 차이·중복·오류·reparse가 0이다.
 - 보호 경로는 inputs 2파일·3,799,860,960 bytes, outputs 201파일·604,959,116 bytes다. content와 exact 이름은 evidence에 복제하지 않았다.
 - W0 분류는 canonical-retain 181, historical-git 7, disposition-candidate 22, regenerable-disposable 75, protected-user-artifact 2, unresolved 268로 합계 555다.
 - W0 gate는 Core 139·Extension 132, maintenance 93문서·122링크(errors/drift/duplicates 0), overall 90줄·5,017자, W0 140줄·6,358자, strict UTF-8·NUL·후행 공백·diff check·보호 staged 0으로 통과했다.
+- W1은 과거 문서 21/21, 선행 evidence 7/7, 보호 opaque output 10/10을 대조해 K01~K04만 W2로 넘겼다. 신규 owner·Core 후보는 0이고 exact W2 owner는 `README.md`, `extension/README.md`, 영상 R01이다.
+- W1 gate는 Core 139·Extension 132, Node v20.11.1, maintenance 95문서·122링크, ASCII·한글+공백·공백 경로 clean clone 3/3으로 통과했다.
 
 ## 권한·보호 경계
 
@@ -46,6 +47,8 @@
 | `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md` | active overall-design | W0~W5 단계·불변 경계·전체 성공 기준 |
 | `extension/work/repository-consolidation/W0_REPOSITORY_WIDE_INVENTORY_AND_CLASSIFICATION.md` | passed phase-design | 전 파일 inventory·provenance·owner·reuse 분류 |
 | `extension/work/repository-consolidation/W0_FILE_CLASSIFICATION.md` | optional reference-evidence | 555파일 그룹 분류·보호 aggregate·W1/W3 queue |
+| `extension/work/repository-consolidation/W1_REUSABLE_KNOWLEDGE_EXTRACTION_AND_OWNER_MAPPING.md` | passed phase-design | report·plan·보호 text/structure의 재사용 지식·owner mapping |
+| `extension/work/repository-consolidation/W1_REUSABLE_KNOWLEDGE_MAP.md` | optional reference-evidence | 21+7 source와 보호 output 10그룹의 owner·판정·W2 exact 입력 |
 | `extension/work/rule-preservation/M4_EXACT_DISPOSITION_AND_FINAL_REPORT.md` | invalidated phase-design | 이전 22파일 후보의 historical evidence; 실행 금지 |
 | `extension/reports/2026-07-31_규칙_무손실_통합_M0_작업_보고.md` | historical partial evidence | 규칙·문서 슬라이스 검증; 프로젝트 전역 최종보고 아님 |
 | `extension/work/rule-preservation/M0_RULE_CONSERVATION_MAP.md` | optional prior evidence | 규칙 의미 78개 계보·owner |
@@ -54,7 +57,7 @@
 
 - runtime 67파일은 exact tracked reference가 0이지만 설치 source·rebuild command가 없어 unresolved다.
 - protected outputs 201파일은 Git 복구가 없고 current deliverable·재생성·외부 복구가 미확정이라 W1/W3 전 자동 처분하지 않는다.
-- entry dirty 6문서와 W0 task delta는 evidence의 exact path·composite hash로 구분했다.
+- W1 first single-gate는 sandbox 상위 경로 EPERM과 optional evidence metadata 누락으로 실패했다. metadata를 복구했고 권한 있는 Node·clean-clone 및 전체 회귀가 통과해 환경·구현 실패를 분리했다.
 
 ## 실패 ledger
 
@@ -65,10 +68,10 @@
 
 ## 첫 다음 행동
 
-1. task-owned maintained path만 W0 phase commit한다.
-2. commit object·포함 path·보호 staged 0·status를 검증한다.
-3. W1 재사용 지식 추출·owner mapping phase를 활성화한다.
+1. W1 task-owned 5경로만 stage하고 보호·Core·unrelated staged count 0을 확인한다.
+2. W1 단계 commit을 만든 뒤 commit path와 Git 상태를 검증한다.
+3. W2 phase-design을 활성화하고 K01~K04의 기존 owner 3개만 최소 보강한다.
 
 ## 다음 session 시작 prompt
 
-`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → W0 phase-design → W0 evidence`를 읽고 W0 phase commit을 만든 뒤 W1로 전환한다. 보호 content·secret·Core·삭제·이동·외부 상태는 해당 exact 승인 없이 변경하지 않는다.
+`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → W1 phase-design → W1 evidence`를 읽고 W1 commit gate부터 실행한다. 보호 원문·exact 이름·secret·Core·삭제·이동·외부 상태는 해당 exact 승인 없이 변경하지 않는다.
