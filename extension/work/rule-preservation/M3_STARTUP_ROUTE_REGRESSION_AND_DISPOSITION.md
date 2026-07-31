@@ -2,7 +2,7 @@
 
 - 문서 분류: `phase-design`
 - phase ID: `M3`
-- lifecycle: `in_progress`
+- lifecycle: `passed`
 - 결과: M2 이후 startup-required 경로가 현재 작업만 가리키는지, 이전 이니셔티브 문서의 inbound reference와 지식 보존이 충분한지, Core·Extension·maintenance·음성 대조가 통과하는지 확인하고 M4 exact 처분 후보를 고정한다.
 - 독자: M3 실행 agent와 M4 처분 승인자
 - 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
@@ -28,7 +28,7 @@
 
 ## M3-S2 — 이전 문서 참조·지식 보존
 
-M0의 그룹 수치를 현재 exact path로 재측정한다. 현재 후보 inventory는 23개 파일과 2개 빈 디렉터리다.
+M0의 그룹 수치를 현재 exact path로 재측정한다. 현재 후보 inventory는 23개 파일, 빈 child 디렉터리 1개와 그 child만 보유한 parent 디렉터리 1개다.
 
 ### 이전 foundation 이니셔티브 8개
 
@@ -65,7 +65,7 @@ M0의 그룹 수치를 현재 exact path로 재측정한다. 현재 후보 inven
 - `extension/work/2026-06-30-00-23-03/xml_build/` — empty
 - `extension/work/2026-06-30-00-23-03/` — child `xml_build`만 보유한 empty parent candidate
 
-Inbound scan 결과, 현재 startup route가 직접 참조하는 후보는 0개다. historical report는 M0 map·handoff의 source evidence로만 남아 있으며, 이전 foundation report가 old foundation overall과 M0 phase를 참조한다. M4 전 최종 보고서에 지식·source anchor·복구 경로를 보존하고, 그 report와 predecessor를 함께 처분하는 bundle을 별도로 승인받는다.
+Inbound scan 결과, 현재 startup-required chain이 직접 읽도록 요구하는 후보는 0개다. 다만 2026-07-31 사후 감사에서 M4 exact-list 문서를 제외한 retained 5문서에 후보 경로의 비링크 역사·처분 표기 40건과 overall의 실행 가능한 Markdown evidence link 1건을 확인했다. M4-S2에서 실행 가능한 link는 0으로 만들고, 비링크 path 표기는 Git 복구·처분 기록인지 active dependency인지 분류한다. historical report는 M0 map·handoff의 source evidence로만 남아 있으며, 이전 foundation report가 old foundation overall과 M0 phase를 참조한다. M4 전 최종 보고서에 지식·source anchor·복구 경로를 보존하고, 그 report와 predecessor를 함께 처분하는 bundle을 별도로 승인받는다.
 
 ## Slice gate
 
@@ -91,7 +91,7 @@ M3-S4의 결과가 아래 조건을 모두 충족해야 M3를 `passed`로 전환
 
 - startup route가 위 1개 active phase만 가리키고 active phase·current-state owner가 각각 하나다.
 - Core 139개·Extension 132개와 기본 maintenance가 통과한다.
-- M0 map의 과거 후보 수치가 현재 exact inventory로 교정되고, 후보 23개 파일·2개 빈 디렉터리의 path·size·inbound·보존/처분 이유가 있다.
+- M0 map의 과거 후보 수치가 현재 exact inventory로 교정되고, 후보 23개 파일·2개 child-first 디렉터리 후보의 path·size·inbound·보존/처분 이유가 있다.
 - 최종 보고서 owner는 1개이고, 삭제하지 않을 최종 보고서·M0 evidence·handoff·overall의 역할이 분리된다.
 - M4 처분 후보의 exact list, bundle dependency, unique evidence/recovery 확인 결과가 사용자 승인 질문으로 정리된다.
 - M3 동안 삭제·이동은 0건이며 보호 staged count도 0이다.
@@ -105,8 +105,8 @@ M3-S4의 결과가 아래 조건을 모두 충족해야 M3를 `passed`로 전환
 ## Closeout record
 
 - M3-S1: `passed` — active link 1개, startup old-foundation reference 0개
-- M3-S2: `passed` — exact inventory 23개 파일·2개 빈 디렉터리, M4 후보는 최종 보고서 제외 22개 파일
+- M3-S2: `passed` — exact inventory 23개 파일·2개 child-first 디렉터리 후보, M4 후보는 최종 보고서 제외 22개 파일
 - M3-S3: `passed` — Core 139·Extension 132·기본 maintenance pass·문서 무결성 통과
 - M3-S4: `passed` — Core diff 0, 삭제·이동 0, 보호 staged count 0, M4 exact 목록 준비
 - M3 exit: `passed`
-- M4 transition: `pending`
+- M4 transition: `passed` — M4 준비 checkpoint `11a6031`에서 exact approval boundary 활성화

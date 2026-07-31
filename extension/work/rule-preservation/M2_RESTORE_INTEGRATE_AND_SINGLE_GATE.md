@@ -2,7 +2,7 @@
 
 - 문서 분류: `phase-design`
 - phase ID: `M2`
-- lifecycle: `in_progress`
+- lifecycle: `passed`
 - 결과: M1에서 검증한 손실 의미만 기존 owner에 최소 delta로 복원하고, 중복 owner·새 active rule 없이 Core/Extension 단일 회귀 gate를 통과한다.
 - 독자: M2 실행 agent와 승인자
 - 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
@@ -82,4 +82,4 @@ M2-S1~M2-S4의 각 slice는 exact scope와 실제 검증 결과를 기록한 뒤
 - M2-S3: `passed` — one-owner·route·historical meaning 대조 완료
 - M2-S4: `passed` — Core 139·Extension 132·maintenance pass·diff check 통과
 - M2 exit: `passed`
-- M3 transition: `pending`
+- M3 transition: `passed` — M3 checkpoint `bbe7912`에서 startup route·처분 후보 gate 완료

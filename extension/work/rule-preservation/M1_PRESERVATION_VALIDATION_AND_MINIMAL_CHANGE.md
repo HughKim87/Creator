@@ -2,7 +2,7 @@
 
 - 문서 분류: `phase-design`
 - phase ID: `M1`
-- lifecycle: `in_progress`
+- lifecycle: `passed`
 - 결과: M0가 분류한 candidate-loss·migrated 의미를 현재 owner와 의미 단위로 재검증하고, M2에서 적용할 최소 Core/Extension 변경 범위와 성공게이트를 고정한다.
 - 상위 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
 - 현재 상태 owner: `SESSION_HANDOFF.md`
@@ -113,4 +113,4 @@ M1 검증 문서가 손상되거나 구조가 깨지면 성공 보고를 하지 
 - M1-S3: `passed` — M2 exact Core 5경로와 L09 Extension delta 계약 확정
 - M1-S4: `passed` — 삭제·이동 없이 M2 진입 조건·검증 명령·scoped diff 경계 확정
 - M1 exit: `passed`
-- M2 transition: `pending`
+- M2 transition: `passed` — M2 checkpoint `90d09cd`에서 exact 변경·통합 gate 완료

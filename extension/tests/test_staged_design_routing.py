@@ -29,23 +29,14 @@ class StagedDesignRoutingTests(unittest.TestCase):
         cls.handoff = (ROOT / "SESSION_HANDOFF.md").read_text(encoding="utf-8")
         cls.overall_path = _handoff_route(cls.handoff, "활성 전체 설계")
         cls.active_phase_path = _handoff_route(cls.handoff, "활성 단계 설계")
-        cls.map_path = _handoff_route(cls.handoff, "M0 evidence")
-        cls.evidence_path = _handoff_route(cls.handoff, "선택 근거")
         cls.overall = cls.overall_path.read_text(encoding="utf-8")
         cls.active_phase = cls.active_phase_path.read_text(encoding="utf-8")
-        cls.map = cls.map_path.read_text(encoding="utf-8")
-        cls.evidence = cls.evidence_path.read_text(encoding="utf-8")
 
     def test_handoff_routes_one_existing_active_document_set(self):
-        routed = (
-            self.overall_path,
-            self.active_phase_path,
-            self.map_path,
-            self.evidence_path,
-        )
+        routed = (self.overall_path, self.active_phase_path)
         self.assertTrue(all(path.is_file() for path in routed))
         self.assertEqual(len(routed), len(set(routed)))
-        for label in ("활성 전체 설계", "활성 단계 설계", "M0 evidence", "선택 근거"):
+        for label in ("활성 전체 설계", "활성 단계 설계"):
             self.assertEqual(
                 1,
                 len(re.findall(rf"(?m)^- {re.escape(label)}: `[^`]+`$", self.handoff)),
@@ -58,7 +49,6 @@ class StagedDesignRoutingTests(unittest.TestCase):
         self.assertLessEqual(len(self.active_phase), 12_000)
         self.assertEqual("overall-design", _metadata_value(self.overall, "문서 분류"))
         self.assertEqual("phase-design", _metadata_value(self.active_phase, "문서 분류"))
-        self.assertEqual("reference-evidence", _metadata_value(self.map, "문서 분류"))
 
     def test_overall_routes_only_the_active_detailed_phase(self):
         relative_phase = self.active_phase_path.relative_to(self.overall_path.parent).as_posix()
@@ -67,33 +57,37 @@ class StagedDesignRoutingTests(unittest.TestCase):
             self.overall,
         )
         self.assertEqual([relative_phase], active_links)
-        stage_ids = set(re.findall(r"(?m)^\| (M\d) [^|]+\|", self.overall))
-        self.assertEqual({"M0", "M1", "M2", "M3", "M4"}, stage_ids)
+        stage_ids = set(re.findall(r"(?m)^\| (W\d) [^|]+\|", self.overall))
+        self.assertEqual({"W0", "W1", "W2", "W3", "W4", "W5"}, stage_ids)
 
     def test_active_phase_owns_exact_execution_gates(self):
-        self.assertEqual("M4", _metadata_value(self.active_phase, "phase ID"))
+        phase_id = _metadata_value(self.active_phase, "phase ID")
+        self.assertRegex(phase_id, r"^W[0-5]$")
+        self.assertIn(phase_id, self.active_phase_path.name)
         self.assertRegex(
             self.active_phase,
             r"(?m)^- lifecycle: `(draft|ready|in_progress|blocked|passed|invalidated|superseded)`$",
         )
         headings = {
             heading.casefold()
-            for heading in re.findall(r"(?m)^##\s+(.+)$", self.active_phase)
+            for heading in re.findall(r"(?m)^#{2,3}\s+(.+)$", self.active_phase)
         }
         self.assertIn("entry gate", headings)
-        self.assertIn("exit gate", headings)
+        self.assertTrue(any("exit" in heading and "gate" in heading for heading in headings))
         self.assertTrue(any("slice" in heading and "gate" in heading for heading in headings))
-        self.assertTrue(any("복구" in heading and "전환" in heading for heading in headings))
+        self.assertTrue(any("복구" in heading or "중단" in heading for heading in headings))
         self.assertRegex(self.active_phase, r"(?m)^- 첫 다음 행동:\s*.+$")
 
-    def test_optional_evidence_has_role_and_expiry_without_state_authority(self):
-        self.assertTrue(_metadata_value(self.map, "startup-required").startswith("아니오"))
-        for label in ("owner", "독자", "역할", "보존", "권위"):
-            self.assertTrue(_metadata_value(self.map, label))
-        self.assertEqual("reference-evidence", _metadata_value(self.evidence, "문서 분류"))
+    def test_optional_evidence_is_not_routed_as_required_state(self):
+        self.assertNotRegex(self.handoff, r"(?m)^- (M0 evidence|선택 근거):")
+        self.assertIn("optional evidence owner", self.active_phase)
+        self.assertIn("startup-required 아님", self.active_phase)
 
     def test_handoff_declares_truthful_resume_contract(self):
-        self.assertEqual("portable", _metadata_value(self.handoff, "handoff mode"))
+        mode = _metadata_value(self.handoff, "handoff mode")
+        self.assertIn(mode, {"same-workspace", "portable"})
+        if mode == "same-workspace":
+            self.assertIn("uncommitted", self.handoff)
         headings = set(re.findall(r"(?m)^##\s+(.+)$", self.handoff))
         self.assertTrue(any("첫 다음 행동" == heading for heading in headings))
         self.assertTrue(any("시작 prompt" in heading for heading in headings))

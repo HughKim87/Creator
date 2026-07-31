@@ -1,91 +1,90 @@
-# 규칙 무손실 통합 개선 전체 설계
+# 프로젝트 전역 지식 선별·구조 통합·정리 전체 설계
 
 - 문서 분류: `overall-design`
 - 상태: `active`
-- 결과: 작업하며 쌓인 문서의 재사용 가능한 의미를 canonical owner로 흡수하고 규칙·검증 구조를 정리한 뒤, 역할이 끝난 원본 문서를 제거한다.
-- 1차 목표와 실행 순서: 이 이니셔티브의 1차 목표는 문서 제거다. 의미 보존·규칙 통합·검증·참조 해제는 손실 없이 제거하기 위한 선행 작업이며, 실제 제거는 이 선행 작업이 모두 끝난 뒤 별도 승인 단계에서 수행한다.
-- 삭제 원칙(사용자 지시): 선행 개선 단계 M0~M3에서는 파일을 삭제·이동하지 않고 후보 목록만 누적한다. M3가 통과해 개선 작업이 모두 끝난 뒤 exact 목록으로 사용자 승인을 받고 M4에서 한 번에 처분한다.
-- 독자: 현재 개선을 실행하거나 다음 세션에서 재개하는 프로젝트 에이전트와 승인자.
-- 권위: 최신 사용자 지시와 `PROJECT_RULES.md`가 상위 권위이며, 이 문서는 정책이나 Core 변경 승인이 아니다.
+- 최종 결과: 프로젝트 작업트리의 모든 파일을 Git 상태와 관계없이 감사하고, 이후 workflow에 재사용할 가치가 검증된 내용만 canonical owner에 흡수·병합한 뒤 불필요한 파일을 승인된 범위에서 정리해 기반 구조와 workspace cleanliness를 함께 달성한다.
+- 독자: 프로젝트 전역 개선을 실행·승인하거나 다음 세션에서 재개하는 agent와 사용자
+- 권위: 최신 사용자 지시와 `PROJECT_RULES.md`; 이 문서는 Core 변경, 보호 데이터 mutation, 삭제·이동, commit·push의 독립 승인이 아니다.
 - 프로젝트 방향: [장기 사용자 결과와 선택 기준](../../PROJECT_DIRECTION.md)
 - 현재 상태 owner: `SESSION_HANDOFF.md`
-- 활성 단계: [M4 완료 후 문서 처분·최종 보고](rule-preservation/M4_EXACT_DISPOSITION_AND_FINAL_REPORT.md)
-- M0 evidence: [M0 규칙 보존 지도](rule-preservation/M0_RULE_CONSERVATION_MAP.md) — optional reference, startup-required 아님
-- reference-evidence: [Claude 규칙 손실 이력 분석](../reports/claude_2026-07-29_규칙_손실_이력분석과_재발방지_개선계획.md)
+- 활성 단계: [W0 프로젝트 전역 inventory·분류](repository-consolidation/W0_REPOSITORY_WIDE_INVENTORY_AND_CLASSIFICATION.md)
+- 이전 규칙·문서 슬라이스 evidence: [M0 보존 지도](rule-preservation/M0_RULE_CONSERVATION_MAP.md), [M0~M4 검증 보고](../reports/2026-07-31_규칙_무손실_통합_M0_작업_보고.md) — optional, startup-required 아님
 
-## 사용자 의도와 확정 방향
+## 이번 세션에서 확정한 사용자 의도
 
-- 1차 목표는 역할이 끝난 문서를 활성 트리에서 제거하는 것이다. 과거 경험의 보호 의미를 잃지 않고 더 명확한 owner와 검증 구조로 이전하는 일은 제거 전 필수 조건이다.
-- 과거 문구를 모두 보존하지 않는다. 현재도 유효한 `trigger / protected outcome / action / exception / verification`만 보존하고, 충돌·중복·위험·과업 전용 의미는 근거를 남겨 폐기하거나 보류한다.
-- 개선을 반복할수록 규칙이 자동 증가해서도, 축약 과정에서 의미가 자동 소실되어서도 안 된다. 새 규칙보다 기존 owner 강화, 문구 수보다 행동·구조 검증을 우선한다.
-- 다른 agent는 보고서의 제안이나 이전 대화의 승인을 현재 권위로 추정하지 않는다. 최신 사용자 지시, 현재 router, exact 승인 상태를 다시 확인한다.
-- 규칙 축소 전에 현재·과거 의미의 보존 지도를 만든다. 문장 일치가 아니라 `trigger / protected outcome / action / exception / verification / owner / lineage`를 비교한다.
-- 전체 189개 커밋을 같은 깊이로 읽지 않는다. 현재 활성 규칙 표면의 직접 계보를 우선하고, 삭제·rename된 선행 owner와 확인된 의미 공백에만 범위를 확장한다.
-- 과거 규칙·보고서·backup은 evidence이지 현재 authority가 아니다. 보호 `inputs/`·`outputs/`는 이 작업 범위 밖이다.
-- 새 Core 규칙 파일을 만들어 규칙 팽창을 해결하지 않는다. 기존 owner의 최소 수정·통합을 우선한다.
-- 절대 단어 수 상한, 특정 문구 정규식 존재 검사, 자동 Git 덮어쓰기 복구는 손실 방지 장치로 사용하지 않는다.
-- Core 변경 전에는 exact 경로·이유·extension-only 대안·보존 지도를 제시하고 현재 대화의 사용자 승인을 받는다.
-- 현재 미커밋 사용자 변경은 별도 lineage로 보존하며 승인 없이 restore·stage·commit하지 않는다.
+- 범위는 ignored 파일을 추적하는 작업이 아니다. tracked·untracked·ignored 파일, 백룸 작업과 개선 작업에서 생성된 문서·코드·데이터·중간물·파생물, `outputs/`와 `extension/data/`를 포함한 저장소 작업트리 전체가 대상이다.
+- 모든 내용을 무조건 흡수하지 않는다. 이후 반복 작업의 workflow·규칙·계약·검증·재현성·실패 예방에 실제로 재사용할 수 있는 내용만 선별한다.
+- 재사용 항목은 가장 좁은 기존 canonical owner에 우선 흡수·병합한다. 기존 owner로 서로 다른 책임이 섞일 때만 최소한의 새 owner를 만든다.
+- 정리의 목적은 파일 수 감소 자체가 아니라, 일회성·중복·재생성 가능·역할 종료 항목을 걷어내면서 프로젝트 기반을 더 단단하고 재현 가능하게 만드는 것이다.
+- 최종 결과는 `git status`만 깨끗한 상태가 아니다. 남아 있는 tracked·untracked·ignored·보호·runtime 항목이 모두 필요성과 owner·보존 또는 재생성 근거로 설명되고, 예상 밖 파일이 0인 clean workspace다.
 
-## 교차검증으로 확정한 기준
+## 범위와 경계
 
-| 항목 | evidence | 설계 반영 |
+포함 범위:
+
+- 저장소 root 아래의 tracked·modified·untracked·ignored 파일과 디렉터리
+- 백룸 조사·실험·렌더·변환·임시·cache·runtime·개선 단계에서 생성된 항목
+- 규칙·문서·보고서·코드·테스트·schema·example·data·입출력 파생물
+- 삭제·rename된 선행 owner와 Git history는 현재 파일의 계보·복구 질문에 필요한 exact 범위
+
+제외·제한 범위:
+
+- `.git/**` object 내부와 저장소 밖 경로는 파일 정리 대상이 아니다.
+- secret·credential 내용은 읽거나 inventory에 복제하지 않고 `sensitive-unread`로 분류한다.
+- 보호 `inputs/outputs`는 현재 사용자 지시로 전역 정리 범위에 포함하되, 단계별 최소 metadata와 exact 후보만 접근하고 stage·commit하지 않는다.
+- Core mutation은 exact 경로·이유·extension 대안을 제시해 현재 대화에서 별도 승인받기 전까지 금지한다.
+- 삭제·이동·원본 덮어쓰기는 W4 exact 처분 목록 승인 전까지 실행하지 않는다.
+
+## 선별·소유 원칙
+
+모든 항목은 `canonical-retain / reusable-existing-owner / reusable-new-owner-review / protected-user-artifact / regenerable-disposable / historical-git / disposition-candidate / unresolved` 중 하나로 분류한다.
+
+- 재사용 판정은 반복 가능한 `조건 / 행동 / 예외 / 검증` 또는 재현 가능한 workflow·contract·schema·test를 강화하는가로 결정한다.
+- 단일 작업 수치·원문 대화·중복 설명·미검증 추측·재생성 가능한 파생물은 active foundation으로 승격하지 않는다.
+- 재사용 가치가 없다는 판정도 owner·reference·rebuild/recovery·승인 근거가 있어야 한다.
+- 새 문서·규칙·도구는 cleanup 과정에서 자동 증가시키지 않는다. 신설은 기존 owner가 책임을 표현할 수 없고 독자·trigger·verification이 구분될 때만 허용한다.
+- 이전 M0~M3 결과는 규칙·문서 슬라이스의 유효한 선행 evidence다. 기존 M4 exact 목록은 프로젝트 전역 inventory보다 좁아 현재 실행 단계로는 무효다.
+
+## 산출물·상태 계약
+
+| artifact | owner·역할 | 유지 조건 |
 |---|---|---|
-| `PROJECT_RULES.md`의 팽창·0단어 재구축 6사이클 | direct remeasurement | 재작성 전 의미 보존 gate를 둔다 |
-| 현재 활성 규범 37파일·18,844단어 | unresolved | corpus 정의·재현 명령이 없어 근거에서 제외한다. M0-S1이 corpus를 재정의·재측정한 값만 기준으로 쓴다 |
-| 외부 입력 불신·최소 권한·도구 최소 호출·출처 규율의 활성 owner 공백 | direct remeasurement | M0에서 현재 적용성과 owner를 판정 |
-| 도구 성공과 콘텐츠 승인 분리 | direct remeasurement | `document-work`와 domain validation에 의미가 생존하므로 중복 복원 금지 |
-| 과거 자료 열람·검증 등급·쓰기 안전 | direct remeasurement | 전손이 아니라 부분 승계로 분류하고 공백만 검토 |
-| 3연속 실패 뒤 대기→범위 내 방법 변경 | direct remeasurement | 최신 자율성 정책과 충돌하므로 과거 문구 자동 복원 금지 |
-| failures 8,358단어 압축 | shared-source agreement | 개수 기준과 나머지 표본의 의미 보존은 M0 미해결 항목 |
+| overall-design 1 | 이 문서; 안정된 의도·단계 지도 | initiative 종료까지 active |
+| active phase-design 1 | 현재 W0 문서; exact 실행·gate | W0 통과 뒤 active route에서 교체 |
+| optional phase evidence 최대 1 | W0가 필요성을 입증한 비보호 file classification | startup 제외, 후속 처분 뒤 Git history로 회수 |
+| current-state 1 | `SESSION_HANDOFF.md`; 상태·blocker·첫 행동 | 현재 사실만 유지 |
+| final report 1 | 기존 M0~M4 보고 경로를 W5에서 전역 보고로 갱신 | 중간 단계에서 별도 보고서 신설 금지 |
 
-## 불변 경계
-
-- 보존하기로 한 의미는 통합 전후 정확히 한 canonical owner에 있어야 한다.
-- 삭제·병합·강등되는 의미는 `preserved / migrated / superseded / task-specific / unsafe-outdated / candidate-loss` 중 하나로 근거와 함께 분류한다.
-- 완료 phase·보고서·원시 명령 기록을 startup-required read로 만들지 않는다.
-- 한 작업의 선호·수치·문구를 foundation 규칙으로 자동 승격하지 않는다.
-- 구조·동작 테스트는 owner·route·실제 gate를 검증하고 자연어 문장 조각을 고정하지 않는다.
-- 단계 전환 때마다 `PROJECT_RULES.md`에서 현재 행동에 맞는 규칙을 다시 선택하고 active phase에 적용 owner와 검증을 기록한다.
-
-## 산출물·위임 계약
-
-| artifact | 수 | owner·독자·보존 |
-|---|---:|---|
-| overall-design | 1 | 이 문서; 전체 방향과 단계 의존성을 읽는 agent·승인자; 작업 종료 때 historical |
-| active phase-design | 1 | 현재 단계 문서; 실행 agent; 단계 통과 뒤 active route에서 제거 |
-| phase reference-evidence | 1 | M0 보존 지도; M0~M2의 판정·검증과 M4 처분 판정 독자; M4 종료 때 historical |
-| current-state | 1 | `SESSION_HANDOFF.md`; 다음 session; 검증된 현재 상태만 유지 |
-
-- Claude 보고서는 사용자 제공 교차검증 자료이며 위 artifact budget 밖의 기존 reference다. 새 보고서나 미래 phase 상세 문서는 만들지 않는다.
-- `PROJECT_DIRECTION.md`는 initiative 밖의 안정된 방향 reference이며 이 설계의 상태·gate·evidence를 소유하지 않는다.
-- 현재 handoff mode는 `portable`이다. 필수 방향·설계·evidence와 승인된 규칙 변경을 같은 Git checkpoint에 보존하며, 후속 agent는 해당 commit을 기준선으로 사용한다.
-- 상태 문서는 목표·현재 단계·첫 행동·blocker만 소유한다. 보존 지도는 판정 행과 baseline을, Git은 원문 diff와 완료 이력을 소유한다.
-- 위임 전에는 다른 agent가 chat 없이 목표, 금지사항, 승인 경계, 첫 행동, gate를 재진술할 수 있는지 확인한다. 새 대화에서 필요한 Core 승인은 다시 exact 범위로 받는다.
+현재 handoff mode는 uncommitted baseline 때문에 `same-workspace`다. 각 phase exit gate 뒤 task-owned maintained files만 commit하며, push와 보호 경로 stage는 하지 않는다.
 
 ## 단계 지도
 
 | 단계 | 의존성 | 한 줄 결과 |
 |---|---|---|
-| M0 규칙 계보·손실 감사 | 없음 | 손실 후보와 현재 의미가 evidence label·현재 owner·lineage로 분류된 보존 지도가 완성됨 |
-| M1 보존 검증·최소 변경안 | M0 passed·`M0-T1`이 필요 판정 | 문구 고정 없이 손실을 탐지하는 검증과 extension-only 대안·exact 변경 범위가 확정됨 |
-| M2 복원·통합 단일 체크포인트 | M1 passed·해당 대화의 exact Core 승인 | 승인된 손실만 복원하고 중복을 상쇄 압축해 의미 누락·중복 owner가 0이 됨 |
-| M3 시작 경로·회귀·종료 | M2 passed 또는 `M0-T1`이 M1·M2 불필요로 판정 | startup read가 활성 작업만 가리키고 Core·Extension·maintenance 회귀와 음성 대조가 통과함 |
-| M4 완료 후 문서 처분 | M3 passed·선행 개선 작업 종료·exact 삭제 목록 사용자 승인 | 지식·참조·복구 검증이 끝난 문서만 제거되고 고아 링크와 유일 evidence 손실이 0임 |
-
-M0 결과 candidate-loss가 0이면 복원할 손실이 없으므로 M1·M2를 건너뛰고 M3로 전환한다. M4는 이 분기와 무관하게 모든 선행 개선 작업이 끝난 뒤에만 시작한다. 단계는 자동으로 이어지지 않으며 각 전환 gate가 필요성을 다시 판정한다.
+| W0 전역 inventory·분류 | 현재 사용자 범위 교정 | 모든 작업트리 항목의 Git 상태·provenance·role·owner·재생성/복구·1차 분류가 빠짐없이 고정됨 |
+| W1 재사용 지식 추출·owner mapping | W0 passed | 재사용 후보만 exact source·evidence·기존 owner·미흡수 이유와 연결됨 |
+| W2 선택적 흡수·기반 강화 | W1 passed, 필요한 Core exact 승인 | 승인된 지식·계약·검증만 기존 owner 중심으로 병합되고 중복·무효 증가가 0임 |
+| W3 의존성 해제·처분 manifest | W2 passed | 유지 allowlist와 tracked·untracked·ignored·보호 exact 처분 후보가 reference·rebuild·recovery와 함께 확정됨 |
+| W4 승인 처분 | W3 passed, exact delete/move 승인 | 승인된 항목만 처리되고 사용자 원본·유일 evidence·복구 가능성이 보존됨 |
+| W5 전역 회귀·clean closeout | W4 passed | 전체 회귀·재현성·링크·물리 inventory·Git clean이 통과하고 단일 최종 보고와 commit이 남음 |
 
 ## 전체 성공 기준
 
-- M0 보존 지도의 모든 유지 항목이 최종 diff에서 정확히 한 owner로 추적된다.
-- 복원하지 않은 과거 항목은 폐기·대체·보류 근거가 있으며 과거 권위를 현재 권위로 오인하지 않는다.
-- 활성 규칙과 startup-required 문서의 읽기 비용이 M0-S1의 재현 가능한 기준보다 증가하지 않는다. 재현 명령과 파일 목록이 없는 수치는 합격 근거로 쓰지 않는다.
-- M3에서 완료된 이전 이니셔티브 설계 8건의 지식 추출·참조 해제·복구 검증과 exact 처분 목록이 완성된다.
-- M4에서 사용자가 승인한 exact 목록만 제거되고, 완료 문서가 시작 경로에 남지 않으며 유일 evidence·승인·계보 손실이 0이다.
-- literal phrase 존재만 검사하는 신규 테스트가 없고, 기존 관련 테스트는 구조·동작 검증으로 대체된다.
-- 승인된 Core 변경 gate와 Extension 회귀, 문서 무결성, scoped diff가 모두 통과한다.
-- 보호 데이터 접근, 외부 효과, dependency 설치, push는 별도 승인 없이는 수행하지 않는다.
+- W0 기준 작업트리 항목 100%가 분류되고 `unresolved`는 blocker·다음 확인 조건을 가진다.
+- 재사용 가능 항목은 기존 canonical owner 우선으로 반영되며, 미흡수·폐기 항목은 근거가 있다.
+- 보호 원본·파생물과 secrets는 reusable 문서·cache·Git에 복제되거나 stage되지 않는다.
+- 유지 항목마다 현재 owner·runtime 필요성·재생성 또는 보존 근거가 있고, 삭제 항목은 exact 승인·복구 경계와 일치한다.
+- Core·Extension·workflow·문서·schema·link gate가 통과하고 startup-required 읽기 비용과 활성 규칙 복잡성이 근거 없이 증가하지 않는다.
+- 최종 commit 뒤 `git status --porcelain`이 비고, reviewed allowlist 밖의 untracked·ignored·임시·백룸·개선 산출물이 0이다.
+- “Git에서 보이지 않음”을 clean 근거로 사용하지 않고 filesystem inventory와 Git inventory가 서로 일치한다.
+
+## 중단·복구·승인
+
+- exact owner·재사용 가치·복구 경계를 확정할 수 없으면 `unresolved`로 남기고 처분하지 않는다.
+- 보호 데이터 내용, secret, Core, 외부 상태, 삭제·이동이 새로 필요하면 해당 경계에서 중단하고 필요한 exact 승인을 확인한다.
+- tracked 파일은 Git commit, untracked·보호 파일은 사용자 승인 외부 경계 또는 유지 판정이 없으면 삭제 후보로 확정하지 않는다.
+- 이전 M4는 `invalidated`이며 새 전역 inventory가 끝나기 전 해당 22개 파일을 독립 처분하지 않는다.
 
 ## 다음 실행
 
-`M0`·`M1`·`M2`·`M3`의 exit/transition gate는 통과했다. 다음 실행은 [M4 완료 후 문서 처분·최종 보고](rule-preservation/M4_EXACT_DISPOSITION_AND_FINAL_REPORT.md)의 `M4-S1`이며, 권장 exact 처분 목록에 대한 현재 대화의 사용자 승인을 확인한다.
+[W0 프로젝트 전역 inventory·분류](repository-consolidation/W0_REPOSITORY_WIDE_INVENTORY_AND_CLASSIFICATION.md)의 W0-S1에서 현재 dirty baseline을 보존하고, content를 열기 전에 Git inventory와 filesystem metadata inventory의 재현 가능한 수집 기준을 고정한다.
