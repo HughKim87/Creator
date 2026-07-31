@@ -3,7 +3,7 @@
 - 갱신일: 2026-07-31
 - 역할: ainotebook 이외 worktree의 현재 상태 단일 owner
 - 현재 작업: 없음 — 프로젝트 전역 지식 선별·기반 통합·workspace 정리 W0~W5 완료
-- 상태: final report·idle handoff·initiative self-clean이 W5 final commit에 포함되며 commit 뒤 Git clean을 검증한다.
+- 상태: idle; 활성 계획·task-rule·scratch·종료 보고서는 없다.
 - branch: `main`
 - 활성 전체 설계: 없음
 - 활성 단계 설계: 없음
@@ -17,14 +17,13 @@
 - 처분 commit `53607e9`에서 승인된 300개·488,962,975 bytes를 제거하고 tracked input·output·cache를 0으로 만들었다.
 - FFmpeg·whisper.cpp runtime 67개·816,338,813 bytes와 current output 4개·117,222,243 bytes는 ignored 상태로 보존했다.
 - Git GC 전후 refs 11·stash 2·reflog 393·reachable object 4,640·graph 224의 count/SHA-256이 같고 `.git`은 7,359,690,190→361,424,219 bytes로 줄었다.
-- 삭제 자료의 규칙·지식 109행(F78+L12+K4+O15)을 source→추출→owner/disposition으로 최종 보고했다.
-- 전체 rule-surface는 M0 9,759→현재 10,476 tokens(+7.35%)지만, 필수 startup과 matching owner를 합친 대표 명령 경로는 M0 대비 39.4~65.5% 감소했다.
+- 삭제 자료의 재사용 지식은 현재 canonical owner에 흡수됐고, 상세 계보·완료 수치·점수는 Git history가 소유한다.
 
 ## 최종 검증 기준
 
-- Core 140, Extension 138, bootstrap·Node·maintenance·clean-clone 3종 통과
+- Core 141, Extension 139, bootstrap·Node·maintenance·clean-clone 3종 통과
 - runtime actual probe 통과
-- inputs 제외 tracked 184, untracked 0, ignored 71, filesystem 255
+- inputs 제외 tracked 183, untracked 0, ignored 71, filesystem 254
 - ignored 71 = runtime 67 + current output 4
 - tracked input·output·cache 0, Git status clean
 
@@ -35,13 +34,11 @@
 | `PROJECT_DIRECTION.md` | 장기 사용자 결과·방향 |
 | `PROJECT_RULES.md` | startup·권한·보호·Core·검증 정책 |
 | `SESSION_HANDOFF.md` | 현재 idle 상태와 로컬 보존 allowlist |
-| `extension/reports/2026-07-31_규칙_무손실_통합_M0_작업_보고.md` | W0~W5·규칙별 계보·수치·점수 최종 보고 |
 | `extension/config/local-runtime-v1.json` | ignored runtime manifest |
 
 ## 잔여 제한
 
 - runtime source 재설치 자동화는 없지만 현재 version·digest·실행 probe는 통과했다.
-- 명령별 읽기 개선은 결정적 문서 token 측정이며 실제 모델별 과금·latency 표본은 없다. 새 controlled 작업에서는 그 작업의 active design만 추가된다.
 - browser-user-session은 deterministic clone bootstrap 밖의 의도된 `needs_user`다.
 
 ## 첫 다음 행동
