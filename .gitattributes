@@ -20,3 +20,11 @@
 *.avi binary
 *.wav binary
 *.mp3 binary
+
+# W4 one-time pre-delete recovery snapshot; remove in the deletion commit.
+extension/outputs/** -text
+**/__pycache__/** -text
+.obsidian/appearance.json -text
+.obsidian/core-plugins.json -text
+.obsidian/graph.json -text
+.obsidian/workspace.json -text

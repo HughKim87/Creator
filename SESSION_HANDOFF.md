@@ -2,8 +2,8 @@
 
 - 갱신일: 2026-07-31
 - 역할: ainotebook 이외 worktree의 현재 work·blocker·검증 상태·첫 다음 행동 단일 owner
-- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W4-S4 승인 경계
-- 상태: W4-S1~S3가 passed다. 다음은 exact Core fixture 변경과 300파일·빈 디렉터리 6개 처분 승인을 분리해 받는 것이다.
+- 현재 작업: 프로젝트 전역 지식 선별·구조 통합·workspace 정리 W4-S4 pre-delete snapshot
+- 상태: W4-S1~S3 passed. 사용자가 삭제 대상을 ignore 조정으로 먼저 commit하라는 원래 의도를 재확정해, 삭제 전 recovery snapshot을 만드는 중이다.
 - 활성 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
 - 활성 단계 설계: `extension/work/repository-consolidation/W4_RUNTIME_OUTPUT_CONSOLIDATION_AND_CLEANUP.md`
 - 프로젝트 방향: `PROJECT_DIRECTION.md`
@@ -51,6 +51,8 @@
 - structure/text 84/84는 UTF-8이며 JSON 22, XML 17, SRT 15가 모두 parse됐다. media 113은 content/hash 신규 접근 없이 metadata·sidecar로 113/113 lineage를 확인했다.
 - W1 총계 JSON 23·XML 18·SRT 16, XML clip 7,452를 keep 항목과 합쳐 재현했다. MD line 14 차이는 파일당 trailing newline을 line으로 세는지의 계수 방식 차이로 확인됐다.
 - W4-S3는 MD 14/14를 기존 영상 계약·R04~R15·candidate owner에 mapping했고 새 owner·rule·schema·test delta 0으로 passed다. W4-S2·S3 점수는 각각 5/5다.
+- 사용자 정정으로 W4-S4 순서는 `ignore 임시 예외 → ignored 후보 272개 보존 commit → 복구 검증 → 300개 삭제 → ignore 원복 → 삭제 commit`으로 확정됐다. 이전의 “tracked 상태만 checkpoint” 해석은 무효다.
+- pre-delete staged tree는 신규 272개·488,643,454 bytes의 filesystem/index blob 272/272가 byte-identical이고 keep·inputs·runtime 포함이 0이다. no-clone은 Core 139·Extension 138·Node가 통과했고 이 checkpoint에서 의도한 maintenance `protected_change` 197만 expected failure다.
 
 ## 권한·보호 경계
 
@@ -58,7 +60,7 @@
 - W0는 보호 path를 포함한 최소 metadata inventory만 수행한다. 보호 content·exact filename을 reusable evidence나 Git에 복제하지 않고 보호 path를 stage·commit하지 않는다.
 - secret·credential·cookie·token·browser profile 내용은 읽지 않고 `sensitive-unread`로 분류한다.
 - Core mutation은 exact 경로·이유·extension 대안을 제시한 뒤 현재 대화의 별도 승인이 필요하다.
-- W4-S2의 structure/text 84개 읽기 승인은 완료·소진됐다. 보호 output 삭제·이동·rename·overwrite와 추가 content 접근, Git object prune는 각각 새 exact 승인 전까지 금지한다.
+- W4-S2 읽기 승인은 완료됐고 사용자는 candidate outputs 197개를 삭제 전 Git snapshot에 넣는 일회성 예외와 snapshot 뒤 삭제를 명시했다. keep 4·inputs·runtime은 stage·삭제하지 않는다.
 - 단계 exit commit은 사용자가 요청한 단계 규칙을 따르되 task-owned maintained path만 포함하고 push하지 않는다.
 
 ## 중요 artifact
@@ -82,7 +84,7 @@
 ## blocker·위험
 
 - `core/tests/test_rule_routing.py`가 처분 후보 역사 보고서를 직접 읽는다. W4에서 현재 canonical owner로 fixture를 전환하려면 exact Core 승인이 필요하다.
-- structure/text output 84개 읽기는 완료됐으며 300개 처분 승인, Core 승인, Git object maintenance 승인은 서로 대체하지 않는다.
+- pre-delete snapshot과 삭제 지시는 확인됐지만 Core 승인과 Git object maintenance 승인은 서로 대체하지 않는다.
 - `.git` 정리 전 branch·tag·stash 2개·reflog와 모든 reachable commit의 recovery를 검증해야 한다.
 
 ## 실패 ledger
@@ -96,13 +98,14 @@
 | W3 closeout 문서 gate | 증거 상세화 | active phase 162줄·same-workspace marker 누락 | 1 | phase 160줄로 압축·uncommitted 경계 복구, focused 6개와 전체 no-clone gate 통과 |
 | W4-S1 tree 검증 | Windows path 정렬 | `Path` 정렬이 명시되지 않아 최초 tree digest와 verifier 값 불일치 | 1 | POSIX 상대경로 ordinal 정렬을 계약화하고 Python·Node 독립 계산 일치 |
 | W4-S1 whisper smoke | 한글 workspace 절대 model 경로 | CLI가 `3221226505`로 비정상 종료 | 1 | CLI cwd 기준 상대 model 경로로 전달해 model-load·transcript 생성 성공 |
+| W4-S4 삭제 복구 | agent 해석 | 사용자의 “ignore 변경 후 commit하고 삭제”를 tracked checkpoint만으로 축소 | 1 | ignored 후보 자체를 pre-delete commit에 보존한 뒤에만 삭제 |
 
 ## 첫 다음 행동
 
-1. `core/tests/test_rule_routing.py` 한 파일을 역사 보고서 fixture 대신 현재 `core/rules/staged-work-design.md`를 읽게 바꾸는 exact Core 승인을 받는다.
-2. W3 tracked 28개, cache/local 75개, output candidate 197개와 빈 디렉터리 6개의 exact 처분 승인을 별도로 받는다.
-3. 승인 집합을 재측정해 digest·containment·reparse·keep/runtime/input overlap gate 뒤 W4-S4를 실행한다.
+1. `.gitignore` 일회성 예외로 output candidate 197개와 cache/local 75개만 노출한다.
+2. tracked 후보 28개를 포함한 삭제 대상 300개가 recovery commit에서 복구되는지 검증한다.
+3. exact Core fixture 승인 뒤 300개·빈 디렉터리 6개를 삭제하고 ignore 예외를 원복해 별도 처분 commit을 만든다.
 
 ## 다음 session 시작 prompt
 
-`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → W4 phase-design`을 읽고 W4-S4 Core·처분 승인 경계부터 재개한다. inputs는 분석하지 않고 runtime은 stage·삭제하지 않으며, 추가 output 접근·Core·삭제·Git prune는 각각 exact 승인 뒤 수행한다.
+`PROJECT_RULES.md → SESSION_HANDOFF.md → overall-design → W4 phase-design`을 읽고 W4-S4 pre-delete snapshot부터 재개한다. keep 4·inputs·runtime은 stage·삭제하지 않고 Core와 Git prune는 각각 exact 승인 뒤 수행한다.

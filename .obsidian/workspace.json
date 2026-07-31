@@ -1,0 +1,218 @@
+{
+  "main": {
+    "id": "94caae3824968a7b",
+    "type": "split",
+    "children": [
+      {
+        "id": "5ca00fc3e0651de7",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8b94773a1f650761",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "그래프 뷰"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "3a6ca9363ac64575",
+    "type": "split",
+    "children": [
+      {
+        "id": "c8d756f8024d596a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5ec4a056c3a5955a",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "파일 탐색기"
+            }
+          },
+          {
+            "id": "8a79c6a476cfc03e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "검색"
+            }
+          },
+          {
+            "id": "4474b295f026b18d",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "북마크"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 373.5
+  },
+  "right": {
+    "id": "3455abd4c3c9c182",
+    "type": "split",
+    "children": [
+      {
+        "id": "65615f73b9b3bb98",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a6bfb78dacd14618",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "백링크"
+            }
+          },
+          {
+            "id": "2195466bc6406b0c",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "나가는 링크"
+            }
+          },
+          {
+            "id": "359f3b9bc1edfe11",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "태그"
+            }
+          },
+          {
+            "id": "86b03ecd95092588",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "모든 속성"
+            }
+          },
+          {
+            "id": "cf5a824182b86dcc",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "개요"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:빠른 전환기 열기": false,
+      "graph:그래프 뷰 열기": false,
+      "canvas:새 캔버스 만들기": false,
+      "daily-notes:오늘의 일일 노트 열기": false,
+      "templates:템플릿 삽입": false,
+      "command-palette:명령어 팔레트 열기": false,
+      "bases:새 베이스 생성하기": false
+    }
+  },
+  "active": "8b94773a1f650761",
+  "lastOpenFiles": [
+    "extension/work/youtube-upload-retention-nwfk_lsj",
+    "extension/work/title-thumbnail-package-yxi599_5",
+    "extension/work/title-thumbnail-package-l4pkic_i",
+    "extension/work/title-thumbnail-package-g4wzctck",
+    "extension/work/title-thumbnail-package-rntgiakb",
+    "extension/work/title-thumbnail-package-8fmx1fiv",
+    "extension/work/title-thumbnail-package-hjv1k71p",
+    "extension/work/title-thumbnail-package-xhis7fwr",
+    "extension/work/manual-upload-package-fo94kbhj",
+    "extension/work/manual-upload-package-7vx_u3ta",
+    "extension/work/manual-upload-package-0q88bmar",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "extension/outputs/2026-06-30 00-23-03.direction-options.md",
+    "extension/outputs/2026-06-30 00-23-03.message-edit-spine.md",
+    "extension/outputs/2026-06-30 00-23-03.representative-sample-v4.validation.md",
+    "docs.md",
+    "extension/outputs/2026-06-30 00-23-03.first-pass-analysis.md",
+    "extension/reports/codex_2026-07-28_문서기반_개선_plan/codex_G5_통합검증과_최종보고.md",
+    "extension/reports/codex_2026-07-28_문서기반_개선_plan/codex_G3-G4_지시준수_규칙과_회귀검증.md",
+    "extension/reports/codex_2026-07-28_문서기반_개선_plan/codex_G2_ainotebook_상태이전.md",
+    "extension/reports/codex_2026-07-28_문서기반_개선_plan/codex_G0-G1_기준고정과_상태라우팅.md",
+    "extension/reports/codex_2026-07-28_문서기반_지시준수와_워크트리상태관리_개선안.md",
+    "extension/docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md",
+    "extension/docs/domain/youtube/VIDEO_EDITING_RULE_CANDIDATES.md",
+    "extension/rules/video-editing-validation-and-delivery.md",
+    "extension/rules/video-editing-state-and-approval.md",
+    "extension/rules/video-editing-boundary-quality.md",
+    "extension/rules/video-editing-story-and-cut-design.md",
+    "extension/rules/video-editing-artifact-lineage.md",
+    "extension/rules/video-editing-intake-and-instructions.md",
+    "core/rules/cross-validation.md",
+    "core/rules/rule-governance.md",
+    "extension/reports/codex_2026-07-27_e4161fd_장점선별_개선적용_최종보고.md",
+    "rules/version-control.md",
+    "rules/document-work.md"
+  ]
+}

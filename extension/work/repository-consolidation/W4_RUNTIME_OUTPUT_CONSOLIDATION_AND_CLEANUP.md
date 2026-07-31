@@ -8,8 +8,8 @@
 - 전체 설계: `extension/work/RULE_PRESERVATION_AND_SIMPLIFICATION_DESIGN.md`
 - 상태 owner: `SESSION_HANDOFF.md`
 - optional evidence owner: `extension/work/repository-consolidation/W3_DISPOSITION_MANIFEST.md` — startup-required 아님, W3 수치의 역사 근거이며 현재 runtime·input 판정 권위가 아님
-- 권위: 최신 사용자 지시와 `PROJECT_RULES.md`; 사용자는 현재 대화에서 W4-S2 structure/text 84개 읽기만 승인했으며 Core 변경·삭제·Git object prune는 승인하지 않았다.
-- 첫 다음 행동: W4-S4의 exact Core fixture 변경과 처분 집합 승인을 분리해 요청한다.
+- 권위: 최신 사용자 지시와 `PROJECT_RULES.md`; 사용자는 삭제 후보를 ignore 조정으로 Git에 먼저 보존한 뒤 삭제하라고 명시했다. 이는 outputs 197개의 일회성 snapshot 승인이고 Core 변경·Git prune 승인은 아니다.
+- 첫 다음 행동: ignore 예외로 output 197개와 cache/local 75개를 노출해 삭제 전 recovery commit을 만든다.
 
 ## Entry gate
 
@@ -93,7 +93,7 @@ media 113개는 sidecar·hash·버전명으로 먼저 판정하고, content 검�
 
 재사용 단위는 영상별 수치·문구가 아니라 반복 가능한 조건·행동·예외·검증·실패 예방으로만 추출한다. owner 우선순위는 `VIDEO_EDITING_WORKFLOW_CONTRACT.md` → `video-editing-artifact-lineage.md` → 기존 schema/test → 필요한 경우에만 최소 새 owner다.
 
-raw 보호 output은 현재 규칙상 `git add -f` 보존 대상이 아니다. 권장 보존은 보호 원문을 복사하지 않은 canonical 문서·schema·test diff다. raw structure archive가 꼭 필요하면 permanent Git 노출과 history 증가를 명시한 별도 exact 보호정책 승인을 받기 전에는 실행하지 않는다.
+사용자 정정에 따라 이번 candidate 197개는 `.gitignore`의 일회성 예외로 pre-delete commit에 직접 보존한다. keep 4·inputs·runtime은 계속 ignored이며 삭제 commit에서 예외를 원복한다.
 
 ### W4-S3 gate
 
@@ -109,17 +109,17 @@ raw 보호 output은 현재 규칙상 `git add -f` 보존 대상이 아니다. �
 
 ## W4-S4 — exact 승인 처분과 reference release
 
-권장 처분 기준은 tracked history 28개·319,521 bytes, cache/local state 75개·906,581 bytes, output candidate 197개·487,736,873 bytes다. 합계는 300개·488,962,975 bytes이며 runtime 67개와 input 2개는 제외한다.
+처분 기준은 tracked history 28개·319,521 bytes, cache/local 75개·906,581 bytes, output candidate 197개·487,736,873 bytes다. 합계 300개·488,962,975 bytes이며 runtime 67개·inputs·output keep 4개는 제외한다.
 
-역사 보고서를 읽는 `core/tests/test_rule_routing.py`는 exact Core 승인 뒤 현재 `staged-work-design.md` fixture로 전환한다. 빈 디렉터리 6개는 child-before-parent로 제거한다. 승인 직전 count·bytes·digest·containment·reparse·allowlist overlap을 재검증한다.
+먼저 ignored 후보 272개를 exact 예외로 노출해 tracked 후보 28개와 함께 recovery commit에 고정한다. 그 commit을 검증한 뒤 `core/tests/test_rule_routing.py` exact 승인을 받아 current fixture로 전환하고 300개를 삭제하며 ignore 예외를 원복한다. 빈 디렉터리 6개는 child-before-parent로 제거한다.
 
 ### W4-S4 gate
 
-- exact Core 승인·exact delete 승인·보호 structure 열람 승인이 서로 구분됨
-- 승인 집합과 실행 집합의 path·count·bytes·digest 100% 일치
+- pre-delete commit tree가 300개 삭제 대상의 path·count·bytes를 복구하고 keep·runtime·inputs 포함이 0; 이 checkpoint의 maintenance `protected_change` 197만 expected이며 삭제 commit에서 0
+- exact Core 승인과 snapshot 뒤 삭제 승인이 충족되고 실행 집합의 path·count·bytes·digest가 100% 일치
 - 삭제 후 tracked·ignored·filesystem 예상치와 실제치 일치
 - 보호 keep 4, runtime 67, inputs 전체의 mutation·stage 0
-- Core·Extension·maintenance·route·clean-clone 통과 후 W4 처분 commit
+- ignore 예외 원복, Core·Extension·maintenance·route·clean-clone 통과 후 별도 처분 commit
 
 ## W4-S5 — Git object 위생
 
