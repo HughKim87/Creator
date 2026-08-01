@@ -15,6 +15,7 @@
 - 기준선: 로컬 `main=6a7b271f25567d5c6caba5320bb66a43aff96814`, `origin/main=44e3059be53eed7b190451d9bb9934add48f9213`, ahead 41 / behind 1, tracked 변경 0.
 - 직접 측정: 미푸시 이력은 선형 41커밋·merge 0·`outputs/**` 고유 경로 201개·`inputs/**` 경로 0개다.
 - 승인: 사용자는 설계 작성, 순차 실행, 필요한 권한, 단계 게이트, 커밋, 최종보고서, 승인된 `main` push를 요청했다.
+- Core 승인: 사용자는 2026-08-01 현재 이력의 `core/**` 34개 경로를 최종 내용 그대로 새 SHA에 재적용하는 것을 명시 승인했다.
 - 외부 효과: 원격 SHA가 기준선과 같을 때만 `main` fast-forward push를 허용한다. force push와 원격 보존 브랜치 게시를 금지한다.
 
 ## 산출물 예산
@@ -91,4 +92,4 @@
 
 ## 첫 다음 행동
 
-`GHP1-S1` 원본 보존 branch와 외부 bundle을 만들고 복구 게이트를 실행한다.
+`GHP1-S2` 작업 worktree를 만들고 `outputs/**`를 제외한 원본 커밋을 최신 `origin/main` 위에 순서대로 재적용한다.

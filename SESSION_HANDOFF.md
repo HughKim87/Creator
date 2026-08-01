@@ -3,7 +3,7 @@
 - 갱신일: 2026-08-01
 - 역할: ainotebook 이외 worktree의 현재 상태 단일 owner
 - 현재 작업: Git 이력 정제 및 GitHub 게시
-- 상태: `GHP1-S1 ready`; 설계 문서 게이트 통과, 원본 복구 경계 준비 중
+- 상태: `GHP1-S2 in_progress`; 원본 복구 게이트와 Core 34개 경로 재적용 승인 통과
 - branch: `main`
 - 활성 전체 설계: 없음
 - 활성 단계 설계: [Git 이력 정제 및 게시 설계](extension/work/2026-08-01_GIT_HISTORY_SANITIZATION.md)
@@ -12,6 +12,8 @@
 
 ## 현재 검증 상태
 
+- `GHP1-S1` 통과: 보존 branch와 외부 bundle의 HEAD는 `997ab157418f3c9b9257cc9561f1a81f51d45435`로 일치한다.
+- bundle은 383,824,883 bytes, SHA-256 `F13A2552E1690924A4E29F6DDBB8A6DCE14C0CB3120DFDDE927A74947CA7DD7B`, verify·복구 clone·213커밋 일치 검증을 통과했다.
 - 모든 `inputs` 경로는 분석·변경·stage 대상에서 제외한다.
 - inputs 제외 현재 파일은 tracked 180개, ignored runtime 67개, untracked 0개다.
 - `extension/outputs/`에는 현재 파일이 없고, Git 추적 input·output·cache도 없다.
@@ -19,9 +21,9 @@
 
 ## 첫 다음 행동
 
-1. 활성 설계의 `GHP1-S1`에 따라 원본 보존 branch와 외부 bundle을 만들고 검증한다.
+1. 별도 worktree에서 `outputs/**`를 제외한 원본 커밋을 최신 `origin/main` 위에 순서대로 재적용한다.
 
 ## 다음 session 시작 prompt
 
 1. `PROJECT_RULES.md` → `SESSION_HANDOFF.md` → 활성 단계 설계를 읽는다.
-2. `GHP1-S1`부터 재개하고, 완료 전 기존 파일·로컬 branch를 삭제하지 않는다.
+2. `GHP1-S2`부터 재개하고, 완료 전 기존 파일·로컬 branch를 삭제하지 않는다.
