@@ -2,7 +2,7 @@
 
 - 문서 분류: `phase-design`
 - phase ID: `W3`
-- lifecycle: `in_progress`
+- lifecycle: `passed`
 - 독자: 현재 검증을 실행·재개하는 프로젝트 에이전트
 - 권위: 최신 사용자 지시, `PROJECT_RULES.md`, 전체 설계
 - optional evidence owner: [초기 상세 설계 근거](2026-08-01_GIT_HISTORY_SANITIZATION.md), startup-required 아님
@@ -49,7 +49,7 @@
 - 원격 SHA가 바뀌거나 비-fast-forward가 필요하면 원본·작업 branch·bundle을 그대로 두고 중단한다.
 - 기존 파일·branch·복구 자료는 W5 완료 전 삭제하지 않는다.
 
-## Task rules (`active`)
+## Task-rule disposition
 
 | trigger | extracted rule | evidence | target owner | disposition |
 |---|---|---|---|---|
@@ -57,4 +57,4 @@
 | 이력 추적성 | 원본 SHA는 bundle, 논리 커밋은 새 이력, 대응은 mapping으로 검증한다 | 43/43 재적용 | 현재 phase | `reject`: 현재 이관 사실 |
 | 활성 설계 route | overall과 W0~W5 phase route 형식을 유지한다 | staged routing test | 기존 document/staged rules | `reject`: 기존 계약 중복 |
 
-- 첫 다음 행동: staged-design 라우팅 단위 테스트를 다시 실행한 뒤 전체 gate를 재실행한다.
+- 첫 다음 행동: W4 게시 phase가 최종보고서 초안과 fast-forward push gate를 실행한다.

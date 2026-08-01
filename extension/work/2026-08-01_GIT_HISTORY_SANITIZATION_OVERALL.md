@@ -4,7 +4,7 @@
 - 결과: 작업별 커밋 경계를 보존하면서 GitHub 제한을 넘는 output 객체를 게시 이력에서 제외하고, 검증된 `main`을 fast-forward 게시한다.
 - 독자: 현재 작업을 실행·재개하는 프로젝트 에이전트와 사용자
 - 권위: 최신 사용자 지시와 `PROJECT_RULES.md`
-- 활성 단계: [W3 통합 검증](2026-08-01_W3_GIT_HISTORY_SANITIZATION.md)
+- 활성 단계: [W4 게시](2026-08-01_W4_GIT_HISTORY_SANITIZATION.md)
 
 ## 불변 조건
 
