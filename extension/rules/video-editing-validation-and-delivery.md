@@ -14,7 +14,7 @@
 ### R15 — 검증 단계별 주장 제한
 
 - 조건: XML 생성, import, 재생, 사용자 검토 결과를 상태로 기록하거나 보고한다.
-- 행동: `semantic_gate: passed → structure-validated → media-validated → app-validated → user-approved` 중 증거가 있는 단계만 기록하고, 다음 단계가 자동으로 충족됐다고 추론하지 않는다.
+- 행동: `generated`, `parsed`, `structure-validated`, `tool-validated`, `semantic_gate: passed`, `media-validated`, `app-validated`, `user-approved` 중 증거가 있는 상태만 기록하고, 다음 단계가 자동으로 충족됐다고 추론하지 않는다. 기술 상태와 의미 상태는 독립적으로 보고한다.
 - 예외: 적용되지 않는 단계는 `not-applicable`로 기록할 수 있지만 더 높은 단계를 통과한 것으로 계산하지 않는다.
 - 검증: 각 상태에 실행 시점, 대상 artifact, 검사 방법, 결과 owner가 있고 보고 문구가 최고 검증 단계보다 높지 않은지 확인한다.
 
@@ -29,6 +29,9 @@
 
 | 상태 | 최소 증거 |
 |---|---|
+| `generated` | exact 작업 계약에 따라 artifact가 생성되고 대상·시점·생성 owner가 기록됨 |
+| `parsed` | 선택한 parser가 artifact를 읽고 필수 구조·metadata를 반환함 |
+| `tool-validated` | 지정된 domain validator와 버전/계약 검사가 통과함. media·app·user 통과는 포함하지 않음 |
 | `semantic_gate: passed` | 완성 timeline 순차 의미 검수와 reviewer |
 | `structure-validated` | frame·gap·track·source lineage·XML 구조 검사 |
 | `media-validated` | exact 승인 원본의 decode·프레임·오디오 확인 |

@@ -4,7 +4,7 @@
 - 읽는 시점: 유튜브 영상의 근거 패키지를 만들거나 도메인 adapter의 입력·결과·승인 경계를 검토할 때.
 - 책임: `youtube_domain.YouTubeEvidenceService`가 도메인 입력을 검증하고 공통 `ContextService`가 근거 선택·출처·비용을 소유한다.
 - 상태: 활성 도메인 계약.
-- 관련 권위: [선택적 컨텍스트 계약](../../../../core/docs/CONTEXT_PACKAGE_CONTRACT.md), [작업 상태 계약](../../../../core/docs/WORK_STATE_CONTRACT.md).
+- 관련 권위: `PROJECT_RULES.md`가 선택한 공통 context·work-state interface와 이 도메인 계약.
 
 ## 1. 선택한 도메인과 첫 작업
 

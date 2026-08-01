@@ -27,7 +27,7 @@ description: NotebookLM 등에서 생성한 동영상의 음성을 로컬 Whispe
    `python -m pip install --target <runtime-deps> faster-whisper`
 
 4. 기본 모델은 다국어 정확도와 속도의 균형이 좋은 `large-v3-turbo`다. `transcribe_to_srt.py`는 별도 `--model-dir`가 없으면 공용 모델 캐시를 자동으로 사용한다.
-5. 모델 캐시와 Python 의존성을 `extension/work/<job-id>/`에 복사하거나 커밋하지 않는다. 작업 폴더에는 영상별 SRT·원본 전사·용어 사전만 둔다.
+5. 모델 캐시와 Python 의존성을 `extension/work/<job-id>/`에 복사하거나 커밋하지 않는다. 작업 폴더에는 영상별 SRT·원본 전사·용어 사전만 둔다. 영상별 용어 사전은 `.agents/skills/video-to-srt/references/`에 두지 않는다. 이 디렉터리는 재사용 형식과 절차만 소유한다.
 6. `transcribe_to_srt.py`와 `validate_srt.py`는 프로젝트의 `extension/.runtime/python-deps`를 자동으로 우선 참조한다. 검증 명령을 위해 별도 `PYTHONPATH`를 만들지 않는다.
 7. Windows에서는 CUDA 장치가 보여도 실제 추론 시 `cublas64_12.dll` 또는 cuDNN이 없을 수 있다. CUDA를 쓰려면 라이브러리까지 확인한다. 확실하지 않으면 `cpu/int8`을 기본값으로 사용한다.
 
@@ -69,6 +69,8 @@ Whisper 결과를 그대로 최종본으로 취급하지 않는다.
 7. 용어 사전을 바꿔 다시 정제할 때는 `--postprocess-only`를 사용해 음성을 재전사하지 않는다.
 
 glossary 형식은 `references/glossary-format.md`를 따른다.
+
+영상별 glossary는 현재 `extension/work/<job-id>/`의 task scratch에 둔다. closeout에서는 재사용 가능한 교정 원칙만 이 스킬이나 형식 문서에 흡수하고, 고유 제품명·인명·오인식 치환을 담은 task glossary는 후속 소비자가 명시된 유지 산출물이 아닌 한 scratch와 함께 제거한다.
 
 ## 구조 검증
 

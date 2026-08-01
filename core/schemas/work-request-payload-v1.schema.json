@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kim-silver-youtube:schema:work-request-payload:v1",
+  "$id": "project://core/schemas/work-request-payload-v1.schema.json",
   "title": "Work Request Payload v1",
   "type": "object",
   "additionalProperties": false,
@@ -12,6 +12,17 @@
     "input_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "protection_boundaries": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "required_decisions": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "verification_levels": {"type": "array", "items": {"type": "string", "minLength": 1}}
+    "verification_levels": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier"],
+      "properties": {
+        "tier": {"enum": ["quick", "standard", "controlled"]},
+        "phase_id": {"type": ["string", "null"], "minLength": 1},
+        "design_ref": {"type": ["string", "null"], "minLength": 1},
+        "design_fingerprint": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    }
   }
 }

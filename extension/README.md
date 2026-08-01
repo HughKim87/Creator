@@ -13,6 +13,7 @@
 | `rules/` | YouTube·영상·제작 행동에만 적용되는 조건부 작업 규칙 |
 | `docs/` | YouTube·영상·workflow 계약과 사용자 가이드 |
 | `src/` | 도메인·workflow 구현 |
+| `config/` | Git 제외 local capability의 버전·무결성·재설치 metadata |
 | `schemas/` | extension payload 구조 |
 | `tests/` | extension 회귀와 수직 acceptance test |
 | `examples/` | 보호 데이터가 아닌 실행 예시 |
@@ -21,7 +22,7 @@
 | `data/` | 실행 시 생성되는 disposable record·event |
 | `inputs/` | 영상별 보호 원본; Git 제외 |
 | `outputs/` | 영상·SRT·썸네일·업로드 패키지 같은 보호 파생물; Git 제외 |
-| `.runtime/` | 프로젝트 로컬 도구·모델·의존성; Git 제외 |
+| `.runtime/` | active owner와 설치·재구축 경로가 있는 로컬 도구·모델·의존성 cache; Git 제외 |
 | `../.agents/skills/` | 저장소 전체에서 자동 발견되는 Codex skill source |
 
 새 작업은 이 영역에 추가한다. extension 작업을 이유로 core 구현·계약·규칙을 자동 변경하지 않는다.
@@ -37,6 +38,32 @@
 
 영상 편집 SRT 검증·명시 정리, legacy cut CSV 이관, timeline 다중 진단, `sequence-v5`·`premiere-cs6-v4` XML 생성은 `python -m video_editing`이 소유한다. 보호 데이터가 없는 기본 입력은 `examples/video-edit-timeline-v1.json`이며, 실제 `inputs/`·`outputs/` 경로는 exact 항목과 목적을 승인받은 작업에서만 사용한다.
 
+과거 영상 spine·분석 문서에서 영상 편집 지식을 환류할 때도 촬영 후 영상 편집 workflow 계약을 domain owner로 사용한다. 범용 파일 추출·정리 절차는 `PROJECT_RULES.md`가 별도로 선택하며 extension이 다시 소유하거나 foundation rule을 직접 라우팅하지 않는다.
+
+## 기반 adapter와 증거 경계
+
+| 책임 | 구현·검증 owner | 경계 |
+|---|---|---|
+| `VIDEO_JOB` next-step·resume·boundary | [workflow engine](src/video_workflow/engine.py), [engine 회귀](tests/test_video_workflow_engine.py) | deterministic 상태 엔진이며 실제 browser·NotebookLM 실행과 사용자 승인은 [영상 제작 조정 skill](../.agents/skills/coordinate-video-production/SKILL.md)이 소유 |
+| workflow 학습·복잡성 후보 | [aggregate learning](src/learning/metrics.py), [learning 회귀](tests/test_learning_metrics.py) | 보호 원문·개별 보고를 보존하지 않는 aggregate-only 계산; 실제 production 표본 전 효과를 주장하거나 rule을 자동 변경하지 않음 |
+| Core export consumer·game pilot | [domain conformance](src/domain_conformance.py), [통합 실행점](../scripts/export_conformance.py), [conformance 회귀](tests/test_export_conformance.py) | 같은 Core manifest의 empty·YouTube·최소 game consumer 구조 검증이며 실제 게임 제작·독립 배포 증거가 아님 |
+
+synthetic fixture 통과는 production 작업 완료, 실제 앱 검증, 사용자 승인으로 승격하지 않는다. `.runtime/` 항목은 현재 skill·code에서 참조되고 설치 또는 재구축 방법을 설명할 수 있을 때만 active capability로 유지한다. 과거 보고서의 tool 사용 사실이나 output 존재만으로 참조 없는 binary를 현재 runtime evidence로 보존하지 않는다.
+
+## 관리되는 local runtime
+
+[`local-runtime-v1.json`](config/local-runtime-v1.json)은 ignored `.runtime/` binary·model 자체가 아니라 component role·version·tree hash·critical file hash·license·source·reinstall 경계를 소유한다. FFmpeg는 공용 영상 probe·변환 도구이고, whisper.cpp는 선택적 offline backend다. 기존 `video-to-srt`의 faster-whisper primary backend를 암묵 교체하지 않는다.
+
+tree hash는 각 파일의 `POSIX 상대경로|byte 크기|SHA-256` 행을 상대경로 기준 ordinal 정렬하고 LF와 마지막 LF로 직렬화한 뒤 SHA-256을 계산한다.
+
+clean clone에서 runtime 전체가 없으면 optional `absent`이며 전체 프로젝트 실패가 아니다. 현재 workspace에서 보존 runtime을 요구하고 실제 실행까지 검증할 때는 다음 gate를 사용한다.
+
+```powershell
+python -B extension/src/local_runtime.py --require-present --probe
+```
+
+manifest와 실제 tree·critical hash가 다르거나 component 일부만 존재하면 `drift/incomplete`로 실패한다. runtime 파일은 계속 Git에서 제외하며 manifest·schema·verifier·synthetic test만 commit한다.
+
 ## 조건부 영상 편집 규칙
 
 영상 편집 workflow 계약을 읽은 뒤 현재 행동과 일치하는 규칙만 한 번 읽는다.
@@ -51,12 +78,10 @@
 | validator 실행, XML 생성, 완료·전달 상태 보고 | [검증·전달 규칙](rules/video-editing-validation-and-delivery.md) |
 | 독립 영상에서 실패가 반복되어 보류 항목의 규칙 승격을 검토 | [영상 편집 규칙 후보](docs/domain/youtube/VIDEO_EDITING_RULE_CANDIDATES.md) |
 
-규칙 본문은 각 파일만 소유한다. workflow 계약·보고서·작업 기록에 복제하지 않는다.
-
 ## Core 의존 경계
 
-- extension은 승인된 `file_data` 인터페이스를 사용할 수 있다.
-- core는 extension을 import하거나 extension 도메인 개념을 소유하지 않는다.
-- 필요한 core 기능이 없으면 임시 우회 구현을 조용히 추가하지 않는다.
-- interactive 작업은 core 변경 필요성을 사용자에게 설명한다.
-- 자동 작업은 `core_change_required`로 실패하고 `work/CORE_CHANGE_FAILURES.md`에 기록한다.
+- extension은 `PROJECT_RULES.md`가 선택한 승인된 foundation interface만 사용한다.
+- extension 문서와 규칙은 foundation rule을 직접 라우팅하지 않고, 사용자의 상위 route를 따른다.
+- foundation은 domain extension을 import하거나 extension owner를 소유하지 않는다.
+- foundation interface가 부족하면 임시 우회 구현을 조용히 추가하지 않고, boundary rule의 새 interface 검토 gate를 따른다.
+- foundation 변경이 필요하면 사용자의 exact 승인 경계를 먼저 확인한다.

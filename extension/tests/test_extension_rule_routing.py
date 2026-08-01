@@ -34,6 +34,13 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
                 self.assertRegex(text, r"(?m)^- Read when:")
                 self.assertRegex(text, r"(?m)^- Authority:")
 
+    def test_generic_file_lifecycle_rules_are_not_extension_owners(self):
+        readme = (EXTENSION / "README.md").read_text(encoding="utf-8")
+        for name in ("file-extraction.md", "file-cleanup.md"):
+            with self.subTest(path=name):
+                self.assertFalse((RULES_DIR / name).exists())
+                self.assertNotIn(f"(rules/{name})", readme)
+
     def test_rule_and_replay_ids_have_single_owners(self):
         rule_documents = {
             path.name: path.read_text(encoding="utf-8")
@@ -107,6 +114,15 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
         self.assertNotRegex(contract, r"(?m)^### R\d{2} —")
         self.assertIn("R01~R16", contract)
         self.assertIn("TC01~TC16", contract)
+
+    def test_video_artifacts_use_task_rule_and_single_scratch_lifecycle(self):
+        lineage = (
+            RULES_DIR / "video-editing-artifact-lineage.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("하나의 scratch root", lineage)
+        self.assertIn("발견 즉시 task-rule에 기록", lineage)
+        self.assertIn("closeout에서 일괄 제거", lineage)
+        self.assertIn("소비자·만료 조건", lineage)
 
     def test_candidate_reference_is_routed_but_not_active_rule(self):
         readme = (EXTENSION / "README.md").read_text(encoding="utf-8")

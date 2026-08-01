@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kim-silver-youtube:schema:failure-knowledge-payload:v1",
+  "$id": "project://core/schemas/failure-knowledge-payload-v1.schema.json",
   "title": "Failure Knowledge Projection Payload v1",
   "type": "object",
   "additionalProperties": false,

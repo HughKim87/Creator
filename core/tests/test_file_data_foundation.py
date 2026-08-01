@@ -479,14 +479,14 @@ class FileDataFoundationTests(unittest.TestCase):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(ROOT / relative, target)
             service = ArtifactService(root)
-            self.assertEqual(service.check(), {"artifacts": 20, "drift": []})
+            self.assertEqual(service.check(), {"artifacts": 17, "drift": []})
             for target_ref in sorted(ARTIFACT_OWNERS):
                 target = root / target_ref
                 target.unlink()
                 result = service.rebuild(target_ref)
                 self.assertEqual(result["target"], target_ref)
                 self.assertTrue(target.is_file())
-                self.assertEqual(service.check(), {"artifacts": 20, "drift": []})
+                self.assertEqual(service.check(), {"artifacts": 17, "drift": []})
 
     def test_production_record_writes_fail_before_touching_runtime_data(self) -> None:
         before = {

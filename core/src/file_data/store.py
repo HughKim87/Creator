@@ -22,9 +22,9 @@ from .record import (
     compute_content_hash,
     decode_record,
     encode_record,
-    read_record,
     resolve_project_path,
     validate_record,
+    PROTECTED_SEGMENTS,
 )
 
 
@@ -34,6 +34,33 @@ RUNTIME_DATA_ROOT = Path("extension") / "data"
 EMPTY_STREAM_HASH = "sha256:" + hashlib.sha256(b"").hexdigest()
 _ISOLATED_TEST_WRITE_CAPABILITY = object()
 _BOUND_TEST_WRITE_CAPABILITY_NONCE = object()
+
+
+def _is_repository_root(project_root: Path) -> bool:
+    """Return whether a path is a tracked project root, not a test fixture."""
+
+    return (
+        (project_root / ".git").exists()
+        and (project_root / "PROJECT_RULES.md").is_file()
+        and (project_root / "core").is_dir()
+        and (project_root / "extension").is_dir()
+    )
+
+
+def _normalize_storage_root(storage_root: Path | str) -> Path:
+    """Validate a relative, non-protected storage convention."""
+
+    candidate = Path(storage_root)
+    if (
+        candidate.is_absolute()
+        or not candidate.parts
+        or any(part in {".", ".."} for part in candidate.parts)
+        or set(candidate.parts) & PROTECTED_SEGMENTS
+    ):
+        raise InputContractError(
+            "storage root must be a relative path outside protected segments"
+        )
+    return candidate
 
 
 class RecordIOError(Exception):
@@ -119,6 +146,11 @@ def _bind_isolated_test_write_capability(
     if relative_fixture == Path("."):
         raise LegacyReadOnlyError(
             "legacy data is read-only; the shared temporary root is not an isolated fixture"
+        )
+
+    if _is_repository_root(project_root):
+        raise LegacyReadOnlyError(
+            "legacy data is read-only; test writes cannot target a repository root"
         )
 
     source_project_root = Path(__file__).resolve().parents[2]
@@ -236,6 +268,7 @@ def _atomic_write_record(
     record: Mapping[str, Any],
     *,
     write_capability: object | None,
+    storage_root: Path | str = RUNTIME_DATA_ROOT,
     overwrite: bool = False,
 ) -> Path:
     """Private record writer that requires the explicit isolated-test capability."""
@@ -247,9 +280,10 @@ def _atomic_write_record(
     _bind_isolated_test_write_capability(root, write_capability)
     encoded = encode_record(record)
     target = resolve_project_path(root, relative_path)
-    if target.parent != root / RUNTIME_DATA_ROOT / "records":
+    normalized_storage_root = _normalize_storage_root(storage_root)
+    if target.parent != root / normalized_storage_root / "records":
         raise UnsafePathError(
-            "Common records must use extension/data/records/<uuid>.json."
+            "Common records must use the configured storage root's records directory."
         )
     if target.suffix != ".json" or target.stem != record["id"]:
         raise DuplicateRecordError("Record filename must equal its record id.")
@@ -296,6 +330,7 @@ class RecordStore:
         *,
         approved_record_types: frozenset[str] = APPROVED_RECORD_TYPES,
         approved_streams: frozenset[str] = APPROVED_STREAMS,
+        storage_root: Path | str = RUNTIME_DATA_ROOT,
         _write_capability: object | None = None,
     ) -> None:
         root = Path(project_root)
@@ -307,6 +342,7 @@ class RecordStore:
             raise InputContractError("Project root must be a directory.")
         self.approved_record_types = approved_record_types
         self.approved_streams = approved_streams
+        self.storage_root = _normalize_storage_root(storage_root)
         self._write_capability = (
             None
             if _write_capability is None
@@ -320,6 +356,7 @@ class RecordStore:
         *,
         approved_record_types: frozenset[str] = APPROVED_RECORD_TYPES,
         approved_streams: frozenset[str] = APPROVED_STREAMS,
+        storage_root: Path | str = RUNTIME_DATA_ROOT,
     ) -> RecordStore:
         """Create an explicitly writable isolated test fixture store."""
 
@@ -327,6 +364,7 @@ class RecordStore:
             project_root,
             approved_record_types=approved_record_types,
             approved_streams=approved_streams,
+            storage_root=storage_root,
             _write_capability=_ISOLATED_TEST_WRITE_CAPABILITY,
         )
 
@@ -338,11 +376,11 @@ class RecordStore:
 
     @property
     def records_directory(self) -> Path:
-        return resolve_project_path(self.root, RUNTIME_DATA_ROOT / "records")
+        return resolve_project_path(self.root, self.storage_root / "records")
 
     @property
     def events_directory(self) -> Path:
-        return resolve_project_path(self.root, RUNTIME_DATA_ROOT / "events")
+        return resolve_project_path(self.root, self.storage_root / "events")
 
     def initialize(self) -> dict[str, str]:
         self._require_writable_test_root()
@@ -352,13 +390,19 @@ class RecordStore:
         except OSError as exc:
             raise RecordIOError(f"Could not initialize data directories: {exc}") from exc
         return {
-            "records": "extension/data/records",
-            "events": "extension/data/events",
+            "records": (self.storage_root / "records").as_posix(),
+            "events": (self.storage_root / "events").as_posix(),
         }
 
     def _require_initialized(self) -> None:
         if not self.records_directory.is_dir() or not self.events_directory.is_dir():
             raise StoreNotInitializedError("Run the init entry point before record operations.")
+
+    def _read_record(self, relative_path: Path) -> dict[str, Any]:
+        """Read a record through the configured storage root."""
+
+        target = resolve_project_path(self.root, relative_path)
+        return decode_record(target.read_bytes())
 
     def _record_relative_path(self, record_id: str) -> Path:
         try:
@@ -367,11 +411,11 @@ class RecordStore:
             raise InputContractError("record id must be a lowercase canonical UUIDv4") from exc
         if parsed.version != 4 or str(parsed) != record_id:
             raise InputContractError("record id must be a lowercase canonical UUIDv4")
-        return RUNTIME_DATA_ROOT / "records" / f"{record_id}.json"
+        return self.storage_root / "records" / f"{record_id}.json"
 
     def _stream_relative_path(self, stream_name: str) -> Path:
         _require_approved(stream_name, self.approved_streams, "stream")
-        return RUNTIME_DATA_ROOT / "events" / f"{stream_name}.jsonl"
+        return self.storage_root / "events" / f"{stream_name}.jsonl"
 
     def _require_approved_record(self, record: Mapping[str, Any]) -> None:
         if record["record_type"] not in self.approved_record_types:
@@ -395,7 +439,7 @@ class RecordStore:
             raise InputContractError("payload must be a JSON object")
         try:
             record = build_record(record_type, payload, record_id=record_id, timestamp=timestamp)
-            relative = RUNTIME_DATA_ROOT / "records" / f"{record['id']}.json"
+            relative = self.storage_root / "records" / f"{record['id']}.json"
             target = resolve_project_path(self.root, relative)
             with _exclusive_lock(target):
                 _atomic_write_record(
@@ -403,8 +447,9 @@ class RecordStore:
                     relative,
                     record,
                     write_capability=self._write_capability,
+                    storage_root=self.storage_root,
                 )
-                if read_record(self.root, relative) != record:
+                if self._read_record(relative) != record:
                     raise RecordIOError("Post-write record verification failed.")
             return record
         except (DuplicateRecordError, FileExistsError) as exc:
@@ -416,7 +461,7 @@ class RecordStore:
         self._require_initialized()
         relative = self._record_relative_path(record_id)
         try:
-            record = read_record(self.root, relative)
+            record = self._read_record(relative)
         except FileNotFoundError as exc:
             raise RecordNotFoundError(f"Record not found: {record_id}") from exc
         self._require_approved_record(record)
@@ -428,7 +473,7 @@ class RecordStore:
         records: list[dict[str, Any]] = []
         for path in sorted(self.records_directory.glob("*.json"), key=lambda item: item.name):
             relative = path.relative_to(self.root)
-            record = read_record(self.root, relative)
+            record = self._read_record(relative)
             self._require_approved_record(record)
             if record["record_type"] == record_type:
                 records.append(record)
@@ -450,7 +495,7 @@ class RecordStore:
         target = resolve_project_path(self.root, relative)
         with _exclusive_lock(target):
             try:
-                current = read_record(self.root, relative)
+                current = self._read_record(relative)
             except FileNotFoundError as exc:
                 raise RecordNotFoundError(f"Record not found: {record_id}") from exc
             self._require_approved_record(current)
@@ -466,9 +511,10 @@ class RecordStore:
                 relative,
                 updated,
                 write_capability=self._write_capability,
+                storage_root=self.storage_root,
                 overwrite=True,
             )
-            if read_record(self.root, relative) != updated:
+            if self._read_record(relative) != updated:
                 raise RecordIOError("Post-update record verification failed.")
         return updated
 

@@ -41,6 +41,7 @@ class MaintenanceService:
         self,
         project_root: Path | str,
         *,
+        artifact_owners: Mapping[str, str] | None = None,
         _write_capability: object | None = None,
     ) -> None:
         self.root = Path(project_root).resolve()
@@ -58,7 +59,7 @@ class MaintenanceService:
             _write_capability=_write_capability,
         )
         self.document_data = DocumentDataService(self.root)
-        self.artifacts = ArtifactService(self.root)
+        self.artifacts = ArtifactService(self.root, artifact_owners=artifact_owners)
 
     def _git(self, *arguments: str) -> list[str]:
         result = subprocess.run(
@@ -84,6 +85,13 @@ class MaintenanceService:
             path = line[3:].split(" -> ")[-1].replace("\\", "/")
             paths.append(path)
         return paths
+
+    def tracked_protected_paths(self) -> list[str]:
+        return [
+            path
+            for path in self._git("ls-files")
+            if set(Path(path).parts) & {"inputs", "outputs"}
+        ]
 
     def document_refs(self) -> list[str]:
         tracked = self._git(
@@ -452,10 +460,17 @@ class MaintenanceService:
                 json.loads(path.read_text(encoding="utf-8"))
             except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 errors.append(f"schema:{path.relative_to(self.root).as_posix()}:{exc}")
+        tracked_protected = set(self.tracked_protected_paths())
         protected_changes = [
-            path for path in self.git_status_paths() if set(Path(path).parts) & {"inputs", "outputs"}
+            path
+            for path in self.git_status_paths()
+            if set(Path(path).parts) & {"inputs", "outputs"}
+            and (path in tracked_protected or (self.root / path).exists())
         ]
         errors.extend(f"protected_change:{path}" for path in protected_changes)
+        errors.extend(
+            f"protected_tracked:{path}" for path in sorted(tracked_protected)
+        )
         if not allow_core_changes:
             core_changes = [
                 path

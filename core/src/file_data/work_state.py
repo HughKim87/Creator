@@ -7,6 +7,11 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
+from .execution import (
+    OPTIONAL_REQUEST_FIELDS,
+    normalize_execution,
+    validate_execution_contract,
+)
 from .record import RecordValidationError
 from .store import (
     ExpectationMismatchError,
@@ -86,14 +91,20 @@ def _string_sequence(value: Any, field: str) -> list[str]:
 
 
 def validate_request(request: Mapping[str, Any]) -> dict[str, Any]:
-    if not isinstance(request, Mapping) or set(request) != REQUEST_FIELDS:
-        raise InputContractError(f"request must contain exactly: {sorted(REQUEST_FIELDS)}")
+    fields = set(request) if isinstance(request, Mapping) else set()
+    allowed_fields = REQUEST_FIELDS | OPTIONAL_REQUEST_FIELDS
+    if not isinstance(request, Mapping) or not REQUEST_FIELDS.issubset(fields) or fields - allowed_fields:
+        raise InputContractError(
+            f"request must contain required fields {sorted(REQUEST_FIELDS)} and only optional fields {sorted(OPTIONAL_REQUEST_FIELDS)}"
+        )
     desired = request["desired_outcome"]
     if not isinstance(desired, str) or not desired.strip():
         raise InputContractError("desired_outcome must be a non-empty string")
     normalized = {"desired_outcome": desired}
     for field in REQUEST_FIELDS - {"desired_outcome"}:
         normalized[field] = _string_list(request[field], field)
+    if "execution" in request:
+        normalized["execution"] = normalize_execution(request["execution"])
     return normalized
 
 
@@ -270,6 +281,11 @@ class WorkStateService:
         timestamp: datetime | None = None,
     ) -> dict[str, Any]:
         normalized = validate_request(request)
+        if "execution" in normalized:
+            normalized["execution"] = validate_execution_contract(
+                self.store.root,
+                normalized["execution"],
+            )
         identifier = work_id or str(uuid4())
         _validate_work_id(identifier)
         events, stream_hash = self._events()
@@ -337,6 +353,11 @@ class WorkStateService:
             raise InvalidTransitionError("Blocked work must name at least one blocker.")
         if to_status == "completed" and next_action is not None:
             raise InvalidTransitionError("Completed work cannot keep a next action.")
+        if outcome != "rejected":
+            validate_execution_contract(
+                self.store.root,
+                current["payload"]["request"].get("execution"),
+            )
         events, stream_hash = self._events()
         appended = self.store.append_event(
             "work_events",

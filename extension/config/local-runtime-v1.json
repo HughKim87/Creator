@@ -1,0 +1,112 @@
+{
+  "$schema": "../schemas/local-runtime-v1.schema.json",
+  "schema_version": "local-runtime-v1",
+  "runtime_root": "extension/.runtime",
+  "retention": "gitignored-local-capability",
+  "tree_digest": "sha256(sorted-posix-path-ordinal|bytes|sha256-with-lf)",
+  "verified_on": "2026-07-31",
+  "components": [
+    {
+      "id": "ffmpeg-windows-x64-8.1.2-essentials",
+      "status": "retained-shared-tool",
+      "role": "shared video probe, conversion, and synthetic audio fixture tool",
+      "version": "8.1.2",
+      "platform": "windows-x86_64",
+      "relative_root": "ffmpeg/ffmpeg-8.1.2-essentials_build",
+      "file_count": 45,
+      "bytes": 318594126,
+      "tree_sha256": "a31ffe4dec39a70c17b56c540a290065890496b5f48b2e2beb8737fe8425e09a",
+      "critical_files": [
+        {
+          "role": "ffmpeg",
+          "path": "bin/ffmpeg.exe",
+          "bytes": 101897728,
+          "sha256": "1326dde4c84ff1f96fe6b8916c5bed29e163e9b5dccf995f6f3db069d143ec5e"
+        },
+        {
+          "role": "ffprobe",
+          "path": "bin/ffprobe.exe",
+          "bytes": 101692928,
+          "sha256": "b49ccc7c6547b141ad5a2f6ec69cc04323d7133d7704d70b331b904c63eecb07"
+        },
+        {
+          "role": "ffplay",
+          "path": "bin/ffplay.exe",
+          "bytes": 103382528,
+          "sha256": "c5072709d93eee7b40891109e282486b5089e84ea7ce02010a48ff1b79e5b11a"
+        }
+      ],
+      "probe": {"kind": "ffmpeg"},
+      "source": {
+        "project_url": "https://ffmpeg.org/",
+        "distribution_url": "https://www.gyan.dev/ffmpeg/builds/",
+        "release_label": "ffmpeg-release-essentials 8.1.2",
+        "source_commit": "38b88335f9",
+        "license": "GPL-3.0-or-later",
+        "license_path": "LICENSE",
+        "reinstall": "Download the 8.1.2 release essentials archive, verify its published checksum, and extract it to relative_root."
+      }
+    },
+    {
+      "id": "whisper-cpp-windows-x64-v1.8.6-small",
+      "status": "retained-optional-backend",
+      "role": "optional offline transcription backend; not the faster-whisper primary backend",
+      "version": "1.8.6",
+      "platform": "windows-x86_64",
+      "relative_root": "whisper.cpp/v1.8.6",
+      "file_count": 22,
+      "bytes": 497744687,
+      "tree_sha256": "6dadd287498dcdafa45e1f757b98316fe2dcd66b6c79558d4eb75b7d8d15d8de",
+      "critical_files": [
+        {
+          "role": "whisper_cli",
+          "path": "Release/whisper-cli.exe",
+          "bytes": 489472,
+          "sha256": "111bd344b7bf0356818f2795a525cb5240ed0a99028fa9f3f1c68b4ff5b17b91"
+        },
+        {
+          "role": "whisper_dll",
+          "path": "Release/whisper.dll",
+          "bytes": 484864,
+          "sha256": "aecc185550327461d74a7c89436e13a62e12cc408c05719e7a677e1586a9cda3"
+        },
+        {
+          "role": "ggml_base_dll",
+          "path": "Release/ggml-base.dll",
+          "bytes": 636416,
+          "sha256": "017cd9c859d0da3c6d0e8da120ec5641db7c8d1f266df7ce1f9eca42029186ba"
+        },
+        {
+          "role": "ggml_cpu_dll",
+          "path": "Release/ggml-cpu.dll",
+          "bytes": 782848,
+          "sha256": "cb5bfd79c0255e282982527fee42d8aa8407b63ae46ef1acd395c3e21d1f52f9"
+        },
+        {
+          "role": "ggml_dll",
+          "path": "Release/ggml.dll",
+          "bytes": 67072,
+          "sha256": "722ff1350efe25a1bffa048bef2a8aa7fe7552fce3c38d2c1505f99beb0fb1f7"
+        },
+        {
+          "role": "model",
+          "path": "models/ggml-small.bin",
+          "bytes": 487601967,
+          "sha256": "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b"
+        }
+      ],
+      "probe": {"kind": "whisper_cpp"},
+      "source": {
+        "project_url": "https://github.com/ggml-org/whisper.cpp",
+        "distribution_url": "https://github.com/ggml-org/whisper.cpp/releases/tag/v1.8.6",
+        "release_label": "whisper.cpp v1.8.6",
+        "source_commit": "23ee035",
+        "model_url": "https://huggingface.co/ggerganov/whisper.cpp/blob/main/ggml-small.bin",
+        "model_sha1": "55356645c2b361a969dfd0ef2c5a50d530afd8d5",
+        "license": "MIT",
+        "license_path": null,
+        "reinstall": "Install the official v1.8.6 Windows asset, download ggml-small.bin from the project model repository, and verify model_sha1 plus the local SHA-256 records."
+      }
+    }
+  ]
+}

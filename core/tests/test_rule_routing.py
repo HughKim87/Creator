@@ -85,11 +85,83 @@ class RuleRoutingTests(unittest.TestCase):
                 self.assertRegex(text, r"(?m)^- Read when:")
                 self.assertRegex(text, r"(?m)^- Authority:")
 
+    def test_rule_governance_places_rules_by_reusable_trigger(self):
+        governance = (
+            ROOT / "core" / "rules" / "rule-governance.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("not from the path, report, domain task", governance)
+        self.assertIn("applies unchanged across domains", governance)
+        self.assertIn("split it before routing", governance)
+        self.assertIn(
+            "not a reason to place a foundation rule in extension",
+            governance,
+        )
+        self.assertIn(
+            "Core and extension rule files must not route each other",
+            governance,
+        )
+
     def test_project_rules_routes_extension_entry_point(self):
         project_rules = (ROOT / "PROJECT_RULES.md").read_text(encoding="utf-8")
         self.assertRegex(
             project_rules,
             r"\[[^\]]+\]\(extension/README\.md\)",
+        )
+
+    def test_design_documents_are_bounded_and_role_separated(self):
+        document_work = (
+            ROOT / "core" / "rules" / "document-work.md"
+        ).read_text(encoding="utf-8")
+
+        for role in ("`overall-design`", "`phase-design`", "`reference-evidence`"):
+            self.assertIn(role, document_work)
+        self.assertIn("120 lines or 8,000 Unicode characters", document_work)
+        self.assertIn("160 lines and 12,000 Unicode characters", document_work)
+        self.assertIn("must not be a startup-required read", document_work)
+        self.assertIn("Treat a read-budget excess", document_work)
+
+    def test_task_rule_lifecycle_is_single_absorbed_and_retired(self):
+        project_rules = (ROOT / "PROJECT_RULES.md").read_text(encoding="utf-8")
+        document_work = (
+            ROOT / "core" / "rules" / "document-work.md"
+        ).read_text(encoding="utf-8")
+        staged = (
+            ROOT / "core" / "rules" / "staged-work-design.md"
+        ).read_text(encoding="utf-8")
+        governance = (
+            ROOT / "core" / "rules" / "rule-governance.md"
+        ).read_text(encoding="utf-8")
+        cleanup = (
+            ROOT / "core" / "rules" / "file-cleanup.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("task-rule document for file-producing work", project_rules)
+        for state in ("`created`", "`active`", "`frozen`", "`absorbed`", "`retired`"):
+            self.assertIn(state, document_work)
+        self.assertIn("exactly one task-rule owner", document_work)
+        self.assertIn(
+            "without waiting for a separate user request",
+            document_work.lower(),
+        )
+        self.assertIn("120 lines or 8,000 Unicode characters", document_work)
+        self.assertIn("zero active task-rule owners", staged)
+        for disposition in ("`merge-core`", "`merge-extension`", "`candidate`", "`reject`"):
+            self.assertIn(disposition, governance)
+        self.assertIn("파일별 의미 재분석 없이", cleanup)
+        self.assertIn("`inputs`·`outputs`", cleanup)
+
+    def test_staged_work_has_one_active_phase_and_four_gates(self):
+        staged = (
+            ROOT / "core" / "rules" / "staged-work-design.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("at most one active `phase-design`", staged)
+        self.assertIn("Do not create detailed documents for all future phases", staged)
+        for gate in ("`entry gate`", "`slice gate`", "`exit gate`", "`transition gate`"):
+            self.assertIn(gate, staged)
+        self.assertIn(
+            "[Staged work design](core/rules/staged-work-design.md)",
+            (ROOT / "PROJECT_RULES.md").read_text(encoding="utf-8"),
         )
 
     def test_agents_is_only_a_project_rules_pointer(self):
@@ -143,11 +215,8 @@ class G4RegressionTests(unittest.TestCase):
         cls.project_rules = (ROOT / "PROJECT_RULES.md").read_text(encoding="utf-8")
         cls.agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
         cls.claude = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
-        cls.master = (
-            ROOT
-            / "extension"
-            / "reports"
-            / "codex_2026-07-28_문서기반_지시준수와_워크트리상태관리_개선안.md"
+        cls.staged = (
+            ROOT / "core" / "rules" / "staged-work-design.md"
         ).read_text(encoding="utf-8")
 
     def test_g4_s01_main_root_selects_only_session_handoff(self):
@@ -235,10 +304,15 @@ class G4RegressionTests(unittest.TestCase):
             _validate_unique_owner_scopes(session, duplicate)
 
     def test_g4_s09_controlled_plan_invalidates_on_user_correction(self):
-        self.assertIn("사용자가 의도 오해를 지적하면 즉시 중단한다.", self.master)
         self.assertIn(
-            "기존 계획을 무효화하고 master를 갱신하기 전에는 다음 mutation을 실행하지 않는다.",
-            self.master,
+            "A user correction that changes the desired outcome, scope, or gate "
+            "invalidates the active phase design.",
+            self.staged,
+        )
+        self.assertIn(
+            "Stop queued mutation, mark the phase `invalidated`, revise the design, "
+            "and obtain any newly required approval.",
+            self.staged,
         )
 
     def test_g4_s10_destructive_git_requires_target_recovery_and_approval(self):
@@ -261,21 +335,6 @@ class G4RegressionTests(unittest.TestCase):
         )
 
     def test_g4_s12_incomplete_stage_has_selected_state_checkpoint(self):
-        in_progress_rows = [
-            line
-            for line in self.master.splitlines()
-            if line.startswith("|") and "| 진행 중 |" in line
-        ]
-        if in_progress_rows:
-            self.assertEqual(1, len(in_progress_rows))
-        else:
-            completed_rows = [
-                line
-                for line in self.master.splitlines()
-                if re.match(r"^\| [0-5] \| G[0-5](?:\s|\|)", line)
-                and "| 완료 |" in line
-            ]
-            self.assertEqual(6, len(completed_rows))
         selected = _select_state_document(ROOT, self.project_rules)
         state = (ROOT / selected).read_text(encoding="utf-8")
         self.assertRegex(state, r"(?m)^- 상태: .+")

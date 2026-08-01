@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kim-silver-youtube:schema:work-event-payload:v1",
+  "$id": "project://core/schemas/work-event-payload-v1.schema.json",
   "title": "Work Event Payload v1",
   "type": "object",
   "additionalProperties": false,

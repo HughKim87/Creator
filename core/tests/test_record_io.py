@@ -19,6 +19,7 @@ from file_data import (  # noqa: E402
     ConcurrentWriteError,
     ConflictError,
     ExpectationMismatchError,
+    InputContractError,
     LegacyReadOnlyError,
     RecordNotFoundError,
     RecordStore,
@@ -76,6 +77,37 @@ class RecordStoreTests(unittest.TestCase):
                     "extension/data/records",
                 ],
             )
+
+    def test_storage_root_can_be_injected_without_changing_record_contract(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="stage03-storage-injection-") as raw_root:
+            root = Path(raw_root)
+            store = RecordStore._for_test(root, storage_root=Path("runtime") / "data")
+            self.assertEqual(
+                store.initialize(),
+                {"records": "runtime/data/records", "events": "runtime/data/events"},
+            )
+            created = store.create_record(
+                "example",
+                {"revision": 1},
+                record_id=FIRST_ID,
+                timestamp=datetime(2026, 7, 23, 1, 0, tzinfo=UTC),
+            )
+            self.assertEqual(store.get_record(FIRST_ID), created)
+            self.assertTrue(
+                (root / "runtime" / "data" / "records" / f"{FIRST_ID}.json").is_file()
+            )
+
+    def test_storage_root_rejects_protected_or_absolute_paths(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="stage03-storage-boundary-") as raw_root:
+            root = Path(raw_root)
+            for storage_root in (
+                Path("inputs") / "data",
+                Path("..") / "outside",
+                root / "absolute",
+            ):
+                with self.subTest(storage_root=storage_root):
+                    with self.assertRaises(InputContractError):
+                        RecordStore._for_test(root, storage_root=storage_root)
 
     def test_test_write_capability_rejects_active_project_root(self) -> None:
         with self.assertRaises(LegacyReadOnlyError):
