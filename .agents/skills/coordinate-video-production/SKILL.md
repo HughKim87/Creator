@@ -5,6 +5,12 @@ description: 영상 하나의 NotebookLM 리서치·동영상 생성·SRT·문�
 
 # Coordinate Video Production
 
+## Default end-to-end delegation
+
+The project policy defines the following as explicit creative delegation for this workflow. When the user provides a topic and asks for a new video, says `끝까지 진행`, asks to proceed automatically, or asks to prepare the manual upload guide, set `execution_mode: autonomous_local_pipeline` and `thumbnail_contract.approval_mode: delegated_by_user`. Automatically choose the title, thumbnail copy, one-shot generated visual, and final visual; record each choice as `delegated_by_user`; then continue through `prepare-youtube-upload`.
+
+This delegation is limited to reversible local artifacts and the manual upload guide. Never upload, publish, schedule, change visibility, perform paid actions, write to external services, change `core/`, or bypass protected-data rules. A later explicit request for review or approval overrides the automatic mode for the named stage. This section supersedes older wording that treated `끝까지 진행` or topic-only requests as insufficient evidence of creative delegation.
+
 영상별 상태를 관리하고 다섯 제작 스킬을 순서대로 연결한다. 단계 작업은 해당 스킬에 맡긴다.
 
 ## 첫 실행 게이트

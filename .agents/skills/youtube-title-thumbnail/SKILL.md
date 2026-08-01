@@ -5,6 +5,10 @@ description: 완성 영상·SRT·리서치 근거와 선택적 채널 패턴을 
 
 # YouTube Title and Thumbnail
 
+## Automatic mode for topic-only production requests
+
+When the active video job records `thumbnail_contract.approval_mode: delegated_by_user` under the project end-to-end policy, the agent may select the title, thumbnail copy, one-shot generated image, and final visual without an intermediate user response. Record `delegated_by_user` for title, copy, image generation, and visual approval, validate the package, and continue to the manual upload package. Never upload or publish to YouTube. A job with `review_gated` remains paused only when the user explicitly requested review or approval.
+
 완성 영상의 실제 약속을 제목과 썸네일로 압축한다. 기술 검증을 창작 승인으로 간주하지 않는다.
 
 ## 입력과 저장 위치
