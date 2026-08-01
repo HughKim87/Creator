@@ -1,12 +1,12 @@
 # 세션 핸드오프
 
-- 갱신일: 2026-07-31
+- 갱신일: 2026-08-01
 - 역할: ainotebook 이외 worktree의 현재 상태 단일 owner
-- 현재 작업: 없음
-- 상태: idle; 활성 계획·task-rule·scratch·종료 보고서는 없다.
+- 현재 작업: Git 이력 정제 및 GitHub 게시
+- 상태: `GHP1-S1 ready`; 설계 문서 게이트 통과, 원본 복구 경계 준비 중
 - branch: `main`
 - 활성 전체 설계: 없음
-- 활성 단계 설계: 없음
+- 활성 단계 설계: [Git 이력 정제 및 게시 설계](extension/work/2026-08-01_GIT_HISTORY_SANITIZATION.md)
 - handoff mode: `same-workspace`; uncommitted ignored runtime은 이 workspace에만 존재한다.
 - startup route: `PROJECT_RULES.md` → 이 문서 → 새 사용자 요청에 맞는 조건부 규칙
 
@@ -19,8 +19,9 @@
 
 ## 첫 다음 행동
 
-1. 새 요청이 오면 현재 idle 상태에서 가장 낮은 충분 작업 등급과 matching rule을 선택한다.
+1. 활성 설계의 `GHP1-S1`에 따라 원본 보존 branch와 외부 bundle을 만들고 검증한다.
 
 ## 다음 session 시작 prompt
 
-1. `PROJECT_RULES.md`와 `SESSION_HANDOFF.md`를 읽고 새 사용자 요청을 분류한다.
+1. `PROJECT_RULES.md` → `SESSION_HANDOFF.md` → 활성 단계 설계를 읽는다.
+2. `GHP1-S1`부터 재개하고, 완료 전 기존 파일·로컬 branch를 삭제하지 않는다.
