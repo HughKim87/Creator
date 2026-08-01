@@ -1,7 +1,7 @@
 # Git 이력 정제 및 게시 최종 보고서
 
 - 기준일: 2026-08-01 KST
-- 상태: W5 기술·원격 검증 완료; closeout commit과 최종 원격 확인 진행
+- 상태: 완료; closeout 원격 clone과 보고서 증거 확인 완료
 - 대상: 로컬 `main`의 미게시 작업 이력과 GitHub `main`
 - 목적: 작업별 커밋 추적성을 유지하면서 GitHub 제한을 넘는 작업 output 객체를 게시 이력에서 제거하고, 새 PC에서 검증 가능한 기반을 게시한다.
 
@@ -57,7 +57,7 @@
 | W2 | output 제외 커밋별 재적용 | 43/43, conflict 0, merge 0 | 10/10 | 커밋 메타데이터 완전 대응 |
 | W3 | 통합·독립 검증 | source와 no-local clean clone 전체 gate pass | 9/10 | 최초 설계 route 오류를 발견·수정 후 재검증 |
 | W4 | 보고서·fast-forward 게시 | force 없이 `main`을 `efe4165`, 이어 W5 전환 `f8c7cfa`까지 게시 | 10/10 | live SHA·fast-forward·원격 HEAD 일치 |
-| W5 | 원격 fresh clone·로컬 종료 | canonical fresh clone 전체 gate 통과, closeout 진행 | 9.5/10 | 기술 검증 완료; 최종 report-only 원격 확인만 남음 |
+| W5 | 원격 fresh clone·로컬 종료 | canonical fresh clone·closeout clone·idle·보고서 hash 검증 완료 | 10/10 | 기술·원격·문서 종료 조건 모두 통과 |
 
 ## Slice 교차 검증
 
@@ -95,4 +95,6 @@
 - 첫 push는 `44e3059`에서 `efe4165`로, W5 전환 push는 `f8c7cfa`로 모두 일반 fast-forward 성공했다.
 - canonical 원격 fresh clone은 HEAD `f8c7cfa0c214e51cba30e98403ada28395f69b1b`, protected path 0, 100MiB 초과 blob 0, 최대 blob 35,915,880 bytes, 전체 gate pass, status clean이었다.
 - closeout은 이번 작업의 활성 설계 문서만 제거하고 handoff를 idle로 전환한다. 기존 프로젝트 파일·로컬 branch·외부 복구 자료는 삭제하지 않는다.
-- 이 보고서를 포함한 최종 closeout commit의 원격 HEAD와 보고서 hash는 commit 이후 외부 검사로 확인하며, self-referential SHA는 문서에 고정하지 않는다.
+- closeout 원격 clone은 HEAD `f5ad1ab1e055a808a05698af459bead9ea70f800`, handoff idle, active 설계 0, tracked 181, protected path 0, status clean, no-clone 전체 gate pass였다.
+- closeout commit의 원격 보고서 SHA-256은 `58BD118A9229E3E88468A343D129FFFFBCCE305691EB49163AD80E79D6B09195`로 확인했다.
+- 이 증거 갱신은 report-only 후속 commit이며 최종 원격 HEAD와 새 보고서 hash는 외부 검사로 확인한다. self-referential commit SHA는 문서에 고정하지 않는다.
