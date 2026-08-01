@@ -1,7 +1,7 @@
 # Git 이력 정제 및 게시 최종 보고서
 
 - 기준일: 2026-08-01 KST
-- 상태: W4 사전 게시 증거 확정; 원격 게시·fresh clone 결과는 W5에서 갱신
+- 상태: W5 기술·원격 검증 완료; closeout commit과 최종 원격 확인 진행
 - 대상: 로컬 `main`의 미게시 작업 이력과 GitHub `main`
 - 목적: 작업별 커밋 추적성을 유지하면서 GitHub 제한을 넘는 작업 output 객체를 게시 이력에서 제거하고, 새 PC에서 검증 가능한 기반을 게시한다.
 
@@ -9,7 +9,7 @@
 
 원본 43개 커밋은 순서·작성자·이메일·작성 시각·제목을 43/43 보존해 최신 원격 위에 재적용됐다. 원본 이력은 외부 full+incremental bundle과 로컬 branch로 복구 가능하며, 새 이력에서 `outputs/**`, `inputs/**`, 100MiB 초과 reachable blob은 모두 0이다.
 
-현재 기능·문서 tree와 새 tree의 유일한 차이는 원격에서 추가된 README 표현 3곳이다. Core·Extension·maintenance·Node·clone-conformance는 source와 독립 clean clone에서 모두 통과했다.
+현재 기능·문서 tree와 새 tree의 유일한 차이는 원격에서 추가된 README 표현 3곳이다. Core·Extension·maintenance·Node·clone-conformance는 source, 독립 local clean clone, canonical GitHub fresh clone에서 모두 통과했다.
 
 ## 범위와 보존 경계
 
@@ -56,8 +56,8 @@
 | W1 | 원본 복구 경계 | full+incremental bundle과 복구 clone 성공 | 10/10 | 원본 43개 tip까지 외부 복구 가능 |
 | W2 | output 제외 커밋별 재적용 | 43/43, conflict 0, merge 0 | 10/10 | 커밋 메타데이터 완전 대응 |
 | W3 | 통합·독립 검증 | source와 no-local clean clone 전체 gate pass | 9/10 | 최초 설계 route 오류를 발견·수정 후 재검증 |
-| W4 | 보고서·fast-forward 게시 | 사전 게시 보고서·게이트 준비 완료 | 진행 중 | push 결과는 실행 후 확정 |
-| W5 | 원격 fresh clone·로컬 종료 | 미실행 | 대기 | 원격 게시 후 측정 |
+| W4 | 보고서·fast-forward 게시 | force 없이 `main`을 `efe4165`, 이어 W5 전환 `f8c7cfa`까지 게시 | 10/10 | live SHA·fast-forward·원격 HEAD 일치 |
+| W5 | 원격 fresh clone·로컬 종료 | canonical fresh clone 전체 gate 통과, closeout 진행 | 9.5/10 | 기술 검증 완료; 최종 report-only 원격 확인만 남음 |
 
 ## Slice 교차 검증
 
@@ -69,6 +69,7 @@
 | 최종 tree | 원본 main과 정제 branch 직접 diff | README 3개 표현만 차이 | 10/10 |
 | 프로젝트 gate | `python -B scripts/verify.py` | Core 141, Extension 140, maintenance·Node·clone pass | 10/10 |
 | 독립 재현 | `--no-local --single-branch` clean clone | HEAD 일치·전체 gate pass·status clean | 10/10 |
+| 원격 재현 | canonical GitHub `main` fresh clone | HEAD `f8c7cfa`, 전체 gate pass·status clean | 10/10 |
 | 설계 라우팅 | targeted 6 tests와 전체 gate | 수정 후 전부 pass | 9/10 |
 
 ## 발견한 실패와 수정
@@ -88,10 +89,10 @@
 
 새 Core·Extension 규칙은 추가하거나 수정하지 않았다.
 
-## 남은 W4·W5 게이트
+## 원격·종료 결과
 
-- 원격 `main`이 여전히 `44e3059...`인지 live 확인한다.
-- 정제 branch를 force 없이 `main`에 push한다.
-- 원격 fresh clone에서 전체 gate를 실행한다.
-- 실제 원격 SHA·검증 결과를 이 보고서에 반영해 최종 commit·push한다.
-- 로컬 main을 게시 tip에 정렬하고 worktree clean·기존 파일 삭제 0·로컬 branch 삭제 0을 확인한다.
+- GitHub가 안내한 canonical URL `https://github.com/sangwooggu99/creator.git`로 origin을 갱신했다.
+- 첫 push는 `44e3059`에서 `efe4165`로, W5 전환 push는 `f8c7cfa`로 모두 일반 fast-forward 성공했다.
+- canonical 원격 fresh clone은 HEAD `f8c7cfa0c214e51cba30e98403ada28395f69b1b`, protected path 0, 100MiB 초과 blob 0, 최대 blob 35,915,880 bytes, 전체 gate pass, status clean이었다.
+- closeout은 이번 작업의 활성 설계 문서만 제거하고 handoff를 idle로 전환한다. 기존 프로젝트 파일·로컬 branch·외부 복구 자료는 삭제하지 않는다.
+- 이 보고서를 포함한 최종 closeout commit의 원격 HEAD와 보고서 hash는 commit 이후 외부 검사로 확인하며, self-referential SHA는 문서에 고정하지 않는다.
