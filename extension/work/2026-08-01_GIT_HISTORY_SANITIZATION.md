@@ -92,4 +92,4 @@
 
 ## 첫 다음 행동
 
-`GHP1-S2` 작업 worktree를 만들고 `outputs/**`를 제외한 원본 커밋을 최신 `origin/main` 위에 순서대로 재적용한다.
+`GHP1-S3` 전체 프로젝트 gate와 별도 local clean clone gate를 실행한다.
