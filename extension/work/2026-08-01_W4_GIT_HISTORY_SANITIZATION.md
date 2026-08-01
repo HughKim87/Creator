@@ -49,11 +49,11 @@
 - push 실패 시 원본과 정제 branch를 유지하고 인증·용량·정책 오류를 구분해 기록한다.
 - 기존 파일·branch·복구 자료는 W5 완료 전 삭제하지 않는다.
 
-## Task rules (`active`)
+## Task-rule disposition
 
 | trigger | extracted rule | evidence | target owner | disposition |
 |---|---|---|---|---|
 | 게시 직전 동적 상태 | 원격 SHA를 live 재확인하고 일치할 때만 fast-forward push한다 | 현재 원격 기준 | 현재 phase | `reject`: 작업 전용 상태 |
 | 보고서 정확성 | push 전 수치는 완료, 원격 fresh clone은 미완료로 구분한다 | 사용자 사실 기반 요구 | 현재 phase | `reject`: 현재 보고 경계 |
 
-- 첫 다음 행동: 최종보고서 초안을 작성하고 W4-S1·S2 게이트를 실행한다.
+- 첫 다음 행동: live 원격 SHA와 fast-forward 조건을 확인한 뒤 정제 branch를 원격 `main`에 push한다.

@@ -3,7 +3,7 @@
 - 갱신일: 2026-08-01
 - 역할: ainotebook 이외 worktree의 현재 상태 단일 owner
 - 현재 작업: Git 이력 정제 및 GitHub 게시
-- 상태: `W4 in_progress`; 통합 검증 통과, 최종보고서 초안과 fast-forward 게시 준비 중
+- 상태: `W4 ready`; 최종보고서 초안 작성, live 원격 SHA와 fast-forward 게시 확인 대기
 - branch: `codex/history-sanitization-20260801`
 - 활성 전체 설계: `extension/work/2026-08-01_GIT_HISTORY_SANITIZATION_OVERALL.md`
 - 활성 단계 설계: `extension/work/2026-08-01_W4_GIT_HISTORY_SANITIZATION.md`
@@ -25,7 +25,7 @@
 
 ## 첫 다음 행동
 
-1. W4 최종보고서 초안을 만들고 원격 SHA·fast-forward 조건을 재확인한다.
+1. live 원격 SHA와 fast-forward 조건을 재확인하고 정제 branch를 원격 `main`에 push한다.
 
 ## 다음 session 시작 prompt
 
