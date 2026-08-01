@@ -1,10 +1,11 @@
-# Git 이력 정제 및 게시 설계
+# Git 이력 정제 및 게시 초기 설계 근거
 
-- 분류: `phase-design`
+- 분류: `reference-evidence`
 - Phase ID: `GHP1`
-- 상태: `in_progress`
+- 상태: `superseded`
 - 독자: 현재 작업을 실행·재개·검증하는 프로젝트 에이전트와 사용자
 - 권위: 최신 사용자 지시, `PROJECT_RULES.md`, `core/rules/version-control.md`
+- 라우팅: optional evidence owner이며 startup-required 아님. 활성 설계는 W0~W5 라우팅 owner가 소유한다.
 
 ## 결과
 
@@ -82,7 +83,7 @@
 - bundle 검증 실패, 원격 SHA 변화, commit 대응 누락, 100MiB 초과 객체 잔존, protected path stage, 전체 gate 실패, 비-fast-forward push 요구가 발생하면 즉시 중단한다.
 - 중단 시 원본 `main`, 보존 branch, bundle, 작업 branch, scratch를 유지하고 `SESSION_HANDOFF.md`에 정확한 blocker와 첫 재개 행동을 기록한다.
 
-## Task rules (`active`)
+## Superseded task-rule evidence
 
 | trigger | extracted rule | evidence | target owner | disposition |
 |---|---|---|---|---|

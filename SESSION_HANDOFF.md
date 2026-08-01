@@ -5,8 +5,8 @@
 - 현재 작업: Git 이력 정제 및 GitHub 게시
 - 상태: `GHP1-S3 in_progress`; 커밋별 이력 정제 게이트 통과, 통합 검증 중
 - branch: `codex/history-sanitization-20260801`
-- 활성 전체 설계: 없음
-- 활성 단계 설계: [Git 이력 정제 및 게시 설계](extension/work/2026-08-01_GIT_HISTORY_SANITIZATION.md)
+- 활성 전체 설계: `extension/work/2026-08-01_GIT_HISTORY_SANITIZATION_OVERALL.md`
+- 활성 단계 설계: `extension/work/2026-08-01_W3_GIT_HISTORY_SANITIZATION.md`
 - handoff mode: `same-workspace`; uncommitted ignored runtime은 이 workspace에만 존재한다.
 - startup route: `PROJECT_RULES.md` → 이 문서 → 새 사용자 요청에 맞는 조건부 규칙
 
