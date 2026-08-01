@@ -2,7 +2,7 @@
 
 - 문서 분류: `phase-design`
 - phase ID: `W4`
-- lifecycle: `in_progress`
+- lifecycle: `passed`
 - 독자: 게시를 실행·재개하는 프로젝트 에이전트
 - 권위: 최신 사용자 지시, `PROJECT_RULES.md`, 전체 설계
 - optional evidence owner: [초기 상세 설계 근거](2026-08-01_GIT_HISTORY_SANITIZATION.md), startup-required 아님
@@ -56,4 +56,4 @@
 | 게시 직전 동적 상태 | 원격 SHA를 live 재확인하고 일치할 때만 fast-forward push한다 | 현재 원격 기준 | 현재 phase | `reject`: 작업 전용 상태 |
 | 보고서 정확성 | push 전 수치는 완료, 원격 fresh clone은 미완료로 구분한다 | 사용자 사실 기반 요구 | 현재 phase | `reject`: 현재 보고 경계 |
 
-- 첫 다음 행동: live 원격 SHA와 fast-forward 조건을 확인한 뒤 정제 branch를 원격 `main`에 push한다.
+- 첫 다음 행동: W5 종료 phase가 canonical 원격 fresh clone과 최종 보고서·로컬 정렬을 검증한다.
