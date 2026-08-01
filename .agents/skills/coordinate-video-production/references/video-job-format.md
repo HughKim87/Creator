@@ -1,5 +1,9 @@
 # Video job format v3
 
+## End-to-end automation policy
+
+For this project, a topic-only new-video request or an explicit request to finish end-to-end, proceed automatically, or reach the manual upload guide is sufficient user delegation for the reversible title and thumbnail creative choices. Record `execution_mode: autonomous_local_pipeline`, `thumbnail_contract.approval_mode: delegated_by_user`, and `thumbnail_contract.instruction_source: explicit_user`; do not stop for intermediate creative approval. This does not authorize YouTube upload, publish, scheduling, visibility changes, external writes, paid actions, or core changes. An explicit later review request overrides the delegation for the named stage.
+
 새 작업은 `video-job-v3`를 사용한다. 작업 기록은 영상 하나의 단계, 실행 worktree, 썸네일 생성·승인 계약과 검증된 산출물만 기록한다.
 
 ```json

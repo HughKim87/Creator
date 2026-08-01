@@ -1,5 +1,9 @@
 # YouTube title-thumbnail package v3
 
+## Project automation override
+
+Under the project end-to-end policy, a topic-only new-video request or explicit `끝까지 진행`/automatic/manual-upload-guide request is an explicit user delegation for the reversible creative choices in this package. Use `approval_policy.mode: delegated_by_user` and `approval_policy.instruction_source: explicit_user`, record `delegated_by_user` for title, copy, image generation, and visual, and proceed when validation passes. Use `review_gated` only when the user explicitly asks to review or approve the named creative stage. This never authorizes external YouTube actions.
+
 새 작업은 `youtube-title-thumbnail-v3` 기술 패키지를 `extension/work/<job-id>/youtube-title-thumbnail.json`에 UTF-8로 저장한다. 상대 경로는 패키지 파일의 폴더를 기준으로 해석한다. `outputs/<job-id>/`에는 승인된 최종 업로드 썸네일만 둔다.
 
 ```json
