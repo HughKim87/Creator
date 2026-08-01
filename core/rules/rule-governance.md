@@ -38,6 +38,10 @@ Treat a rule as a maintained operational interface with this lifecycle:
 - Rule IDs, replay IDs, and local anchors must have one owner and must not be duplicated across active rule files.
 - Evidence from one video, one user preference, one frame range, one filename, or one report may create a candidate, but does not become a general active rule without the applicable promotion evidence.
 - Use a numeric limit only to define where work or a document ends. Do not create a count cap that blocks an in-progress judgement; how many artifacts a task needs is decided by that task, not by a standing ceiling.
+- For every new or changed active route, add test-only intent fixture cases that cover initial, colloquial, mid-task, and near-miss triggers; add a composed case when more than one owner should match.
+- Each intent case records the utterance, prior owners for mid-task state, expected owners, forbidden owners, and the reason. The fixture is test evidence and must not become an active router, startup owner, or runtime dependency.
+- Before activating the route, run a fresh-session semantic replay with the target agent runtime. It must select all expected owners, reject forbidden owners, add only newly matched owners for mid-task cases, and explain the action or boundary rather than a keyword match.
+- Treat deterministic fixture validation and model-based semantic replay as separate evidence. Record only the runtime, date, and pass or failure summary at the approved change checkpoint; do not preserve replay conversations as maintained project data.
 
 ## Rule routing
 
@@ -102,5 +106,7 @@ Change rules only with evidence from the current work or verified history. Core 
 ## Verification
 
 - Confirm routing links are complete, unique, and point to existing files.
+- Confirm every active route has canonical action, `Read when`, and test-only intent coverage with the same trigger scope; changed routes must pass their fresh-session semantic replay before activation.
+- Confirm intent fixtures reference only canonical active owners through the upper routing chain and do not become a parallel router.
 - Check the scoped diff, strict UTF-8, NUL bytes, trailing whitespace, and relevant links.
 - Run the approved core verification gate after any authorized `core/**` change.

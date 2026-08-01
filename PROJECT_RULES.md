@@ -36,7 +36,11 @@ Read each matching rule completely once per logical task:
 | Add, change, consolidate, or audit project rules; close controlled work | [Rule governance](core/rules/rule-governance.md) |
 | Add, change, or audit a foundation↔domain boundary link, route, schema, import, storage path, or boundary test | [Boundary routing and dependency](core/rules/boundary-routing-and-dependency.md) |
 | Compare reports or agents, or cross-validate conclusions | [Cross-validation](core/rules/cross-validation.md) |
-| Create or change YouTube, video, production, skill, task, runtime, example, or report data | [Extension entry point](extension/README.md) and its exact active owner |
+| Analyze, execute, resume, validate, create, or change YouTube, video, production, skill, task, runtime, example, or report work/data | [Extension entry point](extension/README.md) and its exact active owner |
+
+Evaluate the routing table against the next material action, not only the initial request. Before an intended action newly matches an unread row, read that owner completely; do not reread an owner already read in the same logical task.
+
+A material action change enters a new policy, protected-data, external-effect, destructive, ownership, persistent-write, Git, or verification/delivery boundary. Mere substeps inside the same matched rule do not trigger rereading; a user correction still uses the separate selection-invalidation route.
 
 Detailed completed history is available through Git. Do not load old commits by default. Before completing controlled work, use the rule-governance route to audit the rules that matched the task; do not create a separate audit artifact unless the user requested one.
 
