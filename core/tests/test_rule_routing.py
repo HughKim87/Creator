@@ -1,4 +1,5 @@
 from collections import Counter
+import json
 from pathlib import Path
 import re
 import tempfile
@@ -7,6 +8,45 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 RULES_DIR = ROOT / "core" / "rules"
+INTENT_FIXTURE = ROOT / "core" / "tests" / "fixtures" / "rule-routing-intents-v1.json"
+INTENT_KINDS = {
+    "initial_direct",
+    "initial_colloquial",
+    "mid_task_emergent",
+    "negative_near_miss",
+    "composed",
+}
+
+
+def _intent_cases() -> list[dict[str, object]]:
+    payload = json.loads(INTENT_FIXTURE.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != "rule-routing-intents-v1":
+        raise ValueError("unexpected rule-routing intent schema")
+    cases = payload.get("cases")
+    if not isinstance(cases, list):
+        raise ValueError("rule-routing intent cases must be a list")
+    return cases
+
+
+def _active_intent_owners() -> set[str]:
+    extension_readme = (ROOT / "extension" / "README.md").read_text(encoding="utf-8")
+    active_video = extension_readme.split("## 활성 영상 owner", 1)[1].split(
+        "## 기반 adapter와 증거 경계", 1
+    )[0]
+    active_contracts = {
+        f"extension/{path}"
+        for path in re.findall(r"\[[^\]]+\]\((docs/domain/[^)]+\.md)\)", active_video)
+    }
+    extension_rules = {
+        path.relative_to(ROOT).as_posix()
+        for path in (ROOT / "extension" / "rules").glob("*.md")
+    }
+    return {
+        *(path.relative_to(ROOT).as_posix() for path in RULES_DIR.glob("*.md")),
+        "extension/README.md",
+        *active_contracts,
+        *extension_rules,
+    }
 
 
 def _state_routes(project_rules: str) -> dict[str, str]:
@@ -57,6 +97,81 @@ def _validate_unique_owner_scopes(*documents: str) -> None:
 
 
 class RuleRoutingTests(unittest.TestCase):
+    def test_intent_fixture_is_test_only_valid_and_covers_root_routes(self):
+        cases = _intent_cases()
+        self.assertTrue(cases)
+        active_owners = _active_intent_owners()
+        core_owners = {
+            path.relative_to(ROOT).as_posix()
+            for path in RULES_DIR.glob("*.md")
+        }
+        seen_ids: set[str] = set()
+        seen_kinds: set[str] = set()
+        expected_owners: set[str] = set()
+
+        for case in cases:
+            self.assertIsInstance(case, dict)
+            case_id = case.get("id")
+            kind = case.get("kind")
+            phase = case.get("phase")
+            utterance = case.get("utterance")
+            context_before = case.get("context_before")
+            expected = case.get("expected_owners")
+            forbidden = case.get("forbidden_owners")
+            reason = case.get("reason")
+            with self.subTest(case=case_id):
+                self.assertIsInstance(case_id, str)
+                self.assertTrue(case_id)
+                self.assertNotIn(case_id, seen_ids)
+                seen_ids.add(case_id)
+                self.assertIn(kind, INTENT_KINDS)
+                seen_kinds.add(kind)
+                self.assertIn(phase, {"initial", "mid_task"})
+                self.assertIsInstance(utterance, str)
+                self.assertTrue(utterance.strip())
+                self.assertIsInstance(reason, str)
+                self.assertTrue(reason.strip())
+                for owner_list in (context_before, expected, forbidden):
+                    self.assertIsInstance(owner_list, list)
+                    self.assertEqual(len(owner_list), len(set(owner_list)))
+                    self.assertTrue(set(owner_list).issubset(active_owners))
+                    for owner in owner_list:
+                        self.assertTrue((ROOT / owner).is_file(), owner)
+                        self.assertNotIn("/reports/", owner)
+                        self.assertNotIn("CANDIDATES", owner)
+                self.assertTrue(set(expected).isdisjoint(forbidden))
+                if phase == "initial":
+                    self.assertEqual([], context_before)
+                else:
+                    self.assertTrue(context_before)
+                    self.assertTrue(set(expected).isdisjoint(context_before))
+                expected_owners.update(expected)
+
+        self.assertEqual(INTENT_KINDS, seen_kinds)
+        self.assertTrue(core_owners.issubset(expected_owners))
+        self.assertIn("extension/README.md", expected_owners)
+
+    def test_material_action_recheck_and_read_only_extension_are_explicit(self):
+        project_rules = (ROOT / "PROJECT_RULES.md").read_text(encoding="utf-8")
+        self.assertIn("next material action, not only the initial request", project_rules)
+        self.assertIn("newly matches an unread row", project_rules)
+        self.assertIn(
+            "Analyze, execute, resume, validate, create, or change YouTube",
+            project_rules,
+        )
+
+    def test_rule_creation_requires_intent_cases_and_semantic_replay(self):
+        governance = (
+            ROOT / "core" / "rules" / "rule-governance.md"
+        ).read_text(encoding="utf-8")
+        for phrase in (
+            "test-only intent fixture",
+            "initial, colloquial, mid-task, and near-miss",
+            "fresh-session semantic replay",
+            "must not become an active router",
+        ):
+            self.assertIn(phrase, governance)
+
     def test_project_rules_routes_every_core_rule_exactly_once(self):
         project_rules = (ROOT / "PROJECT_RULES.md").read_text(encoding="utf-8")
         routed = re.findall(

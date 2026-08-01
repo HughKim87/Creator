@@ -1,7 +1,7 @@
 # Extension
 
 - 목적: 앞으로 추가되는 YouTube·영상·제작 workflow·스킬·개별 작업과 runtime 데이터를 core와 분리해 소유한다.
-- 읽는 시점: 기반 변경이 아닌 실제 작업 기능이나 작업 데이터를 만들거나 수정할 때.
+- 읽는 시점: 기반 변경이 아닌 YouTube·영상·제작 workflow·skill·task·runtime·example·report 작업을 분석, 실행, 재개, 검증, 생성 또는 변경할 때.
 - 책임: 프로젝트 에이전트가 승인 범위 안에서 유지하고, 사용자가 목표·보호 데이터·외부 효과를 승인한다.
 - 상태: 활성 확장 영역.
 - 관련 권위: 루트 `PROJECT_RULES.md`와 그 startup이 선택한 current-state document.

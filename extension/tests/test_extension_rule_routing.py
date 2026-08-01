@@ -1,4 +1,5 @@
 from collections import Counter
+import json
 from pathlib import Path
 import re
 import unittest
@@ -7,9 +8,43 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 EXTENSION = ROOT / "extension"
 RULES_DIR = EXTENSION / "rules"
+INTENT_FIXTURE = ROOT / "core" / "tests" / "fixtures" / "rule-routing-intents-v1.json"
 
 
 class ExtensionRuleRoutingTests(unittest.TestCase):
+    def test_intent_fixture_covers_every_extension_rule(self):
+        payload = json.loads(INTENT_FIXTURE.read_text(encoding="utf-8"))
+        cases = payload["cases"]
+        covered = {
+            owner
+            for case in cases
+            for owner in case["expected_owners"]
+            if owner.startswith("extension/rules/")
+        }
+        expected = {
+            path.relative_to(ROOT).as_posix()
+            for path in RULES_DIR.glob("*.md")
+        }
+        self.assertEqual(expected, covered)
+
+    def test_read_only_domain_work_is_an_extension_trigger(self):
+        readme = (EXTENSION / "README.md").read_text(encoding="utf-8")
+        self.assertIn("분석, 실행, 재개, 검증, 생성 또는 변경할 때", readme)
+        cases = {
+            case["id"]: case
+            for case in json.loads(INTENT_FIXTURE.read_text(encoding="utf-8"))["cases"]
+        }
+        read_only = cases["read-only-video-analysis"]
+        self.assertIn("extension/README.md", read_only["expected_owners"])
+        self.assertIn(
+            "extension/docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md",
+            read_only["expected_owners"],
+        )
+        self.assertIn(
+            "core/rules/document-work.md",
+            read_only["forbidden_owners"],
+        )
+
     def test_extension_readme_routes_every_rule_exactly_once(self):
         readme = (EXTENSION / "README.md").read_text(encoding="utf-8")
         routed = re.findall(r"\[[^\]]+\]\((rules/[^)]+\.md)\)", readme)
