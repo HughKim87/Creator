@@ -1,3 +1,3 @@
-# Claude Entry Point
+# Project Entry Point
 
-@PROJECT_RULES.md
+Read [PROJECT_RULES.md](PROJECT_RULES.md) completely before any project action.
