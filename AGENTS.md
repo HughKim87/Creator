@@ -1,3 +1,7 @@
-# Agent Entry Point
+# Agent Entry
 
-Read [PROJECT_RULES.md](PROJECT_RULES.md) completely before any project action.
+Read these files completely in order before any action:
+
+1. [Core policy](core/PROJECT_RULES.md)
+2. [Consumer policy](PROJECT_RULES.md)
+3. [Current state](SESSION_HANDOFF.md)

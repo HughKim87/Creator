@@ -8,7 +8,9 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 EXTENSION = ROOT / "extension"
 RULES_DIR = EXTENSION / "rules"
-INTENT_FIXTURE = ROOT / "core" / "tests" / "fixtures" / "rule-routing-intents-v1.json"
+INTENT_FIXTURE = (
+    EXTENSION / "tests" / "fixtures" / "rule-routing-intents-v1.json"
+)
 
 
 class ExtensionRuleRoutingTests(unittest.TestCase):
@@ -35,21 +37,40 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
             for case in json.loads(INTENT_FIXTURE.read_text(encoding="utf-8"))["cases"]
         }
         read_only = cases["read-only-video-analysis"]
-        self.assertIn("extension/README.md", read_only["expected_owners"])
         self.assertIn(
-            "extension/docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md",
+            "extension/rules/video-editing-intake-and-instructions.md",
             read_only["expected_owners"],
         )
-        self.assertIn(
-            "core/rules/document-work.md",
-            read_only["forbidden_owners"],
-        )
+        self.assertEqual(1, len(read_only["expected_owners"]))
 
-    def test_extension_readme_routes_every_rule_exactly_once(self):
-        readme = (EXTENSION / "README.md").read_text(encoding="utf-8")
-        routed = re.findall(r"\[[^\]]+\]\((rules/[^)]+\.md)\)", readme)
+    def test_intent_fixture_is_owned_by_the_consumer_router(self):
+        payload = json.loads(INTENT_FIXTURE.read_text(encoding="utf-8"))
+        self.assertEqual("consumer-rule-routing-intents-v1", payload["fixture_version"])
+        self.assertEqual("PROJECT_RULES.md", payload["router"])
+        for case in payload["cases"]:
+            with self.subTest(case=case["id"]):
+                self.assertTrue(
+                    all(
+                        owner.startswith("extension/rules/")
+                        for owner in case["expected_owners"]
+                    )
+                )
+
+    def test_project_policy_routes_every_rule_exactly_once(self):
+        policy = (ROOT / "PROJECT_RULES.md").read_text(encoding="utf-8")
+        match = re.search(
+            r"<!--\s*core-rule-routes:v1\s*-->(.*?)"
+            r"<!--\s*/core-rule-routes:v1\s*-->",
+            policy,
+            re.S,
+        )
+        self.assertIsNotNone(match)
+        routed = re.findall(
+            r"\[[^\]]+\]\((extension/rules/[^)]+\.md)\)",
+            match.group(1),
+        )
         expected = {
-            path.relative_to(EXTENSION).as_posix()
+            path.relative_to(ROOT).as_posix()
             for path in RULES_DIR.glob("*.md")
         }
 
@@ -59,22 +80,29 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
             dict(Counter(routed)),
         )
         for relative_path in routed:
-            self.assertTrue((EXTENSION / relative_path).is_file(), relative_path)
+            self.assertTrue((ROOT / relative_path).is_file(), relative_path)
+
+        readme = (EXTENSION / "README.md").read_text(encoding="utf-8")
+        self.assertNotRegex(readme, r"\]\(rules/[^)]+\.md\)")
 
     def test_every_rule_declares_routing_metadata(self):
         for path in RULES_DIR.glob("*.md"):
             text = path.read_text(encoding="utf-8")
             with self.subTest(path=path.name):
-                self.assertRegex(text, r"(?m)^- Purpose:")
-                self.assertRegex(text, r"(?m)^- Read when:")
-                self.assertRegex(text, r"(?m)^- Authority:")
+                self.assertRegex(text, r"(?m)^- 목적:")
+                self.assertRegex(text, r"(?m)^- 읽는 시점:")
+                self.assertRegex(text, r"(?m)^- 책임:")
+                self.assertRegex(text, r"(?m)^- 상태:")
+                self.assertRegex(text, r"(?m)^- 관련 권위:")
 
     def test_generic_file_lifecycle_rules_are_not_extension_owners(self):
         readme = (EXTENSION / "README.md").read_text(encoding="utf-8")
+        policy = (ROOT / "PROJECT_RULES.md").read_text(encoding="utf-8")
         for name in ("file-extraction.md", "file-cleanup.md"):
             with self.subTest(path=name):
                 self.assertFalse((RULES_DIR / name).exists())
                 self.assertNotIn(f"(rules/{name})", readme)
+                self.assertNotIn(f"(extension/rules/{name})", policy)
 
     def test_rule_and_replay_ids_have_single_owners(self):
         rule_documents = {

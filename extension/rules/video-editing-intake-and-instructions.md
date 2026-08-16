@@ -1,8 +1,10 @@
 # 영상 편집 입력·지시 규칙
 
-- Purpose: 영상 편집의 exact 범위와 사용자의 실제 결과 요구를 고정하고 불필요한 재확인을 줄인다.
-- Read when: 새 편집을 시작하거나 입력 범위를 바꾸고, 사용자 지시·피드백·수치를 해석할 때.
-- Authority: `PROJECT_RULES.md`와 `extension/docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md`가 상위 권위다.
+- 목적: 영상 편집의 exact 범위와 사용자의 실제 결과 요구를 고정하고 불필요한 재확인을 줄인다.
+- 읽는 시점: 새 편집을 시작하거나 입력 범위를 바꾸고, 사용자 지시·피드백·수치를 해석할 때.
+- 책임: 영상 편집 작업 에이전트가 범위·지시 판정을 유지하고 사용자가 결과와 보호 데이터 접근을 승인한다.
+- 상태: 활성 소비 도메인 규칙.
+- 관련 권위: `PROJECT_RULES.md`와 `extension/docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md`가 상위 권위다.
 
 ### R01 — 증상·방법·수치 분리
 

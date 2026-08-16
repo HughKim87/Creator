@@ -1,0 +1,99 @@
+{
+  "fixture_version": "consumer-rule-routing-intents-v1",
+  "purpose": "Maintainer 소비 정책의 영상 편집 규칙 route를 의미 기반으로 재현한다.",
+  "router": "PROJECT_RULES.md",
+  "selection_contract": "prior_owners를 제외한 이번 행동의 새 최소 규칙 집합이 expected_owners와 정확히 같아야 한다.",
+  "cases": [
+    {
+      "id": "video-editing-intake-initial",
+      "kind": "initial",
+      "utterance": "새 영상 편집을 시작할게. 사용할 원본 범위와 내가 말한 수정 요구부터 정리해.",
+      "prior_owners": [],
+      "expected_owners": [
+        "extension/rules/video-editing-intake-and-instructions.md"
+      ],
+      "forbidden_owners": [],
+      "reason": "새 편집의 입력 범위와 사용자 지시 해석은 입력·지시 규칙의 trigger다."
+    },
+    {
+      "id": "read-only-video-analysis",
+      "kind": "colloquial",
+      "utterance": "이 영상의 구성만 분석해서 채팅으로 알려줘. 파일은 만들지 마.",
+      "prior_owners": [],
+      "expected_owners": [
+        "extension/rules/video-editing-intake-and-instructions.md"
+      ],
+      "forbidden_owners": [
+        "extension/rules/video-editing-artifact-lineage.md"
+      ],
+      "reason": "새 분석의 입력과 결과 범위를 확정하지만 산출물 생성·계보 행동은 없다."
+    },
+    {
+      "id": "video-cut-selection",
+      "kind": "mid-task",
+      "utterance": "분석한 사건 후보를 순서대로 구성하고 실제 컷으로 압축해.",
+      "prior_owners": [
+        "extension/rules/video-editing-intake-and-instructions.md"
+      ],
+      "expected_owners": [
+        "extension/rules/video-editing-story-and-cut-design.md"
+      ],
+      "forbidden_owners": [],
+      "reason": "입력 확정 뒤 구성과 실제 컷 설계 행동으로 전환한다."
+    },
+    {
+      "id": "video-boundary-review",
+      "kind": "mid-task",
+      "utterance": "방금 컷이 튀고 대사가 끊겨 보여. 화면과 발화 경계를 검수해.",
+      "prior_owners": [
+        "extension/rules/video-editing-story-and-cut-design.md"
+      ],
+      "expected_owners": [
+        "extension/rules/video-editing-boundary-quality.md"
+      ],
+      "forbidden_owners": [],
+      "reason": "컷 설계에서 화면·발화 경계 품질 검수로 전환한다."
+    },
+    {
+      "id": "video-revision-resume",
+      "kind": "initial",
+      "utterance": "사용자가 수정한 최신 revision에서 영상 편집을 재개해.",
+      "prior_owners": [],
+      "expected_owners": [
+        "extension/rules/video-editing-state-and-approval.md"
+      ],
+      "forbidden_owners": [],
+      "reason": "사용자 수정본과 현재 revision에서 재개하는 행동이다."
+    },
+    {
+      "id": "video-xml-delivery",
+      "kind": "composed",
+      "utterance": "검수된 timeline에서 Premiere XML을 만들고 validator를 실행한 뒤 완료 상태를 보고해.",
+      "prior_owners": [
+        "extension/rules/video-editing-story-and-cut-design.md"
+      ],
+      "expected_owners": [
+        "extension/rules/video-editing-artifact-lineage.md",
+        "extension/rules/video-editing-validation-and-delivery.md"
+      ],
+      "forbidden_owners": [],
+      "reason": "XML 산출물 계보와 검증·전달 주장 제한이 함께 필요하다."
+    },
+    {
+      "id": "preproduction-evidence-near-miss",
+      "kind": "near-miss",
+      "utterance": "촬영 전에 사용할 근거 문서만 골라 evidence pack을 검토해.",
+      "prior_owners": [],
+      "expected_owners": [],
+      "forbidden_owners": [
+        "extension/rules/video-editing-intake-and-instructions.md",
+        "extension/rules/video-editing-artifact-lineage.md",
+        "extension/rules/video-editing-story-and-cut-design.md",
+        "extension/rules/video-editing-boundary-quality.md",
+        "extension/rules/video-editing-state-and-approval.md",
+        "extension/rules/video-editing-validation-and-delivery.md"
+      ],
+      "reason": "촬영 전 evidence 작업은 촬영 후 영상 편집 규칙의 trigger가 아니다."
+    }
+  ]
+}

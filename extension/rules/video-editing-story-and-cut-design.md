@@ -1,8 +1,10 @@
 # 영상 편집 스토리·컷 설계 규칙
 
-- Purpose: 사건 후보를 완성 컷으로 오인하지 않고 인과·상태·공간 기능을 보존한 실제 2차 편집을 만든다.
-- Read when: 사건 후보를 선택하고, 구성 순서를 정하거나 후보 내부를 분할·압축할 때.
-- Authority: `extension/docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md`가 작업 층과 완료 gate를 소유한다.
+- 목적: 사건 후보를 완성 컷으로 오인하지 않고 인과·상태·공간 기능을 보존한 실제 2차 편집을 만든다.
+- 읽는 시점: 사건 후보를 선택하고, 구성 순서를 정하거나 후보 내부를 분할·압축할 때.
+- 책임: 영상 편집 작업 에이전트가 구성·컷 판정과 근거를 유지하고 사용자가 창작 방향을 승인한다.
+- 상태: 활성 소비 도메인 규칙.
+- 관련 권위: `extension/docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md`가 작업 층과 완료 gate를 소유한다.
 
 ### R05 — 분석·구성·2차 편집 분리
 

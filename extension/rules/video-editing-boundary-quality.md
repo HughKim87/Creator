@@ -1,8 +1,10 @@
 # 영상 편집 경계 품질 규칙
 
-- Purpose: 자막이나 수치만으로 컷 경계를 판단하지 않고 실제 오디오·화면의 결함 원인을 제거한다.
-- Read when: 발화 근처를 자르거나 화면·밝기·동작·전환이 부자연스럽다는 피드백을 검수할 때.
-- Authority: `extension/docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md`의 의미 gate가 상위 완료 기준이다.
+- 목적: 자막이나 수치만으로 컷 경계를 판단하지 않고 실제 오디오·화면의 결함 원인을 제거한다.
+- 읽는 시점: 발화 근처를 자르거나 화면·밝기·동작·전환이 부자연스럽다는 피드백을 검수할 때.
+- 책임: 영상 편집 작업 에이전트가 오디오·화면 경계 진단을 유지하고 사용자가 결과 품질을 확인한다.
+- 상태: 활성 소비 도메인 규칙.
+- 관련 권위: `extension/docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md`의 의미 gate가 상위 완료 기준이다.
 
 ### R08 — 발화 자연스러움과 실제 청취
 

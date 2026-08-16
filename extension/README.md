@@ -64,19 +64,11 @@ python -B extension/src/local_runtime.py --require-present --probe
 
 manifest와 실제 tree·critical hash가 다르거나 component 일부만 존재하면 `drift/incomplete`로 실패한다. runtime 파일은 계속 Git에서 제외하며 manifest·schema·verifier·synthetic test만 commit한다.
 
-## 조건부 영상 편집 규칙
+## 영상 편집 규칙 소유
 
-영상 편집 workflow 계약을 읽은 뒤 현재 행동과 일치하는 규칙만 한 번 읽는다.
+활성 영상 편집 규칙의 조건부 선택은 소비 저장소 루트 `PROJECT_RULES.md`의 단일 route가 소유한다. 이 문서는 도메인 구조와 실제 workflow owner만 안내하며 병렬 규칙 라우터로 사용하지 않는다.
 
-| 행동 | 읽을 규칙 |
-|---|---|
-| 새 편집 시작, 입력 범위 확정, 사용자 지시·피드백 해석 | [입력·지시 규칙](rules/video-editing-intake-and-instructions.md) |
-| timeline·XML·검토 산출물 생성 또는 source lineage 판단 | [산출물 계보 규칙](rules/video-editing-artifact-lineage.md) |
-| 사건 선택, 구성 편집, 실제 컷 분할·압축 | [스토리·컷 설계 규칙](rules/video-editing-story-and-cut-design.md) |
-| 발화·화면·밝기·전환 경계 검수 | [경계 품질 규칙](rules/video-editing-boundary-quality.md) |
-| 작업 재개, revision 전환, 사용자 수정본·승인 반영 | [상태·승인 규칙](rules/video-editing-state-and-approval.md) |
-| validator 실행, XML 생성, 완료·전달 상태 보고 | [검증·전달 규칙](rules/video-editing-validation-and-delivery.md) |
-| 독립 영상에서 실패가 반복되어 보류 항목의 규칙 승격을 검토 | [영상 편집 규칙 후보](docs/domain/youtube/VIDEO_EDITING_RULE_CANDIDATES.md) |
+독립 영상에서 실패가 반복되어 보류 항목의 승격을 검토할 때는 [영상 편집 규칙 후보](docs/domain/youtube/VIDEO_EDITING_RULE_CANDIDATES.md)를 근거로 사용한다. 후보 문서는 현재 운영 규칙이나 기본 합격값이 아니다.
 
 ## Core 의존 경계
 
