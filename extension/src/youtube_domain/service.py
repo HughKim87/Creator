@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from typing import Any, Mapping
 
-from file_data import ContextService
+from core_clients import SharedDataClient
 
 
 PACK_VERSION = 1
@@ -110,14 +110,12 @@ def _document_selections(value: Any) -> list[dict[str, str]]:
     )
 
 
-def validate_request(value: Mapping[str, Any], *, legacy: bool = False) -> dict[str, Any]:
+def validate_request(value: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(value, Mapping) or set(value) != REQUEST_FIELDS:
         raise YouTubeDomainError(f"request must contain exactly: {sorted(REQUEST_FIELDS)}")
     video = _video(value["video"])
     documents = _document_selections(value["documents"])
     records = _selections(value["records"], "records", "id")
-    if records and not legacy:
-        raise YouTubeDomainError("legacy_mode_required: records[] requires explicit --legacy")
     search = value["search"]
     if search is not None:
         search = _text(search, "search", maximum=500)
@@ -148,29 +146,43 @@ class YouTubeEvidenceService:
         self,
         project_root: Path | str,
         *,
-        _write_capability: object | None = None,
+        core_root: Path | str | None = None,
+        storage_root: str = "extension/data/shared-data",
+        protected_paths: tuple[str, ...] = (
+            "inputs",
+            "outputs",
+            "extension/inputs",
+            "extension/outputs",
+        ),
     ) -> None:
         self.root = Path(project_root).resolve()
-        self.context = ContextService(
+        self.shared_data = SharedDataClient(
             self.root,
-            _write_capability=_write_capability,
+            core_root=core_root,
+            storage_root=storage_root,
+            protected_paths=protected_paths,
         )
 
-    def build_pack(self, request: Mapping[str, Any], *, legacy: bool = False) -> dict[str, Any]:
-        normalized = validate_request(request, legacy=legacy)
+    def build_pack(self, request: Mapping[str, Any]) -> dict[str, Any]:
+        normalized = validate_request(request)
         video = normalized["video"]
         context_request: dict[str, Any] = {
             "purpose": f"YouTube pre-production evidence for {video['id']}: {video['goal']}",
-            "documents": normalized["documents"],
-            "records": normalized["records"],
-            "char_limit": normalized["char_limit"],
-            "baseline_characters": normalized["baseline_characters"],
+            "documents": [
+                {key: item[key] for key in ("ref", "data_key") if key in item}
+                for item in normalized["documents"]
+            ],
+            "record_ids": [item["id"] for item in normalized["records"]],
+            "max_characters": normalized["char_limit"],
         }
         if normalized["search"] is not None:
             context_request["search"] = normalized["search"]
-        context_package = self.context.build_package(context_request, legacy=legacy)
+            context_request["candidate_documents"] = sorted(
+                {item["ref"] for item in normalized["documents"]}
+            )
+        context_package = self.shared_data.invoke("context.build", context_request)
         selected_ids = {
-            item["id"]
+            item["record_id"]
             for item in context_package["selected"]
             if item["kind"] == "record"
         }
@@ -182,6 +194,9 @@ class YouTubeEvidenceService:
             )
         if not context_package["selected"]:
             raise YouTubeEvidenceError("evidence pack cannot be empty")
+        baseline = normalized["baseline_characters"]
+        selected_characters = context_package["metrics"]["selected_characters"]
+        reduction = max(baseline - selected_characters, 0)
         pack: dict[str, Any] = {
             "pack_version": PACK_VERSION,
             "domain": "youtube",
@@ -194,6 +209,12 @@ class YouTubeEvidenceService:
                 "reason": "evidence selection does not approve a creative direction",
             },
             "context_package": context_package,
+            "selection_metrics": {
+                "baseline_characters": baseline,
+                "selected_characters": selected_characters,
+                "reduction_characters": reduction,
+                "reduction_ratio": round(reduction / baseline, 6),
+            },
         }
         pack["fingerprint"] = "sha256:" + hashlib.sha256(
             _canonical(pack).encode("utf-8")

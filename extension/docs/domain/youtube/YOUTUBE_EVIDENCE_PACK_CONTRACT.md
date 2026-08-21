@@ -2,7 +2,7 @@
 
 - 목적: 첫 유튜브 도메인 작업으로 명시된 영상 목표와 current 근거를 연결해 촬영 전 검토용 비영구 evidence pack을 만든다.
 - 읽는 시점: 유튜브 영상의 근거 패키지를 만들거나 도메인 adapter의 입력·결과·승인 경계를 검토할 때.
-- 책임: `youtube_domain.YouTubeEvidenceService`가 도메인 입력을 검증하고 공통 `ContextService`가 근거 선택·출처·비용을 소유한다.
+- 책임: `youtube_domain.YouTubeEvidenceService`가 도메인 입력·절감 지표를 검증하고 Core 공개 `shared_data` v1이 근거 선택·경계·fingerprint를 소유한다.
 - 상태: 활성 도메인 계약.
 - 관련 권위: `PROJECT_RULES.md`가 선택한 공통 context·work-state interface와 이 도메인 계약.
 
@@ -17,7 +17,7 @@
 | 정보·행동 | 소유자 | 경계 |
 |---|---|---|
 | 작업 제목·시청자·목표·evidence 선택 | 호출 요청 | 서비스가 정규화하지만 자동 보강·저장하지 않음 |
-| record·source·lifecycle·context 선택 | 공통 `file_data` | 도메인 필드를 공통 record schema에 추가하지 않음 |
+| record·lifecycle·context 선택 | Core 공개 `shared_data` v1 | 도메인 필드를 공통 record schema에 추가하지 않음 |
 | 유튜브 작업 의미·승인 gate·pack fingerprint | `youtube_domain` | 공통 기반을 수정하거나 domain 결과를 current 지식으로 만들지 않음 |
 | 창작 방향·작업 제목 승인 | 사용자 | 결과는 항상 `review_required`; adapter가 승인하지 않음 |
 | 사용자 원본 | `inputs/` 보호 경계 | 이번 작업에서 열거·열람·이동·저장하지 않음 |
@@ -30,7 +30,7 @@
 
 - `video`: lowercase ASCII slug ID, 작업 제목, 대상 시청자, 설명 목표
 - `documents`: `ref`, 선택 이유, 필요하면 같은 문서 안 `project-data:v1`의 `data_key`를 지정하는 기본 current 목록
-- `records`: 기존 record UUID와 선택 이유의 legacy 호환 목록. 기본 mode에서는 비어 있어야 하며 explicit CLI `--legacy`에서만 읽기 전용으로 허용
+- `records`: `shared_data` v1 record UUID와 선택 이유. lifecycle `current`가 아니면 부분 성공 없이 실패
 - `search`: 선택적 current 문자열 후보. 사용하지 않으면 `null`
 - `char_limit`: 1~12,000 Unicode 문자
 - `baseline_characters`: 비교 기준선의 양의 Unicode 문자 수
@@ -45,6 +45,7 @@
 - 정규화한 `video`
 - 사용자 소유 `approval_gate`와 `review_required` 상태
 - 공통 `context_package` 전체와 그 fingerprint
+- 요청 baseline과 Core 선택 문자 수로 계산한 도메인 `selection_metrics`
 - 도메인 pack 전체의 별도 SHA-256 fingerprint
 
 요청한 direct record가 current 선택 결과에 없으면 부분 pack을 성공으로 반환하지 않는다. 동일한 정본·요청에서 byte가 같은 JSON과 같은 두 fingerprint를 반환해야 한다.
@@ -52,9 +53,9 @@
 ## 5. 작업 흐름
 
 1. 명시 JSON과 허용 필드·길이·중복·evidence 존재를 검증한다.
-2. 목적·문서·선택 `data_key`·검색·문자 상한·기준선을 공통 `ContextService` 요청으로 변환한다. legacy UUID가 있으면 explicit `--legacy` mode인지 먼저 확인한다.
+2. 목적·문서·선택 `data_key`·record ID·검색·문자 상한을 공개 `shared_data context.build` 요청으로 변환한다.
 3. 공통 기반이 보호 경계, current 상태, source trace, 크기와 제외를 검증한다.
-4. 모든 direct record가 실제 selected current인지 다시 확인한다.
+4. 모든 direct record가 실제 selected current인지 다시 확인하고 baseline 대비 절감 지표를 도메인 결과로 계산한다.
 5. 사용자 소유 `review_required` gate와 도메인 fingerprint를 추가한다.
 6. stdout으로만 반환하고 package·영상 원본·도메인 상태를 저장하지 않는다.
 7. 실제 실행의 fingerprint와 측정값은 현재 작업에 필요할 때만 checkpoint에 연결한다.
@@ -65,8 +66,6 @@
 $request = Get-Content -LiteralPath 'extension/examples/youtube/foundation-evidence.request.json' -Raw -Encoding UTF8
 $request | python -m youtube_domain --root . evidence-pack --request-stdin
 ```
-
-기존 UUID 요청을 감사 목적으로 재현할 때만 같은 명령에 `--legacy`를 추가한다. 기본 mode가 `records[]`를 받으면 `legacy_mode_required`로 실패하며 새 record를 만들지 않는다.
 
 PowerShell에서 native stdin으로 한글 JSON을 보낼 때는 `$OutputEncoding`과 `PYTHONUTF8=1`을 UTF-8로 설정한다.
 
@@ -133,13 +132,13 @@ PowerShell에서 native stdin으로 한글 JSON을 보낼 때는 `$OutputEncodin
 
 <!-- project-artifact:v1 path=extension/schemas/youtube-evidence-pack-v1.schema.json verify=json-semantic -->
 ```json
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"project://extension/schemas/youtube-evidence-pack-v1.schema.json","title":"YouTube pre-production evidence pack v1","type":"object","additionalProperties":false,"required":["pack_version","domain","task","video","approval_gate","context_package","fingerprint"],"properties":{"pack_version":{"const":1},"domain":{"const":"youtube"},"task":{"const":"preproduction_evidence_pack"},"video":{"type":"object","additionalProperties":false,"required":["id","working_title","audience","goal"],"properties":{"id":{"type":"string","pattern":"^[a-z0-9]+(?:-[a-z0-9]+)*$","maxLength":80},"working_title":{"type":"string","minLength":1,"maxLength":200},"audience":{"type":"string","minLength":1,"maxLength":500},"goal":{"type":"string","minLength":1,"maxLength":1000}}},"approval_gate":{"type":"object","additionalProperties":false,"required":["status","owner","decision","reason"],"properties":{"status":{"const":"review_required"},"owner":{"const":"user"},"decision":{"const":"working_title_and_creative_direction"},"reason":{"type":"string","minLength":1}}},"context_package":{"$ref":"../../core/schemas/context-package-v1.schema.json"},"fingerprint":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}}
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"project://extension/schemas/youtube-evidence-pack-v1.schema.json","title":"YouTube pre-production evidence pack v1","type":"object","additionalProperties":false,"required":["pack_version","domain","task","video","approval_gate","context_package","selection_metrics","fingerprint"],"properties":{"pack_version":{"const":1},"domain":{"const":"youtube"},"task":{"const":"preproduction_evidence_pack"},"video":{"type":"object","additionalProperties":false,"required":["id","working_title","audience","goal"],"properties":{"id":{"type":"string","pattern":"^[a-z0-9]+(?:-[a-z0-9]+)*$","maxLength":80},"working_title":{"type":"string","minLength":1,"maxLength":200},"audience":{"type":"string","minLength":1,"maxLength":500},"goal":{"type":"string","minLength":1,"maxLength":1000}}},"approval_gate":{"type":"object","additionalProperties":false,"required":["status","owner","decision","reason"],"properties":{"status":{"const":"review_required"},"owner":{"const":"user"},"decision":{"const":"working_title_and_creative_direction"},"reason":{"type":"string","minLength":1}}},"context_package":{"$ref":"../../core/experimental/shared_data/schemas/context-package-v1.schema.json"},"selection_metrics":{"type":"object","additionalProperties":false,"required":["baseline_characters","selected_characters","reduction_characters","reduction_ratio"],"properties":{"baseline_characters":{"type":"integer","minimum":1},"selected_characters":{"type":"integer","minimum":0},"reduction_characters":{"type":"integer","minimum":0},"reduction_ratio":{"type":"number","minimum":0,"maximum":1}}},"fingerprint":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"}}}
 ```
 <!-- /project-artifact -->
 
 <!-- project-artifact:v1 path=extension/examples/youtube/foundation-evidence.request.json verify=json-semantic -->
 ```json
-{"baseline_characters":315497,"char_limit":12000,"documents":[{"data_key":"context-package-deterministic-derived-view","reason":"선택적 근거 구성의 현재 계약","ref":"core/docs/CONTEXT_PACKAGE_CONTRACT.md"}],"records":[],"search":null,"video":{"audience":"반복 제작에서 AI 작업 기억의 비용을 줄이고 싶은 1인 크리에이터","goal":"전체 문서를 매번 읽지 않고 current 근거만 선택해 재현 가능한 작업 문맥을 만드는 방식을 설명한다.","id":"foundation-context","working_title":"AI 작업 기억을 가볍게 만드는 선택적 컨텍스트"}}
+{"baseline_characters":315497,"char_limit":12000,"documents":[{"reason":"선택적 근거 구성의 현재 계약","ref":"core/experimental/shared_data/EVIDENCE_CONTEXT_CONTRACT.md"}],"records":[],"search":null,"video":{"audience":"반복 제작에서 AI 작업 기억의 비용을 줄이고 싶은 1인 크리에이터","goal":"전체 문서를 매번 읽지 않고 current 근거만 선택해 재현 가능한 작업 문맥을 만드는 방식을 설명한다.","id":"foundation-context","working_title":"AI 작업 기억을 가볍게 만드는 선택적 컨텍스트"}}
 ```
 <!-- /project-artifact -->
 

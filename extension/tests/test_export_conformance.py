@@ -23,7 +23,7 @@ class ExportConformanceTests(unittest.TestCase):
         self.assertEqual(game["status"], "pass")
         self.assertEqual(game["owner"], "extension.game_pilot")
         self.assertEqual(comparison["status"], "pass")
-        self.assertEqual(comparison["core_revisions"], ["file-data-v1"])
+        self.assertEqual(comparison["core_revisions"], ["contract-2:shared_data-1"])
         self.assertEqual(game["artifacts"], [])
 
     def test_domain_reports_do_not_change_manifest(self) -> None:

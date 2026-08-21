@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from file_data import ContextError, ContextLimitError
+from core_clients import CoreClientError, SharedDataLimitError
 
 from .service import YouTubeDomainError, YouTubeEvidenceService
 
@@ -49,11 +49,6 @@ def _parser() -> DomainArgumentParser:
     source = evidence.add_mutually_exclusive_group(required=True)
     source.add_argument("--request-json")
     source.add_argument("--request-stdin", action="store_true")
-    evidence.add_argument(
-        "--legacy",
-        action="store_true",
-        help="allow read-only legacy UUID records[] compatibility",
-    )
     return parser
 
 
@@ -68,16 +63,13 @@ def main(argv: list[str] | None = None) -> int:
         namespace = _parser().parse_args(argv)
         raw = sys.stdin.read() if namespace.request_stdin else namespace.request_json
         request = _decode(raw)
-        pack = YouTubeEvidenceService(namespace.root).build_pack(
-            request,
-            legacy=namespace.legacy,
-        )
+        pack = YouTubeEvidenceService(namespace.root).build_pack(request)
         _emit({"ok": True, "result": {"pack": pack}})
         return 0
-    except ContextLimitError as exc:
+    except SharedDataLimitError as exc:
         _emit({"ok": False, "error": {"kind": "context_limit", "message": str(exc)}}, error=True)
         return 3
-    except (YouTubeDomainError, ContextError) as exc:
+    except (YouTubeDomainError, CoreClientError) as exc:
         _emit({"ok": False, "error": {"kind": "input_error", "message": str(exc)}}, error=True)
         return 2
 

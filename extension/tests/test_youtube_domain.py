@@ -9,10 +9,7 @@ import tempfile
 import unittest
 from uuid import uuid4
 
-from file_data.context import ContextError
-from file_data.knowledge import KnowledgeService
-from file_data.lifecycle import LifecycleService
-from test_support import TEST_WRITE_CAPABILITY
+from core_clients import CoreClientError, SharedDataClient
 from youtube_domain import (
     REQUEST_FIELDS,
     VIDEO_FIELDS,
@@ -56,30 +53,36 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
 """,
             encoding="utf-8",
         )
-        knowledge = KnowledgeService(
-            root,
-            _write_capability=TEST_WRITE_CAPABILITY,
+        shared = SharedDataClient(root)
+        shared.invoke("initialize", {}, write=True)
+        source = shared.invoke(
+            "source.create",
+            {
+                "source_kind": "local_document",
+                "locator": "core/docs/evidence.md",
+                "evidence_role": "primary",
+                "record_id": str(uuid4()),
+            },
+            write=True,
         )
-        knowledge.initialize()
-        source = knowledge.create_source(
-            source_kind="local_document",
-            locator="core/docs/evidence.md",
-            evidence_role="primary",
-            record_id=str(uuid4()),
+        claim = shared.invoke(
+            "knowledge.create",
+            {
+                "statement": "영상 근거 패키지는 current 근거만 선택한다",
+                "classification": "procedure",
+                "scope": "youtube:evidence-pack",
+                "source_ids": [source["id"]],
+                "verification_status": "verified",
+                "verified_by": "agent:test",
+                "record_id": str(uuid4()),
+            },
+            write=True,
         )
-        claim = knowledge.create_knowledge(
-            statement="영상 근거 패키지는 current 근거만 선택한다",
-            classification="procedure",
-            scope="youtube:evidence-pack",
-            source_ids=[source["id"]],
-            verification_status="verified",
-            verified_by="agent:test",
-            record_id=str(uuid4()),
+        shared.invoke(
+            "lifecycle.register_existing",
+            {"actor": "agent:test", "approval_kind": "standing_policy"},
+            write=True,
         )
-        LifecycleService(
-            root,
-            _write_capability=TEST_WRITE_CAPABILITY,
-        ).register_existing(actor="agent:test", approval_kind="standing_policy")
         return source, claim
 
     def _request(self, claim_id: str) -> dict:
@@ -109,22 +112,22 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
         request["records"] = []
         return request
 
-    def test_default_mode_builds_from_document_data_key_without_legacy_records(self) -> None:
+    def test_builds_from_document_data_key_without_record_storage(self) -> None:
         with self._root() as raw_root:
             self._fixture(raw_root)
             pack = YouTubeEvidenceService(raw_root).build_pack(self._document_request())
             selected = pack["context_package"]["selected"]
             self.assertEqual(len(selected), 1)
             self.assertEqual(selected[0]["data_key"], "test-youtube-evidence")
-            self.assertEqual(selected[0]["kind"], "document")
+            self.assertEqual(selected[0]["kind"], "document_data")
 
     def test_builds_deterministic_nonpersistent_pack_with_user_gate(self) -> None:
         with self._root() as raw_root:
             source, claim = self._fixture(raw_root)
             service = YouTubeEvidenceService(raw_root)
             before = sorted(path.relative_to(raw_root).as_posix() for path in Path(raw_root).rglob("*"))
-            first = service.build_pack(self._request(claim["id"]), legacy=True)
-            second = service.build_pack(self._request(claim["id"]), legacy=True)
+            first = service.build_pack(self._request(claim["id"]))
+            second = service.build_pack(self._request(claim["id"]))
             after = sorted(path.relative_to(raw_root).as_posix() for path in Path(raw_root).rglob("*"))
             self.assertEqual(first, second)
             self.assertEqual(before, after)
@@ -134,55 +137,68 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
             records = [
                 item for item in first["context_package"]["selected"] if item["kind"] == "record"
             ]
-            self.assertEqual([item["id"] for item in records], [claim["id"]])
-            self.assertEqual(records[0]["sources"][0]["id"], source["id"])
-            self.assertEqual(records[0]["sources"][0]["lifecycle_state"], "current")
+            self.assertEqual([item["record_id"] for item in records], [claim["id"]])
+            self.assertEqual(records[0]["data"]["payload"]["source_ids"], [source["id"]])
+            self.assertEqual(first["selection_metrics"]["baseline_characters"], 1000)
 
     def test_noncurrent_requested_record_fails_instead_of_partial_success(self) -> None:
         with self._root() as raw_root:
             source, old = self._fixture(raw_root)
-            replacement = KnowledgeService(
-                raw_root,
-                _write_capability=TEST_WRITE_CAPABILITY,
-            ).create_knowledge(
-                statement="개정된 current 영상 근거 절차",
-                classification="procedure",
-                scope="youtube:evidence-pack",
-                source_ids=[source["id"]],
-                verification_status="verified",
-                verified_by="agent:test",
-                record_id=str(uuid4()),
+            shared = SharedDataClient(raw_root)
+            replacement = shared.invoke(
+                "knowledge.create",
+                {
+                    "statement": "개정된 current 영상 근거 절차",
+                    "classification": "procedure",
+                    "scope": "youtube:evidence-pack",
+                    "source_ids": [source["id"]],
+                    "verification_status": "verified",
+                    "verified_by": "agent:test",
+                    "record_id": str(uuid4()),
+                },
+                write=True,
             )
-            lifecycle = LifecycleService(
-                raw_root,
-                _write_capability=TEST_WRITE_CAPABILITY,
+            shared.invoke(
+                "lifecycle.register",
+                {
+                    "target_id": replacement["id"],
+                    "initial_state": "current",
+                    "actor": "agent:test",
+                    "approval_kind": "standing_policy",
+                    "reason": "개정 절차",
+                },
+                write=True,
             )
-            lifecycle.register(
-                replacement["id"], initial_state="current", actor="agent:test",
-                approval_kind="standing_policy", reason="개정 절차"
-            )
-            state = lifecycle.get_state(old["id"])
-            lifecycle.transition(
-                old["id"], expected_state_hash=state["content_hash"], action="supersede",
-                actor="agent:test", approval_kind="standing_policy", reason="개정",
-                replacement_id=replacement["id"]
+            state = shared.invoke("lifecycle.get", {"target_id": old["id"]})["lifecycle"]
+            shared.invoke(
+                "lifecycle.transition",
+                {
+                    "target_id": old["id"],
+                    "expected_state_hash": state["content_hash"],
+                    "action": "supersede",
+                    "actor": "agent:test",
+                    "approval_kind": "standing_policy",
+                    "reason": "개정",
+                    "replacement_id": replacement["id"],
+                },
+                write=True,
             )
             with self.assertRaises(YouTubeEvidenceError):
-                YouTubeEvidenceService(raw_root).build_pack(
-                    self._request(old["id"]), legacy=True
-                )
+                YouTubeEvidenceService(raw_root).build_pack(self._request(old["id"]))
 
     def test_protected_document_is_rejected_by_common_context_boundary(self) -> None:
         with self._root() as raw_root:
             _, claim = self._fixture(raw_root)
             request = self._request(claim["id"])
-            request["documents"] = [{"ref": "inputs/private.md", "reason": "금지 원본"}]
-            with self.assertRaises(ContextError):
-                YouTubeEvidenceService(raw_root).build_pack(request, legacy=True)
+            request["documents"] = [{"ref": "sealed-material/private.md", "reason": "금지 원본"}]
+            with self.assertRaises(CoreClientError):
+                YouTubeEvidenceService(
+                    raw_root, protected_paths=("sealed-material",)
+                ).build_pack(request)
 
-    def test_default_mode_rejects_legacy_uuid_records_without_explicit_opt_in(self) -> None:
-        with self.assertRaisesRegex(YouTubeDomainError, "legacy_mode_required"):
-            validate_request(self._request(str(uuid4())))
+    def test_current_record_selection_needs_no_legacy_mode(self) -> None:
+        normalized = validate_request(self._request(str(uuid4())))
+        self.assertEqual(len(normalized["records"]), 1)
 
     def test_request_rejects_unknown_fields_duplicates_empty_evidence_and_large_limit(self) -> None:
         request = self._request(str(uuid4()))
@@ -230,7 +246,7 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
         )
         self.assertEqual(
             set(pack_schema["required"]),
-            {"pack_version", "domain", "task", "video", "approval_gate", "context_package", "fingerprint"},
+            {"pack_version", "domain", "task", "video", "approval_gate", "context_package", "selection_metrics", "fingerprint"},
         )
         self.assertEqual(set(pack_schema["properties"]["video"]["required"]), set(VIDEO_FIELDS))
 
@@ -242,6 +258,7 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
             environment["PYTHONPATH"] = os.pathsep.join(
                 [
                     str(root / "core" / "src"),
+                    str(root / "core"),
                     str(root / "extension" / "src"),
                 ]
             )
@@ -249,7 +266,7 @@ class YouTubeEvidenceServiceTests(unittest.TestCase):
             environment["PYTHONUTF8"] = "1"
             command = [
                 sys.executable, "-m", "youtube_domain", "--root", raw_root,
-                "evidence-pack", "--request-stdin", "--legacy",
+                "evidence-pack", "--request-stdin",
             ]
             success = subprocess.run(
                 command,

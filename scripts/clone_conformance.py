@@ -103,6 +103,23 @@ def main() -> int:
             if not cloned["ok"]:
                 results.append({"label": label, "clone": cloned})
                 continue
+            submodule = _run(
+                [
+                    "git",
+                    "-c",
+                    "protocol.file.allow=always",
+                    "-c",
+                    f"submodule.core.url={(ROOT / 'core').as_posix()}",
+                    "submodule",
+                    "update",
+                    "--init",
+                    "--recursive",
+                ],
+                clone,
+            )
+            if not submodule["ok"]:
+                results.append({"label": label, "clone": cloned, "submodule": submodule})
+                continue
             _overlay_worktree(clone)
             bootstrap = _run(["python", "-B", "scripts/bootstrap.py", "--json"], clone)
             verify = _run(["python", "-B", "scripts/verify.py", "--no-clone"], clone)
@@ -110,6 +127,7 @@ def main() -> int:
                 {
                     "label": label,
                     "clone": cloned,
+                    "submodule": submodule,
                     "bootstrap": bootstrap,
                     "verify": verify,
                     "ok": bootstrap["ok"] and verify["ok"],

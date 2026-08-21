@@ -5,17 +5,55 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from file_data import get_export_manifest, validate_export_manifest
+from core_clients import public_core_manifest
+
+
+MANIFEST_FIELDS = frozenset(
+    {
+        "manifest_version",
+        "core_revision",
+        "contract_version",
+        "capability",
+        "capability_version",
+        "commands",
+        "operations",
+        "request_schema",
+        "result_schema",
+    }
+)
+
+
+def validate_public_manifest(manifest: Mapping[str, Any]) -> dict[str, Any]:
+    if not isinstance(manifest, Mapping) or set(manifest) != MANIFEST_FIELDS:
+        raise ValueError(f"public Core manifest field가 정확하지 않다: {sorted(MANIFEST_FIELDS)}")
+    if manifest["manifest_version"] != 1:
+        raise ValueError("지원하지 않는 manifest_version")
+    if manifest["capability"] != "shared_data" or manifest["capability_version"] != 1:
+        raise ValueError("shared_data v1 공개 기능이 필요하다")
+    if not isinstance(manifest["contract_version"], int) or isinstance(manifest["contract_version"], bool):
+        raise ValueError("contract_version은 정수여야 한다")
+    if not isinstance(manifest["core_revision"], str) or not manifest["core_revision"]:
+        raise ValueError("core_revision이 필요하다")
+    for field in ("commands", "operations"):
+        value = manifest[field]
+        if not isinstance(value, list) or not value or any(not isinstance(item, str) for item in value):
+            raise ValueError(f"{field}는 비어 있지 않은 문자열 목록이어야 한다")
+    for field in ("request_schema", "result_schema"):
+        if not isinstance(manifest[field], str) or not manifest[field]:
+            raise ValueError(f"{field}가 필요하다")
+    return dict(manifest)
 
 
 def _core_check(manifest: Mapping[str, Any] | None = None) -> dict[str, Any]:
-    checked = validate_export_manifest(manifest or get_export_manifest())
+    checked = validate_public_manifest(manifest or public_core_manifest())
     rendered = repr(checked).casefold()
     leakage = [term for term in ("youtube", "game", "video") if term in rendered]
     return {
         "status": "pass" if not leakage else "fail",
         "core_revision": checked["core_revision"],
         "manifest_version": checked["manifest_version"],
+        "contract_version": checked["contract_version"],
+        "capability_version": checked["capability_version"],
         "leakage": leakage,
     }
 

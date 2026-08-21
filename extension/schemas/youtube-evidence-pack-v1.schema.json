@@ -4,7 +4,7 @@
   "title": "YouTube pre-production evidence pack v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["pack_version", "domain", "task", "video", "approval_gate", "context_package", "fingerprint"],
+  "required": ["pack_version", "domain", "task", "video", "approval_gate", "context_package", "selection_metrics", "fingerprint"],
   "properties": {
     "pack_version": {"const": 1},
     "domain": {"const": "youtube"},
@@ -31,7 +31,18 @@
         "reason": {"type": "string", "minLength": 1}
       }
     },
-    "context_package": {"$ref": "../../core/schemas/context-package-v1.schema.json"},
+    "context_package": {"$ref": "../../core/experimental/shared_data/schemas/context-package-v1.schema.json"},
+    "selection_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline_characters", "selected_characters", "reduction_characters", "reduction_ratio"],
+      "properties": {
+        "baseline_characters": {"type": "integer", "minimum": 1},
+        "selected_characters": {"type": "integer", "minimum": 0},
+        "reduction_characters": {"type": "integer", "minimum": 0},
+        "reduction_ratio": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
     "fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
   }
 }

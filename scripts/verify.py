@@ -21,17 +21,18 @@ OPTIONAL_EXTENSION_TESTS = {
 }
 
 sys.path.insert(0, str(ROOT / "core" / "src"))
+sys.path.insert(0, str(ROOT / "core"))
 sys.path.insert(0, str(ROOT / "extension" / "src"))
 
+from artifact_conformance import ArtifactConformanceService  # noqa: E402
 from extension_registry import artifact_owners  # noqa: E402
-from file_data.document_data import CORE_ARTIFACT_OWNERS  # noqa: E402
-from file_data.maintenance import MaintenanceService  # noqa: E402
 
 
 def _environment() -> dict[str, str]:
     environment = os.environ.copy()
     python_path = os.pathsep.join(
-        str(path) for path in (ROOT / "core" / "src", ROOT / "extension" / "src", CORE_TESTS)
+        str(path)
+        for path in (ROOT / "core", ROOT / "core" / "src", ROOT / "extension" / "src", CORE_TESTS)
     )
     environment["PYTHONPATH"] = python_path
     environment["PYTHONUTF8"] = "1"
@@ -81,16 +82,13 @@ def _test_gate() -> dict[str, Any]:
 
 
 def _maintenance_gate() -> dict[str, Any]:
-    owners = {**CORE_ARTIFACT_OWNERS, **artifact_owners()}
-    result = MaintenanceService(
-        ROOT,
-        artifact_owners=owners,
-    ).verify(allow_core_changes=True)
+    owners = artifact_owners()
+    result = ArtifactConformanceService(ROOT, owners).check()
     return {
         "ok": result["ok"],
-        "status": result["status"],
-        "errors": result["errors"],
-        "metrics": result.get("metrics", {}),
+        "status": "pass" if result["ok"] else "attention_required",
+        "errors": result["drift"],
+        "metrics": {},
         "artifacts": len(owners),
     }
 
@@ -100,6 +98,7 @@ def _failure_taxonomy(
     bootstrap: dict[str, Any],
     bootstrap_payload: dict[str, Any],
     node: dict[str, Any],
+    contract: dict[str, Any],
     tests: dict[str, Any],
     maintenance: dict[str, Any],
     clone: dict[str, Any] | str,
@@ -111,6 +110,8 @@ def _failure_taxonomy(
         failures.append({"stage": "bootstrap", "class": "setup", "status": "failed"})
     if not node["ok"]:
         failures.append({"stage": "node", "class": "setup", "status": "failed"})
+    if not contract["ok"]:
+        failures.append({"stage": "core-contract", "class": "contract", "status": "failed"})
     if not tests["core"]["ok"]:
         failures.append({"stage": "core-tests", "class": "test", "status": "failed"})
     if not tests["extension"]["ok"]:
@@ -141,6 +142,19 @@ def main() -> int:
     except json.JSONDecodeError:
         bootstrap_payload = {"ok": False, "status": "invalid_json"}
     node = _run(["node", "scripts/node_verify.mjs"])
+    contract = _run(
+        [
+            sys.executable,
+            "-B",
+            "-m",
+            "core_check",
+            "--core-root",
+            "core",
+            "--consumer-root",
+            ".",
+            "gate",
+        ]
+    )
     tests = _test_gate()
     maintenance = _maintenance_gate()
     clone: dict[str, Any] | str = "skipped"
@@ -151,6 +165,7 @@ def main() -> int:
             bootstrap["ok"]
             and bootstrap_payload.get("ok")
             and node["ok"]
+            and contract["ok"]
             and tests["core"]["ok"]
             and tests["extension"]["ok"]
             and maintenance["ok"]
@@ -158,6 +173,7 @@ def main() -> int:
         ),
         "bootstrap": bootstrap_payload,
         "node": node,
+        "core_contract": contract,
         "tests": tests,
         "maintenance": maintenance,
         "clone_conformance": clone,
@@ -166,6 +182,7 @@ def main() -> int:
         bootstrap=bootstrap,
         bootstrap_payload=bootstrap_payload,
         node=node,
+        contract=contract,
         tests=tests,
         maintenance=maintenance,
         clone=clone,

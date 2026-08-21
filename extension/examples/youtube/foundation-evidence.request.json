@@ -3,9 +3,8 @@
   "char_limit": 12000,
   "documents": [
     {
-      "data_key": "context-package-deterministic-derived-view",
       "reason": "선택적 근거 구성의 현재 계약",
-      "ref": "core/docs/CONTEXT_PACKAGE_CONTRACT.md"
+      "ref": "core/experimental/shared_data/EVIDENCE_CONTEXT_CONTRACT.md"
     }
   ],
   "records": [],

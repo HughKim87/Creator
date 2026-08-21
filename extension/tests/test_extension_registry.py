@@ -8,7 +8,7 @@ sys.path.insert(0, str(ROOT / "core" / "src"))
 sys.path.insert(0, str(ROOT / "extension" / "src"))
 
 from extension_registry import artifact_owners  # noqa: E402
-from file_data.document_data import ArtifactService, CORE_ARTIFACT_OWNERS  # noqa: E402
+from artifact_conformance import ArtifactConformanceService  # noqa: E402
 
 
 class ExtensionRegistryTests(unittest.TestCase):
@@ -22,9 +22,8 @@ class ExtensionRegistryTests(unittest.TestCase):
                 "extension/examples/youtube/foundation-evidence.request.json",
             },
         )
-        combined = {**CORE_ARTIFACT_OWNERS, **extension_owners}
-        result = ArtifactService(ROOT, artifact_owners=combined).check()
-        self.assertEqual(result, {"artifacts": 20, "drift": []})
+        result = ArtifactConformanceService(ROOT, extension_owners).check()
+        self.assertEqual(result, {"artifacts": 3, "drift": [], "ok": True})
 
     def test_extension_registry_returns_a_copy(self) -> None:
         owners = artifact_owners()
