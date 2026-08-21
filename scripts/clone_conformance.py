@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -13,10 +14,31 @@ import uuid
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _environment() -> dict[str, str]:
+    """Give Git for Windows shell helpers a process-local search path."""
+
+    environment = os.environ.copy()
+    git = shutil.which("git")
+    if os.name == "nt" and git:
+        install_root = Path(git).resolve().parents[1]
+        helpers = [
+            install_root / "usr" / "bin",
+            install_root / "mingw64" / "bin",
+            install_root / "mingw64" / "libexec" / "git-core",
+        ]
+        available = [str(path) for path in helpers if path.is_dir()]
+        if available:
+            environment["PATH"] = os.pathsep.join(
+                [*available, environment.get("PATH", "")]
+            ).rstrip(os.pathsep)
+    return environment
+
+
 def _run(command: list[str], cwd: Path) -> dict:
     completed = subprocess.run(
         command,
         cwd=cwd,
+        env=_environment(),
         capture_output=True,
         text=True,
         encoding="utf-8",

@@ -15,8 +15,7 @@
 
 ## 직전 게이트
 
-- `pass`: 현재 작업 트리에서 `python -B scripts/verify.py --no-clone`을 실행해 Core 165건, Extension 143건, Core 소비 계약, Extension 정본 artifact 3건을 통과했다.
-- `pass`: `scripts`와 `extension`의 활성 코드에서 Legacy `file_data` 직접 import가 0건이다.
+- `pass`: 현재 작업 트리에서 Core 165건, Extension 143건, Core 소비 계약, Extension 정본 artifact 3건을 통과했고 `scripts`와 `extension`의 활성 Legacy `file_data` 직접 import가 0건이다.
 - `not_run`: 7G 후보 커밋의 clean clone 게이트.
 
 ## 승인 상태
