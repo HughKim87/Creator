@@ -3,7 +3,7 @@
 - 목적: 이 Maintainer 저장소의 현재 단계·승인·차단·첫 다음 행동만 소유한다.
 - 읽는 시점: Core 정책과 소비 정책을 읽은 뒤 현재 작업을 시작·재개할 때.
 - 책임: 현재 작업 에이전트가 검증된 상태로 갱신하고 사용자가 단계 전환을 승인한다.
-- 상태: 7H Legacy 종료 감사 후보. 활성 의존과 고유 소유권 이전을 마쳤고 후보 커밋·clean clone 검증을 진행한다.
+- 상태: 승인된 Legacy 흡수 전체 설계 로컬 완료. 추가 구현 없이 별도 삭제·push 결정을 기다린다.
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`, 활성 단계 설계가 있을 때의 해당 설계.
 - 활성 전체 설계: 없음
 - 활성 단계 설계: 없음
@@ -11,16 +11,16 @@
 
 ## 현재 단계
 
-- `legacy-absorption-7h-termination-audit`: `legacy-core`의 공통 기능은 흡수·대체됐고 `.obsidian/app.json` 정본도 활성 Maintainer로 이전됐다. 디렉터리는 삭제 승인 전 source lineage만 보존한다.
+- `legacy-absorption-complete`: 공통 기능·계약·규칙·검증 경계와 Maintainer 소비 전환을 완료했다. `legacy-core/`는 별도 삭제 승인 전 source lineage만 보존한다.
 
 ## 직전 게이트
 
-- `pass`: 현재 작업 트리에서 Core 165건, Extension 143건, Core 소비 계약, 정본 artifact 4건을 통과했고 활성 Legacy `file_data` import가 0건이다.
+- `pass`: 7H 후보 커밋 `dc8ac01`의 ASCII·한글·공백 경로 clean clone 3종에서 submodule 초기화, Core 165건, Extension 143건, 정본 artifact 4건과 통합 게이트가 모두 통과했다.
 
 ## 승인 상태
 
-- 남은 Legacy 흡수 설계인 작업 상태 Runtime, 공개 선택 기능·CLI, 기존 `file_data` 의존 전환과 단계별 로컬 커밋을 사용자가 연속 진행하도록 승인했다.
-- 정책·규칙의 외부 모델 서비스 전송, 보호 데이터 접근과 모든 push·원격 조작은 승인되지 않았다.
+- 승인된 Legacy 흡수·Maintainer 의존 전환과 단계별 로컬 커밋은 모두 수행했다.
+- `legacy-core/` 삭제, `extension/work/CORE_CHANGE_FAILURES.md` 정리, 보호 데이터 접근과 모든 push·원격 조작은 승인되지 않았다.
 
 ## 차단
 
@@ -36,7 +36,7 @@
 
 ## 첫 다음 행동
 
-1. 7H 변경 파일만 후보 커밋으로 만들고 clean clone에서 artifact 4건, 활성 Legacy import 0건과 공식 통합 게이트를 다시 검증한다.
+1. 새 요청이 오면 Parent와 Core에서 `git status --short`를 확인하고, `legacy-core/` 삭제나 push는 사용자가 정확한 대상을 별도로 승인한 경우에만 시작한다.
 
 ## 다음 session 시작 prompt
 
