@@ -17,18 +17,19 @@ class ExtensionRegistryTests(unittest.TestCase):
         self.assertEqual(
             set(extension_owners),
             {
+                ".obsidian/app.json",
                 "extension/schemas/youtube-evidence-request-v1.schema.json",
                 "extension/schemas/youtube-evidence-pack-v1.schema.json",
                 "extension/examples/youtube/foundation-evidence.request.json",
             },
         )
         result = ArtifactConformanceService(ROOT, extension_owners).check()
-        self.assertEqual(result, {"artifacts": 3, "drift": [], "ok": True})
+        self.assertEqual(result, {"artifacts": 4, "drift": [], "ok": True})
 
     def test_extension_registry_returns_a_copy(self) -> None:
         owners = artifact_owners()
         owners.clear()
-        self.assertEqual(len(artifact_owners()), 3)
+        self.assertEqual(len(artifact_owners()), 4)
 
 
 if __name__ == "__main__":

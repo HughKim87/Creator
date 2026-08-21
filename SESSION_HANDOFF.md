@@ -3,7 +3,7 @@
 - 목적: 이 Maintainer 저장소의 현재 단계·승인·차단·첫 다음 행동만 소유한다.
 - 읽는 시점: Core 정책과 소비 정책을 읽은 뒤 현재 작업을 시작·재개할 때.
 - 책임: 현재 작업 에이전트가 검증된 상태로 갱신하고 사용자가 단계 전환을 승인한다.
-- 상태: 7G Maintainer의 Legacy `file_data` 직접 의존 제거 후보. 직접 게이트를 통과했고 후보 커밋·clean clone 검증을 진행한다.
+- 상태: 7H Legacy 종료 감사 후보. 활성 의존과 고유 소유권 이전을 마쳤고 후보 커밋·clean clone 검증을 진행한다.
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`, 활성 단계 설계가 있을 때의 해당 설계.
 - 활성 전체 설계: 없음
 - 활성 단계 설계: 없음
@@ -11,12 +11,11 @@
 
 ## 현재 단계
 
-- `legacy-absorption-7g-maintainer-migration`: Maintainer의 공통 데이터 처리는 Core 공개 `shared_data` v1 CLI로, Extension artifact 검증은 Maintainer 소유의 최소 의미 일치 검사기로 전환했다.
+- `legacy-absorption-7h-termination-audit`: `legacy-core`의 공통 기능은 흡수·대체됐고 `.obsidian/app.json` 정본도 활성 Maintainer로 이전됐다. 디렉터리는 삭제 승인 전 source lineage만 보존한다.
 
 ## 직전 게이트
 
-- `pass`: 현재 작업 트리에서 Core 165건, Extension 143건, Core 소비 계약, Extension 정본 artifact 3건을 통과했고 `scripts`와 `extension`의 활성 Legacy `file_data` 직접 import가 0건이다.
-- `not_run`: 7G 후보 커밋의 clean clone 게이트.
+- `pass`: 현재 작업 트리에서 Core 165건, Extension 143건, Core 소비 계약, 정본 artifact 4건을 통과했고 활성 Legacy `file_data` import가 0건이다.
 
 ## 승인 상태
 
@@ -30,13 +29,14 @@
 ## 알려진 위험
 
 - 현재 Core revision은 원격에 게시되지 않아 다른 PC의 일반 clone으로 아직 복원할 수 없다.
-- `legacy-core`는 활성 import에서는 분리됐지만 남은 파일의 흡수·대체·보존 분류와 삭제 가능 판정은 아직 끝나지 않았다.
+- `legacy-core/`는 동결된 종료 후보지만 정확한 전체 경로에 대한 별도 삭제 승인을 받지 않아 유지 중이다.
+- `extension/work/CORE_CHANGE_FAILURES.md`는 활성 의존이 없는 과거 실패 기록이지만 이번 Legacy 디렉터리 감사의 삭제 범위에는 포함하지 않았다.
 - 실제 Maintainer 원격과 실제 Host의 읽기 전용 사용은 아직 검증하지 않았다.
 - 자연어 route 의미와 실제 Codex·Claude 진입 동작은 외부 전송을 하지 않아 검증하지 않았다.
 
 ## 첫 다음 행동
 
-1. 정확한 7G 변경을 후보 커밋으로 만들고 임시 clean clone에서 Core submodule 초기화, 공식 직접 게이트와 활성 `file_data` import 0건을 다시 검증한다.
+1. 7H 변경 파일만 후보 커밋으로 만들고 clean clone에서 artifact 4건, 활성 Legacy import 0건과 공식 통합 게이트를 다시 검증한다.
 
 ## 다음 session 시작 prompt
 

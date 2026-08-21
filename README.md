@@ -160,6 +160,16 @@ Core를 변경 보호 영역으로 둔 이유는 도메인 기능을 추가할 �
 | Premiere XML | 편집 결정을 특정 편집 앱 내부 상태에 가두지 않고 검토 가능한 timeline으로 전달합니다. |
 | Google Calendar | 게임 출시·업데이트 리서치 결과를 사용자 승인 후 실제 일정으로 연결합니다. |
 
+### Obsidian 공유 설정
+
+프로젝트 루트를 그대로 검토하되 `.git`, `.obsidian`, `backup`, `inputs`, `outputs`는 Obsidian 검색·색인 대상에서 제외합니다. 공유하는 설정은 아래 안전 제외 항목뿐이며 workspace, UI, 테마와 plugin 상태는 사용자 로컬 설정으로 둡니다.
+
+<!-- project-artifact:v1 path=.obsidian/app.json verify=json-semantic -->
+```json
+{"defaultViewMode":"preview","showUnsupportedFiles":false,"userIgnoreFilters":[".git/",".obsidian/","backup/","inputs/","outputs/"]}
+```
+<!-- /project-artifact -->
+
 ## 문서 탐색 경로
 
 - 프로젝트의 현재 상태: `SESSION_HANDOFF.md`
