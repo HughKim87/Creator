@@ -36,7 +36,6 @@ Core 공통 정책·작업 등급·승인·검증 절차는 Core 정책이 소�
 
 - 이 저장소는 `core/` submodule을 통해 Agent Core를 개선하고 Creator 도메인에서 통합 검증하는 Maintainer 소비 저장소다.
 - Core 변경은 현재 대화에서 이유와 정확한 대상이 승인된 경우에만 수행한다. Host에서 발견한 변경 필요는 이 저장소의 별도 Maintainer 작업으로 가져온다.
-- `legacy-core/`는 이전 중인 원본이다. 활성 Core로 route하지 않으며, 참조·고유 지식·source lineage가 모두 이전됐다는 검증과 정확한 삭제 승인이 있기 전에는 제거하지 않는다.
 - Git stage·commit은 사용자 지시 또는 현재 단계의 명시적 위임 범위에서만 수행하고, push·게시·원격 조작은 항상 별도 승인을 받는다.
 
 ## 프로젝트 데이터와 도메인 경계
