@@ -1,45 +1,83 @@
 # Agent Core Maintainer 현재 상태
 
-- 목적: 이 Maintainer 저장소의 현재 단계·승인·차단·첫 다음 행동만 소유한다.
-- 읽는 시점: Core 정책과 소비 정책을 읽은 뒤 현재 작업을 시작·재개할 때.
-- 책임: 현재 작업 에이전트가 검증된 상태로 갱신하고 사용자가 단계 전환을 승인한다.
-- 상태: Core 검증기의 분석된 H1·H2·H3 신뢰성 보강과 로컬 검증을 완료했다.
-- 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`, 활성 단계 설계가 있을 때의 해당 설계.
-- 활성 전체 설계: 없음
-- 활성 단계 설계: 없음
-- handoff mode: `same-workspace`; 검증된 Core와 Maintainer 후보는 로컬 커밋으로 고정하며 uncommitted 파일에는 의존하지 않는다.
+- 목적: 새 세션이 Agent Core 완료 작업의 정확한 중단점부터 재개하게 한다.
+- 읽는 시점: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`를 읽은 뒤 어떤 작업이든 시작하기 전.
+- 책임: 작업 에이전트가 검증된 상태만 갱신하고 사용자가 승인 경계를 소유한다.
+- 상태: 완료 계획 보완 대기. 구현 0단계는 아직 시작하지 않았다.
+- 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`.
+- 활성 전체 설계: `CORE_COMPLETION_PLAN_2026-08-22.md` — 최신 사용자 요구를 반영하기 전에는 실행 기준으로 사용하지 않는다.
+- 활성 단계 설계: 없음.
+- handoff mode: `same-workspace` — 계획·검토·테스트 부산물이 비추적 상태다.
+
+## 현재 목표
+
+필수 요구사항·현재 구현·과거 실패·검증 게이트를 구현 전에 연결하고, 그 범위를 한 번에 구현·검증한다. 작업 후 분석은 허용하며 기존 요구 위반은 새 개선이 아니라 미완료 결함으로 처리한다.
+
+## 핵심 용어
+
+- `Core`: `core/` submodule. `Maintainer`: 현재 부모 저장소. `Host`: Core를 읽기 전용으로 소비하는 저장소.
+- `shared_data`: 일반 Host에는 선택, Maintainer에는 `v1`이 필요한 capability 후보.
 
 ## 현재 단계
 
-- `verifier-reliability-hardening-complete`: H1 환경변수 우회, H2 소비 검사 실행 보고, H3 중복 route 결정론 문제만 수정했고 Core 후보 `cfbd7e2`로 고정했다.
+- `completion-plan-completeness-revision-required`.
+- H1 환경변수 우회, H2 실행 보고, H3 route 결정론 문제는 로컬 commit으로 수정·검증했다.
+- 이후 L7 제거, Python 3.10, Consumer capability, 승인 정본, 검증 생략·오염·clone 범위 문제가 확인됐다.
+- 완료 계획은 작성됐지만 `추가 분석 억제` 방식이 최신 요구와 충돌한다. 0~4단계와 원격 단계는 모두 미시작이다.
+
+## 재개 지점
+
+0단계를 시작하지 말고 계획에 ① 요구사항 추적표 ② 실패 모드 ③ 정상·실패·경계 검증 ④ 사후 발견된 기존 요구 위반을 미완료로 되돌리는 규칙을 먼저 추가한다.
+
+## 구현·완료 상태
+
+- 완료: H1~H3 로컬 수정·제한된 회귀·clean clone 검증.
+- 미완료: 완료 계획 보완과 계획에 적힌 L7·Runtime·의존성·승인·검증기 작업 전체.
+- 로컬 후보는 원격에 게시하지 않았다.
 
 ## 직전 게이트
 
-- `pass`: Core 167개·Maintainer 확장 143개 테스트, Core·Consumer 통합 gate와 유지보수 검사를 통과했고 Core 후보의 별도 clean clone gate도 통과했다.
+- `fail — 최종 완료 준비`: H1~H3 검증은 통과했으나 전체 요구를 증명하지 못했다.
+- 반례: L7 제거 시 검증 실패, Python 3.10에서 `datetime.UTC` 의존 실패. 이번 인계에서는 구현 테스트를 재실행하지 않았다.
 
 ## 승인 상태
 
-- Legacy 흡수·의존 전환, `legacy-core/`와 `extension/work/CORE_CHANGE_FAILURES.md` 삭제, 단계별 로컬 커밋과 Core·Maintainer 작업 브랜치 push 승인을 모두 집행했다.
-- Sandbox 테스트 Host 구성과 Agent-Core 읽기 전용 Deploy Key 등록·권한 검증 승인을 모두 집행했다.
-- Core 검증기의 분석된 H1·H2·H3만 개선하고 로컬 후보 커밋과 clean clone까지 검증하는 작업을 승인받았다. 작업 중 push는 승인되지 않았다.
-- 보호 데이터 접근, main 병합, force push, 태그·릴리스 게시, 실제 프로젝트 Host 적용은 승인되지 않았다.
+- 이번 요청은 이 문서 갱신만 승인했다. 계획 구현·삭제·Git stage/commit은 미승인이다.
+- push·원격 ref·main·태그·릴리스·실제 Host 적용은 별도 승인 전까지 금지다.
+- 보호 경로 `inputs`, `outputs`, `extension/inputs`, `extension/outputs` 접근은 미승인이다.
 
 ## 차단
 
-- 없음.
+- 외부 차단은 없다. 계획의 완전성을 검증하기 전에는 구현을 시작할 수 없다.
+
+## 실패 기록
+
+| 목표 | 시도/버전 | 결과·확인 원인 | 연속 횟수 | 다음 재시작 조건 |
+|---|---|---|---:|---|
+| Core 완료 판정 | H1~H3 후보 | 수정은 성공, 검증 범위는 불충분 | 1 | 추적표와 반사실 게이트를 사전 확정 |
+| 완료 계획 | 현재 계획 | 분석 억제로 종료하려 해 요구와 충돌 | 1 | 사전 완전성·사후 결함 환류로 교체 |
 
 ## 알려진 위험
 
-- Agent-Core 작업 브랜치는 main에 아직 포함되지 않았다.
-- H1·H2·H3 후보 커밋은 로컬에만 있으며 원격에 push하지 않았다.
-- creator main에는 별도 사용자 변경이 반영돼 통합 작업 브랜치와 갈라져 있으므로 병합 전 비교가 필요하다.
-- 검증한 Host는 Sandbox 로컬 테스트 전용이며 실제 프로젝트에는 아직 적용하지 않았다.
-- 자연어 route 의미와 실제 Codex·Claude 진입 동작은 외부 전송을 하지 않아 검증하지 않았다.
+- 계획·검토 문서와 `extension/work` 테스트 부산물이 비추적 상태다. 오염 탐지 전 삭제하지 않는다.
+- 로컬 URL clone은 원격 재현성을 증명하지 않는다. Core 3.10과 Maintainer 3.11+도 별도 검증한다.
+- 외부 Agent 문서는 증거 후보일 뿐이며 현재 코드·실행으로 재확인한다.
+
+## 중요 자료
+
+| 경로 | 상태 | 역할 |
+|---|---|---|
+| `SESSION_HANDOFF.md` | 활성 정본 | 현재 상태 |
+| `CORE_COMPLETION_PLAN_2026-08-22.md` | 보완 필요·비추적 | 실행 전 설계 후보 |
+| `CORE_COMPLETION_PLAN_REVIEW_2026-08-22.md` | 외부 검토·비추적 | 참고 |
+| `MAINTAINER_STRUCTURE_REVIEW_2026-08-22.md` | 외부 진단·비추적 | 참고 |
 
 ## 첫 다음 행동
 
-1. 사용자가 후보 검토 후 별도로 승인하면 Core와 Maintainer 작업 브랜치의 push 또는 main 반영 순서를 결정한다.
+1. 완료 계획에 추적표·실패 모드·정상/실패/경계 검증·사후 결함 환류 규칙을 추가하고 분석 억제 문구를 제거한다.
+2. 모든 계획 항목을 코드·정본·재현 반례에 연결하고 누락·충돌을 검사한다.
+3. 계획 검토 결과와 구현 시작 가능 여부를 보고하고 승인을 받는다. 그 전에는 0단계를 시작하지 않는다.
 
-## 다음 session 시작 prompt
+## 다음 세션 시작 prompt
 
-1. `core/PROJECT_RULES.md`, `PROJECT_RULES.md`, 이 문서를 순서대로 읽고 첫 다음 행동보다 넓은 작업은 사용자 확인 없이 시작하지 않는다.
+Core 정책, 소비 정책, 이 문서를 순서대로 읽는다. 보호 경로에 접근하지 말고 완료 계획부터 보완한다. 기존 요구 위반은 미완료 결함이다. push·commit·삭제는 별도 승인 전까지 금지한다.
