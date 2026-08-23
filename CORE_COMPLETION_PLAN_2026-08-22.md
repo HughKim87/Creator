@@ -65,7 +65,7 @@
 
 ### 목표
 
-원격에 아직 게시되지 않은 현재 Core `cfbd7e2`와 Maintainer `f3e9364` 후보를 단일 PC 작업 사본의 손상으로부터 복구할 수 있게 한다.
+원격에 아직 게시되지 않은 현재 Core `07d9bd1`과 Maintainer 작업 브랜치 후보를 단일 PC 작업 사본의 손상으로부터 복구할 수 있게 한다.
 
 ### 의도
 
@@ -82,7 +82,7 @@ push는 별도 승인이 필요하지만, 1~4단계를 단일 로컬 사본 위�
 ### 성공 게이트
 
 - `git bundle verify`가 두 bundle에서 통과한다.
-- bundle에서 복원한 Core HEAD가 `cfbd7e2`, Maintainer HEAD가 `f3e9364` 또는 작업 시작 직전 기록한 정확한 후속 후보와 일치한다.
+- bundle에서 복원한 Core HEAD가 `07d9bd1`, Maintainer HEAD가 작업 시작 직전 기록한 정확한 후보와 일치한다.
 - 복원 검증 후 원본 저장소에는 새 추적·비추적 부산물이 생기지 않는다.
 - 원격 push나 원격 ref 변경이 발생하지 않는다.
 
