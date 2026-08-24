@@ -3,12 +3,12 @@
 - 목적: 다음 세션이 검증된 단계와 첫 미완료 행동부터 재개하게 한다.
 - 읽는 시점: `core/PROJECT_RULES.md`, `PROJECT_RULES.md` 뒤.
 - 책임: 작업 에이전트가 현재 단계만 갱신하고 사용자가 승인 경계를 소유한다.
-- 상태: 단계 3 완료. 단계 4 로컬 마감 진입 준비.
+- 상태: 단계 4 로컬 마감 후보. 최종 clean-clone gate 대기.
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`.
 - 활성 전체 설계: `AGENT_CORE_REMAINING_WORK_PLAN.md`.
 - 활성 단계 설계: 없음.
 - handoff mode: `same-workspace`.
-- uncommitted dependency: 단계 3 검증기 변경과 현재 핸드오프 갱신이 작업 트리에 있다.
+- uncommitted dependency: 단계 4 상태 문서 갱신만 작업 트리에 있다.
 
 ## 현재 목표
 
@@ -31,7 +31,9 @@
   - Creator 정책에 승인 정본 ID를 추가하고 두 스킬·두 참고문서의 독자 trigger·권위 문구 제거.
   - `extension/tests/fixtures/creative-delegation-v1.json`과 정적 계약 검사 추가.
 - 단계 2 commit: Core `e1c7c63`, 부모 `dd900fb`.
-- 단계 3: `scripts/run_test_inventory.py`를 추가하고 Runtime·inventory·긴 stdout·local/remote scope·보호 경로 선제 제외·작업 트리 무부작용을 구현했다. 변경은 현재 부모 커밋 대상이다.
+- 단계 3: `scripts/run_test_inventory.py`를 추가하고 Runtime·inventory·긴 stdout·local/remote scope·보호 경로 선제 제외·작업 트리 무부작용을 구현했다.
+- 단계 3 commit: 부모 `2f17b8f`.
+- 단계 4 오염 탐지: `.tmp`는 비어 있고 `extension/work`에는 추적용 `.gitkeep`만 있어 삭제 대상이 없다.
 
 ## 구현·검증 상태
 
@@ -67,10 +69,10 @@
 
 ## 첫 다음 행동
 
-1. 단계 3 변경을 부모 commit으로 만든다.
-2. 단계 4에서 기존 검증 부산물의 정확한 경로와 생성 패턴을 측정해 삭제 대상을 보고한다.
-3. 승인된 대상 정리 뒤 최종 후보 local clone conformance를 실행한다.
+1. 단계 4 상태 문서를 commit한다.
+2. 해당 commit에서 최종 local clone conformance를 실행한다.
+3. 통과 결과를 핸드오프에 기록하고 로컬 완료 commit을 만든다.
 
 ## 다음 세션 시작 prompt
 
-시작 3문서를 읽고 보호 경로에 접근하지 않는다. 단계 3까지 완료됐고 다음은 통합 설계 §10 단계 4다. 기존 검증 부산물은 정확한 경로를 보고한 뒤 정리하고 최종 local clone conformance를 실행한다. push는 하지 않는다.
+시작 3문서를 읽고 보호 경로에 접근하지 않는다. 단계 4 후보 문서가 commit된 상태에서 최종 local clone conformance를 실행한다. 통과하면 핸드오프를 로컬 구현 완료로 갱신해 commit하고, push는 하지 않는다.

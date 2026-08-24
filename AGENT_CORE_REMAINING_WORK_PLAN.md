@@ -3,7 +3,7 @@
 - 목적: 규칙 거버넌스 개선을 최우선으로 두고 Agent Core와 Maintainer에 남은 필수 결함, 검증 게이트, 조건부 원격·Host 작업을 하나의 실행 기준으로 고정한다.
 - 읽는 시점: 새 구현 단계를 설계하거나 시작할 때, 단계 완료와 프로젝트 종료 수준을 판정할 때.
 - 책임: 작업 에이전트가 이 문서의 단계·게이트·범위만 구현하고, 사용자가 정책 의미·Core 변경·commit·외부 쓰기·원격 게시·Host 적용을 승인한다.
-- 상태: 활성 전체 설계. 구현 전 통합 완료 상태이며, 단계 실행 승인을 뜻하지 않는다.
+- 상태: 로컬 구현 후보 완료. 단계 4 최종 clean-clone gate 대기.
 - 문서 분류: `overall-design`
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, `core/docs/ARCHITECTURE.md`, `core/docs/COMPATIBILITY.md`, `core/docs/VERIFICATION.md`.
 - 종료 조건: 필수 단계가 끝나면 완료 설계로 전환하며, 완료 과정은 Git이 소유한다.
@@ -20,7 +20,7 @@
 - 완료된 Core contract v2 구현과 과거 실행 상세는 Core 정본과 Git 이력이 소유한다.
 - 설계 승인 뒤 내용이 바뀌면 새 fingerprint를 기준으로 다시 승인받는다.
 
-단계 실행 승인 시 이 파일의 SHA-256 또는 동등한 결정론적 fingerprint를 `SESSION_HANDOFF.md`에 기록한다. 현재는 실행 승인이 없으므로 활성 단계 설계도 없다.
+단계 실행 승인 시 이 파일의 SHA-256 또는 동등한 결정론적 fingerprint를 `SESSION_HANDOFF.md`에 기록한다. 승인 기준 fingerprint와 실행 결과는 `SESSION_HANDOFF.md`와 Git 이력이 소유하며, 현재 별도 활성 단계 설계는 없다.
 
 ## 2. 완료된 기준선
 
@@ -93,7 +93,7 @@
 - `core/rules/rule-governance.md`에 품질 재현, 공통 정본, 작업 방법 중심 작성, Agent 자유도, 최소 제한 원칙을 반영했다.
 - `core/PROJECT_RULES.md`, `core/docs/VERIFICATION.md`, `core/rules/core-change-control.md`, `core/rules/version-control.md`, `core/rules/staged-work-design.md`의 일률적인 전체 gate·clean clone 의무를 변경 영향에 따른 검증 선택 방법으로 개선했다.
 - 활성 route와 trigger는 변경하지 않았다.
-- 규칙 구조·링크·상호 일치 확인 뒤 사용자 확인을 받으면 `P0`를 완료로 판정한다.
+- 규칙 구조·링크·상호 일치 확인과 사용자 승인을 거쳐 `P0`를 완료했다.
 
 ### 게이트
 
@@ -277,10 +277,11 @@
 
 ## 16. 다음 진입 조건
 
-1. 사용자가 구현된 `P0`가 다섯 설계 원칙과 범위·게이트를 충족하는지 확인한다.
-2. `P0` 결과가 반영된 이 설계의 검증 의무와 행동 제한을 승인받는다.
-3. 승인된 설계 fingerprint를 상태 정본에 기록한다.
-4. 단계 0의 정확한 경로·명령·복구 방법과 단계 1 활성 설계를 확정한다.
-5. 후속 Core 변경의 이유와 정확한 대상, 단계별 commit 위임을 별도로 승인받는다.
+`P0`와 단계 0~3은 승인된 순서와 commit 경계로 완료됐다. 단계 4에서는 다음 조건만 확인한다.
 
-이 조건 전에는 `P0` 밖의 구현, bundle 생성, commit, push를 시작하지 않는다.
+1. 오염 탐지 결과 삭제할 기존 검증 부산물이 없음을 유지한다.
+2. 최종 후보 commit에서 로컬 clean-clone gate를 통과한다.
+3. 두 작업 트리와 Core gitlink가 완료 commit을 정확히 가리킨다.
+4. 결과를 `SESSION_HANDOFF.md`에 기록하고 로컬 완료 commit을 만든다.
+
+push, 실제 원격 clone, 태그·릴리스, 실제 Host 적용은 이 승인에 포함되지 않는다.
