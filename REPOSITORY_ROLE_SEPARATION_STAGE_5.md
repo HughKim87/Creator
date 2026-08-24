@@ -7,9 +7,9 @@
 - 관련 권위: `REPOSITORY_ROLE_SEPARATION_DESIGN.md`, `REPOSITORY_ROLE_SEPARATION_STAGE_4.md`, `SESSION_HANDOFF.md`.
 - 문서 분류: `phase-design`
 - phase ID: `STAGE_5`
-- lifecycle: `in_progress`
+- lifecycle: `blocked`
 - optional evidence owner: 이동 전후 경로 조회 결과는 실행 증거이며 `startup-required 아님`.
-- 첫 다음 행동: 두 저장소의 clean 상태와 source·target 충돌을 대조한다.
+- 첫 다음 행동: 현재 Creator 작업공간을 사용하는 Codex 작업·프로세스를 종료한 뒤 부모 경로에서 두 이동을 재실행한다.
 - 종료 조건: 두 폴더가 최종 경로에서 동일 commit·Core gitlink·진입 파일을 유지하면 완료한다.
 
 ## Entry gate
@@ -36,7 +36,7 @@
 
 1. resolved source·target가 위 표와 정확히 일치하는지 대조한다.
 2. 두 저장소 status clean, Core status clean, `.git/index.lock` 부재를 확인한다.
-3. 부모 경로에서 첫 source를 `Creator`로 이동한다.
+3. 부모 경로에서 `-ErrorAction Stop`으로 첫 source를 `Creator`로 이동한다.
 4. 같은 명령 안에서 두 번째 source를 비워진 Maintainer target로 이동한다.
 5. 새 경로에서 각 root·HEAD·Core gitlink·진입 파일을 대조한다.
 
@@ -59,3 +59,10 @@
 - 첫 이동만 성공하면 `Creator`를 원래 source로 되돌리고 두 번째 이동을 하지 않는다.
 - 두 번째 이동 실패 시 두 source의 실제 위치를 보고하고 이름 충돌을 추측으로 해결하지 않는다.
 - 이동 후 Git 상태가 달라지면 원래 이름으로 복구하고 단계 5를 완료로 주장하지 않는다.
+
+## 현재 차단
+
+- Creator source가 현재 Codex 작업공간에서 사용 중이어서 Windows가 첫 이동을 거부했다.
+- 첫 이동 오류가 비종료 오류로 처리되어 Maintainer 후보가 Creator 아래로 한 번 중첩됐으나 즉시 원래 임시 경로로 복구했다.
+- 복구 뒤 두 부모·Core는 clean이고 `Creator` target와 중첩 후보는 없다.
+- 현재 작업공간을 사용하는 프로세스가 종료되기 전에는 같은 폴더 이동을 재시도하지 않는다.

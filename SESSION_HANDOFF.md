@@ -3,7 +3,7 @@
 - 목적: 다음 세션이 영상 제작 Host의 현재 단계와 첫 미완료 행동부터 재개하게 한다.
 - 읽는 시점: `core/PROJECT_RULES.md`, `PROJECT_RULES.md` 뒤.
 - 책임: 작업 에이전트가 현재 단계만 갱신하고 사용자가 영상 결과와 승인 경계를 소유한다.
-- 상태: 저장소 역할 분리 단계 5 로컬 폴더 전환 완료 후보.
+- 상태: 저장소 역할 분리 단계 5 차단. Creator 작업공간 사용 중.
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`.
 - 활성 전체 설계: `REPOSITORY_ROLE_SEPARATION_DESIGN.md`.
 - 활성 단계 설계: `REPOSITORY_ROLE_SEPARATION_STAGE_5.md`.
@@ -12,7 +12,7 @@
 
 ## 현재 목표
 
-검증된 Creator와 Maintainer를 최종 로컬 폴더 이름으로 전환한다.
+현재 작업공간 잠금이 해제된 뒤 검증된 Creator와 Maintainer를 최종 로컬 폴더 이름으로 전환한다.
 
 ## 핵심 용어와 입력
 
@@ -27,7 +27,7 @@
 - 단계 0~2: 분리표와 독립 Maintainer 구성·재현성 완료.
 - 단계 3: Host 소비 계약·Creator gate 전환과 Maintainer 실행기 제거 완료.
 - 단계 4: `pass`; Core 연결·역할·상호 의존·최종 Host gate 확인.
-- 단계 5: 완료 후보; commit 뒤 정확한 두 폴더 이동과 새 경로 대조 필요.
+- 단계 5: `blocked`; Creator source 이동이 활성 작업공간 사용으로 거부됨.
 - 단계 6: `not_run`.
 
 ## 구현·검증 상태
@@ -38,7 +38,7 @@
 
 ## 직전 게이트
 
-- `pass`: 양쪽 Core 연결·역할 분리와 Creator 최종 Host gate 152건.
+- `fail`: Windows가 사용 중인 Creator source 폴더의 첫 이동을 거부함.
 
 ## 승인 상태
 
@@ -47,13 +47,15 @@
 
 ## 차단
 
-- 없음.
+- 현재 Codex 작업이 Creator source를 사용 중이다. 이 작업을 종료해 폴더 handle이 해제되어야 한다.
+- 잘못 중첩된 Maintainer 후보는 원래 임시 경로로 복구됐고 두 저장소는 clean이다.
 
 ## 실패 기록
 
 | 목표 | 원인 | 연속 | 재시작 조건 |
 |---|---|---:|---|
 | Maintainer clean clone | Git helper PATH와 handoff 문자열 판정 | 0 | consumer verify 선행 후 재실행 통과 |
+| 단계 5 폴더 전환 | 활성 작업공간 lock, 첫 이동 오류가 비종료 처리됨 | 1 | 현재 작업 종료 후 `-ErrorAction Stop`으로 첫 이동 성공 시에만 두 번째 이동 |
 
 ## 알려진 위험
 
@@ -62,10 +64,10 @@
 
 ## 첫 다음 행동
 
-1. 두 저장소 status clean과 `.git/index.lock` 부재를 대조한다.
-2. 단계 5 표의 두 폴더 이동을 부모 경로에서 순서대로 실행한다.
-3. 새 경로에서 각 저장소 HEAD·역할·Core gitlink를 대조한다.
+1. 사용자가 현재 Creator 작업공간을 사용하는 Codex 작업·프로세스를 종료한다.
+2. 부모 PowerShell에서 단계 5 표의 첫 이동을 `-ErrorAction Stop`으로 실행한다.
+3. 첫 이동 성공 시에만 두 번째 이동을 실행하고 새 경로의 Git 상태를 대조한다.
 
 ## 다음 세션 시작 prompt
 
-시작 3문서, 전체 설계, `REPOSITORY_ROLE_SEPARATION_STAGE_5.md`를 읽고 보호 경로에 접근하지 않는다. 단계 5 표의 두 폴더 외에는 이동하지 않고 원격 작업은 시작하지 않는다.
+시작 3문서, 전체 설계, `REPOSITORY_ROLE_SEPARATION_STAGE_5.md`를 읽고 보호 경로에 접근하지 않는다. 현재 작업공간 lock 해제 전에는 폴더 이동을 재시도하지 않고 원격 작업도 시작하지 않는다.
