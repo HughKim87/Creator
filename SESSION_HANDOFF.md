@@ -3,16 +3,16 @@
 - 목적: 다음 세션이 검증된 단계와 첫 미완료 행동부터 재개하게 한다.
 - 읽는 시점: `core/PROJECT_RULES.md`, `PROJECT_RULES.md` 뒤.
 - 책임: 작업 에이전트가 현재 단계만 갱신하고 사용자가 승인 경계를 소유한다.
-- 상태: 원격 사용 검증 완료. 실제 Host 검증 대상 대기.
+- 상태: 원격 사용 검증 완료. 계획 작업 종료.
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`.
-- 활성 전체 설계: `AGENT_CORE_REMAINING_WORK_PLAN.md`.
+- 활성 전체 설계: 없음.
 - 활성 단계 설계: 없음.
 - handoff mode: `same-workspace`.
-- uncommitted dependency: 없음.
+- uncommitted dependency: Host 테스트 제거를 반영한 `AGENT_CORE_REMAINING_WORK_PLAN.md`, `SESSION_HANDOFF.md`.
 
 ## 현재 목표
 
-게시된 Core·Maintainer 후보를 첫 실제 Host에 적용해 Codex·Claude 재개를 검증한다.
+검증된 Core·Maintainer 후보를 유지하고 사용 중 발견되는 문제만 새 작업으로 받는다.
 
 ## 핵심 용어와 입력
 
@@ -50,12 +50,12 @@
 ## 승인 상태
 
 - 승인됨: 전체 설계 단계 0~4, Core·Maintainer 후보 push와 원격 검증.
-- 보류: main 반영·태그·릴리스는 실제 Host 검증 결과 보고 뒤 결정.
+- 보류: main 반영·태그·릴리스는 각각 별도 지시 대상.
 - 미승인: 보호 경로 접근.
 
 ## 차단
 
-- 첫 실제 Host 저장소가 현재 작업공간에 지정되어 있지 않다.
+- 없음.
 
 ## 실패 기록
 
@@ -67,14 +67,14 @@
 ## 알려진 위험
 
 - Creator 승인 fixture는 정적 계약이며 실제 Agent 자연어 재현은 아니다.
-- 실제 Host와 서로 다른 두 번째 Host의 Codex·Claude 재개는 미검증이다.
+- 실제 프로젝트 사용 결과는 이 설계의 완료 게이트가 아니며 사용자가 직접 확인한다.
 
 ## 첫 다음 행동
 
-1. 첫 실제 Host 저장소가 지정되면 `consumer_role: host` 계약과 진입 파일을 구성한다.
-2. Host 읽기 전용 Core 연결과 통합 gate를 실행한다.
-3. Codex·Claude 새 세션 재개를 검증한 뒤 두 번째 Host로 전환한다.
+1. 사용자가 커밋을 지시하면 Host 테스트 제거 문서 두 개만 커밋한다.
+2. 실제 사용 중 문제가 발견되면 재현 조건과 함께 새 Maintainer 작업으로 시작한다.
+3. main·태그·릴리스는 사용자의 해당 지시가 있을 때만 진행한다.
 
 ## 다음 세션 시작 prompt
 
-시작 3문서를 읽고 보호 경로에 접근하지 않는다. 로컬·원격 사용 검증은 완료됐으며 다음은 통합 설계 §12의 첫 실제 Host 검증이다. 대상 Host가 없으면 임의 프로젝트를 만들지 말고 정확한 대상부터 확인한다.
+시작 3문서를 읽고 보호 경로에 접근하지 않는다. 로컬·원격 사용 검증과 계획 작업은 완료됐으며 추가 요청이 없으면 작업하지 않는다.
