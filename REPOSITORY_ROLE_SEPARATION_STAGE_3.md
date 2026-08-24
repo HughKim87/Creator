@@ -7,9 +7,9 @@
 - 관련 권위: `REPOSITORY_ROLE_SEPARATION_DESIGN.md`, `REPOSITORY_ROLE_SEPARATION_STAGE_0.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`.
 - 문서 분류: `phase-design`
 - phase ID: `STAGE_3`
-- lifecycle: `in_progress`
+- lifecycle: `passed`
 - optional evidence owner: 실제 영상 사용 결과는 사용자 운영이 소유하며 `startup-required 아님`.
-- 첫 다음 행동: `PROJECT_RULES.md`의 소비 역할과 경계를 영상 Host로 재작성한다.
+- 첫 다음 행동: 단계 3 결과를 보고하고 두 저장소 통합 마감 범위를 적용한다.
 - 종료 조건: Host 계약·Creator gate·도메인 route가 통과하고 Maintainer 책임 경로가 제거된 두 Creator commit이 clean이면 완료한다.
 
 ## Entry gate

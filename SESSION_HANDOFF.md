@@ -3,7 +3,7 @@
 - 목적: 다음 세션이 영상 제작 Host의 현재 단계와 첫 미완료 행동부터 재개하게 한다.
 - 읽는 시점: `core/PROJECT_RULES.md`, `PROJECT_RULES.md` 뒤.
 - 책임: 작업 에이전트가 현재 단계만 갱신하고 사용자가 영상 결과와 승인 경계를 소유한다.
-- 상태: 저장소 역할 분리 단계 3 Creator Host 전환 중.
+- 상태: 저장소 역할 분리 단계 3 Creator Host 전환 완료. 단계 4 전 대기.
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`.
 - 활성 전체 설계: `REPOSITORY_ROLE_SEPARATION_DESIGN.md`.
 - 활성 단계 설계: `REPOSITORY_ROLE_SEPARATION_STAGE_3.md`.
@@ -24,13 +24,13 @@
 ## 현재 단계
 
 - 단계 0~2: 분리표와 독립 Maintainer 구성·재현성 완료.
-- 단계 3: Host 소비 계약·Creator gate 전환 중.
+- 단계 3: Host 소비 계약·Creator gate 전환과 Maintainer 실행기 제거 완료.
 - 단계 4 이후: `not_run`.
 
 ## 구현·검증 상태
 
 - Host 정책·README·dependency·검증기 전환과 관련 회귀 통과.
-- Maintainer 전용 clean-clone 실행기 제거 전.
+- Maintainer 전용 clean-clone 실행기와 운영 참조 제거 완료.
 - 실제 영상 사용 검증: 사용자 운영 대상, 자동 gate 아님.
 
 ## 직전 게이트
@@ -59,9 +59,9 @@
 
 ## 첫 다음 행동
 
-1. Host 계약·개요·검증기 변경을 첫 Creator commit으로 저장한다.
-2. 첫 commit이 clean이면 `scripts/clone_conformance.py`의 inbound reference를 검색한다.
-3. 참조가 0이면 해당 실행기를 제거하고 두 번째 Creator commit으로 저장한다.
+1. 단계 3의 두 Creator commit과 Host gate 결과를 보고한다.
+2. 단계 4 설계에 따라 두 저장소의 Core 공개 계약과 역할 문서를 대조한다.
+3. 단계 4 보고 전에는 폴더 이동이나 원격 작업을 시작하지 않는다.
 
 ## 다음 세션 시작 prompt
 
