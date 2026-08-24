@@ -7,11 +7,18 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import uuid
 
 
 ROOT = Path(__file__).resolve().parents[1]
+PROTECTED_PATHSPECS = (
+    ":(exclude)inputs/**",
+    ":(exclude)outputs/**",
+    ":(exclude)extension/inputs/**",
+    ":(exclude)extension/outputs/**",
+)
 
 
 def _environment() -> dict[str, str]:
@@ -61,6 +68,7 @@ def _overlay_worktree(clone: Path) -> None:
         [
             "git", "-c", "core.quotepath=false", "-c",
             f"safe.directory={ROOT.as_posix()}", "diff", "--binary", "HEAD",
+            "--", ".", *PROTECTED_PATHSPECS,
         ],
         cwd=ROOT,
         capture_output=True,
@@ -78,7 +86,7 @@ def _overlay_worktree(clone: Path) -> None:
         [
             "git", "-c", "core.quotepath=false", "-c",
             f"safe.directory={ROOT.as_posix()}", "status", "--short",
-            "--untracked-files=all", "-z",
+            "--untracked-files=all", "-z", "--", ".", *PROTECTED_PATHSPECS,
         ],
         cwd=ROOT,
         capture_output=True,
@@ -101,6 +109,16 @@ def _overlay_worktree(clone: Path) -> None:
         capture_output=True,
         check=True,
     )
+
+
+def _result(results: list[dict]) -> dict:
+    ok = all(item.get("ok", False) for item in results)
+    return {
+        "ok": ok,
+        "scope": "local",
+        "status": "pass" if ok else "fail",
+        "clones": results,
+    }
 
 
 def main() -> int:
@@ -143,11 +161,12 @@ def main() -> int:
                 results.append({"label": label, "clone": cloned, "submodule": submodule})
                 continue
             _overlay_worktree(clone)
-            bootstrap = _run(["python", "-B", "scripts/bootstrap.py", "--json"], clone)
-            verify = _run(["python", "-B", "scripts/verify.py", "--no-clone"], clone)
+            bootstrap = _run([sys.executable, "-B", "scripts/bootstrap.py", "--json"], clone)
+            verify = _run([sys.executable, "-B", "scripts/verify.py", "--no-clone"], clone)
             results.append(
                 {
                     "label": label,
+                    "scope": "local",
                     "clone": cloned,
                     "submodule": submodule,
                     "bootstrap": bootstrap,
@@ -155,7 +174,7 @@ def main() -> int:
                     "ok": bootstrap["ok"] and verify["ok"],
                 }
             )
-    result = {"ok": all(item.get("ok", False) for item in results), "clones": results}
+    result = _result(results)
     print(json.dumps(result, ensure_ascii=True, sort_keys=True))
     return 0 if result["ok"] else 1
 
