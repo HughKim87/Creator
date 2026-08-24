@@ -2,7 +2,7 @@
 
 ## Project automation override
 
-Under the project end-to-end policy, a topic-only new-video request or explicit `끝까지 진행`/automatic/manual-upload-guide request is an explicit user delegation for the reversible creative choices in this package. Use `approval_policy.mode: delegated_by_user` and `approval_policy.instruction_source: explicit_user`, record `delegated_by_user` for title, copy, image generation, and visual, and proceed when validation passes. Use `review_gated` only when the user explicitly asks to review or approve the named creative stage. This never authorizes external YouTube actions.
+Creative delegation is decided only by the active project policy clause `creator-video-creative-delegation-v1`. This package records the result and does not define trigger phrases. When the clause applies, use `approval_policy.mode: delegated_by_user` and `approval_policy.instruction_source: explicit_user`, with the clause ID retained as the semantic authority; otherwise use `review_gated`. This never authorizes external YouTube actions.
 
 새 작업은 `youtube-title-thumbnail-v3` 기술 패키지를 `extension/work/<job-id>/youtube-title-thumbnail.json`에 UTF-8로 저장한다. 상대 경로는 패키지 파일의 폴더를 기준으로 해석한다. `outputs/<job-id>/`에는 승인된 최종 업로드 썸네일만 둔다.
 
@@ -97,8 +97,8 @@ Under the project end-to-end policy, a topic-only new-video request or explicit 
 - `copy`, `image_generation`, `visual`을 각각 기록한다.
 - 상태는 `pending` 또는 `approved`, 방법은 `explicit_user` 또는 `delegated_by_user`다.
 - `approval_policy.mode: review_gated`이면 승인된 제목과 `copy`·`image_generation`·`visual`의 방법은 모두 `explicit_user`여야 한다.
-- `approval_policy.mode: delegated_by_user`는 사용자가 썸네일 승인 생략이나 임의 확정을 명시한 경우에만 사용한다. “끝까지 진행”이나 일괄 진행은 승인 생략이 아니다.
-- 승인 위임은 `approval_policy.instruction_source: explicit_user`일 때만 유효하다.
+- `approval_policy.mode: delegated_by_user`는 활성 정책의 `creator-video-creative-delegation-v1` 판정을 기록한 경우에만 사용한다.
+- 승인 위임은 `approval_policy.instruction_source: explicit_user`이고 의미 권위가 활성 정책의 `creator-video-creative-delegation-v1`일 때만 유효하다.
 - 문구 승인과 생성 승인은 `generated_at`보다 빠르거나 같아야 하고, 시각 승인은 생성 이후여야 한다.
 - 원문 대화나 계정 정보는 저장하지 않고 안전한 승인 방법과 시각만 기록한다.
 

@@ -1,0 +1,42 @@
+{
+  "schema_version": "creative-delegation-fixture-v1",
+  "authority_clause": "creator-video-creative-delegation-v1",
+  "cases": [
+    {
+      "id": "topic-new-video",
+      "utterance": "이 주제로 새 영상 만들어줘",
+      "expected_execution_mode": "autonomous_local_pipeline",
+      "expected_approval_mode": "delegated_by_user"
+    },
+    {
+      "id": "finish-end-to-end",
+      "utterance": "이 영상 끝까지 진행해",
+      "expected_execution_mode": "autonomous_local_pipeline",
+      "expected_approval_mode": "delegated_by_user"
+    },
+    {
+      "id": "automatic",
+      "utterance": "중간에 묻지 말고 자동으로 진행해",
+      "expected_execution_mode": "autonomous_local_pipeline",
+      "expected_approval_mode": "delegated_by_user"
+    },
+    {
+      "id": "manual-upload-guide",
+      "utterance": "수동 업로드 패키지까지 준비해",
+      "expected_execution_mode": "autonomous_local_pipeline",
+      "expected_approval_mode": "delegated_by_user"
+    },
+    {
+      "id": "later-stage-review",
+      "utterance": "썸네일 문구는 내가 확인할게",
+      "expected_execution_mode": "autonomous_local_pipeline",
+      "expected_approval_mode": "review_gated"
+    },
+    {
+      "id": "title-thumbnail-only",
+      "utterance": "이 완성 영상의 제목과 썸네일 후보를 만들어줘",
+      "expected_execution_mode": "review_gated",
+      "expected_approval_mode": "review_gated"
+    }
+  ]
+}

@@ -7,7 +7,7 @@ description: 완성 영상·SRT·리서치 근거와 선택적 채널 패턴을 
 
 ## Automatic mode for topic-only production requests
 
-When the active video job records `thumbnail_contract.approval_mode: delegated_by_user` under the project end-to-end policy, the agent may select the title, thumbnail copy, one-shot generated image, and final visual without an intermediate user response. Record `delegated_by_user` for title, copy, image generation, and visual approval, validate the package, and continue to the manual upload package. Never upload or publish to YouTube. A job with `review_gated` remains paused only when the user explicitly requested review or approval.
+Creative delegation is owned only by the active project policy clause `creator-video-creative-delegation-v1`. This skill does not define delegation triggers. When the active video job records that clause and `thumbnail_contract.approval_mode: delegated_by_user`, select the title, thumbnail copy, one-shot generated image, and final visual without an intermediate response; record and validate those choices. Otherwise keep `review_gated`. This never authorizes YouTube upload or publication.
 
 완성 영상의 실제 약속을 제목과 썸네일로 압축한다. 기술 검증을 창작 승인으로 간주하지 않는다.
 
@@ -40,7 +40,7 @@ When the active video job records `thumbnail_contract.approval_mode: delegated_b
 4. 제목을 반복하는 설명형 문구, “뭐부터?”, “입문자 가이드”, 도구 이름 나열만으로 끝나는 문구를 기본안으로 선택하지 않는다.
 5. 후보 3~5개에 클릭 이유와 약점을 붙여 사용자에게 보여준다.
 
-`thumbnail_contract.approval_mode: review_gated`에서는 사용자가 정확한 문구를 승인하기 전 이미지 생성 도구를 호출하지 않는다. `delegated_by_user`는 사용자가 창작 승인 생략이나 임의 확정을 명시한 계약이 있을 때만 사용한다. 상위 작업의 `execution_mode`만으로 승인 위임을 추정하지 않는다.
+`thumbnail_contract.approval_mode: review_gated`에서는 사용자가 정확한 문구를 승인하기 전 이미지 생성 도구를 호출하지 않는다. `delegated_by_user`는 작업 기록이 활성 정책의 `creator-video-creative-delegation-v1` 판정을 참조할 때만 사용한다. 상위 작업의 `execution_mode`만으로 승인 위임을 추정하지 않는다.
 
 ## 이미지 생성
 

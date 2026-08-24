@@ -7,9 +7,7 @@ description: 영상 하나의 NotebookLM 리서치·동영상 생성·SRT·문�
 
 ## Default end-to-end delegation
 
-The project policy defines the following as explicit creative delegation for this workflow. When the user provides a topic and asks for a new video, says `끝까지 진행`, asks to proceed automatically, or asks to prepare the manual upload guide, set `execution_mode: autonomous_local_pipeline` and `thumbnail_contract.approval_mode: delegated_by_user`. Automatically choose the title, thumbnail copy, one-shot generated visual, and final visual; record each choice as `delegated_by_user`; then continue through `prepare-youtube-upload`.
-
-This delegation is limited to reversible local artifacts and the manual upload guide. Never upload, publish, schedule, change visibility, perform paid actions, write to external services, change `core/`, or bypass protected-data rules. A later explicit request for review or approval overrides the automatic mode for the named stage. This section supersedes older wording that treated `끝까지 진행` or topic-only requests as insufficient evidence of creative delegation.
+Creative delegation is owned only by the active project policy clause `creator-video-creative-delegation-v1`. This skill does not define or override delegation triggers. When that clause applies, record `execution_mode: autonomous_local_pipeline`, `thumbnail_contract.approval_mode: delegated_by_user`, and `thumbnail_contract.instruction_source: explicit_user`; use the clause ID as the semantic authority, choose the reversible local title and thumbnail elements, and continue through `prepare-youtube-upload`. When the clause does not apply, use `review_gated`. A later explicit review request changes only the named stage as defined by the same clause.
 
 영상별 상태를 관리하고 다섯 제작 스킬을 순서대로 연결한다. 단계 작업은 해당 스킬에 맡긴다.
 
@@ -51,8 +49,7 @@ $activeBranch = $activation.active_branch
 - 새 작업은 `video-job-v3`를 사용하고 worktree 검증 결과를 `execution_context`에 기록한다.
 - `execution_mode`는 `autonomous_local_pipeline` 또는 `review_gated`로 기록한다.
 - `execution_mode`는 단계 사이의 자동 진행만 제어한다. 제목·문구·이미지·최종 시각의 승인 권한을 부여하지 않는다.
-- `thumbnail_contract`에 `generation_mode`, `allow_local_text_composite`, `approval_mode`, `instruction_source`를 기록한다. 사용자가 별도로 창작 선택권을 위임하지 않으면 `approval_mode`는 `review_gated`다.
-- “끝까지 진행”, “중간 과정은 알아서 진행”은 `autonomous_local_pipeline` 근거일 수 있지만 `approval_mode: delegated_by_user` 근거가 아니다.
+- `thumbnail_contract`에 `generation_mode`, `allow_local_text_composite`, `approval_mode`, `instruction_source`를 기록한다. `approval_mode`와 위임 근거는 활성 정책의 `creator-video-creative-delegation-v1` 판정에서만 가져오며, 이 스킬이 사용자 표현을 별도로 재해석하지 않는다.
 - 사용자가 웹 ChatGPT와 같은 생성을 요구하면 `generation_mode: one_shot_imagegen`, `allow_local_text_composite: false`, `instruction_source: explicit_user`로 기록한다.
 - 기술 패키지와 생성 원본은 `work/<job-id>/`, 최종 사용자 파일은 `outputs/<job-id>/`에 둔다.
 - `.gitignore`나 추적 정책을 임의로 바꾸지 않는다.
@@ -112,9 +109,9 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 
 `문구 후보 → 문구 승인 → 이미지 생성 승인 → 완성형 생성 → 최종 시각 승인`
 
-`thumbnail_contract.approval_mode: delegated_by_user`는 사용자가 제목·문구·이미지·최종 시각의 임의 확정 또는 승인 생략을 명시한 경우에만 사용한다. 이때만 해당 승인을 `delegated_by_user`로 기록한다. `autonomous_local_pipeline`이어도 `approval_mode: review_gated`이면 썸네일 단계에서 `needs_user`로 멈춘다.
+`thumbnail_contract.approval_mode: delegated_by_user`는 활성 정책의 `creator-video-creative-delegation-v1` 판정이 작업 기록에 남은 경우에만 사용한다. 이때 해당 창작 선택을 `delegated_by_user`로 기록한다. `autonomous_local_pipeline`이어도 `approval_mode: review_gated`이면 썸네일 단계에서 `needs_user`로 멈춘다.
 
-승인 의미와 생성 모드의 세부 계약은 `$youtube-title-thumbnail`의 `references/package-format.md`를 단일 owner로 사용한다.
+창작 위임의 의미는 활성 정책의 `creator-video-creative-delegation-v1`이 소유하고, 생성 모드와 패키지 기록 형식은 `$youtube-title-thumbnail`의 `references/package-format.md`가 소유한다.
 
 ## 최종 output
 

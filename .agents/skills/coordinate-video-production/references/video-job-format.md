@@ -2,7 +2,7 @@
 
 ## End-to-end automation policy
 
-For this project, a topic-only new-video request or an explicit request to finish end-to-end, proceed automatically, or reach the manual upload guide is sufficient user delegation for the reversible title and thumbnail creative choices. Record `execution_mode: autonomous_local_pipeline`, `thumbnail_contract.approval_mode: delegated_by_user`, and `thumbnail_contract.instruction_source: explicit_user`; do not stop for intermediate creative approval. This does not authorize YouTube upload, publish, scheduling, visibility changes, external writes, paid actions, or core changes. An explicit later review request overrides the delegation for the named stage.
+Creative delegation is decided only by the active project policy clause `creator-video-creative-delegation-v1`. This format records that decision; it does not define trigger phrases. When the clause applies, record `execution_mode: autonomous_local_pipeline`, `thumbnail_contract.approval_mode: delegated_by_user`, and `thumbnail_contract.instruction_source: explicit_user`, with the clause ID retained as the semantic authority. Otherwise record `review_gated` and do not infer delegation from the execution mode.
 
 새 작업은 `video-job-v3`를 사용한다. 작업 기록은 영상 하나의 단계, 실행 worktree, 썸네일 생성·승인 계약과 검증된 산출물만 기록한다.
 
@@ -97,8 +97,8 @@ For this project, a topic-only new-video request or an explicit request to finis
 - `execution_mode`는 `autonomous_local_pipeline` 또는 `review_gated`다. 이 값은 단계 사이의 자동 진행만 제어하며 창작 승인 권한을 부여하지 않는다.
 - `thumbnail_contract.generation_mode`는 `one_shot_imagegen` 또는 `local_text_composite`다.
 - `thumbnail_contract.allow_local_text_composite`는 불리언이다. 웹 ChatGPT와 같은 완성형 생성을 요구받으면 `false`다.
-- `thumbnail_contract.approval_mode`는 `review_gated` 또는 `delegated_by_user`다. “끝까지 진행”은 전자의 값을 후자로 바꾸는 근거가 아니다.
-- `thumbnail_contract.instruction_source`는 `explicit_user` 또는 `default`다. 로컬 합성 허용이나 승인 위임은 `explicit_user`일 때만 가능하다.
+- `thumbnail_contract.approval_mode`는 `review_gated` 또는 `delegated_by_user`이며 활성 정책의 `creator-video-creative-delegation-v1` 판정을 그대로 기록한다.
+- `thumbnail_contract.instruction_source`는 `explicit_user` 또는 `default`다. `delegated_by_user`의 의미 권위는 활성 정책의 `creator-video-creative-delegation-v1`이며, 로컬 합성 허용은 별도의 명시적 사용자 지시를 기록한다.
 - `check_worktree.py --root .`의 `status`, `root`, `branch`, `expected_branch`를 그대로 기록한다.
 - 새 작업 생성 전과 단계 전환 전에 다시 검증하고 `checked_at`을 갱신한다.
 - v2 검증기는 현재 root·branch와 기록이 다르면 실패한다.
