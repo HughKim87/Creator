@@ -3,16 +3,16 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kim-silver-project-foundation"
+name = "creator-video-host"
 version = "0.1.0"
-description = "Domain-neutral project foundation for deterministic local verification."
+description = "Agent Core Host for video production and editing workflows."
 requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
 thumbnail = ["Pillow>=10,<12"]
 
-[tool.project-foundation]
+[tool.creator-video-host]
 node = ">=20,<22"
-required-dependencies = ["python-standard-library"]
+required-dependencies = ["python-standard-library", "node"]
 optional-capabilities = ["thumbnail:Pillow", "browser:user-session"]

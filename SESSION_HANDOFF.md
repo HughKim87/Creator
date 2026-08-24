@@ -1,57 +1,46 @@
-# Agent Core Maintainer 현재 상태
+# Creator 영상 Host 현재 상태
 
-- 목적: 다음 세션이 검증된 단계와 첫 미완료 행동부터 재개하게 한다.
+- 목적: 다음 세션이 영상 제작 Host의 현재 단계와 첫 미완료 행동부터 재개하게 한다.
 - 읽는 시점: `core/PROJECT_RULES.md`, `PROJECT_RULES.md` 뒤.
-- 책임: 작업 에이전트가 현재 단계만 갱신하고 사용자가 승인 경계를 소유한다.
-- 상태: 원격 사용 검증 완료. 계획 작업 종료.
+- 책임: 작업 에이전트가 현재 단계만 갱신하고 사용자가 영상 결과와 승인 경계를 소유한다.
+- 상태: 저장소 역할 분리 단계 3 Creator Host 전환 중.
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`.
-- 활성 전체 설계: 없음.
-- 활성 단계 설계: 없음.
+- 활성 전체 설계: `REPOSITORY_ROLE_SEPARATION_DESIGN.md`.
+- 활성 단계 설계: `REPOSITORY_ROLE_SEPARATION_STAGE_3.md`.
 - handoff mode: `same-workspace`.
-- uncommitted dependency: 없음.
+- uncommitted dependency: 분리 설계와 Host 계약·개요·검증기 변경.
 
 ## 현재 목표
 
-검증된 Core·Maintainer 후보를 유지하고 사용 중 발견되는 문제만 새 작업으로 받는다.
+현재 저장소를 Core 읽기 전용 영상 제작 Host로 전환하고 Maintainer 책임을 독립 저장소에만 남긴다.
 
 ## 핵심 용어와 입력
 
-- `Core`: `core/` submodule. 선택 기능: `shared_data v1`.
-- 승인 정본 ID: `creator-video-creative-delegation-v1` in `PROJECT_RULES.md`.
-- 단계 0 기준: Core `07d9bd1c`, 부모 `34349482`, 설계 SHA-256 `42D1E22EEDF7FBA483C7026FE63CC2F658F3670825B34D1E7C3B051ACA84EC17`.
-- 외부 복구: `D:\AI Agent\Sandbox\Agent-Core-Maintainer-Recovery\core-07d9bd1c.bundle`, verify·복원 HEAD 일치.
+- `Core`: `core/`의 읽기 전용 submodule.
+- `Extension`: 영상·YouTube·게임 도메인 구현과 계약.
+- `Skills`: 실제 도구 사용 절차.
+- 보호 경로: `inputs`, `outputs`, `extension/inputs`, `extension/outputs`.
 
 ## 현재 단계
 
-- 완료: `P0`, 단계 0~4.
-- 단계 1 commit: Core `210aeea`, 부모 `08dbc12`.
-- 단계 2 완료:
-  - 선택 capability 계약과 Creator 승인 정본·정적 계약 검사를 추가하고 기존 Host 호환을 유지했다.
-- 단계 2 commit: Core `e1c7c63`, 부모 `dd900fb`.
-- 단계 3: `scripts/run_test_inventory.py`를 추가하고 Runtime·inventory·긴 stdout·local/remote scope·보호 경로 선제 제외·작업 트리 무부작용을 구현했다.
-- 종료 개선: clone 임시 루트 Node 사전 확인과 bootstrap 실패 뒤 의존 verify 조기 중단을 추가했다.
-- 단계 3 commit: 부모 `2f17b8f`.
-- 단계 4 오염 탐지: `.tmp`는 비어 있고 `extension/work`에는 추적용 `.gitkeep`만 있어 삭제 대상이 없다.
-- 단계 4 후보 commit: 부모 `b9d07bb`, Core gitlink `e1c7c63`.
-- 원격 단계: Core `codex/legacy-rule-absorption`과 Maintainer `codex/agent-core-integration` 게시·도달성 확인, 실제 원격 재귀 clone 통과.
+- 단계 0~2: 분리표와 독립 Maintainer 구성·재현성 완료.
+- 단계 3: Host 소비 계약·Creator gate 전환 중.
+- 단계 4 이후: `not_run`.
 
 ## 구현·검증 상태
 
-- 완료: `R0`~`R5`, `R6`의 검증 전후 오염 탐지.
-- 단계 1: Python 3.10.20 설치·완전 부재 gate 통과, 부분 결손은 `preflight-contract` 실패, 필수 107·선택 65 테스트 통과.
-- 단계 3: Python 3.10.20 Core 112·선택 65, Python 3.12.13 Extension 152 테스트 통과. inventory 누락·예외·skip 0.
-- 단계 4: ASCII·한글·공백 경로 commit snapshot clean clone과 각 복제본 전체 gate 통과, 원본·복제본 작업 트리 무오염.
-- 원격 clean clone: 부모 `5255009`, Core `e1c7c63`, Core 112·선택 65·Extension 156, 작업 트리 무오염 통과.
+- Host 정책·README·dependency·검증기 전환과 관련 회귀 통과.
+- Maintainer 전용 clean-clone 실행기 제거 전.
+- 실제 영상 사용 검증: 사용자 운영 대상, 자동 gate 아님.
 
 ## 직전 게이트
 
-- `pass`: Host 읽기 전용 Deploy Key를 사용한 실제 원격 `clone --recurse-submodules`와 clone 내부 통합 gate.
+- `pass`: Host consumer 계약, Creator inventory 152건, artifact·Node·작업 트리 무부작용.
 
 ## 승인 상태
 
-- 승인됨: 전체 설계 단계 0~4, Core·Maintainer 후보 push와 원격 검증.
-- 보류: main 반영·태그·릴리스는 각각 별도 지시 대상.
-- 미승인: 보호 경로 접근.
+- 승인됨: 전체 로컬 단계의 권장 구현·단계별 local commit·승인된 정확한 파일 정리·폴더 전환.
+- 미승인: 원격 생성·push, main·태그·릴리스, 보호 경로 접근.
 
 ## 차단
 
@@ -61,20 +50,19 @@
 
 | 목표 | 원인 | 연속 | 재시작 조건 |
 |---|---|---:|---|
-| 비례 검증 | 전체 gate·clean clone의 일률 적용 | 2+ | `P0` 완료, 단계별 관련 검사만 선택 |
-| Stage 2 Consumer gate | handoff 예산·과거 판정 누적 | 1 | 축약 후 재실행 통과, 종료 |
+| Maintainer clean clone | Git helper PATH와 handoff 문자열 판정 | 0 | consumer verify 선행 후 재실행 통과 |
 
 ## 알려진 위험
 
-- Creator 승인 fixture는 정적 계약이며 실제 Agent 자연어 재현은 아니다.
-- 실제 프로젝트 사용 결과는 이 설계의 완료 게이트가 아니며 사용자가 직접 확인한다.
+- 실제 영상 사용성은 자동 검사로 판정하지 않으며 사용자가 운영 중 확인한다.
+- 현재 로컬 폴더 이름은 아직 이전 Maintainer 이름이며 단계 5에서 전환한다.
 
 ## 첫 다음 행동
 
-1. 추가 요청이 없으면 현재 완료 상태를 유지한다.
-2. 실제 사용 중 문제가 발견되면 재현 조건과 함께 새 Maintainer 작업으로 시작한다.
-3. main·태그·릴리스는 사용자의 해당 지시가 있을 때만 진행한다.
+1. Host 계약·개요·검증기 변경을 첫 Creator commit으로 저장한다.
+2. 첫 commit이 clean이면 `scripts/clone_conformance.py`의 inbound reference를 검색한다.
+3. 참조가 0이면 해당 실행기를 제거하고 두 번째 Creator commit으로 저장한다.
 
 ## 다음 세션 시작 prompt
 
-시작 3문서를 읽고 보호 경로에 접근하지 않는다. 로컬·원격 사용 검증과 계획 작업은 완료됐으며 추가 요청이 없으면 작업하지 않는다.
+시작 3문서, 전체 설계, `REPOSITORY_ROLE_SEPARATION_STAGE_3.md`를 읽고 보호 경로에 접근하지 않는다. Host gate 통과 전에는 Maintainer 전용 파일 제거 commit을 만들지 않는다.

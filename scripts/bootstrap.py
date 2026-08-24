@@ -1,4 +1,4 @@
-"""Read-only runtime preflight for a tracked project checkout."""
+"""Read-only Runtime preflight for the Creator video Host checkout."""
 
 from __future__ import annotations
 
@@ -18,11 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def _node_status() -> dict[str, Any]:
     node = shutil.which("node")
     if node is None:
-        return {
-            "status": "unavailable",
-            "reason": "node executable is not available",
-            "supported_range": ">=20 <22",
-        }
+        return {"status": "unavailable", "supported_range": ">=20 <22"}
     completed = subprocess.run(
         [node, str(ROOT / "scripts" / "node_verify.mjs")],
         cwd=ROOT,
@@ -34,62 +30,45 @@ def _node_status() -> dict[str, Any]:
     try:
         result = json.loads(completed.stdout)
     except json.JSONDecodeError:
-        return {
-            "status": "unavailable",
-            "reason": completed.stderr.strip() or "node preflight returned invalid JSON",
-            "supported_range": ">=20 <22",
-        }
-    if completed.returncode != 0:
-        result.setdefault("reason", "node runtime is outside the supported range")
+        return {"status": "unavailable", "reason": "Node preflight returned invalid JSON"}
     return result
 
 
 def preflight() -> dict[str, Any]:
-    python_supported = sys.version_info >= (3, 11)
-    pillow_available = importlib.util.find_spec("PIL") is not None
+    python_ready = sys.version_info >= (3, 11)
+    pillow_ready = importlib.util.find_spec("PIL") is not None
+    core_ready = (ROOT / "core").is_dir()
     return {
-        "ok": python_supported,
-        "project_root": ROOT.as_posix(),
+        "ok": bool(python_ready and core_ready),
         "runtime": {
             "python": {
                 "version": ".".join(str(part) for part in sys.version_info[:3]),
-                "status": "ready" if python_supported else "unavailable",
-                "supported_range": ">=3.11",
+                "minimum": "3.11",
+                "status": "ready" if python_ready else "unavailable",
             },
             "node": _node_status(),
         },
-        "dependencies": {
-            "core": {
-                "status": "ready",
-                "source": "python-standard-library",
-            },
+        "core": {"status": "ready" if core_ready else "unavailable"},
+        "optional_capabilities": {
             "thumbnail": {
-                "status": "ready" if pillow_available else "unavailable",
+                "status": "ready" if pillow_ready else "unavailable",
                 "package": "Pillow",
-                "install_hint": "python -m pip install -e .[thumbnail]"
-                if not pillow_available
-                else None,
             },
-        },
-        "external_capabilities": {
             "browser-user-session": {
                 "status": "needs_user",
-                "reason": "a signed-in user session is intentionally not part of clone bootstrap",
-            }
+                "reason": "signed-in browser state is not part of repository bootstrap",
+            },
         },
-        "actions": {
-            "install_performed": False,
-            "network_used": False,
-        },
+        "actions": {"install_performed": False, "network_used": False},
     }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--json", action="store_true", help="emit the machine-readable result")
+    parser.add_argument("--json", action="store_true")
     parser.parse_args()
     result = preflight()
-    print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+    print(json.dumps(result, ensure_ascii=True, sort_keys=True))
     return 0 if result["ok"] else 1
 
 

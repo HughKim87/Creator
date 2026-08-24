@@ -1,12 +1,12 @@
-# Agent Core Maintainer 프로젝트 정책
+# Creator 영상 Host 프로젝트 정책
 
-- 목적: Agent Core를 개선·검증하는 Maintainer와 이 저장소의 Creator 도메인 작업에만 필요한 정책·경로를 소유한다.
+- 목적: 검증된 Agent Core를 읽기 전용으로 사용해 영상 제작·편집·리서치 workflow를 수행하는 Creator Host의 정책과 경로를 소유한다.
 - 읽는 시점: Core 정책을 읽은 뒤 이 소비 저장소에서 어떤 행동이든 시작하기 전.
-- 책임: 사용자가 목표·승인 경계를 소유하고 Maintainer 작업 에이전트가 이 소비 계약과 프로젝트별 route를 유지한다.
-- 상태: 활성 소비 정책. Agent Core consumer contract v2의 `maintainer` 역할.
+- 책임: 사용자가 목표·승인 경계를 소유하고 Creator 작업 에이전트가 이 소비 계약과 프로젝트별 route를 유지한다.
+- 상태: 활성 소비 정책. Agent Core consumer contract v2의 `host` 역할.
 - 관련 권위: [Core 상시 정책](core/PROJECT_RULES.md), [Core 소비자 안내](core/docs/CONSUMER_GUIDE.md).
 
-Core 공통 정책·작업 등급·승인·검증 절차는 Core 정책이 소유한다. 이 문서는 Maintainer와 Creator 도메인에만 필요한 제한과 route를 추가하며 Core 경계를 완화하거나 Core 규칙 본문을 복제하지 않는다.
+Core 공통 정책·작업 등급·승인·검증 절차는 Core 정책이 소유한다. 이 문서는 Creator 도메인에 필요한 정책과 route만 추가하며 Core 경계를 완화하거나 Core 규칙 본문을 복제하지 않는다.
 
 ## 소비 계약
 
@@ -14,7 +14,7 @@ Core 공통 정책·작업 등급·승인·검증 절차는 Core 정책이 소�
 ```json
 {
   "contract_version": 2,
-  "consumer_role": "maintainer",
+  "consumer_role": "host",
   "core_path": "core",
   "state": "SESSION_HANDOFF.md",
   "entry_pointers": {
@@ -33,11 +33,11 @@ Core 공통 정책·작업 등급·승인·검증 절차는 Core 정책이 소�
 ```
 <!-- /agent-core-consumer:v1 -->
 
-## Maintainer 경계
+## Host 경계
 
-- 이 저장소는 `core/` submodule을 통해 Agent Core를 개선하고 Creator 도메인에서 통합 검증하는 Maintainer 소비 저장소다.
-- Core 변경은 현재 대화에서 이유와 정확한 대상이 승인된 경우에만 수행한다. Host에서 발견한 변경 필요는 이 저장소의 별도 Maintainer 작업으로 가져온다.
-- Git stage·commit은 사용자 지시 또는 현재 단계의 명시적 위임 범위에서만 수행하고, push·게시·원격 조작은 항상 별도 승인을 받는다.
+- 이 저장소는 `core/` submodule의 공개 계약을 읽기 전용으로 사용하는 영상 제작 Host다.
+- Core 파일·commit·gitlink를 수정하지 않는다. 변경 필요는 독립 `Agent-Core-Maintainer` 작업으로 이관한다.
+- Git stage·commit은 사용자 지시 또는 활성 단계의 명시적 위임 범위에서만 수행하고, push·게시·원격 조작은 항상 별도 승인을 받는다.
 
 ## 프로젝트 데이터와 도메인 경계
 
