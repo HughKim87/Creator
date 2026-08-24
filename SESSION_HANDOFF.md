@@ -8,7 +8,7 @@
 - 활성 전체 설계: `AGENT_CORE_REMAINING_WORK_PLAN.md`.
 - 활성 단계 설계: 없음.
 - handoff mode: `same-workspace`.
-- uncommitted dependency: 최종 검증 결과를 기록하는 이 핸드오프 갱신만 작업 트리에 있다.
+- uncommitted dependency: 없음.
 
 ## 현재 목표
 
@@ -32,6 +32,7 @@
   - `extension/tests/fixtures/creative-delegation-v1.json`과 정적 계약 검사 추가.
 - 단계 2 commit: Core `e1c7c63`, 부모 `dd900fb`.
 - 단계 3: `scripts/run_test_inventory.py`를 추가하고 Runtime·inventory·긴 stdout·local/remote scope·보호 경로 선제 제외·작업 트리 무부작용을 구현했다.
+- 종료 개선: clone 임시 루트 Node 사전 확인과 bootstrap 실패 뒤 의존 verify 조기 중단을 추가했다.
 - 단계 3 commit: 부모 `2f17b8f`.
 - 단계 4 오염 탐지: `.tmp`는 비어 있고 `extension/work`에는 추적용 `.gitkeep`만 있어 삭제 대상이 없다.
 - 단계 4 후보 commit: 부모 `b9d07bb`, Core gitlink `e1c7c63`.
@@ -63,7 +64,6 @@
 | 비례 검증 | 전체 gate·clean clone의 일률 적용 | 2+ | `P0` 완료, 단계별 관련 검사만 선택 |
 | Stage 2 Consumer gate | handoff 예산·과거 판정 누적 | 1 | 축약 후 재실행 통과, 종료 |
 | Core 원격 읽기 | SSH public key 부재 | 1 | 승인된 key 또는 사용자의 외부 확인 |
-| sandbox local clone | 임시 경로 Node `lstat` 권한 부족 | 1 | 동일 gate를 승인된 권한으로 재실행해 통과, 종료 |
 
 ## 알려진 위험
 
@@ -72,9 +72,9 @@
 
 ## 첫 다음 행동
 
-1. 로컬 완료 결과 문서를 commit한다.
+1. 추가 승인이 없으면 현재 로컬 완료 상태를 유지하고 대기한다.
 2. 별도 push 승인이 있으면 통합 설계 §11의 조건부 원격 단계부터 재개한다.
-3. 승인이 없으면 추가 작업을 시작하지 않는다.
+3. 실제 Host·태그·릴리스는 각각 별도 승인 없이는 진행하지 않는다.
 
 ## 다음 세션 시작 prompt
 

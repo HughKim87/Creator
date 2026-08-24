@@ -7,8 +7,9 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -65,6 +66,45 @@ class VerificationPipelineTest(unittest.TestCase):
         self.assertEqual(remote["scope"], "remote")
         self.assertEqual(remote["status"], "not_run")
         self.assertIsNone(remote["ok"])
+
+    def test_temp_runtime_failure_stops_before_cloning(self) -> None:
+        failed = {
+            "ok": False,
+            "status": "fail",
+            "failure_class": "environment",
+            "reason": "Node cannot execute below the temporary clone root",
+        }
+        with (
+            patch.object(CLONE, "_probe_temp_runtime", return_value=failed),
+            patch.object(CLONE, "_clone_results") as clone_results,
+            patch("builtins.print"),
+        ):
+            returncode = CLONE.main()
+        self.assertEqual(returncode, 1)
+        clone_results.assert_not_called()
+
+    def test_bootstrap_failure_skips_dependent_verify(self) -> None:
+        failed = {"ok": False, "returncode": 1}
+        with (
+            tempfile.TemporaryDirectory() as raw_temp,
+            patch.object(CLONE, "_overlay_worktree"),
+            patch.object(CLONE, "_run", return_value=failed) as run,
+        ):
+            result = CLONE._run_clone_checks(Path(raw_temp))
+        self.assertEqual(run.call_count, 1)
+        self.assertEqual(result["verify"]["status"], "not_run")
+        self.assertFalse(result["ok"])
+
+    def test_temp_runtime_probe_removes_probe_file(self) -> None:
+        ready = {"ok": True, "returncode": 0}
+        with tempfile.TemporaryDirectory() as raw_temp:
+            temp_root = Path(raw_temp)
+            with patch.object(CLONE, "_run", return_value=ready) as run:
+                result = CLONE._probe_temp_runtime(temp_root)
+            probe = temp_root / "node-temp-path-preflight.mjs"
+            self.assertFalse(probe.exists())
+        self.assertTrue(result["ok"])
+        self.assertEqual(run.call_args, call(["node", str(probe)], temp_root))
 
     def test_git_snapshot_excludes_protected_paths_before_execution(self) -> None:
         completed = subprocess.CompletedProcess([], 0, stdout=b"", stderr=b"")

@@ -111,70 +111,117 @@ def _overlay_worktree(clone: Path) -> None:
     )
 
 
-def _result(results: list[dict]) -> dict:
-    ok = all(item.get("ok", False) for item in results)
-    return {
+def _result(results: list[dict], preflight: dict | None = None) -> dict:
+    preflight_ok = preflight is None or preflight.get("ok", False)
+    ok = bool(preflight_ok and results and all(item.get("ok", False) for item in results))
+    result = {
         "ok": ok,
         "scope": "local",
         "status": "pass" if ok else "fail",
         "clones": results,
     }
+    if preflight is not None:
+        result["preflight"] = preflight
+    return result
+
+
+def _probe_temp_runtime(temp_root: Path) -> dict:
+    """Fail fast when Node cannot execute a script below the clone temp root."""
+
+    probe = temp_root / "node-temp-path-preflight.mjs"
+    probe.write_text("console.log('node-temp-path-ready');\n", encoding="utf-8")
+    try:
+        process = _run(["node", str(probe)], temp_root)
+    finally:
+        probe.unlink(missing_ok=True)
+    return {
+        "ok": process["ok"],
+        "status": "pass" if process["ok"] else "fail",
+        "failure_class": None if process["ok"] else "environment",
+        "reason": (
+            "temporary clone root is executable by Node"
+            if process["ok"]
+            else "Node cannot execute below the temporary clone root"
+        ),
+        "process": process,
+    }
+
+
+def _run_clone_checks(clone: Path) -> dict:
+    """Run dependent clone checks without continuing after bootstrap failure."""
+
+    _overlay_worktree(clone)
+    bootstrap = _run([sys.executable, "-B", "scripts/bootstrap.py", "--json"], clone)
+    if not bootstrap["ok"]:
+        return {
+            "bootstrap": bootstrap,
+            "verify": {
+                "ok": None,
+                "status": "not_run",
+                "reason": "bootstrap failed",
+            },
+            "ok": False,
+        }
+    verify = _run([sys.executable, "-B", "scripts/verify.py", "--no-clone"], clone)
+    return {"bootstrap": bootstrap, "verify": verify, "ok": verify["ok"]}
+
+
+def _clone_results(temp_root: Path) -> list[dict]:
+    results = []
+    for label in ("ascii", "한글 경로", "space path"):
+        clone = temp_root / f"clone-{label}-{uuid.uuid4().hex}"
+        cloned = _run(
+            [
+                "git",
+                "-c",
+                "core.quotepath=false",
+                "clone",
+                "--no-hardlinks",
+                "--no-local",
+                str(ROOT),
+                str(clone),
+            ],
+            ROOT,
+        )
+        if not cloned["ok"]:
+            results.append({"label": label, "clone": cloned})
+            continue
+        submodule = _run(
+            [
+                "git",
+                "-c",
+                "protocol.file.allow=always",
+                "-c",
+                f"submodule.core.url={(ROOT / 'core').as_posix()}",
+                "submodule",
+                "update",
+                "--init",
+                "--recursive",
+            ],
+            clone,
+        )
+        if not submodule["ok"]:
+            results.append({"label": label, "clone": cloned, "submodule": submodule})
+            continue
+        checks = _run_clone_checks(clone)
+        results.append(
+            {
+                "label": label,
+                "scope": "local",
+                "clone": cloned,
+                "submodule": submodule,
+                **checks,
+            }
+        )
+    return results
 
 
 def main() -> int:
-    results = []
     with tempfile.TemporaryDirectory(prefix="project-foundation-clone-") as raw_temp:
         temp_root = Path(raw_temp)
-        for label in ("ascii", "한글 경로", "space path"):
-            clone = temp_root / f"clone-{label}-{uuid.uuid4().hex}"
-            cloned = _run(
-                [
-                    "git",
-                    "-c",
-                    "core.quotepath=false",
-                    "clone",
-                    "--no-hardlinks",
-                    "--no-local",
-                    str(ROOT),
-                    str(clone),
-                ],
-                ROOT,
-            )
-            if not cloned["ok"]:
-                results.append({"label": label, "clone": cloned})
-                continue
-            submodule = _run(
-                [
-                    "git",
-                    "-c",
-                    "protocol.file.allow=always",
-                    "-c",
-                    f"submodule.core.url={(ROOT / 'core').as_posix()}",
-                    "submodule",
-                    "update",
-                    "--init",
-                    "--recursive",
-                ],
-                clone,
-            )
-            if not submodule["ok"]:
-                results.append({"label": label, "clone": cloned, "submodule": submodule})
-                continue
-            _overlay_worktree(clone)
-            bootstrap = _run([sys.executable, "-B", "scripts/bootstrap.py", "--json"], clone)
-            verify = _run([sys.executable, "-B", "scripts/verify.py", "--no-clone"], clone)
-            results.append(
-                {
-                    "label": label,
-                    "scope": "local",
-                    "clone": cloned,
-                    "submodule": submodule,
-                    "bootstrap": bootstrap,
-                    "verify": verify,
-                    "ok": bootstrap["ok"] and verify["ok"],
-                }
-            )
-    result = _result(results)
+        preflight = _probe_temp_runtime(temp_root)
+        results = _clone_results(temp_root) if preflight["ok"] else []
+    result = _result(results, preflight)
     print(json.dumps(result, ensure_ascii=True, sort_keys=True))
     return 0 if result["ok"] else 1
 

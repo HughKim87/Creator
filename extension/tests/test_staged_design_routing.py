@@ -133,6 +133,22 @@ class StagedDesignRoutingTests(unittest.TestCase):
         self.assertTrue(any("시작 prompt" in heading for heading in headings))
         self.assertRegex(self.handoff, r"(?m)^1\.\s+.+$")
 
+    def test_local_completion_has_stable_resume_state(self):
+        if not re.search(r"(?m)^- 상태: 로컬 구현 완료\.", self.handoff):
+            return
+        self.assertRegex(
+            self.handoff,
+            r"(?m)^- uncommitted dependency: 없음\.$",
+        )
+        next_actions = re.search(
+            r"(?ms)^## 첫 다음 행동\s*(.+?)(?=^## |\Z)",
+            self.handoff,
+        )
+        self.assertIsNotNone(next_actions)
+        assert next_actions is not None
+        self.assertNotRegex(next_actions.group(1), r"(?i)commit|커밋")
+        self.assertRegex(next_actions.group(1), r"승인|대기")
+
 
 if __name__ == "__main__":
     unittest.main()
