@@ -8,7 +8,7 @@
 - 활성 전체 설계: 없음.
 - 활성 단계 설계: 없음.
 - handoff mode: `same-workspace`.
-- uncommitted dependency: Host 테스트 제거를 반영한 `AGENT_CORE_REMAINING_WORK_PLAN.md`, `SESSION_HANDOFF.md`.
+- uncommitted dependency: 없음.
 
 ## 현재 목표
 
@@ -71,7 +71,7 @@
 
 ## 첫 다음 행동
 
-1. 사용자가 커밋을 지시하면 Host 테스트 제거 문서 두 개만 커밋한다.
+1. 추가 요청이 없으면 현재 완료 상태를 유지한다.
 2. 실제 사용 중 문제가 발견되면 재현 조건과 함께 새 Maintainer 작업으로 시작한다.
 3. main·태그·릴리스는 사용자의 해당 지시가 있을 때만 진행한다.
 
