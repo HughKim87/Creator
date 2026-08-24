@@ -6,7 +6,7 @@
 - 상태: 검토 대기 전체 설계. 구현 승인을 뜻하지 않는다.
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, `core/docs/CONSUMER_GUIDE.md`, `core/docs/VERIFICATION.md`.
 - 문서 분류: `overall-design`
-- 활성 단계: [단계 4 — 두 저장소 통합 마감](REPOSITORY_ROLE_SEPARATION_STAGE_4.md)
+- 활성 단계: [단계 5 — 로컬 폴더 전환](REPOSITORY_ROLE_SEPARATION_STAGE_5.md)
 - 종료 조건: 두 로컬 저장소의 역할 분리와 선택된 원격 반영이 끝나면 완료 설계로 전환하고, 완료 과정은 Git 이력이 소유한다.
 
 ---

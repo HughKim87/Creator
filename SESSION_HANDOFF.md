@@ -3,16 +3,16 @@
 - 목적: 다음 세션이 영상 제작 Host의 현재 단계와 첫 미완료 행동부터 재개하게 한다.
 - 읽는 시점: `core/PROJECT_RULES.md`, `PROJECT_RULES.md` 뒤.
 - 책임: 작업 에이전트가 현재 단계만 갱신하고 사용자가 영상 결과와 승인 경계를 소유한다.
-- 상태: 저장소 역할 분리 단계 4 완료. 단계 5 폴더 전환 전 대기.
+- 상태: 저장소 역할 분리 단계 5 로컬 폴더 전환 완료 후보.
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`.
 - 활성 전체 설계: `REPOSITORY_ROLE_SEPARATION_DESIGN.md`.
-- 활성 단계 설계: `REPOSITORY_ROLE_SEPARATION_STAGE_4.md`.
+- 활성 단계 설계: `REPOSITORY_ROLE_SEPARATION_STAGE_5.md`.
 - handoff mode: `same-workspace`.
-- uncommitted dependency: 단계 4 설계 route와 현재 핸드오프 갱신.
+- uncommitted dependency: 단계 5 설계 route와 현재 핸드오프 갱신.
 
 ## 현재 목표
 
-두 저장소 로컬 역할 분리를 마감하고 정확한 폴더 전환 경계를 준비한다.
+검증된 Creator와 Maintainer를 최종 로컬 폴더 이름으로 전환한다.
 
 ## 핵심 용어와 입력
 
@@ -20,14 +20,15 @@
 - `Extension`: 영상·YouTube·게임 도메인 구현과 계약.
 - `Skills`: 실제 도구 사용 절차.
 - 보호 경로: `inputs`, `outputs`, `extension/inputs`, `extension/outputs`.
-- 분리 설계 fingerprint: `CE4539B7A540538BC14EA3F3F79078A51F06AD56E21C601C26B0807E0ACCDACD`.
+- 분리 설계 fingerprint: `B1B6BA4E2239F9C1D6959792C838251C9AFF328100AD64A9F5BC23AE8A5DC146`.
 
 ## 현재 단계
 
 - 단계 0~2: 분리표와 독립 Maintainer 구성·재현성 완료.
 - 단계 3: Host 소비 계약·Creator gate 전환과 Maintainer 실행기 제거 완료.
 - 단계 4: `pass`; Core 연결·역할·상호 의존·최종 Host gate 확인.
-- 단계 5 이후: `not_run`.
+- 단계 5: 완료 후보; commit 뒤 정확한 두 폴더 이동과 새 경로 대조 필요.
+- 단계 6: `not_run`.
 
 ## 구현·검증 상태
 
@@ -61,10 +62,10 @@
 
 ## 첫 다음 행동
 
-1. 단계 4 결과와 두 저장소의 clean 상태를 보고한다.
-2. 단계 5 설계에서 현재 Creator·Maintainer source와 최종 target를 절대경로로 확정한다.
-3. 이동 직전 두 target의 부재와 두 저장소 clean 상태를 명령 결과로 대조한다.
+1. 두 저장소 status clean과 `.git/index.lock` 부재를 대조한다.
+2. 단계 5 표의 두 폴더 이동을 부모 경로에서 순서대로 실행한다.
+3. 새 경로에서 각 저장소 HEAD·역할·Core gitlink를 대조한다.
 
 ## 다음 세션 시작 prompt
 
-시작 3문서, 전체 설계, `REPOSITORY_ROLE_SEPARATION_STAGE_4.md`를 읽고 보호 경로에 접근하지 않는다. 단계 4는 완료됐으며 정확한 경로 보고 전에는 폴더 이동을 시작하지 않는다.
+시작 3문서, 전체 설계, `REPOSITORY_ROLE_SEPARATION_STAGE_5.md`를 읽고 보호 경로에 접근하지 않는다. 단계 5 표의 두 폴더 외에는 이동하지 않고 원격 작업은 시작하지 않는다.
