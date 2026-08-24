@@ -3,7 +3,7 @@
 - 목적: 규칙 거버넌스 개선을 최우선으로 두고 Agent Core와 Maintainer에 남은 필수 결함, 검증 게이트, 조건부 원격·Host 작업을 하나의 실행 기준으로 고정한다.
 - 읽는 시점: 새 구현 단계를 설계하거나 시작할 때, 단계 완료와 프로젝트 종료 수준을 판정할 때.
 - 책임: 작업 에이전트가 이 문서의 단계·게이트·범위만 구현하고, 사용자가 정책 의미·Core 변경·commit·외부 쓰기·원격 게시·Host 적용을 승인한다.
-- 상태: 로컬 구현 후보 완료. 단계 4 최종 clean-clone gate 대기.
+- 상태: 로컬 구현 완료. 조건부 원격 단계 대기.
 - 문서 분류: `overall-design`
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, `core/docs/ARCHITECTURE.md`, `core/docs/COMPATIBILITY.md`, `core/docs/VERIFICATION.md`.
 - 종료 조건: 필수 단계가 끝나면 완료 설계로 전환하며, 완료 과정은 Git이 소유한다.

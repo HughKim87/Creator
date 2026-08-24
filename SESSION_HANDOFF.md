@@ -3,16 +3,16 @@
 - 목적: 다음 세션이 검증된 단계와 첫 미완료 행동부터 재개하게 한다.
 - 읽는 시점: `core/PROJECT_RULES.md`, `PROJECT_RULES.md` 뒤.
 - 책임: 작업 에이전트가 현재 단계만 갱신하고 사용자가 승인 경계를 소유한다.
-- 상태: 단계 4 로컬 마감 후보. 최종 clean-clone gate 대기.
+- 상태: 로컬 구현 완료. 조건부 원격 단계 대기.
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`.
 - 활성 전체 설계: `AGENT_CORE_REMAINING_WORK_PLAN.md`.
 - 활성 단계 설계: 없음.
 - handoff mode: `same-workspace`.
-- uncommitted dependency: 단계 4 상태 문서 갱신만 작업 트리에 있다.
+- uncommitted dependency: 최종 검증 결과를 기록하는 이 핸드오프 갱신만 작업 트리에 있다.
 
 ## 현재 목표
 
-단계 4에서 단계 0~3 후보를 로컬 완료 상태로 통합 확인하고 정확한 기존 검증 부산물만 정리한다.
+로컬 구현 완료 상태를 보존하고, 별도 승인 전에는 원격 게시·검증을 시작하지 않는다.
 
 ## 핵심 용어와 입력
 
@@ -23,7 +23,7 @@
 
 ## 현재 단계
 
-- 완료: `P0`, 단계 0~3.
+- 완료: `P0`, 단계 0~4.
 - 단계 1 commit: Core `210aeea`, 부모 `08dbc12`.
 - 단계 2 완료:
   - contract v2 선택 key `required_core_capabilities`와 Consumer capability 판정 추가.
@@ -34,16 +34,18 @@
 - 단계 3: `scripts/run_test_inventory.py`를 추가하고 Runtime·inventory·긴 stdout·local/remote scope·보호 경로 선제 제외·작업 트리 무부작용을 구현했다.
 - 단계 3 commit: 부모 `2f17b8f`.
 - 단계 4 오염 탐지: `.tmp`는 비어 있고 `extension/work`에는 추적용 `.gitkeep`만 있어 삭제 대상이 없다.
+- 단계 4 후보 commit: 부모 `b9d07bb`, Core gitlink `e1c7c63`.
 
 ## 구현·검증 상태
 
 - 완료: `R0`~`R5`, `R6`의 검증 전후 오염 탐지.
 - 단계 1: Python 3.10.20 설치·완전 부재 gate 통과, 부분 결손은 `preflight-contract` 실패, 필수 107·선택 65 테스트 통과.
 - 단계 3: Python 3.10.20 Core 112·선택 65, Python 3.12.13 Extension 152 테스트 통과. inventory 누락·예외·skip 0.
+- 단계 4: ASCII·한글·공백 경로 commit snapshot clean clone과 각 복제본 전체 gate 통과, 원본·복제본 작업 트리 무오염.
 
 ## 직전 게이트
 
-- `pass`: `scripts/verify.py --no-clone`. Runtime·Core+Consumer·inventory·maintenance·작업 트리 무부작용 통과, local/remote 미실행 scope 분리.
+- `pass`: `scripts/verify.py`. Runtime·Core+Consumer·inventory·maintenance·ASCII·한글·공백 local clone·작업 트리 무부작용 통과. remote는 승인 전 `not_run`.
 
 ## 승인 상태
 
@@ -61,6 +63,7 @@
 | 비례 검증 | 전체 gate·clean clone의 일률 적용 | 2+ | `P0` 완료, 단계별 관련 검사만 선택 |
 | Stage 2 Consumer gate | handoff 예산·과거 판정 누적 | 1 | 축약 후 재실행 통과, 종료 |
 | Core 원격 읽기 | SSH public key 부재 | 1 | 승인된 key 또는 사용자의 외부 확인 |
+| sandbox local clone | 임시 경로 Node `lstat` 권한 부족 | 1 | 동일 gate를 승인된 권한으로 재실행해 통과, 종료 |
 
 ## 알려진 위험
 
@@ -69,10 +72,10 @@
 
 ## 첫 다음 행동
 
-1. 단계 4 상태 문서를 commit한다.
-2. 해당 commit에서 최종 local clone conformance를 실행한다.
-3. 통과 결과를 핸드오프에 기록하고 로컬 완료 commit을 만든다.
+1. 로컬 완료 결과 문서를 commit한다.
+2. 별도 push 승인이 있으면 통합 설계 §11의 조건부 원격 단계부터 재개한다.
+3. 승인이 없으면 추가 작업을 시작하지 않는다.
 
 ## 다음 세션 시작 prompt
 
-시작 3문서를 읽고 보호 경로에 접근하지 않는다. 단계 4 후보 문서가 commit된 상태에서 최종 local clone conformance를 실행한다. 통과하면 핸드오프를 로컬 구현 완료로 갱신해 commit하고, push는 하지 않는다.
+시작 3문서를 읽고 보호 경로에 접근하지 않는다. 로컬 구현은 완료됐으며 추가 승인이 없다면 작업하지 않는다. push 승인이 있으면 통합 설계 §11의 조건부 원격 단계만 진행한다.
