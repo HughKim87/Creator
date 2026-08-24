@@ -52,15 +52,15 @@
 
 ## 4. 고정 설계 결정
 
-아래 결정 중 검증 의무와 Agent 행동 제한에 해당하는 6~8번은 `P0`에서 새 규칙 작성 원칙과 대조해 유지·수정 여부를 다시 승인받는다. `P0` 완료 전에는 이를 근거로 검증 작업을 확대하지 않는다.
+아래 결정 중 검증 의무와 Agent 행동 제한에 해당하는 6~8번은 `P0`의 규칙 작성 원칙에 맞춰 갱신했다. 사용자가 `P0` 결과를 확인하기 전에는 이를 근거로 후속 구현을 시작하지 않는다.
 
 1. Core Kernel 최소 Python은 3.10으로 유지한다.
 2. Maintainer 최소 Python은 3.11로 유지하고 `pyproject.toml`을 정본으로 삼는다.
 3. `shared_data`는 물리적으로 제거 가능한 L7 선택 기능으로 유지한다.
 4. Maintainer는 선택 key `required_core_capabilities: {"shared_data": 1}`로 의존성을 선언한다. key가 없는 기존 Host는 요구 없음이며 contract version은 2를 유지한다.
 5. 창작 승인 조건은 `PROJECT_RULES.md`의 안정적인 조항 ID 한 곳만 소유한다. 스킬은 절차와 정본 참조만 소유한다.
-6. 필수 게이트는 `pass`, `fail`, `not_run`만 사용하고 `not_run`은 전체 실패다. 선택 기능의 완전 부재처럼 계약상 비해당인 경우만 `not_applicable`을 허용한다.
-7. 각 구현 단계는 자체 후보 commit과 commit snapshot clean-clone 검증을 가진다. 여러 단계 변경을 마지막에 한 commit으로 합치지 않는다.
+6. 필수 게이트는 사용자 요청과 실제 변경 영향에 따라 선택된 검사만 뜻한다. 선택된 게이트의 `not_run`은 그 완료 수준의 실패이며, 선택되지 않은 검사는 게이트로 기록하지 않는다. 계약상 비해당인 경우는 `not_applicable`로 구분한다.
+7. 구현 단계는 검토·복구 가능한 commit 경계를 유지한다. commit snapshot clean clone은 릴리스 후보, 재현성·패키징·submodule 도달성 확인이 필요한 단계에서만 선택한다.
 8. 실제 원격 검증 실패와 검증기의 결함 주입 검사는 다른 상태다. 로컬 완료 단계는 원격 부재를 정확히 탐지하는 synthetic 검사만 요구하고, 실제 remote gate는 게시 승인 뒤 실행한다.
 9. 테스트 수집 완전성은 현재 발견 파일의 동적 개수가 아니라 유지되는 기대 모듈·case inventory와 대조한다.
 10. bootstrap stdout은 원본을 파싱하고 표시용 결과만 절단한다. 선택 테스트 실행 여부는 명령 별칭이 아니라 실제 의존성 import로 판정한다.
@@ -87,6 +87,13 @@
 - `core/PROJECT_RULES.md`, `core/docs/VERIFICATION.md`, `core/rules/core-change-control.md` 등 기존 규칙에서 작업 방법을 넘어 불필요하게 행동을 제한하는 조항을 감사한다.
 - 실제 규칙 변경 전에 정확한 대상, 변경 문장, 유지할 제한과 이유, 검증 방법을 사용자에게 먼저 보고한다.
 - 승인된 범위만 수정하고, 후속 단계의 검증·완료 설계가 개선된 거버넌스와 충돌하면 이 전체 설계를 먼저 갱신한다.
+
+### 구현 상태
+
+- `core/rules/rule-governance.md`에 품질 재현, 공통 정본, 작업 방법 중심 작성, Agent 자유도, 최소 제한 원칙을 반영했다.
+- `core/PROJECT_RULES.md`, `core/docs/VERIFICATION.md`, `core/rules/core-change-control.md`, `core/rules/version-control.md`, `core/rules/staged-work-design.md`의 일률적인 전체 gate·clean clone 의무를 변경 영향에 따른 검증 선택 방법으로 개선했다.
+- 활성 route와 trigger는 변경하지 않았다.
+- 규칙 구조·링크·상호 일치 확인 뒤 사용자 확인을 받으면 `P0`를 완료로 판정한다.
 
 ### 게이트
 
@@ -137,7 +144,6 @@
 - 실패: 구현·계약·schema·계층·선택 테스트 중 일부만 결손이면 gate가 실패한다.
 - 경계: L7 완전 부재 상태에서 Core `verify`, `gate`, Kernel 테스트가 통과하고 선택 기능은 `not_applicable`이다.
 - 실제 Python 3.10에서 Core 범위가 통과하며 import·수집 누락이 0이다.
-- 단계 1 후보 commit의 clean clone이 같은 결과를 낸다.
 
 ## 8. 단계 2 — Consumer capability와 승인 정책
 
@@ -160,7 +166,6 @@
 - 실패: capability 누락·잘못된 ID·0 이하 버전·스킬 독자 트리거·권위 상승 문장을 주입하면 실패한다.
 - 경계: capability key가 없는 일반 Host는 통과하고, key가 있으나 capability가 없는 Maintainer는 정확한 누락을 보고한다.
 - 정적 fixture 통과를 실제 Agent 자연어 동작 검증으로 확대 보고하지 않는다.
-- 단계 2 후보 commit의 clean clone이 같은 결과를 낸다.
 
 ## 9. 단계 3 — 검증기 신뢰성
 
@@ -184,7 +189,6 @@
 - 실패: Runtime 부재·실행 실패·수집 누락·원격 commit 부재·새 부산물은 전체 실패로 보고된다.
 - 경계: 2,000자를 넘는 유효 JSON, 실행 파일 별칭 차이, 선택 테스트 의존성 부재가 정확히 판정된다.
 - 원격 부재 synthetic fixture가 명시적으로 실패하는 것을 메타 게이트의 성공으로 기록하되 실제 remote 결과를 `pass`로 기록하지 않는다.
-- 단계 3 후보 commit의 clean clone이 같은 결과를 낸다.
 
 ## 10. 단계 4 — 로컬 마감
 
@@ -250,7 +254,7 @@
 
 | 수준 | 필수 조건 |
 |---|---|
-| 로컬 구현 완료 | `P0`와 단계 0~4 통과, 단계별 후보 commit clean-clone 통과, 작업 트리 clean |
+| 로컬 구현 완료 | `P0`와 단계 0~4 통과, 단계 4에서 선택한 최종 후보 commit clean-clone 통과, 작업 트리 clean |
 | 원격 사용 검증 완료 | 조건부 원격 단계 통과, 실제 원격 submodule clone과 전체 gate 통과 |
 | 실제 Host 검증 | 첫 실제 Host에서 Core 변경 없이 실제 작업·재개 통과 |
 | 범용 Host 검증 | 서로 다른 실제 Host 2개에서 Core 변경 없이 통과 |
@@ -273,11 +277,10 @@
 
 ## 16. 다음 진입 조건
 
-1. 사용자가 `P0`의 다섯 설계 원칙과 범위·게이트를 승인한다.
-2. `P0`의 정확한 규칙 변경안을 작업 전에 보고하고 승인된 범위만 구현한다.
-3. `P0` 결과에 따라 이 설계의 검증 의무와 행동 제한을 다시 대조하고 설계 승인을 받는다.
-4. 승인된 설계 fingerprint를 상태 정본에 기록한다.
-5. 단계 0의 정확한 경로·명령·복구 방법과 단계 1 활성 설계를 확정한다.
-6. Core 변경의 이유와 정확한 대상, 단계별 commit 위임을 별도로 승인받는다.
+1. 사용자가 구현된 `P0`가 다섯 설계 원칙과 범위·게이트를 충족하는지 확인한다.
+2. `P0` 결과가 반영된 이 설계의 검증 의무와 행동 제한을 승인받는다.
+3. 승인된 설계 fingerprint를 상태 정본에 기록한다.
+4. 단계 0의 정확한 경로·명령·복구 방법과 단계 1 활성 설계를 확정한다.
+5. 후속 Core 변경의 이유와 정확한 대상, 단계별 commit 위임을 별도로 승인받는다.
 
 이 조건 전에는 `P0` 밖의 구현, bundle 생성, commit, push를 시작하지 않는다.
