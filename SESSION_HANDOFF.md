@@ -3,16 +3,16 @@
 - 목적: 다음 세션이 영상 제작 Host의 현재 단계와 첫 미완료 행동부터 재개하게 한다.
 - 읽는 시점: `core/PROJECT_RULES.md`, `PROJECT_RULES.md` 뒤.
 - 책임: 작업 에이전트가 현재 단계만 갱신하고 사용자가 영상 결과와 승인 경계를 소유한다.
-- 상태: 저장소 역할 분리 단계 3 Creator Host 전환 완료. 단계 4 전 대기.
+- 상태: 저장소 역할 분리 단계 4 완료. 단계 5 폴더 전환 전 대기.
 - 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`.
 - 활성 전체 설계: `REPOSITORY_ROLE_SEPARATION_DESIGN.md`.
-- 활성 단계 설계: `REPOSITORY_ROLE_SEPARATION_STAGE_3.md`.
+- 활성 단계 설계: `REPOSITORY_ROLE_SEPARATION_STAGE_4.md`.
 - handoff mode: `same-workspace`.
-- uncommitted dependency: 분리 설계와 Host 계약·개요·검증기 변경.
+- uncommitted dependency: 단계 4 설계 route와 현재 핸드오프 갱신.
 
 ## 현재 목표
 
-현재 저장소를 Core 읽기 전용 영상 제작 Host로 전환하고 Maintainer 책임을 독립 저장소에만 남긴다.
+두 저장소 로컬 역할 분리를 마감하고 정확한 폴더 전환 경계를 준비한다.
 
 ## 핵심 용어와 입력
 
@@ -20,12 +20,14 @@
 - `Extension`: 영상·YouTube·게임 도메인 구현과 계약.
 - `Skills`: 실제 도구 사용 절차.
 - 보호 경로: `inputs`, `outputs`, `extension/inputs`, `extension/outputs`.
+- 분리 설계 fingerprint: `CE4539B7A540538BC14EA3F3F79078A51F06AD56E21C601C26B0807E0ACCDACD`.
 
 ## 현재 단계
 
 - 단계 0~2: 분리표와 독립 Maintainer 구성·재현성 완료.
 - 단계 3: Host 소비 계약·Creator gate 전환과 Maintainer 실행기 제거 완료.
-- 단계 4 이후: `not_run`.
+- 단계 4: `pass`; Core 연결·역할·상호 의존·최종 Host gate 확인.
+- 단계 5 이후: `not_run`.
 
 ## 구현·검증 상태
 
@@ -35,7 +37,7 @@
 
 ## 직전 게이트
 
-- `pass`: Host consumer 계약, Creator inventory 152건, artifact·Node·작업 트리 무부작용.
+- `pass`: 양쪽 Core 연결·역할 분리와 Creator 최종 Host gate 152건.
 
 ## 승인 상태
 
@@ -59,10 +61,10 @@
 
 ## 첫 다음 행동
 
-1. 단계 3의 두 Creator commit과 Host gate 결과를 보고한다.
-2. 단계 4 설계에 따라 두 저장소의 Core 공개 계약과 역할 문서를 대조한다.
-3. 단계 4 보고 전에는 폴더 이동이나 원격 작업을 시작하지 않는다.
+1. 단계 4 결과와 두 저장소의 clean 상태를 보고한다.
+2. 단계 5 설계에서 현재 Creator·Maintainer source와 최종 target를 절대경로로 확정한다.
+3. 이동 직전 두 target의 부재와 두 저장소 clean 상태를 명령 결과로 대조한다.
 
 ## 다음 세션 시작 prompt
 
-시작 3문서, 전체 설계, `REPOSITORY_ROLE_SEPARATION_STAGE_3.md`를 읽고 보호 경로에 접근하지 않는다. Host gate 통과 전에는 Maintainer 전용 파일 제거 commit을 만들지 않는다.
+시작 3문서, 전체 설계, `REPOSITORY_ROLE_SEPARATION_STAGE_4.md`를 읽고 보호 경로에 접근하지 않는다. 단계 4는 완료됐으며 정확한 경로 보고 전에는 폴더 이동을 시작하지 않는다.
