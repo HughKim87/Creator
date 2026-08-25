@@ -1,7 +1,7 @@
-# AGENTS.md
+# Agent Entry
 
-Codex entrypoint.
+Read these files completely in order before any action:
 
-Read `PROJECT_BOOTSTRAP.md` first, then `docs/INDEX.md`.
-Load `PROJECT_RULES.md` only when the bootstrap or index requires it.
-Do not add project rules here.
+1. [Core policy](core/PROJECT_RULES.md)
+2. [Consumer policy](PROJECT_RULES.md)
+3. [Current state](SESSION_HANDOFF.md)

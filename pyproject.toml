@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "creator-video-host"
+version = "0.1.0"
+description = "Agent Core Host for video production and editing workflows."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+thumbnail = ["Pillow>=10,<12"]
+
+[tool.creator-video-host]
+node = ">=20,<22"
+required-dependencies = ["python-standard-library", "node"]
+optional-capabilities = ["thumbnail:Pillow", "browser:user-session"]

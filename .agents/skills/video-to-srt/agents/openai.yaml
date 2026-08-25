@@ -1,0 +1,4 @@
+interface:
+  display_name: "Video to SRT"
+  short_description: "영상 음성을 전사하고 검증된 SRT 자막을 생성합니다."
+  default_prompt: "Use $video-to-srt to transcribe this exact video locally, refine terms and timing, and produce a validated SRT plus raw transcript JSON."

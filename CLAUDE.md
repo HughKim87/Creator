@@ -1,10 +1,7 @@
-# CLAUDE.md
+# Claude Entry
 
-Claude Code entrypoint.
+Read these files completely in order before any action:
 
-Import only the startup kernel. Do not add project rules here.
-
-@PROJECT_BOOTSTRAP.md
-
-If the import above is not expanded (for example, in Cowork), read
-PROJECT_BOOTSTRAP.md to the end before any work.
+@core/PROJECT_RULES.md
+@PROJECT_RULES.md
+@SESSION_HANDOFF.md

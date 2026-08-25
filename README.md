@@ -1,33 +1,66 @@
-# 영상 제작 워크플로우
+# Creator 영상 제작 Host
 
-여러 영상을 같은 규칙과 도구로 처리하는 공용 제작 프레임워크다.
+이 저장소는 리서치부터 영상 생성·자막·제목·썸네일·수동 업로드 패키지까지의 영상 작업을 여러 Agent가 같은 규칙과 상태로 이어서 수행하기 위한 프로젝트다.
 
-## 폴더 경계
+`core/`는 공통 Agent 정책과 공개 계약을 제공하는 읽기 전용 submodule이다. 실제 영상·YouTube·게임 도메인 기능과 작업 절차는 이 저장소의 `extension/`과 `.agents/skills/`가 소유한다.
 
-| 위치 | 소유자와 역할 |
+## 주요 workflow
+
+### 영상 제작
+
+`리서치 → 영상 생성 → SRT → 제목·썸네일 → 수동 업로드 패키지`
+
+- NotebookLM 출처 조사와 동영상 개요 생성
+- 로컬 Whisper 기반 자막 추출·보정
+- 영상·SRT·리서치 근거 기반 제목과 썸네일 제작
+- 사용자가 직접 업로드할 최종 네 파일 정리
+
+### 촬영 후 영상 편집
+
+`원본 분석 → 방향 선택 → 컷 설계 → 의미 검수 → timeline → Premiere XML`
+
+- 발화·화면·동작·전환 경계 검수
+- 편집 결정과 source lineage 보존
+- timeline과 XML 구조 검증
+
+### 게임 콘텐츠 조사
+
+- 한국 게임 출시·업데이트 조사
+- 실제 YouTube 조회수 기반 소재 브리핑
+- 승인된 경우에만 외부 일정이나 후속 작업 연결
+
+## 저장소 구조
+
+| 경로 | 책임 |
 |---|---|
-| `inputs/` | 사용자가 넣은 원본 자료만 둔다. 에이전트는 명시적 요청 없이 변경하지 않는다. |
-| `outputs/` | 입력을 바탕으로 만든 결과물, 중간 파일, 작업 상태, 전용 스크립트와 테스트를 모두 둔다. |
-| `docs/`, `tools/`, `skills/`, `tests/`, `planning_research/` | 특정 영상과 무관하게 반복 사용할 공용 프레임워크만 둔다. |
-| `gpt/` | 사용자 요청으로 보존·공유하는 프로젝트 진단과 교차검증 문서만 둔다. 운영 규칙이나 영상 산출물의 정본으로 사용하지 않는다. |
-| 프로젝트 루트 | 진입점과 공용 제어 문서만 둔다. 영상별 파일이나 새 작업 폴더를 만들지 않는다. |
+| `AGENTS.md`, `CLAUDE.md` | Agent별 공통 진입점 |
+| `PROJECT_RULES.md` | Host 소비 계약·보호 경계·도메인 route |
+| `SESSION_HANDOFF.md` | 현재 단계·차단·첫 다음 행동 |
+| `core/` | 읽기 전용 Agent Core submodule |
+| `extension/` | 영상·YouTube·게임 도메인 구현과 계약 |
+| `.agents/skills/` | 브라우저·NotebookLM·자막·썸네일·업로드 준비 절차 |
+| `scripts/` | Creator Runtime preflight와 관련 검증 |
 
-이 구분은 파일 종류가 아니라 입력 자료 의존성으로 판단한다. 다른 영상에 그대로 적용할 수 없으면 `outputs/`에 둔다.
+## 시작
 
-## 주요 진입점
+```powershell
+git submodule update --init --recursive
+python -B scripts/bootstrap.py --json
+python -B scripts/verify.py
+```
 
-| 위치 | 역할 |
-|---|---|
-| `PROJECT_BOOTSTRAP.md` | 세션 시작 최소 커널 |
-| `PROJECT_RULES.md` | 조건부 전체 규칙 |
-| `docs/INDEX.md` | 문서 라우터 |
-| `SESSION_HANDOFF.md` | 공용 재개 안내 |
-| `outputs/SESSION_HANDOFF.md` | 현재 영상 작업 상태 정본 |
-| `01_youtube_production_workflow.md` | 1~8단계 게이트 |
+Codex 계열 Agent는 `AGENTS.md`, Claude는 `CLAUDE.md`에서 시작한다. 두 진입점 모두 Core 정책, Creator 정책, 현재 상태 순서로 합류한다.
 
-## 작업 방식
+## 데이터 경계
 
-1. `PROJECT_BOOTSTRAP.md`와 `docs/INDEX.md`를 먼저 읽는다.
-2. 사용자 자료는 `inputs/`에서 읽고, 그 자료로 만든 파일은 처음부터 `outputs/`에 저장한다.
-3. 공용 파일로 승격하려면 입력별 상수나 영상 사실이 없어야 하고 여러 영상에서 같은 계약으로 재사용할 수 있어야 한다.
-4. 촬영 전 콘텐츠는 1단계부터, 촬영 완료본은 5단계부터 시작한다.
+`inputs`, `outputs`, `extension/inputs`, `extension/outputs`는 사용자 원본과 결과를 위한 보호 경로다. 사용자가 정확한 항목과 목적을 지정하기 전에는 열거·읽기·검색·Git 처리하지 않는다.
+
+실제 업로드·게시·캘린더 등록처럼 외부 상태를 바꾸는 행동은 로컬 자료 준비와 분리하며 별도 승인을 받은 경우에만 실행한다.
+
+Obsidian은 프로젝트 루트를 검토하되 로컬 UI와 보호 경로를 색인하지 않는다. 공유 정본은 다음 안전 설정 하나다.
+
+<!-- project-artifact:v1 path=.obsidian/app.json verify=json-semantic -->
+```json
+{"defaultViewMode":"preview","showUnsupportedFiles":false,"userIgnoreFilters":[".git/",".obsidian/","backup/","inputs/","outputs/"]}
+```
+<!-- /project-artifact -->
