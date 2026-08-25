@@ -36,7 +36,7 @@ Core 공통 정책·작업 등급·승인·검증 절차는 Core 정책이 소�
 ## Host 경계
 
 - 이 저장소는 `core/` submodule의 공개 계약을 읽기 전용으로 사용하는 영상 제작 Host다.
-- Core 파일·commit·gitlink를 수정하지 않는다. 변경 필요는 독립 `Agent-Core-Maintainer` 작업으로 이관한다.
+- Core 파일을 수정하거나 Core 안에서 새 commit을 만들지 않는다. 이미 존재하는 검증된 원격 Core commit을 소비하기 위한 부모 저장소의 gitlink 갱신은 허용한다. Core 자체의 변경 필요는 독립 `Agent-Core-Maintainer` 작업으로 이관한다.
 - Git stage·commit은 사용자 지시 또는 활성 단계의 명시적 위임 범위에서만 수행하고, push·게시·원격 조작은 항상 별도 승인을 받는다.
 
 ## 프로젝트 데이터와 도메인 경계
