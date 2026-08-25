@@ -1,74 +1,92 @@
-# Creator 영상 Host 현재 상태
+# Creator 백룸 영상 편집 현재 상태
 
-- 목적: 다음 세션이 완료된 저장소 역할 분리를 재개하지 않고 Creator의 첫 미완료 작업부터 시작하게 한다.
+- 목적: 다음 세션이 백룸 영상의 과거 조사 과정을 반복하지 않고, 검증된 작업계획의 첫 단계부터 안전하게 재개하게 한다.
 - 읽는 시점: `core/PROJECT_RULES.md`, `PROJECT_RULES.md` 뒤.
-- 책임: 작업 에이전트가 현재 Creator 작업과 승인 경계를 유지하고 사용자가 영상 결과와 외부 효과를 소유한다.
-- 상태: Creator와 Agent Core Maintainer의 저장소 역할 분리 완료. 영상 다운로드 경로 보강 완료.
-- 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`.
+- 책임: 작업 에이전트가 실제 source lineage와 검증 상태를 확인하고, 사용자가 보호 데이터 접근·편집 방향·최종 결과를 승인한다.
+- 상태: 백룸 영상 편집 재개 계획 수립 완료. 실제 편집 상태 확인 전.
+- 관련 권위: `core/PROJECT_RULES.md`, `PROJECT_RULES.md`, `extension/reports/2026-08-26_BACKROOM_EDITING_RESUME_PLAN.md`.
 - 활성 전체 설계: 없음.
-- 활성 단계 설계: 없음.
+- 활성 단계 설계: `extension/reports/2026-08-26_BACKROOM_EDITING_RESUME_PLAN.md`.
 - handoff mode: `portable`.
 - uncommitted dependency: 없음.
 
 ## 현재 목표
 
-Creator 영상 Host의 검증된 영상 제작·수동 업로드 패키지 workflow를 운영한다.
+최신 Creator 규칙과 사용자가 바로잡은 편집 방향을 기준으로 백룸 영상을 재개한다. 과거 결과를 자동으로 이어 쓰지 않고, 실제 상태와 검증 수준을 확인한 뒤 대표 구간부터 승인받아 전체 편집으로 확장한다.
 
-## 핵심 용어와 입력
+## 작업 위치
 
-- `Core`: `core/`의 읽기 전용 submodule.
-- `Extension`: 영상·YouTube·게임 도메인 구현과 계약.
-- `Skills`: 실제 도구 사용 절차.
-- 보호 경로: `inputs`, `outputs`, `extension/inputs`, `extension/outputs`.
-- 영상 획득·자막 owner: `.agents/skills/video-to-srt/SKILL.md`.
+- worktree: `D:\AI Agent\GitHub\Creator-backroom`
+- branch: `codex/backroom-video`
+- 작업계획: `extension/reports/2026-08-26_BACKROOM_EDITING_RESUME_PLAN.md`
 
 ## 현재 단계
 
-- 저장소 역할 분리 단계 0~6: 완료.
-- Creator 활성 구현 단계: 없음.
-- Extension 규칙 흡수안 검토·선별·보강: 완료.
+- 세션·Git 기록 조사: 완료. 재조사하지 않는다.
+- 과거 분석을 실행 가능한 작업계획으로 정리: 완료.
+- 보호 경로의 실제 상태 확인: 미착수.
+- 기준 편집 revision 결정: 미착수.
+- 대표 구간 2차 편집과 검증: 미착수.
+- 전체 편집 확장과 최종 승인: 미착수.
 
-## 구현·검증 상태
+## 확정된 편집 방향
 
-- Creator는 Host 소비 계약과 읽기 전용 Core 경계를 유지한다.
-- Agent Core Maintainer는 별도 로컬 저장소와 원격을 사용하는 독립 Maintainer로 분리됐다.
-- Creator와 Maintainer의 최종 로컬 폴더 이름 전환이 완료됐다.
-- 사용자 확인에 따라 Maintainer 관련 작업은 종료됐다.
-- 완료된 역할 분리 설계·단계 문서는 휴지통으로 이동했고 Git 이력을 복구 경계로 유지한다.
-- `video-to-srt`는 정상 UI 다운로드를 우선하고 미등록 우회 경로를 임의로 사용하지 않으며, 특정 경로 실패를 전체 획득 불가로 확대하지 않는다.
+- 백룸·리미널 스페이스의 공간성과 실제 플레이 경험을 장면으로 보여준다.
+- 설명이나 공포 반응을 나열하지 않고 하나의 중심 약속과 메시지를 유지한다.
+- 김실버의 반응, 판단, 실수와 웃음을 사건의 인과관계 안에서 살린다.
+- 초벌 선택 구간은 정보·행동·반응·화면 상태·말의 의미 단위로 다시 미세 편집한다.
+- 고정 길이 컷 규칙을 쓰지 않으며, 음절·단어·조사·미완성 의미를 끊지 않는다.
+- 검증된 기준본이 있다면 `baseline + delta`로 수정하고 기존 결과를 덮어쓰지 않는다.
+- 사용자는 기본 결함 탐색이 아니라 편집 방향과 완성도를 판단한다.
 
-## 직전 게이트
+## 검증 상태
 
-- `video-to-srt` 자막 Runtime 관련 타겟 테스트 5개가 통과했다.
-- `scripts/verify.py`의 Creator 전체 152개 테스트, Core 소비 통합 gate, Node·Python Runtime 검사가 모두 통과했다.
-- 스킬 frontmatter·이름·TODO·diff 구조 검사가 통과했다.
-- 실제 NotebookLM 다운로드는 보호 데이터·외부 세션이 필요해 `not_run`이다.
+- 최신 Creator 규칙 반영: 완료.
+- 작업계획 문서 구조·UTF-8·Git whitespace 검사: 통과.
+- 실제 source와 편집 후보 확인: `not_run` — 보호 경로 접근 승인이 필요하다.
+- XML 구조 검증: `not_run` — 대상 revision 미확정.
+- 실제 미디어 연속 재생 검증: `not_run` — 대상과 접근 범위 미확정.
+- 편집 앱 가져오기·재생 검증: `not_run` — 대상 revision 미확정.
+- 의미·리듬 검수: `not_run` — 대표 구간 미작성.
+- 사용자 편집 방향 승인: `not_run` — 대표 구간 미작성.
+
+구조 검증, 미디어 검증, 편집 앱 검증, 의미 검수, 사용자 승인은 서로 대체하지 않는다.
 
 ## 승인 상태
 
-- 승인됨·완료: 개선 제안의 필요 항목 선별, `video-to-srt` 다운로드 계약 보강, 한시 제안서·역사 설계문서 정리, 현재 변경의 commit·push.
-- 미승인: 보호 경로 접근, 추가 외부 쓰기, 후속 commit·push.
+- 승인됨: 작업계획 문서로 개편, 이번 문서 변경의 commit.
+- 미승인: 보호 경로 접근, 과거 revision 재사용, MP4 생성, 결과의 `current` 승격, push, 삭제.
 
-## 차단
+## 보호 경로 경계
 
-- 없음.
+`inputs`, `outputs`, `extension/inputs`, `extension/outputs`는 보호 경로다. 현재 세션에서는 열거하거나 읽지 않았다.
+
+다음 단계에서 필요한 정확한 대상과 목적은 아래와 같다.
+
+- `outputs/SESSION_HANDOFF.md`: 중단 지점과 명시된 후보 revision 확인
+- `outputs/WORKFLOW_STATE.json`: 워크플로 상태와 source 식별자 확인
+- `outputs/07_edit_export/CURRENT.json`: current 포인터의 대상 revision과 검증 범위 확인
+
+사용자 승인 전에는 위 파일이나 보호 경로의 다른 항목을 읽지 않는다.
 
 ## 알려진 위험
 
-- 실제 영상 사용성은 자동 검사로 판정하지 않으며 사용자가 운영 중 확인한다.
-- `skill-creator` 공식 `quick_validate.py`는 기본·번들 Python 둘 다 `PyYAML` 부재로 실행 불가했다. 이 세션에서는 동일 구조 항목을 설치 없이 별도 검사했고 전체 Creator gate로 보강했다.
-
-## 중요 산출물
-
-- `.agents/skills/video-to-srt/SKILL.md`: 활성 영상 획득·자막 절차 정본.
-- `SESSION_HANDOFF.md`: 활성 현재 상태 정본.
+- 과거 revision 가운데 실제 current였던 결과와 단순 후보가 아직 구분되지 않았다.
+- 구조적으로 유효한 XML이라도 실제 영상의 컷 경계·음성·화면 의미·리듬은 실패할 수 있다.
+- 기술 검증 통과가 의미 검수나 사용자 승인을 뜻하지 않는다.
+- 대표 구간 승인 전에 전체 편집을 확장하면 이전의 긴 컷, 설명 과다, 방향 초기화 문제가 반복될 수 있다.
 
 ## 첫 다음 행동
 
-1. 새 영상 제작은 `coordinate-video-production`으로 시작하고 검증된 worktree·browser profile·job 상태를 사용한다.
-2. NotebookLM 영상을 획득할 때 `video-to-srt`의 정상 다운로드 경로와 실패 보고 계약을 적용한다.
-3. commit이나 push가 필요하면 정확한 변경과 검증 결과를 먼저 보고하고 별도 지시를 받는다.
+사용자에게 위 세 상태 파일의 목적 제한 읽기 승인을 요청한다. 승인 후에도 보호 경로를 열거하지 않고 해당 파일만 확인해 다음을 상태표로 정리한다.
+
+1. source ID와 fingerprint
+2. 후보 revision과 실제 파일 경로
+3. 구조·미디어·편집 앱·의미 검수·사용자 승인 상태
+4. 기준본 재사용 또는 새 구성 결정에 필요한 미확인 항목
+
+이 상태표가 완성되기 전에는 과거 편집본을 기준본으로 선언하거나 새 편집을 생성하지 않는다.
 
 ## 다음 세션 시작 prompt
 
-시작 3문서만 먼저 읽고 완료된 저장소 역할 분리와 제안서 검토를 재개하지 않는다. 보호 경로에 접근하지 말고, 실제 영상 제작 요청에서만 해당 workflow skill을 선택한다.
+시작 3문서를 읽고 `extension/reports/2026-08-26_BACKROOM_EDITING_RESUME_PLAN.md`를 따른다. 세션·Git 기록 조사를 반복하지 않는다. 보호 경로는 승인된 정확한 파일만 목적 범위 안에서 확인하고, 기술 검증·의미 검수·사용자 승인을 분리해 기록한다.
