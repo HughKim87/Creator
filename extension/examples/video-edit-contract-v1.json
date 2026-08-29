@@ -1,0 +1,96 @@
+{
+  "contract_version": 1,
+  "task_id": "synthetic-video-edit",
+  "phase": "full",
+  "time_references": [
+    {
+      "id": "opening-boundary",
+      "raw": "00:00:10:12",
+      "coordinate_system": "source",
+      "unit": "timecode",
+      "scope": "opening cut boundary",
+      "confirmed_by": "user"
+    }
+  ],
+  "deliverable": {
+    "artifacts": [
+      {
+        "kind": "premiere_xml",
+        "count": 1
+      }
+    ],
+    "sequence_mode": "single_continuous",
+    "allowed_sidecars": []
+  },
+  "calibration": {
+    "required": true,
+    "status": "approved",
+    "approved_by": "user",
+    "approval_evidence": "synthetic-fixture-approval"
+  },
+  "events": [
+    {
+      "id": "event-discovery",
+      "role": "discovery",
+      "source_in": 0,
+      "source_out": 120,
+      "depends_on": [],
+      "microbeat_status": "reviewed",
+      "continuity_reason": null
+    },
+    {
+      "id": "event-reaction",
+      "role": "reaction",
+      "source_in": 300,
+      "source_out": 360,
+      "depends_on": [
+        "event-discovery"
+      ],
+      "microbeat_status": "reviewed",
+      "continuity_reason": null
+    },
+    {
+      "id": "event-result",
+      "role": "result",
+      "source_in": 360,
+      "source_out": 420,
+      "depends_on": [
+        "event-reaction"
+      ],
+      "microbeat_status": "uncuttable_reviewed",
+      "continuity_reason": "The continuous action establishes the result of the reaction."
+    }
+  ],
+  "feedback": {
+    "positive_locks": [
+      {
+        "id": "natural-boundary-style",
+        "preserved": true
+      }
+    ],
+    "defects": [
+      {
+        "id": "missing-cause-before-reaction",
+        "source_anchor": "event-discovery",
+        "status": "resolved",
+        "evidence": "event-reaction depends_on event-discovery",
+        "approved_by": null
+      }
+    ],
+    "untouched": []
+  },
+  "state": {
+    "owner_conflict": false,
+    "current_artifact_id": "synthetic-video-edit",
+    "source_manifest_hash": "sha256:5dc18f68f089723a6fb132b62eaed11a58ec7218dd218376efe86a3ed30ac369",
+    "source_revision_status": "current"
+  },
+  "validation": {
+    "causal_space": "passed",
+    "tempo_repetition": "passed",
+    "av_boundary": "passed",
+    "semantic_gate": "passed",
+    "reviewed_by": "agent:synthetic-fixture",
+    "editorial_score": "not_scored"
+  }
+}

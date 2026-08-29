@@ -14,8 +14,8 @@ from video_editing import (
     validate_srt,
     validate_timeline,
     write_legacy_timeline,
-    write_premiere_xml,
 )
+from video_editing.premiere_xml import _write_premiere_xml
 
 
 SRT = """1
@@ -91,7 +91,7 @@ class VideoEditingVerticalAcceptanceTests(unittest.TestCase):
             self.assertEqual(imported["semantic_gate"], "pending")
             timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
             with self.assertRaisesRegex(PremiereXmlError, "semantic_gate"):
-                write_premiere_xml(
+                _write_premiere_xml(
                     timeline,
                     xml_path,
                     profile=PREMIERE_CS6_V4_PROFILE,
@@ -104,7 +104,7 @@ class VideoEditingVerticalAcceptanceTests(unittest.TestCase):
                 "notes": "Synthetic acceptance only.",
             }
             validated = validate_timeline(timeline)
-            generated = write_premiere_xml(
+            generated = _write_premiere_xml(
                 validated,
                 xml_path,
                 profile=PREMIERE_CS6_V4_PROFILE,

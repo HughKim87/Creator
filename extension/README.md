@@ -36,7 +36,7 @@
 
 영상 편집 작업은 두 계약의 범위를 섞지 않는다. 세션 원문·버전별 보고서·작업별 수치를 운영 규칙의 owner로 사용하지 않는다.
 
-영상 편집 SRT 검증·명시 정리, legacy cut CSV 이관, timeline 다중 진단, `sequence-v5`·`premiere-cs6-v4` XML 생성은 `python -m video_editing`이 소유한다. 보호 데이터가 없는 기본 입력은 `examples/video-edit-timeline-v1.json`이며, 실제 `inputs/`·`outputs/` 경로는 exact 항목과 목적을 승인받은 작업에서만 사용한다.
+영상 편집 SRT 검증·명시 정리, legacy cut CSV 이관, timeline 다중 진단과 `premiere-cs6-v4` XML 생성은 `python -m video_editing`이 소유한다. 활성 전달 계약은 sequence·편집 근거·검수·delivery를 하나로 묶은 `examples/video-edit-timeline-v2.json`이다. v1 timeline·contract는 v2 `working_candidate`로 이관하는 입력에만 사용할 수 있고, `sequence-v5`는 내부 legacy byte 호환 회귀일 뿐 사용자 전달 경로가 아니다. 채택 전 v2 payload는 선언된 Git 제외 scratch에 두며, 후속 `approved_delta`가 소비하는 `current`·`approved` 기준본은 exact protected evidence owner로 승격해 superseded·expiry까지 보존한다. 실제 `inputs/`·`outputs/` 경로는 exact 항목과 목적을 승인받은 작업에서만 사용한다.
 
 과거 영상 spine·분석 문서에서 영상 편집 지식을 환류할 때도 촬영 후 영상 편집 workflow 계약을 domain owner로 사용한다. 범용 파일 추출·정리 절차는 `PROJECT_RULES.md`가 별도로 선택하며 extension이 다시 소유하거나 foundation rule을 직접 라우팅하지 않는다.
 

@@ -1,0 +1,425 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project://extension/schemas/video-edit-timeline-v2.schema.json",
+  "title": "Video edit timeline and delivery contract v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "timeline_version",
+    "timeline_id",
+    "workflow_profile",
+    "source_manifest",
+    "sequence",
+    "editorial_evidence",
+    "revision",
+    "approval",
+    "validation",
+    "delivery"
+  ],
+  "properties": {
+    "timeline_version": {"const": 2},
+    "timeline_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "workflow_profile": {
+      "enum": ["new_full_edit", "calibration", "approved_delta", "format_regeneration"]
+    },
+    "source_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "total_frames", "frame_rate", "video", "audio", "content_sha256", "byte_size"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "path": {"$ref": "#/$defs/nonblank"},
+        "total_frames": {"type": "integer", "minimum": 1},
+        "frame_rate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["numerator", "denominator"],
+          "properties": {
+            "numerator": {"type": "integer", "minimum": 1},
+            "denominator": {"type": "integer", "minimum": 1}
+          }
+        },
+        "video": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": {
+            "width": {"type": "integer", "minimum": 1},
+            "height": {"type": "integer", "minimum": 1}
+          }
+        },
+        "audio": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sample_rate", "channels"],
+          "properties": {
+            "sample_rate": {"type": "integer", "minimum": 1},
+            "channels": {"type": "integer", "minimum": 1}
+          }
+        },
+        "content_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "byte_size": {"type": "integer", "minimum": 1}
+      }
+    },
+    "sequence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "video_clips", "audio_clips"],
+      "properties": {
+        "name": {"$ref": "#/$defs/nonblank"},
+        "video_clips": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/clip"}},
+        "audio_clips": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/clip"}}
+      }
+    },
+    "editorial_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["time_references", "events", "microbeats", "feedback"],
+      "properties": {
+        "time_references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "raw", "coordinate_system", "unit", "start_frame", "end_frame", "scope", "confirmed_by", "correction_evidence"],
+            "properties": {
+              "id": {"$ref": "#/$defs/nonblank"},
+              "raw": {"$ref": "#/$defs/nonblank"},
+              "coordinate_system": {"enum": ["source", "timeline"]},
+              "unit": {"enum": ["timecode", "seconds", "frames"]},
+              "start_frame": {"type": "integer", "minimum": 0},
+              "end_frame": {"type": "integer", "minimum": 0},
+              "scope": {"$ref": "#/$defs/nonblank"},
+              "confirmed_by": {"enum": ["user", "conversation_correction"]},
+              "correction_evidence": {"$ref": "#/$defs/nonblank"}
+            },
+            "allOf": [
+              {"if": {"properties": {"unit": {"const": "frames"}}}, "then": {"properties": {"raw": {"pattern": "^\\d+(?:\\.\\.\\d+)?$"}}}},
+              {"if": {"properties": {"unit": {"const": "seconds"}}}, "then": {"properties": {"raw": {"pattern": "^\\d+(?:\\.\\d+)?(?:\\.\\.\\d+(?:\\.\\d+)?)?$"}}}},
+              {"if": {"properties": {"unit": {"const": "timecode"}}}, "then": {"properties": {"raw": {"pattern": "^(?:\\d{2}:[0-5]\\d:[0-5]\\d(?:\\.\\d+)?|\\d{2}:[0-5]\\d:[0-5]\\d:\\d{2})(?:\\.\\.(?:\\d{2}:[0-5]\\d:[0-5]\\d(?:\\.\\d+)?|\\d{2}:[0-5]\\d:[0-5]\\d:\\d{2}))?$"}}}}
+            ]
+          }
+        },
+        "events": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "role", "video_clip_ids", "audio_clip_ids", "source_in", "source_out", "depends_on", "timeline_order", "continuity_reason"],
+            "properties": {
+              "id": {"$ref": "#/$defs/nonblank"},
+              "role": {"enum": ["setup", "cause", "discovery", "action", "attempt", "reaction", "escape", "result", "transition", "state_change", "atmosphere"]},
+              "video_clip_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonblank"}},
+              "audio_clip_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonblank"}},
+              "source_in": {"type": "integer", "minimum": 0},
+              "source_out": {"type": "integer", "minimum": 1},
+              "depends_on": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonblank"}},
+              "timeline_order": {"type": "integer", "minimum": 0},
+              "continuity_reason": {"type": ["string", "null"]}
+            }
+          }
+        },
+        "microbeats": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "event_id", "decision", "media_scope", "purpose", "video_clip_ids", "audio_clip_ids", "source_in", "source_out", "boundary_review"],
+            "properties": {
+              "id": {"$ref": "#/$defs/nonblank"},
+              "event_id": {"$ref": "#/$defs/nonblank"},
+              "decision": {"enum": ["keep", "compress", "remove"]},
+              "media_scope": {"enum": ["video", "audio", "both"]},
+              "purpose": {"$ref": "#/$defs/nonblank"},
+              "video_clip_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonblank"}},
+              "audio_clip_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonblank"}},
+              "source_in": {"type": "integer", "minimum": 0},
+              "source_out": {"type": "integer", "minimum": 1},
+              "boundary_review": {"enum": ["pending", "passed", "failed"]}
+            },
+            "allOf": [
+              {
+                "if": {"properties": {"decision": {"const": "remove"}}},
+                "then": {
+                  "properties": {
+                    "video_clip_ids": {"maxItems": 0},
+                    "audio_clip_ids": {"maxItems": 0}
+                  }
+                }
+              },
+              {
+                "if": {"properties": {"decision": {"enum": ["keep", "compress"]}}},
+                "then": {
+                  "anyOf": [
+                    {"properties": {"video_clip_ids": {"minItems": 1}}},
+                    {"properties": {"audio_clip_ids": {"minItems": 1}}}
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "feedback": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["baseline_payload_fingerprint", "positive_locks", "defects", "untouched"],
+          "properties": {
+            "baseline_payload_fingerprint": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"},
+            "positive_locks": {"type": "array", "items": {"$ref": "#/$defs/preservation"}},
+            "untouched": {"type": "array", "items": {"$ref": "#/$defs/preservation"}},
+            "defects": {"type": "array", "items": {"$ref": "#/$defs/defect"}}
+          }
+        }
+      }
+    },
+    "revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "supersedes", "checked_at", "state_owner_id"],
+      "properties": {
+        "status": {"enum": ["working_candidate", "current", "approved", "use_prohibited", "historical"]},
+        "supersedes": {"type": ["string", "null"]},
+        "checked_at": {"$ref": "#/$defs/rfc3339_timestamp"},
+        "state_owner_id": {"$ref": "#/$defs/nonblank"}
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["calibration", "decisions"],
+      "properties": {
+        "calibration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required", "status", "artifact_id", "approved_payload_fingerprint", "approved_by", "approval_evidence", "checked_at"],
+          "properties": {
+            "required": {"type": "boolean"},
+            "status": {"enum": ["pending", "approved", "rejected", "not_required"]},
+            "artifact_id": {"$ref": "#/$defs/nullable_nonblank"},
+            "approved_payload_fingerprint": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"},
+            "approved_by": {"$ref": "#/$defs/nullable_nonblank"},
+            "approval_evidence": {"$ref": "#/$defs/nullable_nonblank"},
+            "checked_at": {"$ref": "#/$defs/nullable_rfc3339_timestamp"}
+          },
+          "oneOf": [
+            {"properties": {"required": {"const": false}, "status": {"const": "not_required"}, "artifact_id": {"$ref": "#/$defs/nonblank"}, "approved_payload_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "approved_by": {"const": "user"}, "approval_evidence": {"$ref": "#/$defs/nonblank"}, "checked_at": {"$ref": "#/$defs/rfc3339_timestamp"}}},
+            {"properties": {"required": {"const": true}, "status": {"enum": ["pending", "rejected"]}, "artifact_id": {"type": "null"}, "approved_payload_fingerprint": {"type": "null"}, "approved_by": {"type": "null"}, "approval_evidence": {"type": "null"}, "checked_at": {"type": "null"}}},
+            {"properties": {"required": {"const": true}, "status": {"const": "approved"}, "artifact_id": {"$ref": "#/$defs/nonblank"}, "approved_payload_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "approved_by": {"const": "user"}, "approval_evidence": {"$ref": "#/$defs/nonblank"}, "checked_at": {"$ref": "#/$defs/rfc3339_timestamp"}}}
+          ]
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "artifact_id", "approved_scope", "source_manifest_hash", "decision", "invalidated_by", "approved_by", "checked_at", "reviewed_editorial_fingerprint"],
+            "properties": {
+              "id": {"$ref": "#/$defs/nonblank"},
+              "artifact_id": {"$ref": "#/$defs/nonblank"},
+              "approved_scope": {"const": "entire_revision"},
+              "source_manifest_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+              "decision": {"enum": ["approved", "rejected", "superseded"]},
+              "invalidated_by": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonblank"}},
+              "approved_by": {"$ref": "#/$defs/nonblank"},
+              "checked_at": {"$ref": "#/$defs/rfc3339_timestamp"},
+              "reviewed_editorial_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "decision": {"enum": ["approved", "rejected"]}
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "approved_by": {"const": "user"}
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewed_editorial_fingerprint", "reviewer", "passes", "semantic_status"],
+      "properties": {
+        "reviewed_editorial_fingerprint": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"},
+        "reviewer": {"$ref": "#/$defs/nullable_nonblank"},
+        "passes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["causal_space", "tempo_repetition", "av_boundary"],
+          "properties": {
+            "causal_space": {"$ref": "#/$defs/review_pass"},
+            "tempo_repetition": {"$ref": "#/$defs/review_pass"},
+            "av_boundary": {"$ref": "#/$defs/review_pass"}
+          }
+        },
+        "semantic_status": {"enum": ["not_run", "passed", "failed"]}
+      },
+      "oneOf": [
+        {"properties": {"semantic_status": {"const": "not_run"}, "reviewed_editorial_fingerprint": {"type": "null"}, "reviewer": {"type": "null"}, "passes": {"properties": {"causal_space": {"properties": {"status": {"const": "not_run"}}}, "tempo_repetition": {"properties": {"status": {"const": "not_run"}}}, "av_boundary": {"properties": {"status": {"const": "not_run"}}}}}}},
+        {"properties": {"semantic_status": {"const": "passed"}, "reviewed_editorial_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "reviewer": {"$ref": "#/$defs/nonblank"}, "passes": {"properties": {"causal_space": {"properties": {"status": {"const": "passed"}}}, "tempo_repetition": {"properties": {"status": {"const": "passed"}}}, "av_boundary": {"properties": {"status": {"const": "passed"}}}}}}},
+        {"properties": {"semantic_status": {"const": "failed"}, "reviewed_editorial_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}, "reviewer": {"$ref": "#/$defs/nonblank"}, "passes": {"anyOf": [{"properties": {"causal_space": {"properties": {"status": {"const": "failed"}}}}}, {"properties": {"tempo_repetition": {"properties": {"status": {"const": "failed"}}}}}, {"properties": {"av_boundary": {"properties": {"status": {"const": "failed"}}}}}]}}}
+      ]
+    },
+    "delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "output_path", "profile", "overwrite"],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/nonblank"},
+        "output_path": {"type": "string", "pattern": "\\.[xX][mM][lL]$"},
+        "profile": {"const": "premiere-cs6-v4"},
+        "overwrite": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "nonblank": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "nullable_nonblank": {
+      "anyOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/nonblank"}
+      ]
+    },
+    "rfc3339_timestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|[+-](?:[01]\\d|2[0-3]):[0-5]\\d)$"
+    },
+    "nullable_rfc3339_timestamp": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/rfc3339_timestamp"}
+      ]
+    },
+    "clip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "track", "source_id", "source_in", "source_out", "frames", "timeline_start", "timeline_end", "gap_before", "source_order_exception", "edit_role", "edit_reason"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+        "track": {"enum": ["video", "audio"]},
+        "source_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "source_in": {"type": "integer", "minimum": 0},
+        "source_out": {"type": "integer", "minimum": 1},
+        "frames": {"type": "integer", "minimum": 1},
+        "timeline_start": {"type": "integer", "minimum": 0},
+        "timeline_end": {"type": "integer", "minimum": 1},
+        "gap_before": {"type": "integer", "minimum": 0},
+        "source_order_exception": {"type": "boolean"},
+        "edit_role": {"enum": ["information", "action", "reaction", "transition", "atmosphere", "speech", "event"]},
+        "edit_reason": {"$ref": "#/$defs/nonblank"}
+      }
+    },
+    "preservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "scope", "clip_ids", "evidence", "preserved"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonblank"},
+        "scope": {"$ref": "#/$defs/nonblank"},
+        "clip_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonblank"}},
+        "evidence": {"$ref": "#/$defs/nonblank"},
+        "preserved": {"type": "boolean"}
+      }
+    },
+    "defect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "scope", "clip_ids", "status", "evidence", "approved_by"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonblank"},
+        "scope": {"$ref": "#/$defs/nonblank"},
+        "clip_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonblank"}},
+        "status": {"enum": ["pending", "resolved", "approved_defer", "unreproduced"]},
+        "evidence": {"$ref": "#/$defs/nonblank"},
+        "approved_by": {"$ref": "#/$defs/nullable_nonblank"}
+      },
+      "allOf": [
+        {"if": {"properties": {"status": {"enum": ["approved_defer", "unreproduced"]}}}, "then": {"properties": {"approved_by": {"const": "user"}}}},
+        {"if": {"properties": {"status": {"enum": ["pending", "resolved"]}}}, "then": {"properties": {"approved_by": {"type": "null"}}}}
+      ]
+    },
+    "review_pass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "method", "reviewer", "checked_at", "evidence"],
+      "properties": {
+        "status": {"enum": ["not_run", "passed", "failed", "not_applicable"]},
+        "method": {"$ref": "#/$defs/nullable_nonblank"},
+        "reviewer": {"$ref": "#/$defs/nullable_nonblank"},
+        "checked_at": {"$ref": "#/$defs/nullable_rfc3339_timestamp"},
+        "evidence": {"$ref": "#/$defs/nullable_nonblank"}
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "status": {"enum": ["not_run", "not_applicable"]},
+            "method": {"type": "null"},
+            "reviewer": {"type": "null"},
+            "checked_at": {"type": "null"},
+            "evidence": {"type": "null"}
+          }
+        },
+        {
+          "properties": {
+            "status": {"enum": ["passed", "failed"]},
+            "method": {"$ref": "#/$defs/nonblank"},
+            "reviewer": {"$ref": "#/$defs/nonblank"},
+            "checked_at": {"$ref": "#/$defs/rfc3339_timestamp"},
+            "evidence": {"$ref": "#/$defs/nonblank"}
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"validation": {"properties": {"semantic_status": {"const": "passed"}}}}},
+      "then": {
+        "properties": {
+          "validation": {
+            "properties": {
+              "reviewed_editorial_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+              "reviewer": {"type": "string", "minLength": 1},
+              "passes": {
+                "properties": {
+                  "causal_space": {"properties": {"status": {"const": "passed"}}},
+                  "tempo_repetition": {"properties": {"status": {"const": "passed"}}},
+                  "av_boundary": {"properties": {"status": {"const": "passed"}}}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"workflow_profile": {"enum": ["approved_delta", "format_regeneration"]}}},
+      "then": {
+        "properties": {
+          "editorial_evidence": {
+            "properties": {
+              "feedback": {
+                "properties": {
+                  "baseline_payload_fingerprint": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
