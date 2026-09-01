@@ -197,7 +197,7 @@ class VideoEditingRuleGateTests(unittest.TestCase):
         self.assertIn("invalid_source_revision", codes)
         self.assertIn("current_artifact_mismatch", codes)
 
-    def test_semantic_gate_needs_all_normal_speed_passes(self) -> None:
+    def test_semantic_gate_needs_all_normal_speed_review_perspectives(self) -> None:
         contract = self._contract()
         contract["validation"]["causal_space"] = "not_run"
         contract["validation"]["editorial_score"] = 95

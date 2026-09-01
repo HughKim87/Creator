@@ -224,6 +224,8 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
         self.assertIn("인과·공간", validation)
         self.assertIn("템포·반복", validation)
         self.assertIn("화면·음성 경계", validation)
+        self.assertIn("별도 전편 재생이 아니", validation)
+        self.assertIn("영향 범위 검수", validation)
         self.assertIn("not_scored", validation)
 
     def test_general_rules_do_not_embed_single_video_history(self):

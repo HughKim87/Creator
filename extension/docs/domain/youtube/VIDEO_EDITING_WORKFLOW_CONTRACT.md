@@ -44,6 +44,10 @@
 
 XML은 2차 편집의 전달 형식이다. 후보 범위나 이야기 블록을 clip 하나로 배치한 것은 1차 구성 편집이며, 완성 편집으로 승인할 수 없다.
 
+1차 내용 분석의 전체 source coverage는 원본 전체를 1배속으로 재생한다는 뜻이 아니다. 먼저 FFprobe, SRT, scene·motion·luma 변화, silence·RMS, 기존 locator처럼 로컬에서 재현 가능한 색인을 source 전체에 적용하고 가속 탐색으로 검토 우선순위를 만든다. 이 자동 근거는 위치 탐색과 위험 선별만 소유하며 사건의 의미나 유지·제외 결정을 단독으로 확정하지 않는다.
+
+정상 속도 A/V 확인은 채택 후보와 양쪽 source handle, 원인·행동·결과 및 상태·공간 전환, 발화 시작·종료, 동일 공간 화면 jump 위험, 색인 신호가 충돌하거나 불확실한 구간에 필수다. 낮은 위험의 제외 후보는 가속 탐색과 표본 검수로 coverage할 수 있지만, 정상 속도로 확인하지 않은 구간을 긍정적 사건 근거나 의미 검수 완료로 보고하지 않는다.
+
 ## 4. 작업 프로필과 최소 workflow
 
 작업은 다음 프로필 중 하나를 `video-edit-timeline-v2.workflow_profile`에 선언한다. 모든 작업에 전체 신규 편집 절차를 반복하지 않는다.
@@ -89,7 +93,11 @@ XML 생성 전에 완성 타임라인 순서로 다음을 검수한다.
 
 의미 gate는 AI 사전감사다. 사용자가 완성본의 첫 결함 탐지자가 되도록 넘기지 않는다.
 
-`video-edit-timeline-v2`는 sequence와 별도 계약이 서로 다른 의미 상태를 주장하지 못하게 하는 단일 XML 생성 차단 payload다. 실제 source byte hash·size, 정규화된 시간 좌표, clip ID에 결속된 사건·microbeat·feedback, working candidate와 current·approved의 구분, exact baseline/calibration reference, 정상 속도 3관점 결과, exact output path·profile을 함께 대조한다.
+최신 editorial mutation이 반영된 완성 sequence는 처음부터 끝까지 건너뛰지 않는 정상 속도 재생을 최소 한 번 거친다. `causal_space / tempo_repetition / av_boundary`는 서로 다른 판단 record이지만 각각 별도 전편 재생을 뜻하지 않으며, 하나의 review run을 공유할 때도 관점별 결론과 evidence를 따로 기록한다. 새로 만들거나 바꾼 cut boundary는 정상 속도 전후 문맥 A/B로 확인하고, 바뀌지 않은 경계의 기존 근거는 source 범위·A/V edge·인접 상태가 동일하다는 결정론적 diff가 있을 때만 승계한다.
+
+수정 중 재검수는 경계 변경이면 해당 경계와 양쪽 인접 문맥, scene 변경이면 해당 scene과 인접 전환, chapter 변경이면 해당 chapter와 인접 전환, 사건 순서·스파인·전역 리듬 변경이면 완성 sequence 전체로 확대한다. 영향 범위 검수는 중간 QA이며 canonical 의미 pass를 통과시키지 않는다. XML 생성·전달 전에는 최신 mutation 뒤의 완성 sequence 전체 정상 속도 재생과 세 관점 record가 새 editorial fingerprint에 결속되어야 한다.
+
+`video-edit-timeline-v2`는 sequence와 별도 계약이 서로 다른 의미 상태를 주장하지 못하게 하는 단일 XML 생성 차단 payload다. 실제 source byte hash·size, 정규화된 시간 좌표, clip ID에 결속된 사건·microbeat·feedback, working candidate와 current·approved의 구분, exact baseline/calibration reference, 최신 mutation 뒤 전체 정상 속도 review run에 결속된 세 관점 결과, exact output path·profile을 함께 대조한다.
 
 - `editorial_fingerprint`: timeline version, source manifest, 정규화된 time instruction, sequence, event·microbeat·clip ownership, editorial evidence를 결속하되 feedback의 baseline payload pointer는 중립화한다. workflow profile, timeline ID, revision state, approval, validation, delivery는 제외하며 사용자 승인과 의미 pass의 대상이다.
 - `payload_fingerprint`: `timeline_version / timeline_id / workflow_profile / source_manifest / sequence / editorial_evidence / revision`의 content/revision identity를 결속하고 approval·validation·delivery는 제외한다.
@@ -228,7 +236,7 @@ python -m video_editing premiere-xml `
 3. 기존 TC01~TC12의 기대 판정이 이관 전과 동일하다.
 4. TC13~TC16이 current revision 동결, 상태 충돌 중단, 검증 주장 제한, validator 계층 분리를 재현한다.
 5. 정상 v2 timeline은 결정론적 editorial·payload·task payload·delivery fingerprint를 반환한다. payload는 content/revision identity, task payload는 payload+approval+validation state, delivery는 task payload+delivery 객체를 소유하며 각 내부 gate는 fingerprint 일치와 별도로 판정한다.
-6. editorial mutation은 이전 의미 검수와 영향 범위 승인을 무효화하지만 delivery-only regeneration은 editorial fingerprint를 보존한다.
+6. editorial mutation은 이전 canonical 의미 검수와 영향 범위 승인을 무효화한다. 수정 중 검수는 영향 범위에 맞게 수행하되 XML 전달 전 최신 mutation 뒤 완성 sequence 전체 정상 속도 재생과 세 관점 record를 새 fingerprint에 결속한다. delivery-only regeneration은 editorial fingerprint를 보존한다.
 7. 정상 v2 timeline은 검증된 원본 reference 하나를 가진 CS6 XML 하나만 만든다.
 8. XML의 clip 수·frame 범위·audio gap이 timeline과 일치한다.
 9. SRT·CSV 원본 hash가 유지되고 실패 시 부분 출력이 없다.

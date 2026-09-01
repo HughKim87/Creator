@@ -469,6 +469,24 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
         value["validation"]["passes"]["tempo_repetition"]["status"] = "not_run"
         self.assertIn("semantic_gate_incomplete", self._codes(value))
 
+    def test_three_semantic_perspectives_can_share_one_full_playback(self) -> None:
+        value = self._timeline()
+        shared_method = "uninterrupted normal-speed full-sequence playback run=review-1"
+        shared_checked_at = "2026-08-28T00:00:00+09:00"
+        evidence = {
+            "causal_space": "ordered cause, action, result, and spatial transition review",
+            "tempo_repetition": "pace, repetition, and functional silence review",
+            "av_boundary": "full playback plus targeted A/B boundary ledger review",
+        }
+        for name, perspective_evidence in evidence.items():
+            record = value["validation"]["passes"][name]
+            record["method"] = shared_method
+            record["checked_at"] = shared_checked_at
+            record["evidence"] = perspective_evidence
+
+        self.assertTrue(_powershell_schema_accepts(value, self.schema_path))
+        validate_timeline_v2(value, purpose="premiere_xml")
+
     def test_approved_revision_needs_exact_active_user_decision(self) -> None:
         value = self._timeline()
         value["revision"]["status"] = "approved"

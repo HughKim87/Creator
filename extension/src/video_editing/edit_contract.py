@@ -529,7 +529,7 @@ def _validate_validation(value: Any, collector: _Collector, *, purpose: str | No
     if semantic_gate == "passed" and not required_passes:
         collector.add(
             "semantic_gate_without_normal_speed_review",
-            "semantic_gate cannot pass until all three normal-speed reviews pass",
+            "semantic_gate cannot pass until all three normal-speed review perspectives pass",
             "validation.semantic_gate",
         )
     if semantic_gate == "passed" and reviewed_by is None:
