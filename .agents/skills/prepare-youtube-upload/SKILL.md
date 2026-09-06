@@ -18,7 +18,9 @@ description: 완성 영상, 승인된 제목·썸네일, SRT, 설명과 설정�
 
 ## 검증과 가이드
 
-먼저 쓰기 없이 검증한다.
+새 제작·수정본은 승인된 제목과 현재 네 입력 해시를 패키지에 기록한 뒤 `scripts/finalize_upload_package.py <youtube-manual-upload.json>`으로 먼저 검증한다. 통과하면 `--apply`를 붙여 아래의 검증·가이드 생성·archive 계획/적용·적용 후 재검증을 한 번에 실행한다. 이 도우미는 원문이나 해시를 자동 승인·교정하지 않으며, `--require-editorial` 계약까지 검사한다. 구버전 자료는 기존 개별 명령으로 호환 검증한다.
+
+아래는 구버전 호환 또는 실패 진단을 위한 개별 명령이다. 완료 도우미가 성공한 단계는 반복하지 않는다. 개별 실행에서는 먼저 쓰기 없이 검증한다.
 
 ```powershell
 python scripts/prepare_upload_package.py <youtube-manual-upload.json> --check
@@ -76,5 +78,7 @@ python scripts/retain_upload_package.py <youtube-manual-upload.json> --apply
 - archive 적용 후 `outputs/<job-id>/`에 정확히 네 파일만 존재
 - retention 재검증의 archive 대상과 예상치 못한 디렉터리 0
 - `external_actions: none`
+
+예약 시간 추천을 요청받으면 채널의 시청 시간대·유사 영상의 초기 반응을 우선하고, 자료가 없으면 소재의 시의성과 대상 지역을 근거로 잠정 범위를 제시한다. 특정 시각이 최적이라는 실측 주장과 편집상 추정을 구분한다. 추천은 로컬 가이드에 기록할 수 있으나 예약 실행 권한을 뜻하지 않는다.
 
 최종 보고에는 네 파일의 절대 경로와 archive 경로를 반환한다. 이후 수동 업로드 여부를 blocker나 후속 작업으로 남기지 않는다.

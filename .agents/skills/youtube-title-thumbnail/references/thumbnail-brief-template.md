@@ -9,9 +9,9 @@ Use case: ads-marketing
 Asset type: finished 16:9 YouTube thumbnail, not a background
 Primary request: create a premium, immediately clickable thumbnail from the approved copy and the video's actual promise
 Exact text: reproduce every approved Korean and product-name character exactly; add no other words
-Copy hierarchy: viewer problem or question first, unexpected payoff second, scope or proof as a small badge
+Copy hierarchy: follow editorial.brief.visual_priority; emphasize the product for a launch, the problem for a solution, or the alternatives for a comparison as appropriate
 Composition: integrate typography and subject into one art-directed image; keep generous safe margins; preserve strong hierarchy at 320×180
-Visual subject: show the video's actual mechanism or decision, not a generic robot or unrelated stock scene
+Visual subject: support the video's actual promise with an explanatory or symbolic subject; do not present a metaphor as demonstrated capability
 Style: polished editorial advertising quality, strong contrast, deliberate depth and lighting, no cheap template look
 Constraints: no cropped or duplicated text, fake logos, watermarks, random English, unreadable microtext, or decorative UI clutter
 ```
@@ -19,9 +19,9 @@ Constraints: no cropped or duplicated text, fake logos, watermarks, random Engli
 생성 후 다음을 직접 확인한다.
 
 - 승인 문구가 글자 단위로 정확한가
-- 제목과 같은 문장을 반복하지 않고 클릭 이유를 보완하는가
-- 320×180에서 문제·해답 순서가 1초 안에 읽히는가
-- 제품명은 메인 훅이 아니라 범위·근거로 작동하는가
+- 제목과 썸네일이 선택된 역할에 따라 클릭 이유와 범위를 전달하는가
+- 320×180에서 의도한 시각적 우선순위가 즉시 읽히는가
+- 제품명·질문·비교 대상의 크기가 소재와 사용자 지시에 맞는가
 - 배경과 문구가 따로 붙인 템플릿처럼 보이지 않는가
 - 영상에서 실제로 다루는 약속과 시각물이 일치하는가
 

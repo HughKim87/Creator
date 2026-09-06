@@ -23,6 +23,26 @@ SPEC.loader.exec_module(MODULE)
 
 
 class BrowserProfileResolutionTests(unittest.TestCase):
+    def test_explicit_values_work_without_defaults_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            defaults = MODULE.load_workflow_defaults(Path(directory) / "missing.json")
+            result = MODULE.resolve_browser_profile(defaults, profile_directory="Profile 7", required_origin="https://notebooklm.google.com")
+        self.assertEqual(result["status"], "resolved")
+        self.assertEqual(result["browser"]["profile_directory"], "Profile 7")
+
+    def test_missing_values_are_reported_without_discarding_explicit_input(self) -> None:
+        result = MODULE.resolve_browser_profile({}, profile_directory="Profile 7")
+        self.assertEqual(result["status"], "needs_input")
+        self.assertEqual(result["missing_fields"], ["required_origin"])
+
+    def test_complete_alias_does_not_require_default_browser(self) -> None:
+        result = MODULE.resolve_browser_profile({"profile_aliases": {"work": {"profile_directory": "Profile 7", "required_origin": "https://notebooklm.google.com"}}}, profile_alias="work")
+        self.assertEqual(result["status"], "resolved")
+
+    def test_unknown_alias_is_not_treated_as_missing_config(self) -> None:
+        with self.assertRaises(MODULE.ResolutionError):
+            MODULE.resolve_browser_profile({}, profile_alias="unknown")
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.defaults = {

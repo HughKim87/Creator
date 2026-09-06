@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resolve one video job's browser settings from explicit input or handoff defaults."""
+"""Resolve a new job's browser settings from explicit input or local defaults."""
 
 from __future__ import annotations
 
@@ -19,6 +19,8 @@ def nonempty(value: Any) -> bool:
 
 
 def load_workflow_defaults(config_path: Path) -> dict[str, Any]:
+    if not config_path.exists():
+        return {}
     try:
         payload = json.loads(config_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
@@ -64,16 +66,16 @@ def resolve_browser_profile(
     profile_directory: str | None = None,
     profile_label: str | None = None,
     profile_alias: str | None = None,
+    required_origin: str | None = None,
 ) -> dict[str, Any]:
     if nonempty(profile_directory) and nonempty(profile_alias):
         raise ResolutionError(
             "provide profile_directory or profile_alias, not both"
         )
 
-    default_browser = require_browser(
-        defaults.get("browser"),
-        "runtime_defaults",
-    )
+    default_browser = defaults.get("browser", {})
+    if not isinstance(default_browser, dict):
+        raise ResolutionError("runtime_defaults browser settings must be an object")
 
     if nonempty(profile_directory):
         browser = {
@@ -97,14 +99,18 @@ def resolve_browser_profile(
             raise ResolutionError(
                 f"unknown profile alias: {profile_alias.strip()}"
             )
-        browser = require_browser(
-            {**default_browser, **alias_value},
-            f"profile_aliases.{profile_alias.strip()}",
-        )
+        browser = {**default_browser, **alias_value}
         source = "explicit_profile_alias"
     else:
-        browser = default_browser
+        browser = dict(default_browser)
         source = "runtime_default"
+
+    if nonempty(required_origin):
+        browser["required_origin"] = required_origin.strip()
+    missing = [key for key in ("profile_directory", "required_origin") if not nonempty(browser.get(key))]
+    if missing:
+        return {"status": "needs_input", "source": source, "missing_fields": missing}
+    browser = require_browser(browser, source)
 
     return {
         "status": "resolved",
@@ -123,6 +129,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--profile-directory")
     parser.add_argument("--profile-label")
     parser.add_argument("--profile-alias")
+    parser.add_argument("--required-origin")
     return parser.parse_args()
 
 
@@ -135,6 +142,7 @@ def main() -> int:
             profile_directory=args.profile_directory,
             profile_label=args.profile_label,
             profile_alias=args.profile_alias,
+            required_origin=args.required_origin,
         )
     except (OSError, ResolutionError) as exc:
         print(
@@ -145,7 +153,7 @@ def main() -> int:
         )
         return 2
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    return 0
+    return 0 if result["status"] == "resolved" else 2
 
 
 if __name__ == "__main__":

@@ -32,6 +32,43 @@ TITLE = "AI 하네스란? 입문자를 위한 안전한 에이전트 적용 방�
 
 
 class ManualUploadPackageTests(unittest.TestCase):
+    def test_finalizer_rechecks_retention_and_rejects_stale_hashes_before_writes(self) -> None:
+        spec = importlib.util.spec_from_file_location("editorial_fixture", Path(__file__).with_name("test_title_thumbnail_package.py"))
+        fixture_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(fixture_module)
+        fixture = fixture_module.TitleThumbnailPackageTests()
+        self.addCleanup(fixture.doCleanups)
+        _, title_path = fixture._editorial_package()
+        temporary, template = self._package(schema="youtube-manual-upload-v3")
+        self.addCleanup(temporary.cleanup)
+        data = json.loads(template.read_text(encoding="utf-8"))
+        title_data = json.loads(title_path.read_text(encoding="utf-8"))
+        data["metadata"]["title"] = title_data["title"]["selected"]
+        data["artifacts"]["title_thumbnail_package"] = title_path.name
+        data["artifact_hashes"] = {key: MODULE.sha256(title_path.parent / value) for key, value in data["artifacts"].items()}
+        package = title_path.with_name("youtube-manual-upload.json")
+        package.write_text(json.dumps(data), encoding="utf-8")
+        finalizer_spec = importlib.util.spec_from_file_location("finalizer", SCRIPT.with_name("finalize_upload_package.py"))
+        finalizer = importlib.util.module_from_spec(finalizer_spec)
+        finalizer_spec.loader.exec_module(finalizer)
+        guide = title_path.parent / "output/YOUTUBE-MANUAL-UPLOAD.md"
+        self.assertEqual(finalizer.finalize(package)["status"], "ready")
+        self.assertFalse(guide.exists())
+        extra = title_path.parent / "output/technical.txt"
+        extra.write_text("technical", encoding="utf-8")
+        result = finalizer.finalize(package, apply=True)
+        self.assertEqual(result["status"], "complete")
+        self.assertEqual(result["checks"]["retention_after"]["archive"], [])
+        self.assertFalse(extra.exists())
+        self.assertEqual(len(list(guide.parent.iterdir())), 4)
+        self.assertIn(data["metadata"]["title"], guide.read_text(encoding="utf-8"))
+        original_guide = guide.read_bytes()
+        data["artifact_hashes"]["thumbnail"] = "0" * 64
+        package.write_text(json.dumps(data), encoding="utf-8")
+        with self.assertRaises(ValueError):
+            finalizer.finalize(package, apply=True)
+        self.assertEqual(guide.read_bytes(), original_guide)
+
     def _package(
         self,
         *,

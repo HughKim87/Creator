@@ -4,6 +4,10 @@ import importlib.util
 from pathlib import Path
 import sys
 import unittest
+from copy import deepcopy
+import json
+import subprocess
+import tempfile
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -108,6 +112,50 @@ class CountingAdapter(LocalSyntheticAdapter):
 
 
 class VideoWorkflowEngineTests(unittest.TestCase):
+    def test_thumbnail_revision_preserves_upstream_and_invalidates_dependents(self) -> None:
+        script = VALIDATOR_PATH.with_name("revise_thumbnail_package.py")
+        spec = importlib.util.spec_from_file_location("revision_state", script)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        job = job_fixture()
+        for stage in job["stages"].values():
+            stage["status"] = "complete"
+        job["status"] = "complete"
+        title = {"revision": 1, "title": {"status": "approved", "approved_text": "title"}, "approval": {k: {"status": "approved", "text_blocks": ["exact"]} for k in ("copy", "image_generation", "visual")}, "thumbnail": {"generated_at": "old"}, "validation": {"text_exact": True}, "editorial": {"brief": {"title_thumbnail_roles": "roles"}, "review": {"thumbnail_sha256": "old"}}}
+        manual = {"preparation": {"status": "ready"}, "artifact_hashes": {"thumbnail": "old"}}
+        originals = deepcopy((job, title, manual))
+        for scope in ("copy", "image", "title"):
+            updated, package, upload = module.plan_revision(job, title, manual, scope=scope, revision=2)
+            self.assertEqual([updated["stages"][s] for s in ("research", "video", "captions")], [job["stages"][s] for s in ("research", "video", "captions")])
+            self.assertEqual(upload["preparation"]["status"], "pending")
+            self.assertNotIn("artifact_hashes", upload)
+            self.assertEqual(updated["stages"]["upload_package"]["status"], "pending")
+            if scope == "copy":
+                self.assertEqual(package["approval"]["copy"]["status"], "pending")
+            else:
+                self.assertEqual(package["approval"]["copy"], title["approval"]["copy"])
+            if scope == "title":
+                self.assertEqual(package["approval"]["visual"], title["approval"]["visual"])
+            else:
+                self.assertNotIn("review", package["editorial"])
+        self.assertEqual((job, title, manual), originals)
+        with self.assertRaises(ValueError):
+            module.plan_revision(job, title, manual, scope="copy", revision=1)
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            paths = [base / name for name in ("VIDEO_JOB.json", "youtube-title-thumbnail.json", "youtube-manual-upload.json")]
+            for path, value in zip(paths, originals):
+                path.write_text(json.dumps(value), encoding="utf-8")
+            before = [path.read_bytes() for path in paths]
+            command = [sys.executable, "-B", str(script), str(paths[0]), "--scope", "copy", "--revision", "2"]
+            dry = subprocess.run(command, capture_output=True)
+            self.assertEqual(dry.returncode, 0, dry.stdout)
+            self.assertEqual([path.read_bytes() for path in paths], before)
+            applied = subprocess.run([*command, "--apply"], capture_output=True)
+            self.assertEqual(applied.returncode, 0, applied.stdout)
+            self.assertEqual(json.loads(paths[0].read_text(encoding="utf-8"))["status"], "active")
+            self.assertEqual(json.loads(paths[2].read_text(encoding="utf-8"))["preparation"]["status"], "pending")
+
     def local_engine(self) -> tuple[WorkflowEngine, SyntheticArtifactStore]:
         store = SyntheticArtifactStore()
         adapter = LocalSyntheticAdapter(store)
