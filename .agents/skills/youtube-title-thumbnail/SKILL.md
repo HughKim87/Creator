@@ -24,10 +24,10 @@ Creative delegation is owned only by the active project policy clause `creator-v
 
 ## 제목 설계
 
-1. 대상 시청자, 핵심 변화, 실무 이득과 주의점을 추출한다.
+1. 후보 작성 전에 검증된 SRT에서 대상 시청자, 핵심 메시지 한 문장, 실제 답하는 질문과 답하지 않는 범위를 추출한다. 이를 뒷받침하는 cue 번호·짧은 인용과 SRT 해시를 패키지의 `editorial.brief`에 기록한다. 자료 소개를 직접 실험·성능 입증으로 바꾸지 않는다.
 2. 비교형·사용법형·경고형·총정리형을 포함해 40~65자 후보 5개를 만든다.
 3. 핵심 검색어를 앞 4~5단어 안에 두고 과장과 소스에 없는 확정 표현을 제외한다.
-4. 명확성, 검색 의도, 영상 충실도, 호기심과 채널 적합성으로 하나를 `draft`로 선정한다.
+4. 영상 충실도와 클릭 후 내용에서 답을 얻을 수 있는지를 먼저 확인하고, 명확성·검색 의도·호기심·채널 적합성으로 하나를 `draft`로 선정한다. 후보 점수는 편집 판단이며 조회수나 CTR 예측치가 아니다.
 5. 사용자가 승인하거나 `thumbnail_contract.approval_mode: delegated_by_user`로 선택 권한을 명시적으로 위임한 경우에만 `approved`로 바꾼다.
 
 ## 썸네일 문구
@@ -36,11 +36,13 @@ Creative delegation is owned only by the active project policy clause `creator-v
 
 1. 시청자가 겪는 문제나 강한 질문을 `hook`으로 만든다.
 2. 영상이 제공하는 예상 밖의 해답을 `payoff`로 만든다.
-3. 제품명·비교 범위·근거는 작은 `scope` 또는 배지로 둔다.
-4. 제목을 반복하는 설명형 문구, “뭐부터?”, “입문자 가이드”, 도구 이름 나열만으로 끝나는 문구를 기본안으로 선택하지 않는다.
+3. 소재와 사용자 지시에 맞춰 시각적 우선순위를 선택한다. 신제품 공개에서는 제품명, 문제 해결에서는 문제, 비교에서는 비교 대상이 중심이 될 수 있다. `scope`는 의미상 범위이며 작은 배지를 의무화하지 않는다. 선택 이유를 `editorial.brief.visual_priority`에 기록한다.
+4. 제목과 썸네일은 클릭 이유와 영상 범위를 함께 전달한다. 핵심 질문을 공유해도 되며, 설명만 중복하는 구성은 피한다. 각 역할을 `editorial.brief.title_thumbnail_roles`에 기록한다. 호기심을 만들기 위해 영상에 없는 위기·효능을 암시하지 않는다.
 5. 후보 3~5개에 클릭 이유와 약점을 붙여 사용자에게 보여준다.
 
 `thumbnail_contract.approval_mode: review_gated`에서는 사용자가 정확한 문구를 승인하기 전 이미지 생성 도구를 호출하지 않는다. `delegated_by_user`는 작업 기록이 활성 정책의 `creator-video-creative-delegation-v1` 판정을 참조할 때만 사용한다. 상위 작업의 `execution_mode`만으로 승인 위임을 추정하지 않는다.
+
+선택된 제목은 `title.approved_text`, 승인 문구는 `approval.copy.text_blocks`에 기준 원문으로 기록한다. 생성 프롬프트와 `thumbnail.text`는 이 원문을 사용한다. 사용자가 선택한 표현을 임의로 축약하지 않는다. 줄바꿈·크기는 배치 변경이지만 단어·질문 초점·약속의 변경은 문구 수정이다. 기존 승인으로 수정 문구를 통과시키지 말고 현재 승인 범위에 따라 새 결정을 기록한다.
 
 ## 이미지 생성
 
@@ -62,13 +64,15 @@ Creative delegation is owned only by the active project policy clause `creator-v
 다음을 모두 확인한다.
 
 - 승인 문구가 글자 단위로 정확하고 잘리지 않음
-- 모바일에서 문제 → 해답 → 범위 순서가 읽힘
-- 제목과 썸네일이 같은 문장을 반복하지 않음
+- 모바일에서 선택한 제품명·질문·비교 대상의 우선순위가 읽힘
+- 제목과 썸네일의 역할이 영상의 약속에 맞게 설명됨
 - 영상에 없는 효능·수치·비교를 약속하지 않음
-- 일반적인 로봇·UI 템플릿이 아니라 영상의 핵심 메커니즘을 보여줌
+- 시각 요소가 소재와 관심 이유를 뒷받침함. 설명 도식과 상징적 출시 이미지는 목적에 맞춰 선택하며, 상징물을 실제 기능의 증거처럼 제시하지 않음
 - 배경과 글자가 하나의 완성형 디자인으로 보임
 
 최종 이미지와 320×180 미리보기를 검수한다. `approval_mode: review_gated`에서는 사용자에게 보여주고 승인 전에는 완료하지 않는다. `approval_mode: delegated_by_user`일 때만 에이전트가 최종 시각을 선택하고 `visual.method`를 `delegated_by_user`로 기록한다.
+
+`editorial.review`에 내용 일치·모바일 가독성·클릭 이유의 구체적 판단과 검수한 썸네일 해시를 기록한다. `assessment_kind: editorial_judgment`, `performance_status: not_measured`를 사용한다. `clickability_reviewed`는 검토 수행 여부일 뿐 효과 입증이 아니다. 이미지 문구 판독은 직접 시각 검수가 소유하며 문자열·해시 검사가 대신하지 않는다.
 
 ## 승인과 패키지
 
@@ -89,7 +93,7 @@ python scripts/validate_package.py <package.json>
 완료 처리 전 승인 포함 검증:
 
 ```powershell
-python scripts/validate_package.py <package.json> --require-approved
+python scripts/validate_package.py <package.json> --require-approved --require-editorial
 ```
 
 두 번째 명령이 `status: valid`, `approval_ready: true`, errors·warnings 0일 때만 `title_thumbnail`을 완료한다.

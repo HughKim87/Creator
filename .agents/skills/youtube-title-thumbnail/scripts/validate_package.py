@@ -7,6 +7,7 @@ import argparse
 from datetime import datetime
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +39,7 @@ def parse_args() -> argparse.Namespace:
         description="Validate title, copy approvals, and thumbnail package fields."
     )
     parser.add_argument("package", type=Path)
+    parser.add_argument("--require-editorial", action="store_true", help="Require evidence and copy binding for new productions.")
     parser.add_argument(
         "--require-approved",
         action="store_true",
@@ -328,7 +330,63 @@ def validate_approval(
     return all_approved
 
 
-def validate(package_path: Path, *, require_approved: bool = False) -> dict[str, Any]:
+def validate_editorial(data: dict[str, Any], captions: Path | None, upload_hash: str | None, errors: list[str], *, required: bool = False) -> str:
+    """Check recorded evidence/bindings; never infer semantic quality or CTR."""
+    if "editorial" not in data:
+        if required:
+            errors.append("editorial contract is required for new productions")
+        return "legacy_unrecorded"
+    try:
+        editorial = require_object(data["editorial"], "editorial")
+        if editorial.get("version") != 1:
+            errors.append("editorial.version must be 1")
+        brief = require_object(editorial.get("brief"), "editorial.brief")
+        for key in ("audience", "core_message", "promise_boundary", "visual_priority", "title_thumbnail_roles"):
+            require_text(brief.get(key), f"editorial.brief.{key}")
+        if captions is None:
+            raise ValueError("editorial evidence requires valid source.captions")
+        raw = captions.read_bytes()
+        if editorial.get("captions_sha256") != hashlib.sha256(raw).hexdigest():
+            errors.append("editorial captions fingerprint is stale")
+        cues = {}
+        for block in re.split(r"\r?\n\s*\r?\n", raw.decode("utf-8-sig").strip()):
+            lines = block.splitlines()
+            if len(lines) >= 3 and lines[0].isdigit() and " --> " in lines[1]:
+                cues[int(lines[0])] = " ".join(" ".join(lines[2:]).split())
+        for evidence in require_list(brief.get("evidence"), "editorial.brief.evidence"):
+            item = require_object(evidence, "editorial evidence")
+            cue = item.get("cue")
+            excerpt = " ".join(require_text(item.get("excerpt"), "editorial evidence.excerpt").split())
+            if type(cue) is not int or cue not in cues or excerpt not in cues[cue]:
+                errors.append("editorial evidence excerpt must occur in its SRT cue")
+        copy = require_object(data.get("approval", {}).get("copy"), "approval.copy")
+        canonical = require_list(copy.get("text_blocks"), "approval.copy.text_blocks")
+        for block in canonical:
+            require_text(block, "approval.copy.text_blocks item")
+        actual = data.get("thumbnail", {}).get("text")
+        # Line breaks are layout; no words, spaces or punctuation may disappear.
+        normalize = lambda blocks: [re.sub(r"[\r\n]+", " ", b).strip() for b in blocks]
+        if not isinstance(actual, list) or not all(isinstance(b, str) for b in actual) or normalize(canonical) != normalize(actual):
+            errors.append("thumbnail text differs from approved copy")
+        title = require_object(data.get("title"), "title")
+        if title.get("approved_text") != title.get("selected"):
+            errors.append("selected title differs from approved title")
+        review = require_object(editorial.get("review"), "editorial.review")
+        if review.get("thumbnail_sha256") != upload_hash:
+            errors.append("editorial visual review fingerprint is stale")
+        for key in ("content_fit", "mobile_readability", "click_rationale"):
+            require_text(review.get(key), f"editorial.review.{key}")
+        if review.get("assessment_kind") != "editorial_judgment":
+            errors.append("editorial assessment must be editorial_judgment, not measured performance")
+        # Observed performance belongs to channel analytics, not a pre-upload gate.
+        if editorial.get("performance_status") != "not_measured":
+            errors.append("pre-upload performance_status must be not_measured")
+    except (ValueError, TypeError, AttributeError) as exc:
+        errors.append(str(exc))
+    return "recorded_not_performance_verified"
+
+
+def validate(package_path: Path, *, require_approved: bool = False, require_editorial: bool = False) -> dict[str, Any]:
     data = read_json(package_path)
     errors: list[str] = []
     warnings: list[str] = []
@@ -593,6 +651,7 @@ def validate(package_path: Path, *, require_approved: bool = False) -> dict[str,
         if require_approved and not title_approved:
             errors.append("title.status must be approved")
 
+    editorial_status = validate_editorial(data, captions, upload_sha256, errors, required=require_editorial)
     return {
         "status": "valid" if not errors else "invalid",
         "schema_version": schema_version,
@@ -610,7 +669,9 @@ def validate(package_path: Path, *, require_approved: bool = False) -> dict[str,
         "master": str(master) if master else None,
         "source_image": str(source_image) if source_image else None,
         "mobile_preview": str(preview) if preview else None,
-        "approval_ready": approval_ready and title_approved,
+        "approval_ready": approval_ready and title_approved and not errors,
+        "editorial_status": editorial_status,
+        "performance_verified": False,
         "errors": errors,
         "warnings": warnings,
     }
@@ -620,7 +681,7 @@ def main() -> int:
     args = parse_args()
     try:
         result = validate(
-            args.package, require_approved=args.require_approved
+            args.package, require_approved=args.require_approved, require_editorial=args.require_editorial
         )
     except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
         result = {

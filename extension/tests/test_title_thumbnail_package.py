@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import hashlib
 from pathlib import Path
 import tempfile
 import unittest
@@ -28,6 +29,70 @@ TITLE = "AI Agent 입문 도구 추천: Obsidian·Graphiti·RAG를 구분하는 
 
 
 class TitleThumbnailPackageTests(unittest.TestCase):
+    def _editorial_package(self) -> tuple[tempfile.TemporaryDirectory[str], Path]:
+        temporary, path = self._package(schema="youtube-title-thumbnail-v3")
+        self.addCleanup(temporary.cleanup)
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["title"]["approved_text"] = data["title"]["selected"]
+        data["thumbnail"]["text"] = ["MODEL", "내 일을 어디까지 맡길 수 있을까?"]
+        data["approval"]["copy"]["text_blocks"] = list(data["thumbnail"]["text"])
+        data["editorial"] = {
+            "version": 1,
+            "captions_sha256": hashlib.sha256((path.parent / "output/captions.srt").read_bytes()).hexdigest(),
+            "brief": {"audience": "업무 활용 입문자", "core_message": "위임 조건", "promise_boundary": "실험이 아닌 설명", "visual_priority": "제품명 다음 질문", "title_thumbnail_roles": "질문과 범위", "evidence": [{"cue": 1, "excerpt": "caption"}]},
+            "review": {"thumbnail_sha256": hashlib.sha256((path.parent / "output/thumbnail.jpg").read_bytes()).hexdigest(), "assessment_kind": "editorial_judgment", "content_fit": "근거와 일치", "mobile_readability": "검수 기록 fixture", "click_rationale": "업무 적용 범위에 대한 질문"},
+            "performance_status": "not_measured",
+        }
+        path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        return temporary, path
+
+    def test_editorial_evidence_and_copy_binding_pass_without_performance_claim(self) -> None:
+        _, path = self._editorial_package()
+        result = MODULE.validate(path, require_approved=True, require_editorial=True)
+        self.assertEqual(result["errors"], [])
+        self.assertFalse(result["performance_verified"])
+
+    def test_shortening_approved_question_is_rejected(self) -> None:
+        _, path = self._editorial_package()
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["thumbnail"]["text"][1] = "내 일을 어디까지 맡길까?"
+        path.write_text(json.dumps(data), encoding="utf-8")
+        result = MODULE.validate(path, require_approved=True)
+        self.assertIn("thumbnail text differs from approved copy", result["errors"])
+        self.assertFalse(result["approval_ready"])
+
+    def test_line_wrap_does_not_change_approved_copy(self) -> None:
+        _, path = self._editorial_package()
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["thumbnail"]["text"][1] = "내 일을 어디까지\n맡길 수 있을까?"
+        path.write_text(json.dumps(data), encoding="utf-8")
+        self.assertEqual(MODULE.validate(path, require_editorial=True)["errors"], [])
+
+    def test_changed_captions_and_image_invalidate_reviews(self) -> None:
+        _, path = self._editorial_package()
+        (path.parent / "output/captions.srt").write_text("1\n00:00:00,000 --> 00:00:01,000\nchanged\n", encoding="utf-8")
+        Image.new("RGB", (1280, 720), "red").save(path.parent / "output/thumbnail.jpg")
+        errors = MODULE.validate(path)["errors"]
+        self.assertIn("editorial captions fingerprint is stale", errors)
+        self.assertIn("editorial evidence excerpt must occur in its SRT cue", errors)
+        self.assertIn("editorial visual review fingerprint is stale", errors)
+
+    def test_title_drift_and_fake_performance_claim_are_rejected(self) -> None:
+        _, path = self._editorial_package()
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["title"]["approved_text"] = "different title"
+        data["editorial"]["performance_status"] = "proven_high_ctr"
+        path.write_text(json.dumps(data), encoding="utf-8")
+        errors = MODULE.validate(path)["errors"]
+        self.assertIn("selected title differs from approved title", errors)
+        self.assertIn("pre-upload performance_status must be not_measured", errors)
+
+    def test_legacy_package_cannot_claim_editorial_gate(self) -> None:
+        temporary, path = self._package(schema="youtube-title-thumbnail-v3")
+        self.addCleanup(temporary.cleanup)
+        self.assertEqual(MODULE.validate(path)["editorial_status"], "legacy_unrecorded")
+        self.assertIn("editorial contract is required for new productions", MODULE.validate(path, require_editorial=True)["errors"])
+
     def _package(
         self,
         *,

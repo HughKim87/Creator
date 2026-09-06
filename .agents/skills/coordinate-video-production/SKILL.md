@@ -13,6 +13,8 @@ Creative delegation is owned only by the active project policy clause `creator-v
 
 ## 첫 실행 게이트
 
+이 게이트는 영상 제작·재개에 적용한다. 스킬·Extension 유지보수에서는 사용자가 지정한 개발 브랜치와 root를 사용하며 제작 worktree로 이동하지 않는다.
+
 이 스킬을 읽은 뒤 첫 실행 명령으로 **라우팅된 worktree를 활성 실행 root로 확정**한다. 파일 조회·생성·변경, 브라우저 연결과 작업 기록 판정보다 먼저 실행한다.
 
 ```powershell
@@ -35,6 +37,10 @@ $activeBranch = $activation.active_branch
 
 ## 작업 기록
 
+진행 중 영상은 지정된 작업의 `VIDEO_JOB.json`을 먼저 확인하고 기존 browser·완료 단계·승인 범위를 재사용한다. 새 작업용 기본값 해석을 재개 작업에 반복하지 않는다.
+
+지정 worktree가 없으면 누락을 전체 제작 불가로 보고하지 않는다. 승인된 제작 범위 안에서 route의 정확한 root·branch, 기존 브랜치와 로컬 기준 ref를 확인하고 충돌 없는 경로에 생성한 뒤 활성화 검사를 재실행한다. 기준 ref가 불명확하거나 기존 경로가 다른 데이터이면 생성하지 않고 그 결정만 확인한다. 다른 작업의 runtime 파일을 임의 검색·복사하거나 빈 디렉터리를 검증된 worktree로 간주하지 않는다.
+
 [references/video-job-format.md](references/video-job-format.md)에 따라 새 작업마다 `extension/work/<job-id>/VIDEO_JOB.json`을 만든다.
 
 - 프로필 설정은 두 계층만 사용한다. Git에서 제외된 worktree-local `extension/.runtime/video-workflow-defaults.json`은 새 작업의 기본값이고, 영상별 `VIDEO_JOB.json`의 `browser`는 그 작업에 확정된 현재값이다. `SESSION_HANDOFF.md`는 프로필 설정에 사용하거나 수정하지 않는다.
@@ -43,6 +49,7 @@ $activeBranch = $activation.active_branch
 - 진행 중 작업의 하위 단계는 이미 확정된 `VIDEO_JOB.json`의 `browser`를 그대로 전달한다. 사용자가 해당 작업의 프로필 변경을 명시한 경우에만 resolver를 다시 실행하고, 실제로 사용할 새 결과를 작업의 현재값으로 기록한다.
 - 사용자가 `메인프로필`처럼 runtime 설정의 `profile_aliases` 키를 입력하면 대응하는 label과 directory를 사용한다. 입력도 worktree-local 기본값도 없을 때만 작업 기록 생성과 browser runtime 초기화 전에 사용자에게 한 번 요청한다.
 - 연결 스킬과 하위 단계 스킬 자체에는 프로필 기본값을 두지 않는다.
+- 기본값 파일이 없어도 명시 입력을 먼저 병합해 검증한다. resolver의 `--required-origin`으로 호출자가 가진 origin을 전달할 수 있다. `needs_input.missing_fields`에 나온 값만 확인하며, 잘못된 JSON이나 알 수 없는 alias는 입력 누락으로 숨기지 않는다. 이 초기화는 runtime 설정을 자동 저장하지 않는다.
 - `browser.profile_label`은 선택적 표시명이다. 별도 값이 없으면 전달받은 `profile_directory`와 같은 문자열을 기록한다.
 - `browser.required_origin`은 같은 우선순위로 확정하되, 이 worktree의 runtime 기본값은 NotebookLM origin이다.
 - 진행 중 작업은 사용자의 명시적 변경이 없는 한 기존 `VIDEO_JOB.json` 값을 보존한다. runtime 기본값 변경, 연결 스킬, 다른 작업, 현재 Chrome 창에서 값을 추론하거나 덮어쓰지 않는다.
@@ -113,7 +120,15 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 
 창작 위임의 의미는 활성 정책의 `creator-video-creative-delegation-v1`이 소유하고, 생성 모드와 패키지 기록 형식은 `$youtube-title-thumbnail`의 `references/package-format.md`가 소유한다.
 
-## 최종 output
+## 제목·썸네일 수정
+
+수정 전 정확한 이전 산출물을 기존 archive 절차로 보존한다. `scripts/revise_thumbnail_package.py <VIDEO_JOB.json> --scope title|copy|image --revision <새 번호>`의 dry-run을 확인하고 `--apply`로 해당 단계와 업로드 패키지만 무효화한다. 제목만 수정하면 문구·이미지 승인은 유지하고 제목 승인과 역할 검토를 다시 수행한다. 문구 수정은 문구·생성·시각 승인을, 이미지 수정은 생성·시각 승인을 다시 확인한다. 영상·자막·리서치가 독립적으로 유효하면 완료 상태를 유지한다.
+
+사용자 결정은 기존 정책에 따라 판정하고 패키지에 기록한다. `needs_user`에는 기다리는 정확한 영상 단계와 결정 대상을 `note`·`next_action`으로 남긴다. 재개 시 현재 승인과 실제 산출물을 확인해 첫 미완료 단계부터 이어간다. 새 승인을 추정하거나 Core의 대화 해석 규칙을 이 스킬에서 다시 정의하지 않는다.
+
+수정 후 문구·이미지 검수, 승인 포함 검증, 수동 패키지의 제목·해시 갱신을 완료한다. 새 제작은 `--require-editorial`을 포함한다. 최종 처리는 `$prepare-youtube-upload`의 `finalize_upload_package.py`로 가이드 생성·archive 적용 후 재검증까지 실행한 뒤 job을 완료한다.
+
+## 최종 output 파일
 
 수동 가이드를 만든 뒤 `$prepare-youtube-upload`의 archive dry-run을 확인하고 적용한다. 파일을 삭제하지 않는다.
 

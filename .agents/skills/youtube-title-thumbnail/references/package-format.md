@@ -105,3 +105,38 @@ Creative delegation is decided only by the active project policy clause `creator
 `channel_evidence.status`는 `verified`, `unavailable`, `not_provided` 중 하나다. 제목 후보는 최소 5개다. 자동 검증은 사용자 승인을 대신하지 않는다.
 
 기존 `youtube-title-thumbnail-v1`·`youtube-title-thumbnail-v2`는 검증 호환만 유지한다. 새 작업에는 v3를 사용한다.
+
+## 새 제작의 근거·원문 계약
+
+새 작업과 새 문구 revision에는 아래 필드를 추가하고 `--require-editorial`로 검증한다. 기존 패키지에 필드가 없으면 읽기 호환은 유지하되 `editorial_status: legacy_unrecorded`로 표시한다. 필드가 있으면 일반 검증에서도 확인한다. 구조 검증은 해석의 타당성이나 실제 CTR을 입증하지 않는다.
+
+```json
+{
+  "title": {"approved_text": "선택된 제목의 정확한 원문"},
+  "approval": {"copy": {"text_blocks": ["제품명", "승인된 질문 전체"]}},
+  "editorial": {
+    "version": 1,
+    "captions_sha256": "현재 SRT의 SHA-256",
+    "brief": {
+      "audience": "관심사와 사전 지식으로 설명한 대상",
+      "core_message": "실제 영상의 핵심 메시지 한 문장",
+      "promise_boundary": "영상에서 답하는 범위와 답하지 않는 범위",
+      "evidence": [{"cue": 1, "excerpt": "해당 자막 cue에 존재하는 짧은 인용"}],
+      "visual_priority": "무엇을 먼저 읽게 할지와 이유",
+      "title_thumbnail_roles": "제목과 썸네일이 각각 전달하는 역할"
+    },
+    "review": {
+      "thumbnail_sha256": "직접 검수한 업로드 썸네일의 SHA-256",
+      "assessment_kind": "editorial_judgment",
+      "content_fit": "영상 내용에서 질문에 답하는 근거",
+      "mobile_readability": "320x180에서 직접 확인한 내용",
+      "click_rationale": "타깃이 궁금해할 이유에 대한 편집 판단"
+    },
+    "performance_status": "not_measured"
+  }
+}
+```
+
+이 예시는 기존 패키지에 합칠 필드만 보여준다. 승인 방법·시각 등 기존 필수 필드는 유지한다. 인용은 지정 cue의 실제 텍스트에 포함되어야 한다. 승인 원문과 생성 문구는 블록 단위로 일치해야 하며 블록 내부 줄바꿈을 공백으로 바꾸는 배치 차이만 허용한다. 선택 원문을 새 문구로 덮어써 과거 승인을 재사용하지 않는다.
+
+기존 `validation.title_thumbnail_not_duplicate`는 하위 호환 필드다. 새 계약에서는 문장 공유 금지가 아니라 `title_thumbnail_roles`에 기록한 역할 분담의 검토 완료를 뜻한다. 실제 게시 후의 성과는 채널 분석 자료가 소유하며 제작 전 검증 패키지의 합격 조건으로 두지 않는다.
