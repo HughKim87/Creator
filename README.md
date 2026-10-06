@@ -35,7 +35,8 @@
 |---|---|
 | `AGENTS.md`, `CLAUDE.md` | Agent별 공통 진입점 |
 | `PROJECT_RULES.md` | Host 소비 계약·보호 경계·도메인 route |
-| `SESSION_HANDOFF.md` | 현재 단계·차단·첫 다음 행동 |
+| `SESSION_HANDOFF.md` | 브랜치별 상태 파일 안내판 |
+| `state/` | 브랜치별 현재 단계·차단·첫 다음 행동 |
 | `core/` | 읽기 전용 Agent Core submodule |
 | `extension/` | 영상·YouTube·게임 도메인 구현과 계약 |
 | `.agents/skills/` | 브라우저·NotebookLM·자막·썸네일·업로드 준비 절차 |
