@@ -1,14 +1,31 @@
-# ainotebook Worktree State
+# ainotebook 워크트리 현재 상태
 
 - 갱신일: 2026-08-11
 - 적용 범위: `C:\Users\Hugh\Claude\Projects\Building WorkFlow\Workspace\ainotebook` worktree와 `codex/ainotebook` branch에서 진행하는 YouTube 영상 제작
-- 역할: ainotebook worktree의 현재 작업·blocker·검증 상태·첫 다음 행동을 소유하는 단일 startup 문서
+- 역할: `codex/ainotebook` 브랜치의 현재 작업·차단·검증 상태·첫 다음 행동을 소유하는 상태 파일. 루트 `SESSION_HANDOFF.md` 안내판이 이 파일로 연결한다.
 
-## 현재 상태
+## 현재 단계
 
 - 상태: `idle`; 활성 영상 job, blocker, 사용자 결정 대기 항목이 없다.
 - 검증된 실행 위치: workflow root는 `C:\Users\Hugh\Claude\Projects\Building WorkFlow\Workspace\ainotebook`, branch는 `codex/ainotebook`이며 worktree activation 결과는 `valid`, `redirected: false`다.
 - 영상별 주제·승인·단계 상태·산출물 근거는 각 `extension/work/<job-id>/VIDEO_JOB.json`이 소유한다. 완료된 영상의 상세는 이 문서에 복제하지 않는다.
+
+## 직전 게이트
+
+- 판정: pass. 마지막 영상 작업 뒤 활성 job이 없는 `idle` 상태로 정리됐다(2026-08-11). 상태 파일을 `extension/work/AINOTEBOOK_WORKTREE_STATE.md`에서 이 위치로 옮겼다(2026-10-06).
+
+## 승인 상태
+
+- 위임: 새 영상 요청 시 `coordinate-video-production` 절차에 따른 로컬 제작 단계 진행.
+- 미위임: YouTube 업로드·게시·예약·공개 범위 변경, 유료 작업, 외부 쓰기, Core 변경.
+
+## 차단
+
+- 없음.
+
+## 알려진 위험
+
+- 메인 채널(김실버)과 AI Notebook 채널의 URL·ID·콘텐츠 방향을 섞지 않는다.
 
 ## 영상 제작 workflow
 
@@ -28,9 +45,9 @@
 
 ## 첫 다음 행동
 
-1. 새 영상 요청이 오면 `PROJECT_RULES.md` → 이 문서 → `coordinate-video-production` skill 순서로 읽는다.
+1. 새 영상 요청이 오면 `PROJECT_RULES.md` → `state/ainotebook.md` → `coordinate-video-production` skill 순서로 읽는다.
 2. worktree activation을 다시 검증한 뒤 새 `VIDEO_JOB.json`을 만들거나 사용자가 지정한 기존 job의 첫 `pending` 단계를 재개한다.
 
 ## 다음 session 시작 prompt
 
-`ainotebook` root에서 `PROJECT_RULES.md`와 `extension/work/AINOTEBOOK_WORKTREE_STATE.md`를 읽는다. 활성 job이 없으므로 사용자 요청 전에는 영상별 파일을 열지 않는다. 새 영상 또는 재개 요청이 오면 `coordinate-video-production` skill로 root·branch를 검증하고 per-job `VIDEO_JOB.json`을 단일 실행 상태 owner로 사용한다. 외부 업로드·게시와 Core 변경은 별도 승인 없이는 수행하지 않는다.
+`ainotebook` root에서 `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, `state/ainotebook.md`를 읽는다. 활성 job이 없으므로 사용자 요청 전에는 영상별 파일을 열지 않는다. 새 영상 또는 재개 요청이 오면 `coordinate-video-production` skill로 root·branch를 검증하고 per-job `VIDEO_JOB.json`을 단일 실행 상태 owner로 사용한다. 외부 업로드·게시와 Core 변경은 별도 승인 없이는 수행하지 않는다.

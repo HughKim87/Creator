@@ -37,6 +37,7 @@ EXPECTED = {
     "test_video_to_srt_runtime.py",
     "test_video_workflow_engine.py",
     "test_video_worktree_routing.py",
+    "test_worktree_state_files.py",
     "test_youtube_domain.py",
 }
 OPTIONAL_MODULES = {
