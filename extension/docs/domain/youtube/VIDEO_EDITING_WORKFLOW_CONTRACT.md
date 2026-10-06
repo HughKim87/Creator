@@ -8,7 +8,7 @@
 
 ## 1. 범위와 완료 정의
 
-이 계약은 촬영이 끝난 원본 영상의 내용 분석부터 Premiere XML 전달까지를 다룬다. 촬영 전 근거 패키지는 `YOUTUBE_EVIDENCE_PACK_CONTRACT.md`가 별도로 소유한다.
+이 계약은 촬영이 끝난 원본 영상의 내용 분석부터 Premiere XML 전달까지를 다룬다. 촬영 전 근거 패키지는 `YOUTUBE_EVIDENCE_PACK_CONTRACT.md`가 별도로 소유한다. 컷 timeline 이후의 자막·효과·카드·오디오 마감은 `rules/video-post-production.md`(R19~R22)가 소유하며, 후편집 중 컷 내용이 바뀌면 이 계약의 컷 편집 gate로 돌아간다.
 
 편집 완료는 다음 조건을 모두 만족한 상태다.
 
@@ -30,6 +30,8 @@
 - 허용된 산출물 종류와 exact 대상
 - 원본은 읽기 전용이며 덮어쓰지 않는다는 조건
 - 이번 단계의 종료 조건과 사용자 소유 승인 gate
+
+편집을 시작할 때 `VIDEO_EDITING_PROFILES.md`에서 채널·장르 편집 프로필을 골라 작업 기록에 남긴다. 프로필은 규칙이 위임한 기본값만 정하고 규칙을 대체하지 않는다.
 
 한 단계의 계획을 이미 승인받았으면 같은 범위에서 반복 확인하지 않는다. 실제 `inputs/`·`outputs/`의 새 항목, 외부 효과, 삭제·이동, 결과를 바꾸는 충돌이 생길 때만 다시 확인한다.
 
@@ -76,7 +78,8 @@ XML은 2차 편집의 전달 형식이다. 후보 범위나 이야기 블록을 
 | 스토리·구성·실제 컷 설계 | `rules/video-editing-story-and-cut-design.md` | R05~R07, R09 |
 | 발화·화면·전환 경계 | `rules/video-editing-boundary-quality.md` | R08, R10 |
 | current revision과 승인 범위 | `rules/video-editing-state-and-approval.md` | R11, R13~R14 |
-| 검증 단계와 전달 주장 | `rules/video-editing-validation-and-delivery.md` | R12, R15~R16 |
+| 검증 단계와 전달 주장 | `rules/video-editing-validation-and-delivery.md` | R12, R15~R18 |
+| 후편집 연출과 마감 | `rules/video-post-production.md` | R19~R22 |
 
 운영 규칙은 `조건 / 행동 / 예외 / 검증`을 가져야 한다. 작업 버전·프레임 번호·과거 발언·세션 원문·보고서 경로는 규칙에 넣지 않는다. 새 실패가 기존 조건과 겹치면 규칙을 추가하지 않고 기존 owner의 조건·예외·재현 사례를 보강한다.
 
@@ -157,7 +160,7 @@ revision decision의 `approved_scope`는 canonical literal `entire_revision`만 
 
 | 추출 내용 | 영상 domain owner |
 |---|---|
-| 독립 영상에서 반복되고 일반화된 편집 조건 | R01~R16의 가장 좁은 기존 rule owner |
+| 독립 영상에서 반복되고 일반화된 편집 조건 | R01~R22의 가장 좁은 기존 rule owner |
 | 한 영상에서만 확인된 판단·수치·자동화·skill 가능성 | `VIDEO_EDITING_RULE_CANDIDATES.md`의 기존 후보 또는 task evidence |
 | exact frame·파일명·해시·길이·영상별 사용자 승인 | 원래 검수·보호 자료 또는 현재 영상 task owner |
 | 현재 revision·승인 범위·source fingerprint | 상태·승인 rule이 선택한 current owner |
@@ -232,7 +235,7 @@ python -m video_editing premiere-xml `
 ## 10. Acceptance
 
 1. 루트 `PROJECT_RULES.md`가 활성 영상 편집 규칙 6개를 각각 정확히 한 번 라우팅하고, `extension/README.md`와 이 계약의 책임표는 병렬 라우터로 동작하지 않는다.
-2. 운영 규칙 R01~R16과 재현 사례 TC01~TC16은 각 rule owner에 정확히 한 번 존재한다.
+2. 운영 규칙 R01~R22과 재현 사례 TC01~TC33은 각 rule owner에 정확히 한 번 존재한다.
 3. 기존 TC01~TC12의 기대 판정이 이관 전과 동일하다.
 4. TC13~TC16이 current revision 동결, 상태 충돌 중단, 검증 주장 제한, validator 계층 분리를 재현한다.
 5. 정상 v2 timeline은 결정론적 editorial·payload·task payload·delivery fingerprint를 반환한다. payload는 content/revision identity, task payload는 payload+approval+validation state, delivery는 task payload+delivery 객체를 소유하며 각 내부 gate는 fingerprint 일치와 별도로 판정한다.

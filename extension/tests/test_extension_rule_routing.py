@@ -113,8 +113,8 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
         rule_ids = re.findall(r"(?m)^### (R\d{2}) —", rules_text)
         replay_ids = re.findall(r"(?m)^\| (TC\d{2}) \|", rules_text)
 
-        expected_rules = {f"R{number:02d}" for number in range(1, 17)}
-        expected_replays = {f"TC{number:02d}" for number in range(1, 17)}
+        expected_rules = {f"R{number:02d}" for number in range(1, 23)}
+        expected_replays = {f"TC{number:02d}" for number in range(1, 34)}
         self.assertEqual(expected_rules, set(rule_ids))
         self.assertEqual(expected_replays, set(replay_ids))
         self.assertEqual(
@@ -175,8 +175,8 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
             / "VIDEO_EDITING_WORKFLOW_CONTRACT.md"
         ).read_text(encoding="utf-8")
         self.assertNotRegex(contract, r"(?m)^### R\d{2} —")
-        self.assertIn("R01~R16", contract)
-        self.assertIn("TC01~TC16", contract)
+        self.assertIn("R01~R22", contract)
+        self.assertIn("TC01~TC33", contract)
 
     def test_video_artifacts_separate_scratch_from_approved_baseline_lifecycle(self):
         lineage = (
@@ -227,6 +227,21 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
         self.assertIn("별도 전편 재생이 아니", validation)
         self.assertIn("영향 범위 검수", validation)
         self.assertIn("not_scored", validation)
+        self.assertIn("일괄 편집 연산 뒤 회귀", validation)
+        self.assertIn("에이전트가 실행할 수 있는 검사를 모두 실행한다", validation)
+
+        self.assertIn("전제 대상을 최종 timeline에서 먼저 남기거나", story)
+        self.assertIn("기본 제거 후보로 두고", story)
+        self.assertIn("영상 주제·사건·인물과 무관한 발화", story)
+        self.assertIn("약한 말끝 기준을 분리", boundary)
+        self.assertIn("정본 하나를 정하며", intake)
+
+        post = rules["video-post-production.md"]
+        self.assertIn("원본에 없는 사건·감정·위협을 만들지 않는다", post)
+        self.assertIn("레이어 종류가 모두 들어가는 가장 작은 연속 구간", post)
+        self.assertIn("목표 수치는 편집 프로필에 둔다", post)
+        self.assertIn("주 시청 기기에서 읽히는 기준", post)
+        self.assertIn("레이어가 없는 구간을 합성 전 원본과 비교", post)
 
     def test_general_rules_do_not_embed_single_video_history(self):
         rules_text = "\n".join(

@@ -27,6 +27,20 @@
 - 예외: 하나의 명령이 여러 계층을 실행할 수 있지만 계층별 결과와 미실행 상태를 합치지 않는다.
 - 검증: 보호 미디어 검사는 exact 승인 없이는 실행되지 않고, 구조 통과가 media·app·user 통과를 만들지 않는지 확인한다. schema/runtime 공통 corpus와 runtime cross-reference 결함별 error code 회귀를 실행한다. direct reference와 authoritative 반복 bundle에서 task-state resolve, transitive success, dangling, cycle, same-payload ambiguous state를 각각 재현하고, 빠진 후속 owner state는 validator가 탐지하지 못한다는 bundle-relative 한계를 보고한다. canonical `entire_revision`, calibration self payload pointer, 소비 calibration/baseline task pointer와 승인 chronology도 확인한다. v1 직접 전달, format regeneration의 editorial mutation, latest reject·superseded·동시각 승인 충돌, relative·non-canonical source path, mandatory source lock 실패, publish 직전 source drift, output/profile/input collision, concurrent writer race와 모든 gate 실패에서 기존 결과를 덮어쓰지 않고 XML·임시 파일 생성 수가 0개인지 확인한다.
 
+### R17 — 일괄 편집 연산 뒤 회귀
+
+- 조건: 무발화 제거·속도 조정·경계 자동 보정·구간 일괄 삭제처럼 여러 clip을 한 번에 바꾸는 연산을 적용한다.
+- 행동: 연산 전에 필수 anchor·상태 전환·발화 경계 목록을 고정하고, 연산 뒤 완성 timeline 전체에서 같은 목록을 다시 대조한다. 연산이 제거하거나 바꾼 구간 목록을 남기고 누락·절단이 생긴 항목만 복원한다.
+- 예외: 연산 범위가 한 scene 안에 한정되면 R12의 영향 범위 검수 단위를 따른다.
+- 검증: 연산 전후로 필수 anchor 누락, 상태 전환 누락, 새로 잘린 발화가 각각 0개인지 확인한다.
+
+### R18 — 검수 후보 전 에이전트 사전검수
+
+- 조건: 사용자에게 검수용 후보를 넘긴다.
+- 행동: 넘기기 전에 에이전트가 실행할 수 있는 검사를 모두 실행한다. 최소 범위는 최종 전사 순차 대조로 확인하는 발화 의존·상태 전환·필수 anchor(R06), 발화 끝과 인접 중복 발화(R08), 남긴 무발화 구간의 기능과 화면 근거(R09), 일괄 연산 회귀(R17)다. 발견한 결함은 고치고 다시 검사한 뒤 넘기며, 실행 방법·결과·남은 한계를 사전검수 요약으로 함께 보고한다. 정상 속도 시청처럼 사람만 할 수 있는 검수 범위는 요약에 따로 적는다. 사전검수 결과는 검수 후보 전달 절의 기록에 실제 method·evidence와 함께 남긴다.
+- 예외: 도구나 입력이 없어 실행할 수 없는 검사는 이유와 대체 확인을 적고 `not_run`으로 남긴다.
+- 검증: 요약의 각 검사에 실행 결과나 미실행 이유가 있고, 사전검수에서 찾은 결함이 미해결인 후보를 넘기지 않았는지 확인한다. 사전검수 결과를 의미 gate 통과나 사용자 승인으로 보고하지 않는다.
+
 ## 상태 증거
 
 | 상태 | 최소 증거 |
@@ -47,3 +61,5 @@
 | TC12 | XML 구조 검사는 통과했지만 인과 누락이 남음 | 기술 통과·의미 실패로 기록하고 완료 보고를 차단한다 |
 | TC15 | 합성 XML 구조 테스트만 통과함 | `structure-validated`까지만 보고하고 Premiere 호환·사용자 승인을 주장하지 않는다 |
 | TC16 | exact 원본 승인 없이 RMS·밝기 검사를 실행하려 함 | 보호 미디어 검사를 미실행으로 두고 구조 결과와 분리한다 |
+| TC20 | 무발화 구간을 일괄 제거한 뒤 필수 장면과 말끝이 사라짐 | 연산 전 목록과 전체 대조해 누락·절단 항목을 복원한다 |
+| TC26 | 검수용 후보를 사용자에게 넘기려 함 | 에이전트가 실행 가능한 사전검수를 먼저 실행하고 결과 요약과 함께 넘긴다 |

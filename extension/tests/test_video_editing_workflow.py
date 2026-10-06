@@ -319,8 +319,8 @@ class VideoEditingTimelineTests(unittest.TestCase):
         )
         contract = contract_path.read_text(encoding="utf-8")
         self.assertNotRegex(contract, r"(?m)^### R\d{2} —")
-        self.assertIn("R01~R16", contract)
-        self.assertIn("TC01~TC16", contract)
+        self.assertIn("R01~R22", contract)
+        self.assertIn("TC01~TC33", contract)
         self.assertNotIn("local_changes_backup", contract)
         self.assertNotIn("extension/reports", contract)
         for capability in (

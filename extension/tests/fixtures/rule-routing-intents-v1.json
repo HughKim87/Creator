@@ -80,6 +80,17 @@
       "reason": "XML 산출물 계보와 검증·전달 주장 제한이 함께 필요하다."
     },
     {
+      "id": "video-post-production",
+      "kind": "initial",
+      "utterance": "컷 편집이 끝난 영상에 자막과 효과음을 넣고 음량을 맞춰.",
+      "prior_owners": [],
+      "expected_owners": [
+        "extension/rules/video-post-production.md"
+      ],
+      "forbidden_owners": [],
+      "reason": "컷 timeline 이후의 자막·효과·오디오 마감은 후편집 규칙의 trigger다."
+    },
+    {
       "id": "preproduction-evidence-near-miss",
       "kind": "near-miss",
       "utterance": "촬영 전에 사용할 근거 문서만 골라 evidence pack을 검토해.",

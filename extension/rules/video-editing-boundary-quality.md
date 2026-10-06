@@ -9,9 +9,9 @@
 ### R08 — 발화 자연스러움과 실제 청취
 
 - 조건: video/audio 경계가 발화 근처에 있거나 자막 cue 내부를 자른다.
-- 행동: 자연스러운 호흡·완결된 절·자기정정·반복·정보 단위에서 자르고 실제 오디오로 앞뒤를 듣는다. 새 화면과 발화가 같은 frame에서 시작해 첫 음절이나 장면 인지가 튀면 빈 gap을 만들지 않고 원본의 실제 frame·audio sample을 참조하는 숨·환경음·게임음 source-native handle을 장면별로 복원한다. source-native handle은 임의 무음이나 비어 있는 media gap이 아니다. 화면과 음성의 기능이 다를 때는 J/L cut 등 split edit를 후보로 비교하되 정해진 개수나 비율로 강제하지 않는다. split edit의 video/audio clip은 동일한 owning event·microbeat의 exact clip set에 각각 기록한다. SRT와 자동 음성 인식은 시간 탐색 보조로만 사용하며, 비명·게임음·고유명사·속어가 섞인 문장은 원본 청취와 화면 맥락을 교차확인하기 전까지 확정 자막으로 복사하지 않는다.
-- 예외: 의도적 발화 절단은 목적과 범위를 기록한다. source가 제공하는 audio-only continuation이나 video-only hold는 사용할 수 있지만 합성 무음이나 빈 gap을 자연스러움의 근거로 만들지 않는다.
-- 검증: video/audio clip ID와 서로 다른 경계를 v2의 동일한 owning event·microbeat에 결속하고, retained clip의 미소유·중복 소유와 source 없는 handle이 각각 0개인지 확인한다. 음절·단어·조사·미완성 생각·다음 발화 파편, 새 화면과 동시에 튀어나오는 첫 음절이 남지 않았는지 정상 속도로 듣고 본다. J/L cut이나 audio-only continuation의 존재 자체를 합격으로 보지 않는다. split edit는 해결하려는 경계 문제와 source 범위를 기록하고, 자막 시각이나 고정 pre-roll 수치만으로 통과시키지 않는다.
+- 행동: 자연스러운 호흡·완결된 절·자기정정·반복·정보 단위에서 자르고 실제 오디오로 앞뒤를 듣는다. 새 화면과 발화가 같은 frame에서 시작해 첫 음절이나 장면 인지가 튀면 빈 gap을 만들지 않고 원본의 실제 frame·audio sample을 참조하는 숨·환경음·게임음 source-native handle을 장면별로 복원한다. source-native handle은 임의 무음이나 비어 있는 media gap이 아니다. 화면과 음성의 기능이 다를 때는 J/L cut 등 split edit를 후보로 비교하되 정해진 개수나 비율로 강제하지 않는다. split edit의 video/audio clip은 동일한 owning event·microbeat의 exact clip set에 각각 기록한다. SRT와 자동 음성 인식은 시간 탐색 보조로만 사용하며, 비명·게임음·고유명사·속어가 섞인 문장은 원본 청취와 화면 맥락을 교차확인하기 전까지 확정 자막으로 복사하지 않는다. 발화 끝은 강한 음성이 멈춘 지점이 아니라 약하게 끝나는 끝음절·어미·숨이 사라지는 지점으로 판정하며, 자동 탐지를 쓰면 강한 발화 기준과 약한 말끝 기준을 분리하고 기준값은 영상별 calibration으로 둔다. 같은 말을 짧은 간격으로 반복하거나 다시 시작하는 더듬기·고쳐 말하기·인사와 마무리 반복은 가장 완결된 표현 하나만 남긴다.
+- 예외: 의도적 발화 절단은 목적과 범위를 기록한다. source가 제공하는 audio-only continuation이나 video-only hold는 사용할 수 있지만 합성 무음이나 빈 gap을 자연스러움의 근거로 만들지 않는다. 반복 자체가 웃음·강조·인물 기능이면 반복 발화를 유지할 수 있다.
+- 검증: video/audio clip ID와 서로 다른 경계를 v2의 동일한 owning event·microbeat에 결속하고, retained clip의 미소유·중복 소유와 source 없는 handle이 각각 0개인지 확인한다. 음절·단어·조사·미완성 생각·다음 발화 파편, 새 화면과 동시에 튀어나오는 첫 음절이 남지 않았는지 정상 속도로 듣고 본다. J/L cut이나 audio-only continuation의 존재 자체를 합격으로 보지 않는다. split edit는 해결하려는 경계 문제와 source 범위를 기록하고, 자막 시각이나 고정 pre-roll 수치만으로 통과시키지 않는다. 발화 끝에서 끝나는 컷마다 끝음절이 남아 있고, 최종 전사에서 기능 없는 인접 중복 문장이 0개인지 확인한다.
 
 ### R10 — 화면·밝기·전환의 사실 우선 진단
 
@@ -27,3 +27,5 @@
 | TC07 | 긴 자막 cue 안에 자연스러운 절과 반복 설명이 있음 | 자연스러운 절에서 분할할 수 있으며 cue 전체 보존을 강제하지 않는다 |
 | TC08 | 컷 뒤에 다음 발화 첫 음절만 남음 | 경계를 이동하거나 원본의 source-native audio-only continuation으로 파편을 제거한다 |
 | TC10 | 화면이 튄다는 피드백이 있지만 대사는 이어짐 | 화면·동작·밝기 접합을 먼저 확인하고 대사를 임의 추가하지 않는다 |
+| TC22 | 컷 끝에서 약하게 끝나는 어미가 잘림 | 약한 말끝 기준으로 경계를 늘려 끝음절을 복원한다 |
+| TC23 | 마무리 인사를 두 번 반복하거나 같은 말을 다시 시작함 | 가장 완결된 표현 하나만 남긴다 |
