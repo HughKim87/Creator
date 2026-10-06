@@ -54,7 +54,7 @@ synthetic fixture 통과는 production 작업 완료, 실제 앱 검증, 사용�
 
 단계 0의 비보호 기술 시험은 내부 모듈 [`review_proxy.py`](src/video_editing/review_proxy.py)와 [합성 회귀](tests/test_video_editing_review_proxy.py)가 소유한다. `render_fixture_proxy`는 `extension/data`의 exact 작업 scratch 안에 있는 합성 source만 받아 lossless MKV와 메모리상의 기술 증거를 만들며, 보호 경로·덮어쓰기·audio hole·지원하지 않는 효과를 거부한다. 초기 지원 범위는 단일 CFR source, sample-aligned 정상 속도 컷, 연속 독립 A/V다. `verify_fixture_binding`은 실제 source/proxy bytes와 editorial identity를 대조하지만 review run의 진위나 실제 지각 검수를 보증하지 않으며 semantic·app·user 상태를 올리지 않는다. 이 모듈은 사용자 XML 전달 진입점이 아니고, 기존 guarded writer·v2 schema·package 공개 API는 그대로다.
 
-백룸 root에서 `PYTHONPATH=extension/src`와 bytecode 금지 조건으로 `python -B -m unittest discover -s extension/tests -p test_video_editing_review_proxy.py -v`를 실행한다. Windows와 manifest의 FFmpeg가 있을 때만 실제 렌더 시험이 수행되며, skip은 capability 통과가 아니다. 테스트는 이번에 만든 임시 fixture만 정리한다. 실제 A/V reviewer·Premiere operator 증명과 보호 source 지원은 별도 미완료 범위다.
+저장소 root에서 `PYTHONPATH=extension/src`와 bytecode 금지 조건으로 `python -B -m unittest discover -s extension/tests -p test_video_editing_review_proxy.py -v`를 실행한다. Windows와 manifest의 FFmpeg가 있을 때만 실제 렌더 시험이 수행되며, skip은 capability 통과가 아니다. 테스트는 이번에 만든 임시 fixture만 정리한다. 실제 A/V reviewer·Premiere operator 증명과 보호 source 지원은 별도 미완료 범위다.
 
 [`local-runtime-v1.json`](config/local-runtime-v1.json)은 ignored `.runtime/` binary·model 자체가 아니라 component role·version·tree hash·critical file hash·license·source·reinstall 경계를 소유한다. FFmpeg는 공용 영상 probe·변환 도구이고, whisper.cpp는 선택적 offline backend다. 기존 `video-to-srt`의 faster-whisper primary backend를 암묵 교체하지 않는다.
 
