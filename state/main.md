@@ -101,10 +101,6 @@ Whisper/DTW는 시간과 내용의 보조이며 일부 문구와 주관적 sync�
 - 소비자/만료: r7 앱/청취/사용자 결과 검수. 최종 승인과 관련 수정 검증 뒤 이번 task 소유 scratch만 종료 정리 대상으로 판정한다. 기존 자료는 정리하지 않는다.
 - backup: no backup — project rules use version control. commit/push는 실행하지 않았다.
 
-## 별도 활성 작업: 백룸
-
-D:/AI Agent/GitHub/Creator-backroom/SESSION_HANDOFF.md가 백룸 상태를 단독 소유한다. 이번 작업에서 읽거나 변경하지 않았다.
-
 ## 첫 다음 행동
 
 1. extension/outputs/zeus-month-review-cs6-r10.xml을 r7/r10 assets와 원본 위치를 유지한 채 CS6에 가져오고 offline media, alpha, 100px 자막, 타이틀 등장과 좌우 오디오 link를 실제 관측한다. native 접근이 없으면 사용자 가져오기 결과를 받으며 성공을 추론하지 않는다.
