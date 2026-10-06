@@ -1,4 +1,5 @@
 from __future__ import annotations
+from editorial_test_support import synthetic_state
 
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
@@ -1116,6 +1117,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                 value,
                 output,
                 profile="premiere-cs6-v4",
+                        editorial_state=synthetic_state(value),
             )
             self.assertTrue(output.is_file())
             self.assertEqual(result["payload_fingerprint"], payload_fingerprint(value))
@@ -1135,6 +1137,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                     value,
                     output,
                     profile="premiere-cs6-v4",
+                        editorial_state=synthetic_state(value),
                 )
 
     def test_guarded_writer_rejects_profile_path_collision_and_source_drift(self) -> None:
@@ -1143,7 +1146,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
             value, source, output = self._ready_for_temp(root)
             with self.assertRaisesRegex(PremiereXmlError, "profile"):
                 write_validated_premiere_xml(
-                    value, output, profile="sequence-v5"
+                    value, output, profile="sequence-v5", editorial_state=synthetic_state(value)
                 )
             self.assertFalse(output.exists())
 
@@ -1154,6 +1157,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                     value,
                     timeline_path,
                     profile="premiere-cs6-v4",
+                        editorial_state=synthetic_state(value),
                     input_paths=(timeline_path,),
                 )
             self.assertFalse(timeline_path.exists())
@@ -1165,6 +1169,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                     value,
                     output,
                     profile="premiere-cs6-v4",
+                        editorial_state=synthetic_state(value),
                 )
             self.assertFalse(output.exists())
             self.assertEqual(list(root.glob(".*.tmp")), [])
@@ -1197,6 +1202,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                         value,
                         output,
                         profile="premiere-cs6-v4",
+                        editorial_state=synthetic_state(value),
                     )
                 self.assertFalse(output.exists())
                 self.assertEqual(list(root.glob(".*.tmp")), [])
@@ -1250,6 +1256,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                             value,
                             requested,
                             profile="premiere-cs6-v4",
+                        editorial_state=synthetic_state(value),
                         )
                 finally:
                     os.chdir(previous_cwd)
@@ -1281,6 +1288,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                                 value,
                                 Path("same-relative-output.xml"),
                                 profile="premiere-cs6-v4",
+                        editorial_state=synthetic_state(value),
                             )
                         self.assertFalse(
                             (cwd / "same-relative-output.xml").exists()
@@ -1355,6 +1363,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                         value,
                         output,
                         profile="premiere-cs6-v4",
+                        editorial_state=synthetic_state(value),
                     )
             self.assertFalse(output.exists())
             self.assertEqual(list(root.glob(".*.tmp")), [])
@@ -1441,6 +1450,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                         value,
                         output,
                         profile="premiere-cs6-v4",
+                        editorial_state=synthetic_state(value),
                     )
                 self.assertIn(
                     expected_code,
@@ -1461,6 +1471,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                         deepcopy(value),
                         output,
                         profile="premiere-cs6-v4",
+                        editorial_state=synthetic_state(value),
                     )
                 except PremiereXmlError:
                     return "blocked"
@@ -1488,6 +1499,8 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="video-edit-v2-process-race-") as raw:
             root = Path(raw)
             value, _source, output = self._ready_for_temp(root)
+            state_path = root / "editorial-state.json"
+            state_path.write_text(json.dumps(synthetic_state(value)), encoding="utf-8")
             timeline_path = root / "timeline-v2.json"
             timeline_path.write_text(
                 json.dumps(value, ensure_ascii=False), encoding="utf-8"
@@ -1502,6 +1515,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                 "-m",
                 "video_editing",
                 "premiere-xml",
+                "--editorial-state-json", str(state_path),
                 "--timeline-json",
                 str(timeline_path),
                 "--output",
@@ -1530,6 +1544,8 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="video-edit-v2-cli-") as raw:
             root = Path(raw)
             value, source, output = self._ready_for_temp(root)
+            state_path = root / "editorial-state.json"
+            state_path.write_text(json.dumps(synthetic_state(value)), encoding="utf-8")
             timeline_path = root / "timeline-v2.json"
             timeline_path.write_text(
                 json.dumps(value, ensure_ascii=False), encoding="utf-8"
@@ -1545,6 +1561,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                     "-m",
                     "video_editing",
                     "premiere-xml",
+                    "--editorial-state-json", str(state_path),
                     "--timeline-json",
                     str(timeline_path),
                     "--output",
@@ -1562,7 +1579,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
             self.assertTrue(json.loads(result.stdout)["ok"])
             self.assertEqual(
                 sorted(item.name for item in root.iterdir()),
-                sorted([source.name, output.name, timeline_path.name]),
+                sorted([source.name, output.name, timeline_path.name, state_path.name]),
             )
 
     def test_cli_malformed_delivery_without_profile_is_structured_no_output_error(
@@ -1578,6 +1595,8 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                 root = Path(raw)
                 value, source, output = self._ready_for_temp(root)
                 value["delivery"] = malformed_delivery
+                state_path = root / "editorial-state.json"
+                state_path.write_text(json.dumps(synthetic_state(value)), encoding="utf-8")
                 timeline_path = root / "timeline-v2.json"
                 timeline_path.write_text(
                     json.dumps(value, ensure_ascii=False),
@@ -1597,6 +1616,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                         "-m",
                         "video_editing",
                         "premiere-xml",
+                        "--editorial-state-json", str(state_path),
                         "--timeline-json",
                         str(timeline_path),
                         "--output",
@@ -1619,7 +1639,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                 self.assertEqual(list(root.glob(".*.tmp")), [])
                 self.assertEqual(
                     sorted(item.name for item in root.iterdir()),
-                    sorted([source.name, timeline_path.name]),
+                    sorted([source.name, timeline_path.name, state_path.name]),
                 )
 
     def test_cli_non_utf8_timeline_is_structured_no_output_error(self) -> None:
@@ -1627,7 +1647,9 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
             prefix="video-edit-v2-cli-non-utf8-"
         ) as raw:
             root = Path(raw)
-            _value, source, output = self._ready_for_temp(root)
+            value, source, output = self._ready_for_temp(root)
+            state_path = root / "editorial-state.json"
+            state_path.write_text(json.dumps(synthetic_state(value)), encoding="utf-8")
             timeline_path = root / "timeline-v2.json"
             timeline_path.write_bytes(b"\xff\xfe{not-utf8}")
             environment = os.environ.copy()
@@ -1641,6 +1663,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
                     "-m",
                     "video_editing",
                     "premiere-xml",
+                    "--editorial-state-json", str(state_path),
                     "--timeline-json",
                     str(timeline_path),
                     "--output",
@@ -1663,7 +1686,7 @@ class VideoEditingTimelineV2Tests(unittest.TestCase):
             self.assertEqual(list(root.glob(".*.tmp")), [])
             self.assertEqual(
                 sorted(item.name for item in root.iterdir()),
-                sorted([source.name, timeline_path.name]),
+                sorted([source.name, timeline_path.name, state_path.name]),
             )
 
     def test_low_level_xml_writers_are_not_public_package_api(self) -> None:

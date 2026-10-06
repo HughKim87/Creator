@@ -404,12 +404,14 @@ def _stable_uuid(timeline: Mapping[str, Any], purpose: str) -> str:
     return str(uuid.uuid5(uuid.NAMESPACE_URL, f"video-editing:{purpose}:{canonical}"))
 
 
-def _build_premiere_cs6_v4(value: Mapping[str, Any]) -> bytes:
+def _build_premiere_cs6_v4(value: Mapping[str, Any], *, review_candidate: bool = False) -> bytes:
     timeline = validate_timeline(value)
-    if timeline["semantic_gate"]["status"] != "passed":
+    if timeline["semantic_gate"]["status"] != ("pending" if review_candidate else "passed"):
         raise PremiereXmlError("semantic_gate must be passed before XML generation")
     source = timeline["source"]
-    sequence_value = timeline["sequence"]
+    sequence_value = dict(timeline["sequence"])
+    if review_candidate:
+        sequence_value["name"] = "[REVIEW - NOT APPROVED] " + sequence_value["name"]
     duration = sequence_value["video_clips"][-1]["timeline_end"]
     channels = source["audio"]["channels"]
 

@@ -1114,7 +1114,7 @@ def _validate_microbeats(
                 for clip_id in audio_ids
                 if clip_id in audio
             )
-        if purpose == "premiere_xml" and boundary != "passed":
+        if (purpose == "premiere_xml" and boundary != "passed") or (purpose == "premiere_review_xml" and boundary == "failed"):
             collector.add(
                 "microbeat_review_incomplete",
                 "every retained or removed microbeat needs a passed boundary review before export",
@@ -1191,7 +1191,7 @@ def _validate_feedback(
         )
     baseline_clips: dict[str, Mapping[str, Any]] = {}
     changed_ids: set[str] = set()
-    if purpose == "premiere_xml" and baseline_required and baseline_reference is None:
+    if purpose in {"premiere_xml", "premiere_review_xml"} and baseline_required and baseline_reference is None:
         collector.add(
             "baseline_reference_required",
             f"{workflow_profile} export requires the actual baseline v2 payload",
@@ -1318,7 +1318,7 @@ def _validate_feedback(
                 preservation_entries[collection_name][entry_id] = tuple(clip_ids)
             collector.text(_value(entry, "evidence"), f"{path}.evidence")
             preserved = collector.boolean(_value(entry, "preserved"), f"{path}.preserved")
-            if purpose == "premiere_xml" and preserved is not True:
+            if purpose in {"premiere_xml", "premiere_review_xml"} and preserved is not True:
                 collector.add(
                     "feedback_regression",
                     f"{collection_name} must be preserved before export",
@@ -1396,7 +1396,7 @@ def _validate_feedback(
                 "pending or resolved defects cannot retain defer approval",
                 f"{path}.approved_by",
             )
-        if status == "pending" and purpose == "premiere_xml":
+        if status == "pending" and purpose in {"premiere_xml", "premiere_review_xml"}:
             collector.add("unresolved_defect", "pending defects block XML export", path)
         if status == "pending" and revision_status in {"current", "approved"}:
             collector.add(
@@ -1489,7 +1489,7 @@ def _validate_revision(
             "revision.state_owner_id must identify this exact timeline payload",
             "revision.state_owner_id",
         )
-    if purpose == "premiere_xml" and status in {"use_prohibited", "historical"}:
+    if purpose in {"premiere_xml", "premiere_review_xml"} and status in {"use_prohibited", "historical"}:
         collector.add("invalid_source_revision", "prohibited or historical revisions cannot be exported", "revision.status")
     return status, supersedes, checked_at
 
@@ -1586,16 +1586,16 @@ def _validate_approval(
                 "approval.calibration.checked_at",
             )
     if (
-        purpose == "premiere_xml"
+        purpose in {"premiere_xml", "premiere_review_xml"}
         and workflow_profile in {"new_full_edit", "approved_delta"}
         and required is True
         and status != "approved"
     ):
         collector.add("calibration_not_approved", "full editing is blocked until calibration is user-approved", "approval.calibration.status")
-    if purpose == "premiere_xml" and status == "rejected":
+    if purpose in {"premiere_xml", "premiere_review_xml"} and status == "rejected":
         collector.add("calibration_rejected", "rejected calibration cannot be reused", "approval.calibration.status")
     if (
-        purpose == "premiere_xml"
+        purpose in {"premiere_xml", "premiere_review_xml"}
         and workflow_profile in {"new_full_edit", "approved_delta"}
         and (
             required is True
@@ -1823,7 +1823,7 @@ def _validate_approval(
         latest_decision is not None
         and latest_decision[2] == "approved"
         and latest_decision[3]
-        and purpose == "premiere_xml"
+        and purpose in {"premiere_xml", "premiere_review_xml"}
     ):
         collector.add(
             "approval_invalidated",
@@ -1837,7 +1837,7 @@ def _validate_approval(
                 "the latest user rejection requires revision.status=use_prohibited",
                 "revision.status",
             )
-        if purpose == "premiere_xml":
+        if purpose in {"premiere_xml", "premiere_review_xml"}:
             collector.add(
                 "user_rejected_revision",
                 "the latest user decision rejects this exact editorial payload",
@@ -1850,7 +1850,7 @@ def _validate_approval(
                 "the latest superseded decision requires revision.status=historical",
                 "revision.status",
             )
-        if purpose == "premiere_xml":
+        if purpose in {"premiere_xml", "premiere_review_xml"}:
             collector.add(
                 "superseded_revision",
                 "a superseded editorial payload cannot be exported",
@@ -2120,6 +2120,8 @@ def validate_timeline_v2(
     _reference_registry: Mapping[str, Mapping[str, Any]] | None = None,
     _reference_stack: tuple[str, ...] = (),
 ) -> dict[str, Any]:
+    if purpose not in {None, "premiere_xml", "premiere_review_xml"}:
+        raise TimelineV2Error([{"code": "invalid_purpose", "message": "unknown validation purpose", "path": "purpose"}])
     current_reference_fingerprint = payload_fingerprint(value)
     if current_reference_fingerprint in _reference_stack:
         raise TimelineV2Error(
@@ -2320,6 +2322,11 @@ def validate_timeline_v2(
         calibration_reference=normalized_calibration,
         purpose=purpose,
     )
+    if purpose == "premiere_review_xml":
+        if revision_status != "working_candidate" or _value(_value(timeline, "validation"), "semantic_status") != "not_run":
+            collector.add("invalid_review_candidate", "review export requires working_candidate with semantic_status=not_run", "revision")
+        if workflow_profile == "format_regeneration":
+            collector.add("invalid_review_profile", "format regeneration must use the reviewed export path", "workflow_profile")
     _validate_delivery(_value(timeline, "delivery"), collector, timeline_id)
     if collector.issues:
         raise TimelineV2Error(collector.issues)
@@ -2371,13 +2378,16 @@ def inspect_timeline_v2(
 def as_legacy_timeline(
     value: Mapping[str, Any],
     *,
+    purpose: str = "premiere_xml",
     calibration_reference: Mapping[str, Any] | None = None,
     baseline_reference: Mapping[str, Any] | None = None,
     reference_payloads: Iterable[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
+    if purpose not in {"premiere_xml", "premiere_review_xml"}:
+        raise TimelineV2Error([{"code": "invalid_purpose", "message": "adapter requires an export purpose", "path": "purpose"}])
     timeline = validate_timeline_v2(
         value,
-        purpose="premiere_xml",
+        purpose=purpose,
         calibration_reference=calibration_reference,
         baseline_reference=baseline_reference,
         reference_payloads=reference_payloads,
@@ -2392,7 +2402,7 @@ def as_legacy_timeline(
         },
         "sequence": deepcopy(timeline["sequence"]),
         "semantic_gate": {
-            "status": "passed",
+            "status": "pending" if purpose == "premiere_review_xml" else "passed",
             "reviewed_by": timeline["validation"]["reviewer"],
             "notes": f"bound to {editorial_fingerprint(timeline)}",
         },

@@ -6,6 +6,10 @@
 - 상태: 활성 영상 편집 운영 계약.
 - 관련 권위: 루트 `PROJECT_RULES.md`, `SESSION_HANDOFF.md`, `extension/README.md`.
 
+## 사용자 검수 방식의 후보 전달
+
+사용자가 실제 재생 검수를 맡는다고 명시한 경우, 검수용 후보 출력은 `rules/video-editing-validation-and-delivery.md`의 「사용자 검수 후보의 별도 전달 경로」를 따른다. 아래의 XML 생성 전 의미 gate·공개 writer 제한은 검수 완료 경로에 적용하며, 후보 경로에는 그 절의 별도 gate가 적용된다. 최종 완료·승인 기준은 유지한다. 후보는 `premiere-review-xml --timeline-json <v2.json> --preflight-json <review-preflight.json> --editorial-state-json <latest-editorial-state.json> --output <candidate.xml> --profile premiere-cs6-v4`로 생성한다. 사전 검사 기록은 내부 scratch에 두며 사용자 전달물은 XML 하나다.
+
 ## 1. 범위와 완료 정의
 
 이 계약은 촬영이 끝난 원본 영상의 내용 분석부터 Premiere XML 전달까지를 다룬다. 촬영 전 근거 패키지는 `YOUTUBE_EVIDENCE_PACK_CONTRACT.md`가 별도로 소유한다. 컷 timeline 이후의 자막·효과·카드·오디오 마감은 `rules/video-post-production.md`(R19~R22)가 소유하며, 후편집 중 컷 내용이 바뀌면 이 계약의 컷 편집 gate로 돌아간다.
@@ -100,7 +104,7 @@ XML 생성 전에 완성 타임라인 순서로 다음을 검수한다.
 
 수정 중 재검수는 경계 변경이면 해당 경계와 양쪽 인접 문맥, scene 변경이면 해당 scene과 인접 전환, chapter 변경이면 해당 chapter와 인접 전환, 사건 순서·스파인·전역 리듬 변경이면 완성 sequence 전체로 확대한다. 영향 범위 검수는 중간 QA이며 canonical 의미 pass를 통과시키지 않는다. XML 생성·전달 전에는 최신 mutation 뒤의 완성 sequence 전체 정상 속도 재생과 세 관점 record가 새 editorial fingerprint에 결속되어야 한다.
 
-`video-edit-timeline-v2`는 sequence와 별도 계약이 서로 다른 의미 상태를 주장하지 못하게 하는 단일 XML 생성 차단 payload다. 실제 source byte hash·size, 정규화된 시간 좌표, clip ID에 결속된 사건·microbeat·feedback, working candidate와 current·approved의 구분, exact baseline/calibration reference, 최신 mutation 뒤 전체 정상 속도 review run에 결속된 세 관점 결과, exact output path·profile을 함께 대조한다.
+`video-edit-timeline-v2`는 sequence와 별도 계약이 서로 다른 의미 상태를 주장하지 못하게 하는 타임라인 상태 payload다. XML 전달은 별도의 최신 `editorial-state-v1`도 필수로 받아 원본 장면 설계·실제 생략·누적 피드백을 검사한다. 상태 소유자는 같은 작업의 최신 파일 하나를 handoff에 지정하며, 오래된 state를 골라 전달하는 것을 허용하지 않는다. 실제 source byte hash·size, 정규화된 시간 좌표, clip ID에 결속된 사건·microbeat·feedback, working candidate와 current·approved의 구분, exact baseline/calibration reference, 최신 mutation 뒤 전체 정상 속도 review run에 결속된 세 관점 결과, exact output path·profile을 함께 대조한다.
 
 - `editorial_fingerprint`: timeline version, source manifest, 정규화된 time instruction, sequence, event·microbeat·clip ownership, editorial evidence를 결속하되 feedback의 baseline payload pointer는 중립화한다. workflow profile, timeline ID, revision state, approval, validation, delivery는 제외하며 사용자 승인과 의미 pass의 대상이다.
 - `payload_fingerprint`: `timeline_version / timeline_id / workflow_profile / source_manifest / sequence / editorial_evidence / revision`의 content/revision identity를 결속하고 approval·validation·delivery는 제외한다.
@@ -114,6 +118,21 @@ revision decision의 `approved_scope`는 canonical literal `entire_revision`만 
 `video-edit-timeline-v1`과 `video-edit-contract-v1`은 이전 자료를 v2 `working_candidate`로 이관하기 위한 legacy 입력이다. v1 parser·adapter의 구조 회귀는 유지할 수 있지만 v1에서 사용자 전달 XML을 직접 생성하거나 v2 acceptance·의미 gate·사용자 승인을 승계할 수 없다.
 
 구조 validator는 frame 범위, 길이 식, track 연속성, audio gap, A/V 총길이, 원본 범위, 명시적 시간 역전, source lineage만 판정한다. 스파인 적절성, 발화 자연스러움, 공간 연결, 리듬, 밝기·RMS 합격값은 자동 승인하지 않는다.
+
+### 원본 장면 설계와 최신 피드백 입력
+
+`editorial_state.py`가 `editorial-state-v1`의 runtime 계약을 소유한다. 구조 예시는 `extension/examples/editorial-state-v1.json`, 실행 검사는 `editorial-check --timeline-json ... --editorial-state-json ...`다. 이 명령은 원본 미디어를 읽지 않고 실패 시에도 계산한 생략 목록을 반환한다.
+
+- `source_manifest_fingerprint / generation`: 같은 원본과 최신 상태 식별. `scenes`는 최종 컷에서 자동 생성하지 않고 원본 관찰로 작성한다. 각 scene은 검토한 `source_in/out`, 보여줄 사건(`show`), 시청자가 아는 정보(`viewer_learns`), 다음 행동 이유(`next_action_reason`), 선행 scene ID(`depends_on`), 필수 화면·음성 `anchors`를 갖는다. anchor는 ID·원본 범위·media_scope·관찰 내용을 가진다. source 범위는 반개구간 프레임이다.
+- 장면 검토 범위 안 retained union의 여집합을 video/audio 각각 계산한다. 선두·꼬리 생략, J/L 음성 차이도 포함한다. 장면 바깥 미검토 원본 전체를 분석했다고 주장하지 않는다. 선택한 컷이 설계 범위를 벗어나면 차단한다.
+- `reviews`의 현재 편집은 exact editorial fingerprint, 설계·feedback의 `state_basis_fingerprint`, generation에 결속한다. `omissions`는 계산된 각각의 scene/track/source 범위와 정확히 일치해야 하며 reason·observation·certainty=confirmed가 필요하다. 불확실하면 원본 유지 또는 추가 관찰로 해소한다. 미신고·중복·낡은 범위는 통과하지 못한다.
+- 필수 anchor의 전체 범위를 순방향으로 연속 유지해야 한다. 이음새만 나눈 연속 clip은 허용하지만 부분 삭제·순서 역전은 차단한다. scene 의존 관계가 실제 편집 위치에서도 선행하는지 검사한다. observation은 사람이 작성한 근거이며 내용의 진위를 기계가 판별하는 것은 아니다.
+- `record-feedback --timeline-json ... --editorial-state-json ... --feedback-id ... --symptom ... --reported-by user --output <새 절대 JSON 경로>`는 기존 설계·피드백을 보존한 새 state를 생성하며 generation을 증가시키고 이전 reviews를 비운다. 정확한 source 시각 미확정이면 빈 scenes의 초안 상태에서도 등록할 수 있지만 XML 전달은 차단된다. `--required-anchor-id`는 반복 지정 가능하다. 반환 경로를 최신 task owner로 handoff에 반영하고 과거 state는 snapshot으로 보존한다. 별도 사용자 전달물은 아니다.
+- 피드백 대상 편집은 이름을 바꿔도 재출력할 수 없다. 새 편집에는 모든 누적 feedback ID의 `resolutions`와 보존된 anchor·근거가 필요하다. 전달 결과는 editorial state fingerprint를 포함하므로 옛 timeline의 pending/passed만 보고 현재 채택 가능하다고 해석하지 않는다. 기존 승인 payload를 직접 수정하지 않는다.
+- `premiere-xml`과 `premiere-review-xml`의 공개 writer는 `editorial_state=` 인수를 요구한다. CLI는 `--editorial-state-json`이 없으면 출력 전에 차단한다. 기존 v2 schema·fingerprint는 유지되며, 이 추가 입력을 생략한 과거 호출은 새 전달에 사용할 수 없다. `rule-gate`는 v2 상태 검사이고 전체 전달 검사를 대신하지 않는다.
+- `review-preflight-v2`는 `editorial_state_fingerprint`를 추가한다. source_mapping만 passed이며, 나머지 관찰은 recorded 또는 not_run이다. `agent_preflight_status=recorded`, `editorial_structure.status=structure_checked`는 지각 검수·사용자 승인이 아니다. v1의 다섯 passed를 그대로 재사용할 수 없다.
+
+검사 한계: 제공한 state 밖에 숨겨진 후속 피드백, 실제 관찰 없이 작성한 설명, 최초 설계에서 누락한 중요한 장면은 자동 탐지하지 못한다. task owner의 최신성·완전성은 호출자가 보장하며, 불확실한 어두운 화면을 반복으로 단정하지 않는 편집 판단을 대신하지 않는다.
 
 ## 7. 도구와 XML 경계
 

@@ -12,7 +12,8 @@ from .edit_contract import (
 from .legacy_csv import LegacyCsvError, write_legacy_timeline
 from .model import TimelineValidationError, inspect_timeline
 from .migration import TimelineMigrationError, migrate_legacy_v1, write_migrated_v2
-from .delivery import write_validated_premiere_xml
+from .editorial_state import derive_omissions, validate_editorial_state, record_editorial_feedback, editorial_state_fingerprint
+from .delivery import write_validated_premiere_xml, write_review_premiere_xml
 from .premiere_xml import (
     PREMIERE_CS6_V4_PROFILE,
     PremiereXmlError,
@@ -79,6 +80,27 @@ def _parser() -> VideoEditingArgumentParser:
         "--profile",
         choices=[PREMIERE_CS6_V4_PROFILE],
     )
+    review = commands.add_parser("premiere-review-xml", help="write a preflight-checked candidate awaiting user playback")
+    review.add_argument("--timeline-json", required=True, type=Path)
+    review.add_argument("--preflight-json", required=True, type=Path)
+    review.add_argument("--output", required=True, type=Path)
+    review.add_argument("--profile", choices=[PREMIERE_CS6_V4_PROFILE])
+    review.add_argument("--calibration-timeline-json", type=Path)
+    review.add_argument("--baseline-timeline-json", type=Path)
+    review.add_argument("--reference-timeline-json", action="append", default=[], type=Path)
+    for command in (generate, review):
+        command.add_argument("--editorial-state-json", type=Path, help="required for XML delivery")
+    editorial = commands.add_parser("editorial-check", help="inspect scene anchors, omissions and feedback without reading media")
+    editorial.add_argument("--timeline-json", required=True, type=Path)
+    editorial.add_argument("--editorial-state-json", required=True, type=Path)
+    feedback = commands.add_parser("record-feedback", help="write a new editorial state with old reviews invalidated")
+    feedback.add_argument("--timeline-json", required=True, type=Path)
+    feedback.add_argument("--editorial-state-json", required=True, type=Path)
+    feedback.add_argument("--feedback-id", required=True)
+    feedback.add_argument("--symptom", required=True)
+    feedback.add_argument("--reported-by", required=True)
+    feedback.add_argument("--required-anchor-id", action="append", default=[])
+    feedback.add_argument("--output", required=True, type=Path)
     rule_gate = commands.add_parser(
         "rule-gate",
         help="validate the editorial decision contract before XML generation",
@@ -182,6 +204,28 @@ def main(argv: list[str] | None = None) -> int:
     _configure_utf8_stdio()
     try:
         namespace = _parser().parse_args(argv)
+        if namespace.command in {"editorial-check", "record-feedback"}:
+            timeline = _read_json_object(namespace.timeline_json, "timeline")
+            from .timeline_v2 import validate_timeline_v2
+            timeline = validate_timeline_v2(timeline)
+            state = _read_json_object(namespace.editorial_state_json, "editorial state")
+            if namespace.command == "editorial-check":
+                omissions = derive_omissions(timeline, state)
+                try:
+                    result = validate_editorial_state(timeline, state)
+                except PremiereXmlError as exc:
+                    _emit({"ok": False, "error": {"kind": "editorial_state_error", "message": str(exc)}, "omissions": omissions}, error=True)
+                    return 2
+                _emit({"ok": True, "result": result, "omissions": omissions})
+            else:
+                state = record_editorial_feedback(timeline, state, feedback_id=namespace.feedback_id, symptom=namespace.symptom, reported_by=namespace.reported_by, required_anchor_ids=namespace.required_anchor_id)
+                target = namespace.output
+                if target.suffix.lower() != ".json" or not target.is_absolute():
+                    raise PremiereXmlError("feedback output must be an absolute new JSON path")
+                from .delivery import _write_no_clobber
+                _write_no_clobber(target, json.dumps(state, ensure_ascii=False, indent=2).encode("utf-8"))
+                _emit({"ok": True, "result": {"editorial_state": str(target), "generation": state["generation"], "editorial_state_fingerprint": editorial_state_fingerprint(state), "review_status": "invalidated", "owner_action": "Use this latest state for subsequent delivery and handoff."}})
+            return 0
         if namespace.command == "validate":
             timeline = _read_json_object(namespace.timeline_json, "timeline")
             if timeline.get("timeline_version") == 2:
@@ -251,7 +295,7 @@ def main(argv: list[str] | None = None) -> int:
                 )
             _emit(report, error=not report["ok"])
             return 0 if report["ok"] else 2
-        if namespace.command == "premiere-xml":
+        if namespace.command in {"premiere-xml", "premiere-review-xml"}:
             timeline = _read_json_object(namespace.timeline_json, "timeline")
             if timeline.get("timeline_version") == 2:
                 calibration_reference = (
@@ -283,10 +327,20 @@ def main(argv: list[str] | None = None) -> int:
                 if namespace.baseline_timeline_json is not None:
                     input_paths.append(namespace.baseline_timeline_json)
                 input_paths.extend(namespace.reference_timeline_json)
-                result = write_validated_premiere_xml(
+                writer = write_validated_premiere_xml
+                if namespace.editorial_state_json is None:
+                    raise PremiereXmlError("XML delivery requires --editorial-state-json from the latest task owner")
+                review_args = {"editorial_state": _read_json_object(namespace.editorial_state_json, "editorial state")}
+                input_paths.append(namespace.editorial_state_json)
+                if namespace.command == "premiere-review-xml":
+                    writer = write_review_premiere_xml
+                    review_args["preflight"] = _read_json_object(namespace.preflight_json, "review preflight")
+                    input_paths.append(namespace.preflight_json)
+                result = writer(
                     timeline,
                     namespace.output,
                     profile=profile,
+                    **review_args,
                     input_paths=input_paths,
                     calibration_reference=calibration_reference,
                     baseline_reference=baseline_reference,

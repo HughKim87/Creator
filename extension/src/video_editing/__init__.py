@@ -31,7 +31,8 @@ from .premiere_xml import (
     SUPPORTED_XML_PROFILES,
     PremiereXmlError,
 )
-from .delivery import write_validated_premiere_xml
+from .editorial_state import derive_omissions, validate_editorial_state, editorial_state_fingerprint, record_editorial_feedback
+from .delivery import write_validated_premiere_xml, write_review_premiere_xml
 from .subtitle import (
     Cue,
     SubtitleError,
@@ -54,6 +55,7 @@ from .timeline_v2 import (
 )
 
 __all__ = [
+    "derive_omissions", "validate_editorial_state", "editorial_state_fingerprint", "record_editorial_feedback",
     "CLIP_FIELDS",
     "CONTRACT_VERSION",
     "LEGACY_CSV_COLUMNS",
@@ -94,6 +96,7 @@ __all__ = [
     "source_manifest_fingerprint",
     "task_payload_fingerprint",
     "write_validated_premiere_xml",
+    "write_review_premiere_xml",
     "write_legacy_timeline",
     "write_migrated_v2",
 ]

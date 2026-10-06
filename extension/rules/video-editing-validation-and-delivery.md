@@ -6,6 +6,19 @@
 - 상태: 활성 소비 도메인 규칙.
 - 관련 권위: 영상 편집 workflow 계약의 완료 정의와 `PROJECT_RULES.md`의 검증·보호 데이터 경계가 상위 권위다.
 
+## 사용자 검수 후보의 별도 전달 경로
+
+사용자가 실제 재생 검수를 맡고 에이전트가 가능한 사전 검사를 먼저 수행하도록 지시한 작업은 `premiere-review-xml` / `write_review_premiere_xml`을 사용한다. 이 절은 R12·R16의 XML 생성 전 의미 통과 조건에 대한 명시적 예외이며, 검수 완료 출력 `premiere-xml`의 조건은 바꾸지 않는다.
+
+- 입력은 v2 `working_candidate`, semantic `not_run`이어야 한다. 경계 `pending`은 허용하지만 `failed`, 미해결 결함, 반려·대체 상태는 차단한다. `format_regeneration`은 이 경로를 사용하지 않는다.
+- 모든 구조·source hash/size/lock·baseline/calibration 참조·승인·비덮어쓰기 gate를 공유한다. 전체 확장에 필요한 대표 구간 사용자 승인은 생략하지 않는다.
+- `review-preflight-v1` 기록에는 exact editorial/task fingerprint, reviewer, timezone-aware checked_at, 전체 microbeat ID coverage, 명시적 limitations가 필요하다. checks는 source_mapping/speech_boundaries/visual_boundaries/causal_continuity/feedback_regression 다섯 항목이며 source_mapping만 status=passed, 나머지는 recorded 또는 not_run과 실제 method/evidence를 기록한다. 이 기록은 실행한 관찰과 기술 검사를 구분하며 실제 A/V 시청 통과가 아니다. 기록만 존재한다고 근거가 참임을 증명하지 않는다.
+- 사전 검사 중 발견한 결함은 수정하고 새 fingerprint로 다시 검사한다. 미확인 청취·연속 화면 품질은 limitations에 남긴다. candidate 출력은 `[REVIEW - NOT APPROVED]`로 표시하며 의미 상태나 사용자 승인 상태를 변경하지 않는다.
+- 후보를 넘기기 전에 에이전트가 실행할 사전검수 범위와 결과 보고는 R18이 소유한다.
+- 사용자 재생 전 결과는 `검수용 후보`로만 전달한다. 정상 속도 실제 시청 결과가 exact revision에 결속된 뒤에만 별도 의미·승인 상태를 갱신한다. 프레임·ASR로 직접 청취·연속 재생을 수행했다고 기록하지 않는다.
+- 두 XML writer는 최신 `editorial-state-v1` 입력을 필수로 받아 필수 원본 anchor 보존, 실제 A/V 생략 구간의 검토 coverage, 누적 사용자 피드백의 해결을 출력 전에 검사한다. 불확실한 삭제는 유지 또는 추가 관찰로 해소한다. state 등록·필드·CLI와 적용 한계는 영상 편집 workflow 계약의 「원본 장면 설계와 최신 피드백 입력」을 따른다. 기존 v2 승인·의미 검사는 그대로 적용한다.
+- 회귀 owner: `extension/tests/test_video_editing_review_delivery.py`. 기존 검수 완료 전달의 실패 주입 회귀도 유지한다.
+
 ### R12 — 기술 gate와 의미 gate 분리
 
 - 조건: 새 timeline, XML 또는 검토본을 성공으로 보고하려 한다.
@@ -23,7 +36,7 @@
 ### R16 — validator 계층 분리
 
 - 조건: 새 validator를 추가하거나 여러 검사를 하나의 합격 결과로 묶으려 한다.
-- 행동: 검사를 `비보호 구조 / 선언 metadata / 보호 미디어 / 의미 검수`로 분류하고 각 결과를 독립적으로 반환한다. 선언 metadata gate는 `video-edit-timeline-v2.schema.json`과 runtime validator가 representable conditional state의 공통 accept/reject corpus를 소유한다. XML 전달 CLI는 v2 하나만 받고 네 fingerprint를 결정적으로 파생하며, persisted calibration/baseline pointer는 payload/task fingerprint와 비교하고, 전달 대상은 `delivery` 객체와 CLI의 exact output·profile·source byte hash·size를 직접 대조한다. package 공개 API는 guarded writer 하나다. direct calibration·baseline payload는 각각 `--calibration-timeline-json`, `--baseline-timeline-json`으로 받고, authoritative latest owner/resolver가 제공하는 transitive dependency와 state는 반복 가능한 `--reference-timeline-json` bundle로 함께 전달한다. registry는 payload·task fingerprint를 모두 색인하고 소비 pointer는 referenced task state로 resolve하며 calibration self-approval만 payload identity를 사용한다. reference 수는 bounded limit 안이어야 한다. validator 결과는 제공 bundle에 상대적이고 caller가 숨긴 후속 state는 탐지하지 못하므로 owner provenance·최신성·완전성이 없는 bundle은 승인 근거로 사용하지 않는다. `format_regeneration`은 exact `current` 또는 `approved` baseline의 editorial fingerprint를 보존하고 delivery만 바꿔야 하며, editorial 내용이 바뀌면 새 편집 revision으로 판정해 의미 검수와 해당 사용자 승인을 무효화한다. v1은 v2 `working_candidate`로 이관하는 입력에만 허용하고 사용자 전달 XML을 직접 만들 수 없다. v1 retained clip이 여러 event 경계를 가로지르면 migrator는 같은 source·timeline media 범위를 유지한 채 event boundary에서 결정적으로 clip을 분할하고, revision·calibration·boundary 상태는 pending, 의미 상태는 `not_run`으로 초기화한다. low-level XML adapter는 내부 legacy 구조 테스트용이며 전달 진입점으로 직접 사용하지 않는다.
+- 행동: 검사를 `비보호 구조 / 선언 metadata / 보호 미디어 / 의미 검수`로 분류하고 각 결과를 독립적으로 반환한다. 선언 metadata gate는 `video-edit-timeline-v2.schema.json`과 runtime validator가 representable conditional state의 공통 accept/reject corpus를 소유한다. XML 전달 CLI는 v2 timeline과 최신 editorial-state를 받고 네 fingerprint를 결정적으로 파생하며, persisted calibration/baseline pointer는 payload/task fingerprint와 비교하고, 전달 대상은 `delivery` 객체와 CLI의 exact output·profile·source byte hash·size를 직접 대조한다. package 공개 API는 guarded writer 하나다. direct calibration·baseline payload는 각각 `--calibration-timeline-json`, `--baseline-timeline-json`으로 받고, authoritative latest owner/resolver가 제공하는 transitive dependency와 state는 반복 가능한 `--reference-timeline-json` bundle로 함께 전달한다. registry는 payload·task fingerprint를 모두 색인하고 소비 pointer는 referenced task state로 resolve하며 calibration self-approval만 payload identity를 사용한다. reference 수는 bounded limit 안이어야 한다. validator 결과는 제공 bundle에 상대적이고 caller가 숨긴 후속 state는 탐지하지 못하므로 owner provenance·최신성·완전성이 없는 bundle은 승인 근거로 사용하지 않는다. `format_regeneration`은 exact `current` 또는 `approved` baseline의 editorial fingerprint를 보존하고 delivery만 바꿔야 하며, editorial 내용이 바뀌면 새 편집 revision으로 판정해 의미 검수와 해당 사용자 승인을 무효화한다. v1은 v2 `working_candidate`로 이관하는 입력에만 허용하고 사용자 전달 XML을 직접 만들 수 없다. v1 retained clip이 여러 event 경계를 가로지르면 migrator는 같은 source·timeline media 범위를 유지한 채 event boundary에서 결정적으로 clip을 분할하고, revision·calibration·boundary 상태는 pending, 의미 상태는 `not_run`으로 초기화한다. low-level XML adapter는 내부 legacy 구조 테스트용이며 전달 진입점으로 직접 사용하지 않는다.
 - 예외: 하나의 명령이 여러 계층을 실행할 수 있지만 계층별 결과와 미실행 상태를 합치지 않는다.
 - 검증: 보호 미디어 검사는 exact 승인 없이는 실행되지 않고, 구조 통과가 media·app·user 통과를 만들지 않는지 확인한다. schema/runtime 공통 corpus와 runtime cross-reference 결함별 error code 회귀를 실행한다. direct reference와 authoritative 반복 bundle에서 task-state resolve, transitive success, dangling, cycle, same-payload ambiguous state를 각각 재현하고, 빠진 후속 owner state는 validator가 탐지하지 못한다는 bundle-relative 한계를 보고한다. canonical `entire_revision`, calibration self payload pointer, 소비 calibration/baseline task pointer와 승인 chronology도 확인한다. v1 직접 전달, format regeneration의 editorial mutation, latest reject·superseded·동시각 승인 충돌, relative·non-canonical source path, mandatory source lock 실패, publish 직전 source drift, output/profile/input collision, concurrent writer race와 모든 gate 실패에서 기존 결과를 덮어쓰지 않고 XML·임시 파일 생성 수가 0개인지 확인한다.
 

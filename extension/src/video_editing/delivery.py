@@ -8,7 +8,9 @@ from pathlib import Path
 import tempfile
 from typing import Any, BinaryIO, Callable, Iterator
 
-from .premiere_xml import PREMIERE_CS6_V4_PROFILE, PremiereXmlError, _build_premiere_xml
+from .premiere_xml import PREMIERE_CS6_V4_PROFILE, PremiereXmlError, _build_premiere_xml, _build_premiere_cs6_v4
+from .preflight import validate_preflight
+from .editorial_state import validate_editorial_state
 from .timeline_v2 import (
     TimelineV2Error,
     as_legacy_timeline,
@@ -126,20 +128,24 @@ def _write_no_clobber(
             pass
 
 
-def write_validated_premiere_xml(
+def _write_guarded_premiere_xml(
     value: Mapping[str, Any],
     output_path: Path | str,
     *,
     profile: str,
+    review_preflight: Mapping[str, Any] | None = None,
+    editorial_state: Mapping[str, Any] | None = None,
     input_paths: Iterable[Path | str] = (),
     calibration_reference: Mapping[str, Any] | None = None,
     baseline_reference: Mapping[str, Any] | None = None,
     reference_payloads: Iterable[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
+    reference_payloads = tuple(reference_payloads)
+    purpose = "premiere_review_xml" if review_preflight is not None else "premiere_xml"
     try:
         timeline = validate_timeline_v2(
             value,
-            purpose="premiere_xml",
+            purpose=purpose,
             calibration_reference=calibration_reference,
             baseline_reference=baseline_reference,
             reference_payloads=reference_payloads,
@@ -147,6 +153,9 @@ def write_validated_premiere_xml(
     except TimelineV2Error:
         raise
 
+    editorial_check = validate_editorial_state(timeline, editorial_state)
+    if review_preflight is not None:
+        validate_preflight(timeline, review_preflight, editorial_state)
     requested_target = Path(output_path)
     if not requested_target.is_absolute():
         raise PremiereXmlError(
@@ -209,12 +218,14 @@ def write_validated_premiere_xml(
 
         legacy_timeline = as_legacy_timeline(
             timeline,
+            purpose=purpose,
             calibration_reference=calibration_reference,
             baseline_reference=baseline_reference,
             reference_payloads=reference_payloads,
         )
         legacy_timeline["source"]["path"] = str(source_path)
-        rendered = _build_premiere_xml(legacy_timeline, profile=profile)
+        rendered = (_build_premiere_cs6_v4(legacy_timeline, review_candidate=True)
+                    if review_preflight is not None else _build_premiere_xml(legacy_timeline, profile=profile))
 
         def verify_source_snapshot() -> None:
             final_hash, final_size = _sha256_handle(source_handle)
@@ -229,6 +240,9 @@ def write_validated_premiere_xml(
         )
     return {
         "output": str(target),
+        "delivery_kind": "review_candidate" if review_preflight is not None else "semantically_reviewed",
+        "agent_preflight_status": "recorded" if review_preflight is not None else "not_applicable",
+        "editorial_structure": editorial_check,
         "bytes": len(rendered),
         "sha256": hashlib.sha256(rendered).hexdigest(),
         "payload_fingerprint": payload_fingerprint(timeline),
@@ -251,3 +265,18 @@ def write_validated_premiere_xml(
             else "not_approved"
         ),
     }
+
+
+def write_validated_premiere_xml(value, output_path, *, profile, editorial_state=None, input_paths=(), calibration_reference=None, baseline_reference=None, reference_payloads=()):
+    """Export after existing semantic gates and the source-scene/feedback guard."""
+    return _write_guarded_premiere_xml(value, output_path, profile=profile, editorial_state=editorial_state, input_paths=input_paths,
+        calibration_reference=calibration_reference, baseline_reference=baseline_reference, reference_payloads=reference_payloads)
+
+
+def write_review_premiere_xml(value, output_path, *, preflight, profile, editorial_state=None, input_paths=(), calibration_reference=None, baseline_reference=None, reference_payloads=()):
+    """Export an inspected, explicitly unapproved candidate for user playback."""
+    if not isinstance(preflight, Mapping):
+        raise PremiereXmlError("review preflight record is required")
+    return _write_guarded_premiere_xml(value, output_path, profile=profile, editorial_state=editorial_state, review_preflight=preflight,
+        input_paths=input_paths, calibration_reference=calibration_reference, baseline_reference=baseline_reference,
+        reference_payloads=reference_payloads)
