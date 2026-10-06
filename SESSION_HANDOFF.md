@@ -16,7 +16,6 @@
 | 브랜치 | 상태 파일 |
 |---|---|
 | `main` | `state/main.md` |
-| `codex/backroom-video` | `state/backroom.md` |
 | `codex/ainotebook` | `state/ainotebook.md` |
 
 ## 직전 게이트
