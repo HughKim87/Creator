@@ -36,7 +36,7 @@
 
 영상 편집 작업은 두 계약의 범위를 섞지 않는다. 세션 원문·버전별 보고서·작업별 수치를 운영 규칙의 owner로 사용하지 않는다.
 
-영상 편집 SRT 검증·명시 정리, legacy cut CSV 이관, timeline 다중 진단, `sequence-v5`·`premiere-cs6-v4` XML 생성은 `python -m video_editing`이 소유한다. 보호 데이터가 없는 기본 입력은 `examples/video-edit-timeline-v1.json`이며, 실제 `inputs/`·`outputs/` 경로는 exact 항목과 목적을 승인받은 작업에서만 사용한다.
+영상 편집 SRT 검증·명시 정리, legacy cut CSV 이관, timeline 다중 진단과 `premiere-cs6-v4` XML 생성은 `python -m video_editing`이 소유한다. 활성 전달 계약은 sequence·편집 근거·검수·delivery를 하나로 묶은 `examples/video-edit-timeline-v2.json`이다. v1 timeline·contract는 v2 `working_candidate`로 이관하는 입력에만 사용할 수 있고, `sequence-v5`는 내부 legacy byte 호환 회귀일 뿐 사용자 전달 경로가 아니다. 채택 전 v2 payload는 선언된 Git 제외 scratch에 두며, 후속 `approved_delta`가 소비하는 `current`·`approved` 기준본은 exact protected evidence owner로 승격해 superseded·expiry까지 보존한다. 실제 `inputs/`·`outputs/` 경로는 exact 항목과 목적을 승인받은 작업에서만 사용한다.
 
 과거 영상 spine·분석 문서에서 영상 편집 지식을 환류할 때도 촬영 후 영상 편집 workflow 계약을 domain owner로 사용한다. 범용 파일 추출·정리 절차는 `PROJECT_RULES.md`가 별도로 선택하며 extension이 다시 소유하거나 foundation rule을 직접 라우팅하지 않는다.
 
@@ -51,6 +51,10 @@
 synthetic fixture 통과는 production 작업 완료, 실제 앱 검증, 사용자 승인으로 승격하지 않는다. `.runtime/` 항목은 현재 skill·code에서 참조되고 설치 또는 재구축 방법을 설명할 수 있을 때만 active capability로 유지한다. 과거 보고서의 tool 사용 사실이나 output 존재만으로 참조 없는 binary를 현재 runtime evidence로 보존하지 않는다.
 
 ## 관리되는 local runtime
+
+단계 0의 비보호 기술 시험은 내부 모듈 [`review_proxy.py`](src/video_editing/review_proxy.py)와 [합성 회귀](tests/test_video_editing_review_proxy.py)가 소유한다. `render_fixture_proxy`는 `extension/data`의 exact 작업 scratch 안에 있는 합성 source만 받아 lossless MKV와 메모리상의 기술 증거를 만들며, 보호 경로·덮어쓰기·audio hole·지원하지 않는 효과를 거부한다. 초기 지원 범위는 단일 CFR source, sample-aligned 정상 속도 컷, 연속 독립 A/V다. `verify_fixture_binding`은 실제 source/proxy bytes와 editorial identity를 대조하지만 review run의 진위나 실제 지각 검수를 보증하지 않으며 semantic·app·user 상태를 올리지 않는다. 이 모듈은 사용자 XML 전달 진입점이 아니고, 기존 guarded writer·v2 schema·package 공개 API는 그대로다.
+
+저장소 root에서 `PYTHONPATH=extension/src`와 bytecode 금지 조건으로 `python -B -m unittest discover -s extension/tests -p test_video_editing_review_proxy.py -v`를 실행한다. Windows와 manifest의 FFmpeg가 있을 때만 실제 렌더 시험이 수행되며, skip은 capability 통과가 아니다. 테스트는 이번에 만든 임시 fixture만 정리한다. 실제 A/V reviewer·Premiere operator 증명과 보호 source 지원은 별도 미완료 범위다.
 
 [`local-runtime-v1.json`](config/local-runtime-v1.json)은 ignored `.runtime/` binary·model 자체가 아니라 component role·version·tree hash·critical file hash·license·source·reinstall 경계를 소유한다. FFmpeg는 공용 영상 probe·변환 도구이고, whisper.cpp는 선택적 offline backend다. 기존 `video-to-srt`의 faster-whisper primary backend를 암묵 교체하지 않는다.
 
@@ -77,3 +81,7 @@ manifest와 실제 tree·critical hash가 다르거나 component 일부만 존�
 - foundation은 domain extension을 import하거나 extension owner를 소유하지 않는다.
 - foundation interface가 부족하면 임시 우회 구현을 조용히 추가하지 않고, boundary rule의 새 interface 검토 gate를 따른다.
 - foundation 변경이 필요하면 사용자의 exact 승인 경계를 먼저 확인한다.
+
+## 원본 장면·삭제·피드백 검사
+
+XML 두 전달 경로는 최신 `--editorial-state-json`을 필수로 받는다. [`editorial_state.py`](src/video_editing/editorial_state.py)는 원본 기준 필수 장면 보존, 실제 삭제의 검토 누락, 사용자 피드백의 stale 검증을 차단한다. `editorial-check`와 `record-feedback`의 필드·실행·한계는 위 영상 편집 workflow 계약의 「원본 장면 설계와 최신 피드백 입력」이 소유한다. 후보 preflight는 v2를 사용하며 관찰 recorded와 기술 passed를 구분한다. 예시는 [`editorial-state-v1.json`](examples/editorial-state-v1.json), 회귀는 [`test_video_editing_editorial_state.py`](tests/test_video_editing_editorial_state.py)다.

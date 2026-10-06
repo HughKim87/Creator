@@ -14,12 +14,12 @@ from video_editing import (
     LegacyCsvError,
     PremiereXmlError,
     TimelineValidationError,
-    build_premiere_xml,
     import_legacy_csv,
     inspect_timeline,
     validate_timeline,
     write_legacy_timeline,
 )
+from video_editing.premiere_xml import _build_premiere_xml
 
 
 HEADER = "idx,track,name,src_in,src_out,frames,tl_start,tl_end,gap_before\n"
@@ -241,7 +241,7 @@ class VideoEditingLegacyCsvTests(unittest.TestCase):
             video, audio = self._files(Path(raw))
             timeline = import_legacy_csv(video, audio, **self._metadata())
             with self.assertRaisesRegex(PremiereXmlError, "semantic_gate"):
-                build_premiere_xml(timeline)
+                _build_premiere_xml(timeline)
 
     def test_schema_explicitly_supports_only_unreviewed_import_role_addition(self) -> None:
         schema = json.loads(

@@ -17,9 +17,8 @@ from video_editing import (
     SUPPORTED_XML_PROFILES,
     PremiereXmlError,
     TimelineValidationError,
-    build_premiere_xml,
-    write_premiere_xml,
 )
+from video_editing.premiere_xml import _build_premiere_xml, _write_premiere_xml
 
 
 class VideoEditingPremiereCs6Tests(unittest.TestCase):
@@ -35,7 +34,7 @@ class VideoEditingPremiereCs6Tests(unittest.TestCase):
 
     def _cs6_root(self, timeline: dict | None = None) -> ET.Element:
         return ET.fromstring(
-            build_premiere_xml(
+            _build_premiere_xml(
                 timeline or self._timeline(),
                 profile=PREMIERE_CS6_V4_PROFILE,
             )
@@ -45,8 +44,8 @@ class VideoEditingPremiereCs6Tests(unittest.TestCase):
         self,
     ) -> None:
         timeline = self._timeline()
-        default = build_premiere_xml(timeline)
-        explicit = build_premiere_xml(timeline, profile=SEQUENCE_V5_PROFILE)
+        default = _build_premiere_xml(timeline)
+        explicit = _build_premiere_xml(timeline, profile=SEQUENCE_V5_PROFILE)
         self.assertEqual(default, explicit)
         self.assertEqual(len(default), 11_629)
         self.assertEqual(
@@ -59,7 +58,7 @@ class VideoEditingPremiereCs6Tests(unittest.TestCase):
         )
 
     def test_cs6_has_declaration_doctype_and_exact_project_structure(self) -> None:
-        rendered = build_premiere_xml(
+        rendered = _build_premiere_xml(
             self._timeline(),
             profile=PREMIERE_CS6_V4_PROFILE,
         )
@@ -136,8 +135,8 @@ class VideoEditingPremiereCs6Tests(unittest.TestCase):
 
     def test_every_link_target_exists_and_uuid_and_bytes_are_deterministic(self) -> None:
         timeline = self._timeline()
-        first = build_premiere_xml(timeline, profile=PREMIERE_CS6_V4_PROFILE)
-        second = build_premiere_xml(
+        first = _build_premiere_xml(timeline, profile=PREMIERE_CS6_V4_PROFILE)
+        second = _build_premiere_xml(
             deepcopy(timeline),
             profile=PREMIERE_CS6_V4_PROFILE,
         )
@@ -180,9 +179,56 @@ class VideoEditingPremiereCs6Tests(unittest.TestCase):
         self.assertEqual(len(sequence_audio_tracks), 1)
         self.assertEqual(sequence_audio_tracks[0].attrib["premiereTrackType"], "Mono")
 
+    def test_cs6_matches_the_app_validated_v18_import_contract(self) -> None:
+        root = self._cs6_root()
+        sequence = root.find("./project/children/bin/children/sequence")
+        self.assertIsNotNone(sequence)
+        assert sequence is not None
+        file_definition = root.find(".//file/pathurl/..")
+        self.assertIsNotNone(file_definition)
+        assert file_definition is not None
+
+        self.assertEqual(file_definition.findtext("media/audio/channelcount"), "2")
+        self.assertIsNone(
+            file_definition.find("media/audio/samplecharacteristics/channelcount")
+        )
+        self.assertIsNotNone(file_definition.find("timecode/reel/name"))
+        self.assertIsNone(sequence.find("in"))
+        self.assertIsNone(sequence.find("out"))
+        self.assertIsNone(sequence.find("media/audio/format/samplecharacteristics/rate"))
+        self.assertEqual(root.findall(".//clipitem/rate"), [])
+        self.assertEqual(root.findall(".//clipitem/logginginfo"), [])
+        self.assertEqual(root.findall(".//clipitem/labels"), [])
+
+        video_track = sequence.find("media/video/track")
+        self.assertIsNotNone(video_track)
+        assert video_track is not None
+        self.assertEqual(
+            [child.tag for child in list(video_track)[:2]],
+            ["enabled", "locked"],
+        )
+        audio_track = sequence.find("media/audio/track")
+        self.assertIsNotNone(audio_track)
+        assert audio_track is not None
+        self.assertEqual(
+            [child.tag for child in list(audio_track)[:2]],
+            ["enabled", "locked"],
+        )
+
+        video_item = video_track.find("clipitem")
+        self.assertIsNotNone(video_item)
+        assert video_item is not None
+        self.assertIsNone(video_item.find("sourcetrack"))
+        for link in root.findall(".//clipitem/link"):
+            media_type = link.findtext("mediatype")
+            if media_type == "audio":
+                self.assertEqual(link.findtext("groupindex"), "1")
+            else:
+                self.assertIsNone(link.find("groupindex"))
+
     def test_invalid_profile_timeline_and_pending_gate_create_no_output(self) -> None:
         with self.assertRaisesRegex(PremiereXmlError, "unsupported"):
-            build_premiere_xml(self._timeline(), profile="unknown")
+            _build_premiere_xml(self._timeline(), profile="unknown")
         with tempfile.TemporaryDirectory(prefix="cs6-invalid-") as raw:
             root = Path(raw)
             cases = []
@@ -199,7 +245,7 @@ class VideoEditingPremiereCs6Tests(unittest.TestCase):
             for number, (timeline, error) in enumerate(cases):
                 output = root / f"invalid-{number}.xml"
                 with self.assertRaises(error):
-                    write_premiere_xml(
+                    _write_premiere_xml(
                         timeline,
                         output,
                         profile=PREMIERE_CS6_V4_PROFILE,
@@ -211,7 +257,7 @@ class VideoEditingPremiereCs6Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="cs6-write-") as raw:
             root = Path(raw)
             output = root / "timeline.xml"
-            result = write_premiere_xml(
+            result = _write_premiere_xml(
                 self._timeline(),
                 output,
                 profile=PREMIERE_CS6_V4_PROFILE,
@@ -220,7 +266,7 @@ class VideoEditingPremiereCs6Tests(unittest.TestCase):
             self.assertEqual(result["validation_status"], "structure-validated")
             self.assertEqual(result["bytes"], output.stat().st_size)
             with self.assertRaisesRegex(PremiereXmlError, "already exists"):
-                write_premiere_xml(
+                _write_premiere_xml(
                     self._timeline(),
                     output,
                     profile=PREMIERE_CS6_V4_PROFILE,
@@ -228,9 +274,19 @@ class VideoEditingPremiereCs6Tests(unittest.TestCase):
             self.assertEqual([item.name for item in root.iterdir()], ["timeline.xml"])
 
             timeline_path = root / "timeline.json"
+            contract_path = root / "edit-contract.json"
             cli_output = root / "cli.xml"
             timeline_path.write_text(
                 json.dumps(self._timeline(), ensure_ascii=False),
+                encoding="utf-8",
+            )
+            contract_path.write_text(
+                (
+                    self.root
+                    / "extension"
+                    / "examples"
+                    / "video-edit-contract-v1.json"
+                ).read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             environment = os.environ.copy()
@@ -261,13 +317,13 @@ class VideoEditingPremiereCs6Tests(unittest.TestCase):
                 env=environment,
                 check=False,
             )
-            self.assertEqual(completed.returncode, 0, completed.stderr)
-            payload = json.loads(completed.stdout)
-            self.assertEqual(payload["result"]["profile"], PREMIERE_CS6_V4_PROFILE)
-            self.assertEqual(ET.fromstring(cli_output.read_bytes()).attrib["version"], "4")
+            self.assertEqual(completed.returncode, 2, completed.stdout)
+            payload = json.loads(completed.stderr)
+            self.assertIn("migrate-v1", payload["error"]["message"])
+            self.assertFalse(cli_output.exists())
             self.assertEqual(
                 sorted(item.name for item in root.iterdir()),
-                ["cli.xml", "timeline.json", "timeline.xml"],
+                ["edit-contract.json", "timeline.json", "timeline.xml"],
             )
 
 

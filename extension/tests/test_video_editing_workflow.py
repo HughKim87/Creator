@@ -19,11 +19,10 @@ from video_editing import (
     TIMELINE_FIELDS,
     PremiereXmlError,
     TimelineValidationError,
-    build_premiere_xml,
     inspect_timeline,
     validate_timeline,
-    write_premiere_xml,
 )
+from video_editing.premiere_xml import _build_premiere_xml, _write_premiere_xml
 
 
 class VideoEditingTimelineTests(unittest.TestCase):
@@ -56,6 +55,9 @@ class VideoEditingTimelineTests(unittest.TestCase):
         self.assertEqual(first["total_frames"], 240)
         self.assertEqual(first["audio_gap_frames"], 2)
         self.assertEqual(len(first["checks"]), 9)
+        changed = deepcopy(timeline)
+        changed["sequence"]["video_clips"][0]["edit_reason"] += " changed"
+        self.assertNotEqual(first["fingerprint"], inspect_timeline(changed)["fingerprint"])
 
     def test_duplicate_clip_id_is_rejected(self) -> None:
         timeline = self._timeline()
@@ -150,8 +152,8 @@ class VideoEditingTimelineTests(unittest.TestCase):
 
     def test_premiere_xml_is_deterministic_and_uses_one_original_source(self) -> None:
         timeline = self._timeline()
-        first = build_premiere_xml(timeline)
-        second = build_premiere_xml(deepcopy(timeline))
+        first = _build_premiere_xml(timeline)
+        second = _build_premiere_xml(deepcopy(timeline))
         self.assertEqual(first, second)
         self.assertEqual(hashlib.sha256(first).hexdigest(), hashlib.sha256(second).hexdigest())
         root = ET.fromstring(first)
@@ -166,7 +168,7 @@ class VideoEditingTimelineTests(unittest.TestCase):
         self.assertEqual(path_urls, ["file://localhost/media/original-main.mp4"])
 
     def test_premiere_xml_preserves_clip_ranges_audio_gap_and_stereo_tracks(self) -> None:
-        root = ET.fromstring(build_premiere_xml(self._timeline()))
+        root = ET.fromstring(_build_premiere_xml(self._timeline()))
         video_items = root.findall("./sequence/media/video/track/clipitem")
         audio_tracks = root.findall("./sequence/media/audio/track")
         audio_items = root.findall("./sequence/media/audio/track/clipitem")
@@ -203,17 +205,17 @@ class VideoEditingTimelineTests(unittest.TestCase):
             {"status": "pending", "reviewed_by": None, "notes": ""}
         )
         with self.assertRaisesRegex(PremiereXmlError, "semantic_gate"):
-            build_premiere_xml(timeline)
+            _build_premiere_xml(timeline)
         timeline = self._timeline()
         timeline["source"]["frame_rate"] = {"numerator": 25, "denominator": 2}
         with self.assertRaisesRegex(PremiereXmlError, "unsupported frame rate"):
-            build_premiere_xml(timeline)
+            _build_premiere_xml(timeline)
 
     def test_writer_is_atomic_and_refuses_overwrite_by_default(self) -> None:
         with tempfile.TemporaryDirectory(prefix="video-edit-xml-") as raw:
             root = Path(raw)
             output = root / "timeline.xml"
-            result = write_premiere_xml(self._timeline(), output)
+            result = _write_premiere_xml(self._timeline(), output)
             self.assertTrue(output.is_file())
             self.assertEqual(result["bytes"], output.stat().st_size)
             self.assertEqual(
@@ -222,7 +224,7 @@ class VideoEditingTimelineTests(unittest.TestCase):
             )
             self.assertEqual([item.name for item in root.iterdir()], ["timeline.xml"])
             with self.assertRaisesRegex(PremiereXmlError, "already exists"):
-                write_premiere_xml(self._timeline(), output)
+                _write_premiere_xml(self._timeline(), output)
 
     def test_invalid_timeline_creates_no_xml_or_temporary_file(self) -> None:
         with tempfile.TemporaryDirectory(prefix="video-edit-invalid-") as raw:
@@ -231,16 +233,26 @@ class VideoEditingTimelineTests(unittest.TestCase):
             timeline = self._timeline()
             timeline["sequence"]["video_clips"][0]["frames"] = 119
             with self.assertRaises(TimelineValidationError):
-                write_premiere_xml(timeline, output)
+                _write_premiere_xml(timeline, output)
             self.assertEqual(list(root.iterdir()), [])
 
     def test_cli_validates_and_generates_only_requested_xml(self) -> None:
         with tempfile.TemporaryDirectory(prefix="video-edit-cli-") as raw:
             root = Path(raw)
             timeline_path = root / "timeline.json"
+            contract_path = root / "edit-contract.json"
             output_path = root / "timeline.xml"
             timeline_path.write_text(
                 json.dumps(self._timeline(), ensure_ascii=False),
+                encoding="utf-8",
+            )
+            contract_path.write_text(
+                (
+                    self.root
+                    / "extension"
+                    / "examples"
+                    / "video-edit-contract-v1.json"
+                ).read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             environment = os.environ.copy()
@@ -288,11 +300,12 @@ class VideoEditingTimelineTests(unittest.TestCase):
                 env=environment,
                 check=False,
             )
-            self.assertEqual(generated.returncode, 0, generated.stderr)
-            self.assertTrue(json.loads(generated.stdout)["ok"])
+            self.assertEqual(generated.returncode, 2, generated.stdout)
+            self.assertIn("migrate-v1", json.loads(generated.stderr)["error"]["message"])
+            self.assertFalse(output_path.exists())
             self.assertEqual(
                 sorted(item.name for item in root.iterdir()),
-                ["timeline.json", "timeline.xml"],
+                ["edit-contract.json", "timeline.json"],
             )
 
     def test_contract_capabilities_and_owner_routing_are_complete(self) -> None:
@@ -306,8 +319,8 @@ class VideoEditingTimelineTests(unittest.TestCase):
         )
         contract = contract_path.read_text(encoding="utf-8")
         self.assertNotRegex(contract, r"(?m)^### R\d{2} —")
-        self.assertIn("R01~R16", contract)
-        self.assertIn("TC01~TC16", contract)
+        self.assertIn("R01~R22", contract)
+        self.assertIn("TC01~TC33", contract)
         self.assertNotIn("local_changes_backup", contract)
         self.assertNotIn("extension/reports", contract)
         for capability in (
@@ -316,7 +329,13 @@ class VideoEditingTimelineTests(unittest.TestCase):
             "import-csv",
             "sequence-v5",
             "premiere-cs6-v4",
-            "semantic_gate: pending",
+            "rule-gate",
+            "semantic_gate: not_run",
+            "video-edit-timeline-v2",
+            "write_validated_premiere_xml",
+            "migrate-v1",
+            "approved_delta",
+            "format_regeneration",
         ):
             self.assertIn(capability, contract)
         readme = (

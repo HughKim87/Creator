@@ -69,6 +69,7 @@ Core 공통 정책·작업 등급·승인·검증 절차는 Core 정책이 소�
 | 발화·화면·밝기·동작·전환 경계를 검수 | [영상 편집 경계 품질 규칙](extension/rules/video-editing-boundary-quality.md) |
 | 편집 작업을 재개하거나 revision·사용자 수정본·승인을 반영 | [영상 편집 상태·승인 규칙](extension/rules/video-editing-state-and-approval.md) |
 | validator를 실행하거나 timeline·XML·검토본의 성공·전달 상태를 보고 | [영상 편집 검증·전달 규칙](extension/rules/video-editing-validation-and-delivery.md) |
+| 컷 편집 이후 자막·효과·카드·음악·음량을 설계하거나 적용 | [영상 후편집 규칙](extension/rules/video-post-production.md) |
 <!-- /core-rule-routes:v1 -->
 
 라우팅은 최초 요청만이 아니라 다음 실질 행동을 기준으로 다시 평가한다. 여러 행이 일치하면 모두 선택하고, 이미 읽은 소유자는 같은 논리적 작업에서 다시 읽지 않는다.
