@@ -1,0 +1,74 @@
+{
+  "version": "editorial-state-v1",
+  "source_manifest_fingerprint": "sha256:760c75f482e9420f6bdccaa585dc2f6703c81948933a9abf671b352dfcc688fe",
+  "generation": 1,
+  "scenes": [
+    {
+      "id": "discovery",
+      "source_in": 0,
+      "source_out": 300,
+      "show": "Identify a pursuer before reacting",
+      "viewer_learns": "A threat is present and approaching",
+      "next_action_reason": "Move away from the visible threat",
+      "depends_on": [],
+      "anchors": [
+        {
+          "id": "threat-visible",
+          "source_in": 0,
+          "source_out": 118,
+          "media_scope": "both",
+          "observation": "Synthetic fixture: visual cause and its speech"
+        }
+      ]
+    },
+    {
+      "id": "escape",
+      "source_in": 300,
+      "source_out": 420,
+      "show": "React and escape after discovery",
+      "viewer_learns": "The player responds to that threat",
+      "next_action_reason": "Seek refuge",
+      "depends_on": [
+        "discovery"
+      ],
+      "anchors": [
+        {
+          "id": "escape-action",
+          "source_in": 300,
+          "source_out": 420,
+          "media_scope": "both",
+          "observation": "Synthetic fixture: consequent escape"
+        }
+      ]
+    }
+  ],
+  "feedback": [],
+  "reviews": [
+    {
+      "editorial_fingerprint": "sha256:34035cff33e6fcfefecbdd640b12f3bee202931242e253f9ad72399fc3617824",
+      "state_basis_fingerprint": "sha256:32308943348092a812a5b93306f45b8f266cbbe340061a71679d86c0618562fb",
+      "generation": 1,
+      "omissions": [
+        {
+          "scene_id": "discovery",
+          "track": "video",
+          "source_in": 120,
+          "source_out": 300,
+          "reason": "Synthetic repeated movement",
+          "observation": "Synthetic inspected interval, not real media",
+          "certainty": "confirmed"
+        },
+        {
+          "scene_id": "discovery",
+          "track": "audio",
+          "source_in": 118,
+          "source_out": 300,
+          "reason": "Synthetic repeated movement",
+          "observation": "Synthetic inspected interval, not real media",
+          "certainty": "confirmed"
+        }
+      ],
+      "resolutions": []
+    }
+  ]
+}

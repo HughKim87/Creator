@@ -112,6 +112,78 @@ def _source_file(
     _sample_characteristics(audio, source=source, media_type="audio")
 
 
+def _cs6_rate(
+    parent: ET.Element,
+    numerator: int,
+    denominator: int,
+) -> None:
+    if denominator == 1001 and numerator in {24000, 30000, 60000}:
+        timebase = numerator // 1000
+        ntsc = True
+    elif numerator % denominator == 0:
+        timebase = numerator // denominator
+        ntsc = False
+    else:
+        raise PremiereXmlError(
+            f"unsupported frame rate for Premiere XML: {numerator}/{denominator}"
+        )
+    rate = _child(parent, "rate")
+    _child(rate, "timebase", timebase)
+    if ntsc:
+        _child(rate, "ntsc", "TRUE")
+
+
+def _cs6_sample_characteristics(
+    parent: ET.Element,
+    *,
+    source: Mapping[str, Any],
+    media_type: str,
+) -> None:
+    sample = _child(parent, "samplecharacteristics")
+    if media_type == "video":
+        frame_rate = source["frame_rate"]
+        _cs6_rate(sample, frame_rate["numerator"], frame_rate["denominator"])
+        _child(sample, "width", source["video"]["width"])
+        _child(sample, "height", source["video"]["height"])
+        _child(sample, "anamorphic", "FALSE")
+        _child(sample, "pixelaspectratio", "square")
+        _child(sample, "fielddominance", "none")
+    else:
+        _child(sample, "depth", 16)
+        _child(sample, "samplerate", source["audio"]["sample_rate"])
+
+
+def _cs6_source_file(
+    parent: ET.Element,
+    *,
+    source: Mapping[str, Any],
+    first_reference: bool,
+) -> None:
+    file_element = _child(parent, "file")
+    file_element.set("id", "file-1")
+    if not first_reference:
+        return
+    _child(file_element, "name", Path(source["path"]).name)
+    _child(file_element, "pathurl", _path_url(source["path"]))
+    frame_rate = source["frame_rate"]
+    _cs6_rate(file_element, frame_rate["numerator"], frame_rate["denominator"])
+    _child(file_element, "duration", source["total_frames"])
+    timecode = _child(file_element, "timecode")
+    _cs6_rate(timecode, frame_rate["numerator"], frame_rate["denominator"])
+    _child(timecode, "string", "00:00:00:00")
+    _child(timecode, "frame", 0)
+    _child(timecode, "displayformat", "NDF")
+    reel = _child(timecode, "reel")
+    _child(reel, "name")
+    media = _child(file_element, "media")
+    video = _child(media, "video")
+    _child(video, "duration", source["total_frames"])
+    _cs6_sample_characteristics(video, source=source, media_type="video")
+    audio = _child(media, "audio")
+    _cs6_sample_characteristics(audio, source=source, media_type="audio")
+    _child(audio, "channelcount", source["audio"]["channels"])
+
+
 def _clip_item(
     track: ET.Element,
     *,
@@ -149,7 +221,42 @@ def _clip_item(
     return item
 
 
-def _add_links(specs: list[dict[str, Any]]) -> None:
+def _cs6_clip_item(
+    track: ET.Element,
+    *,
+    xml_id: str,
+    clip: Mapping[str, Any],
+    source: Mapping[str, Any],
+    media_type: str,
+    channel: int | None,
+) -> ET.Element:
+    item = _child(track, "clipitem")
+    item.set("id", xml_id)
+    item.set("frameBlend", "FALSE")
+    _child(item, "masterclipid", "masterclip-1")
+    _child(item, "name", clip["id"])
+    _child(item, "enabled", "TRUE")
+    _child(item, "duration", source["total_frames"])
+    _child(item, "start", clip["timeline_start"])
+    _child(item, "end", clip["timeline_end"])
+    _child(item, "in", clip["source_in"])
+    _child(item, "out", clip["source_out"])
+    if media_type == "video":
+        _child(item, "alphatype", "none")
+    _cs6_source_file(item, source=source, first_reference=False)
+    if media_type == "audio":
+        source_track = _child(item, "sourcetrack")
+        _child(source_track, "mediatype", "audio")
+        if channel is not None:
+            _child(source_track, "trackindex", channel)
+    return item
+
+
+def _add_links(
+    specs: list[dict[str, Any]],
+    *,
+    cs6_style: bool = False,
+) -> None:
     groups: dict[tuple[int, int, int, int], list[dict[str, Any]]] = {}
     for spec in specs:
         clip = spec["clip"]
@@ -178,7 +285,8 @@ def _add_links(specs: list[dict[str, Any]]) -> None:
                 _child(link, "mediatype", linked["media_type"])
                 _child(link, "trackindex", linked["track_index"])
                 _child(link, "clipindex", linked["clip_index"])
-                _child(link, "groupindex", 1)
+                if not cs6_style or linked["media_type"] == "audio":
+                    _child(link, "groupindex", 1)
 
 
 def _build_sequence_v5(value: Mapping[str, Any]) -> bytes:
@@ -296,12 +404,14 @@ def _stable_uuid(timeline: Mapping[str, Any], purpose: str) -> str:
     return str(uuid.uuid5(uuid.NAMESPACE_URL, f"video-editing:{purpose}:{canonical}"))
 
 
-def _build_premiere_cs6_v4(value: Mapping[str, Any]) -> bytes:
+def _build_premiere_cs6_v4(value: Mapping[str, Any], *, review_candidate: bool = False) -> bytes:
     timeline = validate_timeline(value)
-    if timeline["semantic_gate"]["status"] != "passed":
+    if timeline["semantic_gate"]["status"] != ("pending" if review_candidate else "passed"):
         raise PremiereXmlError("semantic_gate must be passed before XML generation")
     source = timeline["source"]
-    sequence_value = timeline["sequence"]
+    sequence_value = dict(timeline["sequence"])
+    if review_candidate:
+        sequence_value["name"] = "[REVIEW - NOT APPROVED] " + sequence_value["name"]
     duration = sequence_value["video_clips"][-1]["timeline_end"]
     channels = source["audio"]["channels"]
 
@@ -320,7 +430,7 @@ def _build_premiere_cs6_v4(value: Mapping[str, Any]) -> bytes:
     _child(master, "masterclipid", "masterclip-1")
     _child(master, "ismasterclip", "TRUE")
     _child(master, "duration", source["total_frames"])
-    _rate(
+    _cs6_rate(
         master,
         source["frame_rate"]["numerator"],
         source["frame_rate"]["denominator"],
@@ -334,14 +444,10 @@ def _build_premiere_cs6_v4(value: Mapping[str, Any]) -> bytes:
     master_item.set("frameBlend", "FALSE")
     _child(master_item, "masterclipid", "masterclip-1")
     _child(master_item, "name", Path(source["path"]).name)
-    _child(master_item, "duration", source["total_frames"])
-    _rate(
-        master_item,
-        source["frame_rate"]["numerator"],
-        source["frame_rate"]["denominator"],
-    )
     _child(master_item, "alphatype", "none")
-    _source_file(master_item, source=source, first_reference=True)
+    _child(master_item, "pixelaspectratio", "square")
+    _child(master_item, "anamorphic", "FALSE")
+    _cs6_source_file(master_item, source=source, first_reference=True)
     master_link = _child(master_item, "link")
     _child(master_link, "linkclipref", "masterclip-1-video")
     _child(master_link, "mediatype", "video")
@@ -352,34 +458,31 @@ def _build_premiere_cs6_v4(value: Mapping[str, Any]) -> bytes:
     sequence.set("id", "sequence-1")
     _child(sequence, "uuid", _stable_uuid(timeline, "sequence"))
     _child(sequence, "duration", duration)
-    _rate(
+    _cs6_rate(
         sequence,
         source["frame_rate"]["numerator"],
         source["frame_rate"]["denominator"],
     )
     _child(sequence, "name", sequence_value["name"])
-    _child(sequence, "in", -1)
-    _child(sequence, "out", -1)
     media = _child(sequence, "media")
     specs: list[dict[str, Any]] = []
 
     video = _child(media, "video")
     video_format = _child(video, "format")
-    _sample_characteristics(video_format, source=source, media_type="video")
+    _cs6_sample_characteristics(video_format, source=source, media_type="video")
     video_track = _child(video, "track")
+    _child(video_track, "enabled", "TRUE")
+    _child(video_track, "locked", "FALSE")
     for clip_index, clip in enumerate(sequence_value["video_clips"], start=1):
         xml_id = f"video-{clip['id']}"
-        element = _clip_item(
+        element = _cs6_clip_item(
             video_track,
             xml_id=xml_id,
             clip=clip,
             source=source,
             media_type="video",
             channel=None,
-            first_reference=False,
         )
-        element.set("frameBlend", "FALSE")
-        _child(element, "alphatype", "none")
         specs.append(
             {
                 "xml_id": xml_id,
@@ -390,12 +493,9 @@ def _build_premiere_cs6_v4(value: Mapping[str, Any]) -> bytes:
                 "clip_index": clip_index,
             }
         )
-    _child(video_track, "enabled", "TRUE")
-    _child(video_track, "locked", "FALSE")
-
     audio = _child(media, "audio")
     audio_format = _child(audio, "format")
-    _sample_characteristics(audio_format, source=source, media_type="audio")
+    _cs6_sample_characteristics(audio_format, source=source, media_type="audio")
     outputs = _child(audio, "outputs")
     for channel in range(1, channels + 1):
         group = _child(outputs, "group")
@@ -413,18 +513,18 @@ def _build_premiere_cs6_v4(value: Mapping[str, Any]) -> bytes:
             "premiereTrackType",
             "Stereo" if channels == 2 else "Mono",
         )
+        _child(audio_track, "enabled", "TRUE")
+        _child(audio_track, "locked", "FALSE")
         for clip_index, clip in enumerate(sequence_value["audio_clips"], start=1):
             xml_id = f"audio-{channel}-{clip['id']}"
-            element = _clip_item(
+            element = _cs6_clip_item(
                 audio_track,
                 xml_id=xml_id,
                 clip=clip,
                 source=source,
                 media_type="audio",
                 channel=channel,
-                first_reference=False,
             )
-            element.set("frameBlend", "FALSE")
             specs.append(
                 {
                     "xml_id": xml_id,
@@ -435,13 +535,11 @@ def _build_premiere_cs6_v4(value: Mapping[str, Any]) -> bytes:
                     "clip_index": clip_index,
                 }
             )
-        _child(audio_track, "enabled", "TRUE")
-        _child(audio_track, "locked", "FALSE")
         _child(audio_track, "outputchannelindex", channel)
 
-    _add_links(specs)
+    _add_links(specs, cs6_style=True)
     timecode = _child(sequence, "timecode")
-    _rate(
+    _cs6_rate(
         timecode,
         source["frame_rate"]["numerator"],
         source["frame_rate"]["denominator"],
@@ -465,7 +563,7 @@ def _build_premiere_cs6_v4(value: Mapping[str, Any]) -> bytes:
     )
 
 
-def build_premiere_xml(
+def _build_premiere_xml(
     value: Mapping[str, Any],
     *,
     profile: str = SEQUENCE_V5_PROFILE,
@@ -480,7 +578,7 @@ def build_premiere_xml(
     )
 
 
-def write_premiere_xml(
+def _write_premiere_xml(
     value: Mapping[str, Any],
     output_path: Path | str,
     *,
@@ -492,7 +590,7 @@ def write_premiere_xml(
         raise PremiereXmlError(f"output directory does not exist: {target.parent}")
     if target.exists() and not overwrite:
         raise PremiereXmlError(f"output already exists: {target}")
-    rendered = build_premiere_xml(value, profile=profile)
+    rendered = _build_premiere_xml(value, profile=profile)
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=f".{target.name}.",
         suffix=".tmp",
@@ -504,9 +602,17 @@ def write_premiere_xml(
             handle.write(rendered)
             handle.flush()
             os.fsync(handle.fileno())
-        if target.exists() and not overwrite:
-            raise PremiereXmlError(f"output already exists: {target}")
-        os.replace(temporary, target)
+        if overwrite:
+            os.replace(temporary, target)
+        else:
+            try:
+                os.link(temporary, target)
+            except FileExistsError as exc:
+                raise PremiereXmlError(f"output already exists: {target}") from exc
+            except OSError as exc:
+                raise PremiereXmlError(
+                    "filesystem cannot provide atomic no-clobber delivery"
+                ) from exc
     finally:
         if temporary.exists():
             temporary.unlink()

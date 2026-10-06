@@ -636,6 +636,6 @@ def inspect_timeline(value: Mapping[str, Any]) -> dict[str, Any]:
             ],
         }
     report["fingerprint"] = "sha256:" + hashlib.sha256(
-        _canonical(report).encode("utf-8")
+        _canonical(value).encode("utf-8")
     ).hexdigest()
     return report

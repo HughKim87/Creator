@@ -113,8 +113,8 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
         rule_ids = re.findall(r"(?m)^### (R\d{2}) —", rules_text)
         replay_ids = re.findall(r"(?m)^\| (TC\d{2}) \|", rules_text)
 
-        expected_rules = {f"R{number:02d}" for number in range(1, 17)}
-        expected_replays = {f"TC{number:02d}" for number in range(1, 17)}
+        expected_rules = {f"R{number:02d}" for number in range(1, 23)}
+        expected_replays = {f"TC{number:02d}" for number in range(1, 34)}
         self.assertEqual(expected_rules, set(rule_ids))
         self.assertEqual(expected_replays, set(replay_ids))
         self.assertEqual(
@@ -156,10 +156,10 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
             "TC05": "microbeat로 2차 편집한다",
             "TC06": "최소 공간·행동 연결을 유지한다",
             "TC07": "cue 전체 보존을 강제하지 않는다",
-            "TC08": "audio-only gap으로 파편을 제거한다",
+            "TC08": "source-native audio-only continuation으로 파편을 제거한다",
             "TC09": "새 상황의 첫 반응은 유지한다",
             "TC10": "대사를 임의 추가하지 않는다",
-            "TC11": "수정 clip과 인접 경계의 이전 승인만 무효화",
+            "TC11": "revision 전체 승인을 무효화",
             "TC12": "기술 통과·의미 실패",
         }
         for replay_id, phrase in expected_phrases.items():
@@ -175,17 +175,88 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
             / "VIDEO_EDITING_WORKFLOW_CONTRACT.md"
         ).read_text(encoding="utf-8")
         self.assertNotRegex(contract, r"(?m)^### R\d{2} —")
-        self.assertIn("R01~R16", contract)
-        self.assertIn("TC01~TC16", contract)
+        self.assertIn("R01~R22", contract)
+        self.assertIn("TC01~TC33", contract)
 
-    def test_video_artifacts_use_task_rule_and_single_scratch_lifecycle(self):
+    def test_video_artifacts_separate_scratch_from_approved_baseline_lifecycle(self):
         lineage = (
             RULES_DIR / "video-editing-artifact-lineage.md"
         ).read_text(encoding="utf-8")
-        self.assertIn("하나의 scratch root", lineage)
-        self.assertIn("발견 즉시 task-rule에 기록", lineage)
-        self.assertIn("closeout에서 일괄 제거", lineage)
-        self.assertIn("소비자·만료 조건", lineage)
+        self.assertIn("하나의 Git 제외 scratch root", lineage)
+        self.assertNotIn("task-rule", lineage)
+        self.assertIn("task evidence는 활성 규칙 owner가 아니며", lineage)
+        self.assertIn("current` 또는 `approved` 기준본", lineage)
+        self.assertIn("채택되지 않은 `working_candidate`", lineage)
+        self.assertIn("consumer / validation / superseded_by 또는 expiry", lineage)
+
+    def test_repeated_editing_failures_are_prevented_by_general_rules(self):
+        rules = {
+            path.name: path.read_text(encoding="utf-8")
+            for path in RULES_DIR.glob("*.md")
+        }
+
+        intake = rules["video-editing-intake-and-instructions.md"]
+        self.assertIn("좌표계 / 단위 / 적용 범위", intake)
+        self.assertIn("연속 재생 단위·허용 sidecar", intake)
+        self.assertIn("과거 결과 길이", intake)
+
+        lineage = rules["video-editing-artifact-lineage.md"]
+        self.assertIn("deliverable 폴더에 두지 않는다", lineage)
+        self.assertIn("계약 밖 산출물", lineage)
+
+        story = rules["video-editing-story-and-cut-design.md"]
+        self.assertIn("가장 작은 연속 calibration", story)
+        self.assertIn("상황 / 원인·발견 / 행동·시도 / 결과 / 다음 상태", story)
+        self.assertIn("rough block", story)
+        self.assertIn("positive lock / defect / untouched", story)
+
+        boundary = rules["video-editing-boundary-quality.md"]
+        self.assertIn("source-native handle", boundary)
+        self.assertIn("정해진 개수나 비율로 강제하지 않는다", boundary)
+        self.assertIn("동작 재생에서 튀면 실패", boundary)
+
+        state = rules["video-editing-state-and-approval.md"]
+        self.assertIn("baseline+delta", state)
+        self.assertIn("source anchor·사건 ID·증상·필수 복원 기능", state)
+        self.assertIn("HEAD·dirty 목록", state)
+
+        validation = rules["video-editing-validation-and-delivery.md"]
+        self.assertIn("인과·공간", validation)
+        self.assertIn("템포·반복", validation)
+        self.assertIn("화면·음성 경계", validation)
+        self.assertIn("별도 전편 재생이 아니", validation)
+        self.assertIn("영향 범위 검수", validation)
+        self.assertIn("not_scored", validation)
+        self.assertIn("일괄 편집 연산 뒤 회귀", validation)
+        self.assertIn("에이전트가 실행할 수 있는 검사를 모두 실행한다", validation)
+
+        self.assertIn("전제 대상을 최종 timeline에서 먼저 남기거나", story)
+        self.assertIn("기본 제거 후보로 두고", story)
+        self.assertIn("영상 주제·사건·인물과 무관한 발화", story)
+        self.assertIn("약한 말끝 기준을 분리", boundary)
+        self.assertIn("정본 하나를 정하며", intake)
+
+        post = rules["video-post-production.md"]
+        self.assertIn("원본에 없는 사건·감정·위협을 만들지 않는다", post)
+        self.assertIn("레이어 종류가 모두 들어가는 가장 작은 연속 구간", post)
+        self.assertIn("목표 수치는 편집 프로필에 둔다", post)
+        self.assertIn("주 시청 기기에서 읽히는 기준", post)
+        self.assertIn("레이어가 없는 구간을 합성 전 원본과 비교", post)
+
+    def test_general_rules_do_not_embed_single_video_history(self):
+        rules_text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in RULES_DIR.glob("*.md")
+        )
+        for task_specific in (
+            "백룸",
+            "backrooms_single_sequence",
+            "v20-r",
+            "v21-r",
+            "36:22.380",
+        ):
+            with self.subTest(task_specific=task_specific):
+                self.assertNotIn(task_specific, rules_text)
 
     def test_candidate_reference_is_routed_but_not_active_rule(self):
         readme = (EXTENSION / "README.md").read_text(encoding="utf-8")
