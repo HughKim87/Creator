@@ -104,6 +104,118 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def validate_content_review(
+    data: dict[str, Any],
+    statuses: dict[str, str | None],
+    local_artifacts: dict[str, list[Path]],
+    errors: list[str],
+    *,
+    root: Path | None,
+    check_artifacts: bool,
+    required: bool,
+) -> str:
+    """Check review records and fingerprints, not the truth of video claims."""
+    if "content_review" not in data:
+        if required:
+            errors.append("content_review is required for coordinator production")
+        return "not_recorded"
+    review = data["content_review"]
+    if not isinstance(review, dict):
+        errors.append("content_review must be an object")
+        return "invalid"
+    status = review.get("status")
+    if status not in ("pending", "reviewed"):
+        errors.append("content_review.status must be pending or reviewed")
+    completion_required = (
+        statuses.get("title_thumbnail") == "complete"
+        or statuses.get("upload_package") in (
+            "in_progress", "needs_user", "blocked", "complete"
+        )
+        or data.get("status") == "complete"
+    )
+    if completion_required and status != "reviewed":
+        errors.append("packaging requires a reviewed content_review")
+    findings = review.get("findings")
+    if not isinstance(findings, list):
+        errors.append("content_review.findings must be an array")
+        findings = []
+    for index, finding in enumerate(findings):
+        field = f"content_review.findings[{index}]"
+        if not isinstance(finding, dict):
+            errors.append(f"{field} must be an object")
+            continue
+        for key in ("location", "claim", "reason"):
+            if not nonempty_text(finding.get(key)):
+                errors.append(f"{field}.{key} must be non-empty text")
+        if finding.get("kind") not in (
+            "factual_error", "unsupported_claim", "scope_limitation"
+        ):
+            errors.append(f"{field}.kind is unsupported")
+        severity = finding.get("severity")
+        if severity not in ("material", "minor"):
+            errors.append(f"{field}.severity must be material or minor")
+        evidence = finding.get("evidence")
+        if not isinstance(evidence, list) or not evidence or any(
+            not nonempty_text(item) for item in evidence
+        ):
+            errors.append(f"{field}.evidence must contain source references")
+        disposition = finding.get("status")
+        if disposition not in ("open", "resolved", "disclosed"):
+            errors.append(f"{field}.status must be open, resolved or disclosed")
+        if disposition == "disclosed" and severity != "minor":
+            errors.append(f"{field}: material issues cannot be resolved by disclosure")
+        if completion_required and disposition == "open":
+            errors.append(f"{field}: open issues prevent packaging completion")
+        if disposition in ("resolved", "disclosed"):
+            resolution = finding.get("resolution")
+            if not isinstance(resolution, dict):
+                errors.append(f"{field}.resolution must be an object")
+                continue
+            allowed_methods = (
+                ("guide_note",) if disposition == "disclosed"
+                else ("video_corrected", "evidence_verified")
+            )
+            if resolution.get("method") not in allowed_methods:
+                errors.append(f"{field}.resolution.method is invalid for its status")
+            if not nonempty_text(resolution.get("note")):
+                errors.append(f"{field}.resolution.note must describe the correction or evidence")
+    if status != "reviewed":
+        return status if isinstance(status, str) else "invalid"
+    if statuses.get("video") != "complete" or statuses.get("captions") != "complete":
+        errors.append("content_review reviewed requires completed video and captions")
+    parse_timestamp(review.get("checked_at"), "content_review.checked_at", errors)
+    if not nonempty_text(review.get("summary")):
+        errors.append("content_review.summary must describe the reviewed claims and sources")
+    hashes = review.get("artifact_hashes")
+    if not isinstance(hashes, dict):
+        errors.append("content_review.artifact_hashes must be an object")
+        hashes = {}
+    for key, extension in (("video", ".mp4"), ("captions", ".srt")):
+        value = review.get(key)
+        if (
+            not nonempty_text(value)
+            or "://" in value
+            or Path(value).is_absolute()
+            or ".." in Path(value).parts
+            or Path(value).suffix.lower() != extension
+        ):
+            errors.append(f"content_review.{key} must be a repository-relative {extension} path")
+            continue
+        declared = hashes.get(key)
+        if not isinstance(declared, str) or len(declared) != 64 or any(
+            char not in "0123456789abcdef" for char in declared.lower()
+        ):
+            errors.append(f"content_review.artifact_hashes.{key} must be a SHA-256 hex digest")
+        if check_artifacts and root is not None:
+            artifact = resolve_artifact(root, value, errors)
+            if artifact is not None:
+                if artifact not in local_artifacts.get(key, []):
+                    errors.append(f"content_review.{key} differs from its completed-stage artifact")
+                if not isinstance(declared, str) or declared.lower() != sha256(artifact):
+                    errors.append(f"content_review artifact hash differs: {key}")
+    return "reviewed"
+
+
 def validate_title_package(
     path: Path,
     errors: list[str],
@@ -234,6 +346,7 @@ def validate_manual_package(
     path: Path,
     project_root: Path,
     errors: list[str],
+    disclosure_notes: list[str] | None = None,
 ) -> None:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -248,6 +361,26 @@ def validate_manual_package(
         errors.append("manual upload package is not ready")
     if preparation.get("youtube_actions") != "manual_by_user":
         errors.append("manual upload package must remain manual_by_user")
+    if disclosure_notes:
+        metadata = data.get("metadata")
+        description = metadata.get("description") if isinstance(metadata, dict) else None
+        for note in disclosure_notes:
+            if not isinstance(description, str) or note not in description:
+                errors.append("manual upload description omits a content-review disclosure")
+        guide_value = preparation.get("guide")
+        if not nonempty_text(guide_value):
+            errors.append("manual upload guide is required for content-review disclosures")
+        else:
+            guide = resolve_artifact(project_root, str(path.parent / guide_value), errors)
+            if guide is not None:
+                try:
+                    guide_text = guide.read_text(encoding="utf-8")
+                except (OSError, UnicodeDecodeError) as exc:
+                    errors.append(f"cannot read manual upload guide: {exc}")
+                else:
+                    for note in disclosure_notes:
+                        if note not in guide_text:
+                            errors.append("manual upload guide omits a content-review disclosure")
     schema = data.get("schema_version")
     if schema not in {
         "youtube-manual-upload-v2",
@@ -343,6 +476,7 @@ def validate_video_job(
     root: Path | None = None,
     check_artifacts: bool = False,
     worktree_result: dict[str, Any] | None = None,
+    require_content_review: bool = False,
 ) -> dict[str, Any]:
     errors: list[str] = []
     if not isinstance(data, dict):
@@ -506,6 +640,11 @@ def validate_video_job(
                     local_artifacts[name] = resolved
         previous_complete = previous_complete and status == "complete"
 
+    content_review_status = validate_content_review(
+        data, statuses, local_artifacts, errors,
+        root=root, check_artifacts=check_artifacts, required=require_content_review,
+    )
+
     if len(active_stages) > 1:
         errors.append(f"at most one active stage is allowed: {active_stages}")
 
@@ -638,7 +777,16 @@ def validate_video_job(
                     "upload_package complete requires youtube-manual-upload.json"
                 )
             else:
-                validate_manual_package(package_paths[0], root, errors)
+                review = data.get("content_review")
+                findings = review.get("findings", []) if isinstance(review, dict) else []
+                disclosure_notes = []
+                for finding in findings if isinstance(findings, list) else []:
+                    if not isinstance(finding, dict) or finding.get("status") != "disclosed":
+                        continue
+                    resolution = finding.get("resolution")
+                    if isinstance(resolution, dict) and nonempty_text(resolution.get("note")):
+                        disclosure_notes.append(resolution["note"])
+                validate_manual_package(package_paths[0], root, errors, disclosure_notes)
             if not any(
                 path.name == "YOUTUBE-MANUAL-UPLOAD.md"
                 for path in upload_paths
@@ -661,6 +809,7 @@ def validate_video_job(
         "job_id": data.get("job_id"),
         "execution_mode": execution_mode,
         "stage_statuses": statuses,
+        "content_review_status": content_review_status,
         "worktree": worktree_result,
         "errors": errors,
     }
@@ -675,6 +824,11 @@ def parse_args() -> argparse.Namespace:
         "--check-artifacts",
         action="store_true",
         help="Verify completed-stage local artifacts and final output contract.",
+    )
+    parser.add_argument(
+        "--require-content-review",
+        action="store_true",
+        help="Require the content review contract for coordinator production.",
     )
     return parser.parse_args()
 
@@ -697,6 +851,7 @@ def main() -> int:
         root=root,
         check_artifacts=args.check_artifacts,
         worktree_result=worktree_result,
+        require_content_review=args.require_content_review,
     )
     result["job"] = str(job_path)
     print(json.dumps(result, ensure_ascii=False, indent=2))

@@ -7,6 +7,8 @@ description: 완성 영상, 승인된 제목·썸네일, SRT, 설명과 설정�
 
 로컬 업로드 자료와 복사 가능한 가이드를 만든다. 브라우저나 YouTube를 조작하지 않는다.
 
+`coordinate-video-production`에서 호출되면 [하위 스킬 호출 계약](../coordinate-video-production/SKILL.md#하위-스킬-호출-계약)에 따라 단계 결과를 반환한다. 단독 호출에서는 이 스킬의 완료·정지 경계를 적용한다.
+
 ## 입력과 위치
 
 [references/manual-upload-package-format.md](references/manual-upload-package-format.md)에 따라 새 작업은 `youtube-manual-upload-v3` JSON을 `extension/work/<job-id>/`에 둔다.
@@ -15,6 +17,12 @@ description: 완성 영상, 승인된 제목·썸네일, SRT, 설명과 설정�
 - 제목·썸네일 패키지와 기술 메타데이터는 `work/<job-id>/`에 둔다.
 - 가이드는 `outputs/<job-id>/YOUTUBE-MANUAL-UPLOAD.md`로 생성한다.
 - `outputs/<job-id>/`의 최종 파일은 MP4·썸네일·SRT·가이드 네 개뿐이다.
+
+## 미완성 작업의 가이드 초안
+
+가이드를 먼저 요청받거나 썸네일이 대기·차단된 경우 [초안 형식](references/manual-upload-package-format.md#가이드-초안)을 사용해 `work/<job-id>/YOUTUBE-MANUAL-UPLOAD-DRAFT.md`를 직접 작성한다. 확보한 자료의 제목·설명·설정·수동 업로드 순서를 제공하고 미확정 항목을 표시한다. 영상 내용 검수에서 확인된 문제도 미완성 항목에 포함한다.
+
+이 경로는 최종 JSON의 `ready` 검증을 우회하지 않는다. 초안에는 `prepare_upload_package.py`와 finalizer·retention을 사용하지 않는다. coordinator에는 초안 경로와 남은 항목을 반환하며 기존 제작 단계 상태를 유지한다. 최종 준비 때는 승인된 최신 입력과 내용 검수 결과로 정식 패키지·가이드를 생성한다.
 
 ## 검증과 가이드
 
@@ -36,6 +44,7 @@ python scripts/prepare_upload_package.py <youtube-manual-upload.json> --check
 - 영상·썸네일·SRT·제목·썸네일 패키지의 현재 SHA-256이 수동 패키지의 `artifact_hashes`와 일치함
 - 채널 ID나 외부 작업 승인이 없음
 - final output 파일명이 정확히 네 개임
+- coordinator 호출에서는 현재 영상·SRT의 내용 검수가 완료되고 미해결 중대 오류가 없음. 공개할 경미한 한계는 `metadata.description`에 반영해 가이드에도 포함함
 
 검증이 통과하면 가이드를 생성한다.
 

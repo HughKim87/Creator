@@ -67,7 +67,8 @@ $activeBranch = $activation.active_branch
 python .agents/skills/coordinate-video-production/scripts/validate_video_job.py `
   extension/work/<job-id>/VIDEO_JOB.json `
   --root . `
-  --check-artifacts
+  --check-artifacts `
+  --require-content-review
 ```
 
 `status: valid`와 `worktree.status: valid`가 아니면 진행하지 않는다.
@@ -102,15 +103,37 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 | `title_thumbnail` | `$youtube-title-thumbnail` | 승인된 제목·문구·생성·최종 시각과 썸네일 |
 | `upload_package` | `$prepare-youtube-upload` | 업로드용 네 파일, 별도 archive와 수동 가이드 |
 
-첫 `pending` 단계만 실행한다. 앞 단계가 모두 `complete`가 아니면 뒤 단계를 시작하지 않는다.
+첫 `pending` 단계만 실행한다. 앞 단계가 모두 `complete`가 아니면 뒤 단계를 시작하지 않는다. 다만 아래의 업로드 가이드 초안은 단계 완료와 별개인 준비 작업으로 허용한다.
+
+## 하위 스킬 호출 계약
+
+하위 스킬에 호출자가 `coordinate-video-production`임을 밝히고 현재 작업 기록 경로, `execution_mode`, 해당 단계의 승인 범위와 검증된 입력을 전달한다. 하위 스킬의 “멈춘다”, “후속 단계 전에 종료한다”는 문구는 단독 호출의 작업 경계다. coordinator 호출에서는 해당 단계의 결과를 반환하며, coordinator가 검증·상태 갱신 후 현재 실행 모드에 따라 이어간다. 하위 스킬을 호출하는 데 별도 Agent 생성은 필요하지 않다.
+
+`autonomous_local_pipeline`에 이미 포함된 다음 단계는 하위 스킬의 반환만을 이유로 다시 승인받지 않는다. 로그인·한도·오류 등 실제 차단, 위임되지 않은 결정, 비용·권한·외부 효과 경계는 그대로 반환하고 해당 상태에서 멈춘다. `review_gated`에서는 기존 단계별 승인 경계를 유지한다.
+
+## 업로드 가이드 초안
+
+사용자가 가이드를 먼저 요청하거나 썸네일 단계가 대기·차단된 경우, 확보한 영상·SRT·제목·근거로 `$prepare-youtube-upload`의 초안 경로를 실행할 수 있다. 작업 폴더에 `YOUTUBE-MANUAL-UPLOAD-DRAFT.md`를 만들고 미확정 제목·썸네일·내용 검수 등 남은 항목을 표시한다. 확인되지 않은 항목은 확정하지 않는다.
+
+초안은 `upload_package.note`에 경로와 미완성 항목만 기록한다. 기존 활성 단계·차단 사유·`next_action`을 유지하고 `upload_package`는 `pending`으로 둔다. 초안을 완료 산출물에 넣거나 finalizer·archive를 실행하지 않는다. 최종 조건이 충족되면 현재 자료로 최종 가이드를 새로 생성한다.
+
+## 영상 내용 검수
+
+자막 전체 검수가 끝난 뒤 제목·썸네일 제작 전에 영상의 핵심 사실·비교·선택 권고를 실제 사용한 리서치 근거와 대조한다. `content_review`에 검수한 MP4·SRT 경로와 해시, 검토 범위, 발견한 주장 위치·근거·처리 결과를 [작업 기록 형식](references/video-job-format.md#영상-내용-검수-기록)에 따라 기록한다. 기계 검사는 기록·해시·완료 조건을 확인하며 주장 자체의 진위를 대신 판정하지 않는다.
+
+결제·제품 선택·기능 이해·영상 결론을 바꿀 수 있는 사실 오류나 근거 없는 핵심 단정은 `material`, 그 밖의 표현 한계는 `minor`로 분류하고 이유를 남긴다. 중대한 오류는 영상 수정 또는 실제 근거 재확인으로 해결한다. 설명란 주의 문구, 사용자 승인, SRT만의 사실 교정으로 해결 처리하지 않는다. 경미한 한계는 정확한 정정·범위를 최종 설명란과 가이드에 공개할 수 있다.
+
+미해결 중대 오류가 있으면 `title_thumbnail`을 `blocked`로 두고 job의 차단 사유와 수정 행동을 기록한다. 기술적으로 완료된 영상·자막 단계는 유지한다. 검수 미완료도 제목·썸네일 제작 전에 해결한다. 내용 수정에 별도 권한·비용이 필요하면 그 결정만 요청한다. 영상·SRT 변경 시 검수 해시와 영향받는 제목·썸네일·수동 패키지를 다시 확인한다.
+
+새 작업에는 `content_review`를 포함한다. 기존 기록의 읽기·검증 호환은 유지하되, 이 스킬로 제작을 재개하거나 패키지를 다시 완료할 때 기록이 없으면 `pending` 검수를 추가한다. 이미 제목·썸네일과 업로드 단계가 완료였다면 파일·승인 근거를 보존한 채 해당 단계만 `pending`, job은 `active`로 되돌리고 내용 검수부터 수행한다. 과거의 기술 검증 결과를 내용 검수 완료로 변환하지 않는다.
 
 ## 실행과 승인
 
 1. 실제 산출물과 작업 기록을 확인한다.
-2. 활성·사용자 대기·차단 단계가 있으면 그 상태부터 해결한다.
+2. 활성·사용자 대기·차단 단계가 있으면 그 상태부터 확인한다. 후속 단계는 차단을 해결한 뒤 실행하며, 가이드 초안 요청은 위 초안 경로로 처리할 수 있다.
 3. 다음 스킬 하나만 실행하고 산출물을 검증한다.
 4. 검증 후에만 단계 상태와 경로를 갱신한다.
-5. `autonomous_local_pipeline`이면 검증 직후 다음 `pending` 단계로 계속한다. `needs_user`, `blocked`, `complete` 또는 아래 외부 경계에 도달할 때만 멈춘다.
+5. `autonomous_local_pipeline`이면 검증 직후 다음 `pending` 단계로 계속한다. `needs_user`, `blocked`, `complete` 또는 아래 외부 경계에 도달할 때만 멈춘다. 대기·차단 상태에서 가이드 초안을 준비할 수 있으면 이를 반환한 뒤 해당 상태를 유지한다.
 
 `thumbnail_contract.approval_mode: review_gated`의 썸네일 단계는 다음 순서를 강제한다.
 
@@ -146,6 +169,7 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 다음을 모두 충족할 때만 job을 `complete`, `next_action`을 `none`으로 기록한다.
 
 - 다섯 단계 `complete`
+- 현재 영상·SRT에 대한 `content_review.status: reviewed`, 미해결 중대 오류 0, 공개할 경미한 한계가 최종 설명란·가이드에 반영됨
 - worktree와 작업 기록 검증 통과
 - 제목·썸네일 승인 포함 검증 통과
 - `VIDEO_JOB.json`의 `thumbnail_contract`와 제목·썸네일 패키지의 생성·승인 계약 일치

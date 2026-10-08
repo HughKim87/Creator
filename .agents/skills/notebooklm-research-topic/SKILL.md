@@ -7,6 +7,8 @@ description: NotebookLM 웹사이트에서 Deep Research를 우선 실행하고 
 
 NotebookLM 안에서 리서치를 수행하고, 다음 제작 단계가 사용할 수 있는 검수된 노트북을 준비한다. 외부 검색 결과를 NotebookLM 작업 결과처럼 대체하지 않는다.
 
+`coordinate-video-production`에서 호출되면 [하위 스킬 호출 계약](../coordinate-video-production/SKILL.md#하위-스킬-호출-계약)에 따라 단계 결과를 반환한다. 단독 호출에서는 이 스킬의 정지 경계를 적용한다.
+
 ## 입력 확정
 
 다음 항목을 사용자 요청에서 추출한다. 빠진 항목은 결과를 바꾸지 않는 범위에서 합리적으로 보완한다.

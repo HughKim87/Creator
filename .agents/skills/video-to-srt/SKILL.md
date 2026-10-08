@@ -7,6 +7,8 @@ description: NotebookLM 등에서 생성한 동영상의 음성을 로컬 Whispe
 
 정확히 지정된 영상에서 음성을 전사하고 검증된 SRT와 원본 전사 JSON을 만든다. 자막은 음성을 옮기는 산출물이며 영상에 없는 정보를 새로 쓰지 않는다.
 
+`coordinate-video-production`에서 호출되면 [하위 스킬 호출 계약](../coordinate-video-production/SKILL.md#하위-스킬-호출-계약)에 따라 단계 결과를 반환한다. 단독 호출에서는 이 스킬의 정지 경계를 적용한다. 발견한 영상 자체의 사실 오류·근거 부족은 SRT로 교정하지 않고 coordinator의 내용 검수에 전달한다.
+
 ## 입력과 작업 위치
 
 다음을 확정한다.
