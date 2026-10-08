@@ -1,44 +1,61 @@
 # Creator dokkaebi 워크트리 상태
 
-- 목적: 새 촬영 원본(dokkaebi)의 영상 편집을 main과 분리된 워크트리에서 진행한다.
+- 목적: 새 촬영 원본 "도깨비의 세계 오픈런 방송"의 영상 편집을 main과 분리된 워크트리에서 진행한다.
 - 읽는 시점: core/PROJECT_RULES.md, PROJECT_RULES.md 뒤.
 - 책임: 에이전트가 이 브랜치의 편집 상태를 유지하고 사용자가 방향·결과를 승인한다.
-- 상태: active — 교정 전체 자막·스트리머 전용 자막 완료. 사용자 확인 후 1차 내용 분석과 방향 3안 대기.
-- handoff mode: same-workspace.
-- 관련 권위: extension/docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md 및 영상 편집 rule route.
+- 상태: active — 자막 교정·시청자 관점 분석·방향 A 선택·1차 구성 설계 완료. 2차 편집(실제 컷) 미착수.
+- handoff mode: same-workspace. 원본과 산출물이 Git 제외 경로(inputs/, extension/outputs/)에 있다.
+- 관련 권위: extension/docs/domain/youtube/VIDEO_EDITING_WORKFLOW_CONTRACT.md 및 PROJECT_RULES.md의 영상 편집 rule route.
 
 ## 현재 단계
 
-- 워크트리: D:/AI Agent/GitHub/Creator-dokkaebi, 브랜치 claude/dokkaebi, 기준 main bc341ae. core submodule 3e0ebe7.
-- 원본 입력 위치: inputs/ (보호 경로, git 무시). 사용자가 원본 영상과 있으면 SRT를 넣는다.
+- 워크트리: D:/AI Agent/GitHub/Creator-dokkaebi, 브랜치 claude/dokkaebi (기준 main bc341ae). core submodule 3e0ebe7.
+- 원본(읽기 전용): inputs/2026-10-08 11-01-06.mp4 — 12,728,534,764 bytes, 16481.917s, 1920×1080 60fps h264, AAC 48k stereo. 해시 미기록.
+- 사용자 원본 자막: inputs/2026-10-08 11-01-06.srt (whisper small 추정, 1,694큐).
 - 산출물 계약: Premiere Pro CS6용 xmeml v4 XML 하나, 1920×1080·60fps. 출력 위치 extension/outputs/.
-- 작업 profile: new_full_edit. 방향 미정 — 1차 내용 분석 후 근거가 다른 최대 3개 방향을 제시하고 사용자 선택을 받는다.
+- 작업 profile: new_full_edit, 게임 방송 프로필. 방향: A "첫날 플레이 종합 리뷰"(사용자 선택).
+- 활성 설계 정본: extension/outputs/dokkaebi-edit/dokkaebi-edit-design-A.md (스파인, 시청자 궁금증↔블록, B0~B21 블록 후보 범위와 #큐 근거, 전환 목록, 위험).
+
+## 완료된 산출물 (extension/outputs/dokkaebi-asr/)
+
+- 2026-10-08 11-01-06.corrected-full.srt — 원본 타임스탬프 기준 오타 교정 전체 자막(NPC 포함), 1,687큐, validate_srt valid.
+- 2026-10-08 11-01-06.streamer-only.srt — 진행자 발화만, 1,507큐, valid. 편집·후편집 자막의 기준.
+- dokkaebi-subtitle-review.json — 큐별 원문·large-v3-turbo 인식·교정문·화자 라벨(streamer/npc/mixed/noise)·사용자 확인 여부.
+- dokkaebi-npc-lines.md — NPC·혼합 판정 목록(사용자 검토용).
+- dokkaebi-content-analysis.md — 내용 지도와 시청자 궁금증 분석.
+- dokkaebi-large-v3-turbo.srt / .transcript.json / dokkaebi-asr-notes.json — 독립 재전사(faster-whisper large-v3-turbo, Creator-ainotebook runtime 모델). 보조 근거.
+- audio16k_a.flac, audio16k_b.flac — 분석용 16kHz 오디오(0~8240s, 8240s~). 작업 종료 시 정리 대상.
 
 ## 직전 게이트
 
-- 편집 규칙 개선(사용자 승인): 분석 순서를 `원본 자막 확보·정확도/화자 확인 → 1차 내용 분석 → 시청자 관점 분석 → 편집 설계`로 보강. 변경 파일: VIDEO_EDITING_WORKFLOW_CONTRACT.md(다섯 작업 층·new_full_edit 흐름·방향안 기준), video-editing-story-and-cut-design.md(R05 행동·검증, R06 도입 질문), video-editing-intake-and-instructions.md(R03). extension 테스트는 수정 전 main과 동일한 30건 실패(PowerShell 7·Python 3.11 부재 등 VM 환경 원인)로 회귀 없음. Windows에서 scripts/verify.py 재실행 필요. 미커밋.
-- 사용자 화자 피드백 반영: 85·87·166, 1594~1596·1606(급소/똥꼬 찌르기), 299·301을 스트리머로 변경. 427·428 스트리머, 990·1230·1482·1483·1530 문구 사용자 확인. 그 외 애매 목록은 현 분류 유지. 스트리머 전용 1,507큐 valid.
-- 사용자 피드백 반영: 1594~1596·1606(급소/똥꼬 찌르기)과 85·87·166(UI 안내 낭독)을 스트리머로 변경. 이후 NPC 분류 목록(dokkaebi-npc-lines.md)에 대해 사용자가 '사극 말투로 구분이 잘 됐다'고 확인. streamer-only 1,505큐 valid.
-- 자막 교정(사용자 요청): 첨부 SRT 타임스탬프 기준 1,694큐를 large-v3-turbo 전사와 대조해 전 큐 수동 교정·화자 분류(S 1475 / NPC 178 / 혼합 25 / 잡음 16). 산출물 extension/outputs/dokkaebi-asr/2026-10-08 11-01-06.corrected-full.srt(1,687큐, valid), 2026-10-08 11-01-06.streamer-only.srt(1,498큐, valid), dokkaebi-subtitle-review.json(큐별 원문·ASR·교정·라벨). 원본 타임스탬프 깨진 8큐만 최소 보정(0길이·역전·겹침). 화자 분류는 텍스트 문맥 기반이며 실제 청취 검수 not_run.
-- 재전사: extension/outputs/dokkaebi-asr/dokkaebi-large-v3-turbo.srt (2587 cues, validate_srt valid), 원본 전사 JSON과 notes.json 동반. 방법은 notes.json 참조(반복 방지 설정 주 전사 + 이어받기 전사 보충 + 무VAD 재전사 + 기존 SRT 23개 fallback). 의미 전체 읽기 검수 not_done. 모델은 Creator-ainotebook runtime의 faster-whisper large-v3-turbo를 클라우드로 복사해 실행.
-- 보조 파일: extension/outputs/dokkaebi-asr/audio16k_a.flac, audio16k_b.flac (분석용 16kHz 오디오, 작업 종료 시 정리 대상).
-
-- 판정: pass. 워크트리·브랜치·core submodule 체크아웃 생성, 안내판 행 추가.
+- 자막: 사용자 피드백 반영 완료. 진행자 확정 #85·87·166·299·301·427·428·1594~1596·1606(급소/똥꼬 찌르기는 진행자). 문구 확정 #990·1230·1482·1483·1530. 나머지 애매 목록은 현 분류 유지(사용자 확인).
+- 화자 분류는 텍스트(사극 말투·세계관 내용) 기반. 실제 청취 검수 not_run.
+- 편집 규칙 개선 커밋 fe86d7a: 자막 확보·정확도/화자 확인 → 내용 분석 → 시청자 관점 분석 → 편집 설계 순서(WORKFLOW_CONTRACT 다섯 작업 층, R03, R05, R06).
+- 검증: VM 환경에서 extension 테스트 30건 실패하나 수정 전 main과 동일(PowerShell 7 부재 21, 플랫폼 snapshot 보장 불가 4, core 계약 경로 5). Windows에서 scripts/verify.py 미실행.
 
 ## 승인 상태
 
-- 승인: 워크트리 생성, 산출물 형식(CS6 XML), 분석 후 방향 3안 제시.
-- 미승인: 편집 방향, 컷 설계, commit·push.
+- 승인: 워크트리 생성, 산출물 형식(CS6 XML), 자막 교정 결과, 편집 규칙 개선과 커밋, 방향 A.
+- 미승인: 편집 문법(calibration.required=true), 보스전 압축 방식(내부 컷/배속), 목표 길이, B0 도입 구성, 후편집 스타일 상속, push·main 병합.
 
 ## 차단
 
-- 없음.
+- 없음. 단 원본 화면은 아직 한 프레임도 확인하지 않았다.
 
 ## 알려진 위험
 
-- 워크트리는 Cowork Linux VM의 git으로 생성했고 경로 파일을 Windows 형식으로 맞췄다. Windows git에서 처음 열 때 `git status`로 정상 인식을 확인한다.
+- Cowork VM: CPU 2코어·RAM 3GB, 백그라운드 프로세스 불가(호출 종료 시 종료), 호출당 180초 제한. 장시간 처리(ASR 등)는 파일을 클라우드 컨테이너로 스테이징해 실행했다(400MB/파일 제한 → 분할).
+- 클라우드·VM 모두 HuggingFace 등 모델 다운로드 차단. 모델은 Creator-ainotebook/extension/.runtime/models/whisper/large-v3-turbo에 있음.
+- 워크트리는 VM git으로 만들고 경로 파일을 Windows 형식으로 맞췄다. VM에서 git 실행 시 GIT_DIR=<Creator>/.git/worktrees/Creator-dokkaebi, GIT_WORK_TREE=<Creator-dokkaebi> 지정 필요. Windows git 정상 인식은 사용자 미확인.
+- main 폴더의 SESSION_HANDOFF.md에 dokkaebi 행을 미커밋 상태로 추가해 둠(이 브랜치 커밋 내용과 동일).
+- NPC 음성과 진행자 발화가 겹치는 mixed 25큐는 오디오 경계 위험.
 
 ## 첫 다음 행동
 
-1. 원본 inputs/2026-10-08 11-01-06.mp4 (12,728,534,764 bytes, 16481.917s, 1920×1080 60fps) 해시 기록은 미완.
-2. 방향을 고정하지 않은 1차 내용 분석(전사·화면 표본) 후 최대 3개 방향을 제시한다.
+1. dokkaebi-edit-design-A.md를 읽고 §6 미정 항목(보스전 압축 방식, 목표 길이, B0 도입)을 사용자에게 확인한다.
+2. calibration: B15~B16(02:19:51~02:36:55, 분노→전환점) 구간을 정상 속도로 화면·오디오 확인하며 microbeat 2차 편집해 단일 sequence 검수 XML을 만들고 편집 문법 승인을 받는다.
+3. 승인 후 B0~B21 전체 2차 편집 → 의미·구조 gate → CS6 XML. 이후 후편집은 video-post-production 규칙과 사용자 확인.
+
+## 다음 세션 시작 prompt
+
+시작 3문서를 읽은 뒤 이 state 파일과 extension/outputs/dokkaebi-edit/dokkaebi-edit-design-A.md를 읽고 「첫 다음 행동」 1번부터 진행한다. 방향 A는 확정이며 방향안을 다시 만들지 않는다.
