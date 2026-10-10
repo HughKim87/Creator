@@ -11,6 +11,8 @@ Creative delegation is owned only by the active project policy clause `creator-v
 
 완성 영상의 실제 약속을 제목과 썸네일로 압축한다. 기술 검증을 창작 승인으로 간주하지 않는다.
 
+`coordinate-video-production`에서 호출되면 [하위 스킬 호출 계약](../coordinate-video-production/SKILL.md#하위-스킬-호출-계약)에 따라 단계 결과를 반환한다. 단독 호출에서는 이 스킬의 정지 경계를 적용한다. coordinator가 전달한 내용 검수의 미해결 중대 오류가 없어야 제작을 시작하며, 공개할 경미한 한계를 제목·썸네일에서 과장하지 않는다.
+
 ## 입력과 저장 위치
 
 다음을 확정한다.

@@ -38,12 +38,13 @@ class ChromeProfileSkillContractTests(unittest.TestCase):
     def test_connector_uses_exact_profile_launch_delta(self) -> None:
         text = read(CONNECT)
         required = [
-            "chrome:control-chrome",
-            "CODEX_CHROME_PREFERENCES_PATH",
+            "mcp__cua_repl.js",
+            "launch-profile.py",
+            "cua.getState()",
             "open-chrome-window.js --dry-run --json",
             "select-profile-delta.mjs",
-            'agent.browsers.get(descriptor.id)',
-            'discoveryMode: "post_launch_initial"',
+            'cua.getTab(result.tab.id, { browser: result.browserId })',
+            'normalizeChromeSnapshot',
             'discoveryMode: "baseline_delta"',
             "profile_launch_delta_not_found",
         ]

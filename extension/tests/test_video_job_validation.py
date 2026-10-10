@@ -63,6 +63,26 @@ def complete_job() -> dict[str, object]:
 
 
 class VideoJobValidationTests(unittest.TestCase):
+    def test_current_notebook_host_is_recognized_without_accepting_lookalikes(self) -> None:
+        for host in ("notebooklm.google.com", "notebook.google.com"):
+            self.assertTrue(MODULE.is_notebooklm_url(f"https://{host}/notebook/example"))
+        for url in (
+            "https://notebook.google.com.evil.test/notebook/example",
+            "http://notebook.google.com/notebook/example",
+            "https://notebook.google.com:8443/notebook/example",
+        ):
+            self.assertFalse(MODULE.is_notebooklm_url(url))
+
+    def test_verified_service_migration_preserves_requested_origin(self) -> None:
+        job = complete_job()
+        job["browser"]["resolved_origin"] = "https://notebook.google.com"
+        result = MODULE.validate_video_job(job)
+        self.assertEqual(result["status"], "valid", result["errors"])
+        self.assertEqual(job["browser"]["required_origin"], "https://notebooklm.google.com")
+        job["browser"]["resolved_origin"] = "https://notebook.google.com.evil.test"
+        result = MODULE.validate_video_job(job)
+        self.assertIn("browser.resolved_origin is not an approved service origin", result["errors"])
+
     def test_complete_job_is_valid(self) -> None:
         result = MODULE.validate_video_job(complete_job())
         self.assertEqual(result["status"], "valid", result["errors"])

@@ -7,6 +7,8 @@ description: 검수된 출처가 있는 NotebookLM 노트북에서 AI 동영상 
 
 준비된 NotebookLM 출처를 근거로 맞춤 설명 영상을 한 번 생성하고, 다음 단계가 사용할 수 있는 완성 아티팩트인지 검증한다.
 
+`coordinate-video-production`에서 호출되면 [하위 스킬 호출 계약](../coordinate-video-production/SKILL.md#하위-스킬-호출-계약)에 따라 단계 결과를 반환한다. 단독 호출에서는 이 스킬의 정지 경계를 적용한다.
+
 ## 입력 확정
 
 다음 항목을 사용자 요청과 노트북 상태에서 확정한다.
@@ -22,9 +24,9 @@ description: 검수된 출처가 있는 NotebookLM 노트북에서 AI 동영상 
 
 ## Chrome 연결 게이트
 
-1. browser runtime bootstrap이나 다른 `agent.browsers.*` 호출보다 먼저 작업 기록의 `browser.profile_directory`와 `browser.required_origin`을 그대로 `$connect-chrome-profile`에 전달한다. 둘 중 하나라도 없으면 기본값을 만들지 말고 작업 기록 검증 실패로 멈춘다.
+1. 브라우저 선택이나 작업 조작보다 먼저 작업 기록의 `browser.profile_directory`와 `browser.required_origin`을 그대로 `$connect-chrome-profile`에 전달한다. 둘 중 하나라도 없으면 기본값을 만들지 말고 작업 기록 검증 실패로 멈춘다.
 2. 연결 스킬이 `status: connected`를 반환할 때만 영상 생성을 시작하고, 반환된 Chrome 바인딩과 검증된 탭을 재사용한다.
-3. 이 스킬은 Chrome을 다시 선택하지 않는다. `agent.browsers.get("extension")`, `getDefault()`, `getForUrl()`와 기존 일반 `chrome`·`browser` 바인딩을 사용하지 않는다.
+3. 연결 스킬이 현재 `cua_repl`에서 반환한 Chrome 탭을 그대로 사용한다. 단계마다 Chrome을 다시 선택하지 않는다. 예전 `chrome:control-chrome` 파일의 존재는 진입 조건이 아니다. 원래 origin에서 검증된 `resolved_origin`으로 이동한 서비스도 같은 바인딩을 유지한다.
 4. 반환 바인딩이 명시적 unavailable·disconnected 오류를 내면 임의 fallback 없이 `$connect-chrome-profile`을 다시 실행한다.
 5. 공식 프로필 진단과 프로필 대상 실행 경로가 끝나기 전에 사용자에게 프로필 메뉴 전환이나 확장 패널 준비를 요구하지 않는다.
 6. 연결 스킬이 `needs_user` 또는 `unavailable`을 반환하면 그 결과를 그대로 기록하고 멈춘다. 다른 브라우저나 계정으로 우회하지 않는다.
@@ -74,7 +76,7 @@ description: 검수된 출처가 있는 NotebookLM 노트북에서 AI 동영상 
 3. 아티팩트를 열고 플레이어의 총 길이가 0보다 큰지 확인한다.
 4. 재생 버튼을 누른 시각을 기준으로 **30초 안에** 진행 시간이 실제로 증가하는지 확인하고 즉시 일시중지한다. 30초 안에 진행이 확인되지 않으면 재생을 계속 두지 말고 일시중지한 뒤 검증 실패로 보고한다. 재생 검증의 경과 시간(`playback_check_seconds`)과 일시중지 여부를 기록한다.
 5. 첫 장면 또는 대표 프레임을 시각적으로 확인해 선택한 스타일과 읽을 수 있는 텍스트가 적용됐는지 본다.
-6. 다운로드 버튼의 존재만 확인한다. 사용자가 다음 단계를 승인하기 전에는 파일을 다운로드하지 않는다.
+6. 다운로드 버튼의 존재만 확인하고 결과를 반환한다. 단독 호출에서는 사용자가 다음 단계를 승인하기 전에는 파일을 다운로드하지 않는다. coordinator 호출에서는 이미 위임된 다음 단계의 다운로드를 `$video-to-srt`가 수행한다.
 
 반환 결과:
 
