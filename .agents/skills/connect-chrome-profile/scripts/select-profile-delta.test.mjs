@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { selectProfileDelta } from "./select-profile-delta.mjs";
+import { selectProfileDelta, normalizeChromeSnapshot, matchesTargetOrigin } from "./select-profile-delta.mjs";
 
 const targetOrigin = "https://notebooklm.google.com";
 const launchStartedAt = "2026-07-27T01:00:00.000Z";
@@ -211,3 +211,47 @@ function tab(id, url, lastOpened = "2026-07-27T01:00:01.000Z") {
 }
 
 console.log("select-profile-delta tests passed");
+
+// A connected control tool can have zero Chrome browsers before profile launch.
+{
+  const baseline = normalizeChromeSnapshot({browsers: [
+    {id: "iab", type: "iab", name: "Codex In-app Browser", tabs: []},
+    {id: "apps", type: "mcpapps", tabs: []},
+  ]});
+  const current = normalizeChromeSnapshot({browsers: [
+    {id: "edge", type: "extension", family: "edge", tabs: []},
+    {id: "chrome-exact", type: "extension", family: "chrome",
+     tabs: [tab("launched", "about:blank")]},
+  ]});
+  assert.deepEqual(baseline, []);
+  const result = selectProfileDelta({baseline, current, targetOrigin, launchStartedAt});
+  assert.equal(result.status, "selected");
+  assert.equal(result.browserId, "chrome-exact");
+}
+{
+  assert.throws(() => normalizeChromeSnapshot({}), TypeError);
+  assert.throws(() => normalizeChromeSnapshot({browsers: [
+    {id: "", type: "extension", family: "chrome", tabs: []}
+  ]}), TypeError);
+}
+{
+  assert.equal(matchesTargetOrigin(targetOrigin, "https://notebook.google.com/notebook/example"), true);
+  for (const url of [
+    "https://notebook.google.com.evil.test/notebook/example",
+    "https://notebook.google.com@evil.test/",
+    "http://notebook.google.com/",
+    "https://notebook.google.com:8443/",
+    "https://accounts.google.com/",
+  ]) assert.equal(matchesTargetOrigin(targetOrigin, url), false, url);
+  assert.equal(matchesTargetOrigin("https://other.test", "https://notebook.google.com"), false);
+}
+{
+  const result = selectProfileDelta({
+    baseline: [browser("exact", [])],
+    current: [browser("exact", [tab("migrated", "https://notebook.google.com/notebook/example")])],
+    targetOrigin, launchStartedAt
+  });
+  assert.equal(result.status, "selected");
+  assert.equal(result.tab.id, "migrated");
+}
+console.log("Current control API inventory and service migration tests passed");

@@ -73,8 +73,8 @@ def parse_timestamp(value: Any, field: str, errors: list[str]) -> datetime | Non
 def is_notebooklm_url(value: str) -> bool:
     parsed = urlparse(value)
     return (
-        parsed.scheme in {"http", "https"}
-        and parsed.netloc == "notebooklm.google.com"
+        parsed.scheme == "https"
+        and parsed.netloc in {"notebooklm.google.com", "notebook.google.com"}
     )
 
 
@@ -135,6 +135,22 @@ def validate_content_review(
     )
     if completion_required and status != "reviewed":
         errors.append("packaging requires a reviewed content_review")
+    scope = review.get("review_scope")
+    if required and status == "reviewed":
+        if not isinstance(scope, dict):
+            errors.append("content_review.review_scope is required")
+        else:
+            if scope.get("narration_full_read") is not True:
+                errors.append("content_review requires full narration review")
+            if scope.get("visual_method") not in ("scene_samples", "all_frames", "continuous_playback"):
+                errors.append("content_review requires recorded visual review")
+            if scope.get("direct_listening") not in ("performed", "not_run"):
+                errors.append("content_review must record direct listening status")
+            limitations = scope.get("limitations")
+            if not isinstance(limitations, list) or any(not nonempty_text(x) for x in limitations):
+                errors.append("content_review.review_scope.limitations must be a text array")
+            elif scope.get("direct_listening") == "not_run" and not limitations:
+                errors.append("unperformed listening requires a disclosed limitation")
     findings = review.get("findings")
     if not isinstance(findings, list):
         errors.append("content_review.findings must be an array")
@@ -671,6 +687,14 @@ def validate_video_job(
     for field in ("profile_label", "profile_directory", "required_origin"):
         if not nonempty_text(browser.get(field)):
             errors.append(f"browser.{field} must be non-empty text")
+    resolved_origin = browser.get("resolved_origin")
+    if resolved_origin is not None:
+        requested = browser.get("required_origin")
+        allowed = {requested} if isinstance(requested, str) else set()
+        if requested == "https://notebooklm.google.com":
+            allowed.add("https://notebook.google.com")
+        if not isinstance(resolved_origin, str) or resolved_origin not in allowed:
+            errors.append("browser.resolved_origin is not an approved service origin")
     notebook_started = statuses.get("research") != "pending" or statuses.get(
         "video"
     ) not in {None, "pending"}

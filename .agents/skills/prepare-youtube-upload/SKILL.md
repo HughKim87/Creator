@@ -88,6 +88,6 @@ python scripts/retain_upload_package.py <youtube-manual-upload.json> --apply
 - retention 재검증의 archive 대상과 예상치 못한 디렉터리 0
 - `external_actions: none`
 
-예약 시간 추천을 요청받으면 채널의 시청 시간대·유사 영상의 초기 반응을 우선하고, 자료가 없으면 소재의 시의성과 대상 지역을 근거로 잠정 범위를 제시한다. 특정 시각이 최적이라는 실측 주장과 편집상 추정을 구분한다. 추천은 로컬 가이드에 기록할 수 있으나 예약 실행 권한을 뜻하지 않는다.
+업로드 시간 추천은 로컬 패키지 작성과 별개인 읽기 전용 채널 분석으로 전달한다. `youtube-channel-coach`의 공개 시간 추천 절차로 기존 Chrome Studio의 대상 채널과 시청자 시간대를 먼저 확인한다. 패키지 제작 자체의 Manual-only 경계는 유지하며, 추천은 예약 실행 권한을 뜻하지 않는다.
 
 최종 보고에는 네 파일의 절대 경로와 archive 경로를 반환한다. 이후 수동 업로드 여부를 blocker나 후속 작업으로 남기지 않는다.

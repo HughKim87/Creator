@@ -24,9 +24,9 @@ NotebookLM 안에서 리서치를 수행하고, 다음 제작 단계가 사용�
 
 ## Chrome 연결 게이트
 
-1. browser runtime bootstrap이나 다른 `agent.browsers.*` 호출보다 먼저 작업 기록의 `browser.profile_directory`와 `browser.required_origin`을 그대로 `$connect-chrome-profile`에 전달한다. 둘 중 하나라도 없으면 기본값을 만들지 말고 작업 기록 검증 실패로 멈춘다.
+1. 브라우저 선택이나 작업 조작보다 먼저 작업 기록의 `browser.profile_directory`와 `browser.required_origin`을 그대로 `$connect-chrome-profile`에 전달한다. 둘 중 하나라도 없으면 기본값을 만들지 말고 작업 기록 검증 실패로 멈춘다.
 2. 연결 스킬이 `status: connected`를 반환할 때만 리서치를 시작하고, 반환된 Chrome 바인딩과 검증된 탭을 재사용한다.
-3. 이 스킬은 Chrome을 다시 선택하지 않는다. `agent.browsers.get("extension")`, `getDefault()`, `getForUrl()`와 기존 일반 `chrome`·`browser` 바인딩을 사용하지 않는다.
+3. 연결 스킬이 현재 `cua_repl`에서 반환한 Chrome 탭을 그대로 사용한다. 단계마다 Chrome을 다시 선택하지 않는다. 예전 `chrome:control-chrome` 파일의 존재는 진입 조건이 아니다. 원래 origin에서 검증된 `resolved_origin`으로 이동한 서비스도 같은 바인딩을 유지한다.
 4. 반환 바인딩이 명시적 unavailable·disconnected 오류를 내면 임의 fallback 없이 `$connect-chrome-profile`을 다시 실행한다.
 5. 공식 프로필 진단과 프로필 대상 실행 경로가 끝나기 전에 사용자에게 프로필 메뉴 전환이나 확장 패널 준비를 요구하지 않는다.
 6. 연결 스킬이 `needs_user` 또는 `unavailable`을 반환하면 그 결과를 그대로 기록하고 멈춘다. 다른 브라우저나 계정으로 우회하지 않는다.

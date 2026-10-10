@@ -1,76 +1,61 @@
 ---
 name: connect-chrome-profile
-description: 호출자가 전달한 Chrome 프로필 디렉터리를 공식 ChatGPT Chrome Extension 실행 경로로 열고, 실행 델타로 정확한 확장 인스턴스와 대상 웹 탭을 검증해 후속 브라우저 작업에 넘기는 범용 스킬. 특정 프로필로 웹 작업을 시작하거나 새 Codex 작업에서 Chrome 연결을 다시 만들어야 할 때 사용한다.
+description: 호출자가 전달한 Chrome 프로필을 공식 실행 도구로 열고, 현재 제공되는 브라우저 제어 API와 실행 전후 델타로 정확한 탭을 검증한다. 특정 프로필로 웹 작업을 시작하거나 영상 제작 중 Chrome 연결을 재사용·복구할 때 사용한다.
 ---
 
 # Chrome 프로필 연결
 
-목표는 하나다. 호출자가 전달한 프로필로 새 Chrome 창을 연 뒤, 그 실행으로 생긴 확장 인스턴스나 탭만 연결한다. `status: connected` 전에는 호출 작업을 시작하지 않는다.
+호출자의 프로필과 서비스에 연결된 정확한 Chrome 탭을 반환한다. 목적은 프로필과 로그인 상태의 보장이며 특정 플러그인 이름이나 예전 API의 존재가 아니다.
 
 ## 입력
 
-- `profile_directory`: 필수. 호출자가 전달한 비어 있지 않은 Chrome 프로필 디렉터리 식별자
-- `target_origin`: 필수. 연결 후 열 절대 URL의 origin
-- 선택적 Chrome 탭 멘션
+- `profile_directory`: 필수. 호출자가 전달한 프로필 디렉터리 식별자.
+- `target_origin`: 필수. 호출자가 전달한 HTTPS 서비스 origin.
+- 선택적 Chrome 탭 멘션.
 
-이 스킬에는 프로필과 origin 기본값이 없다. 둘 중 하나라도 빠지면 browser runtime을 초기화하거나 Chrome을 열기 전에 `needs_user`를 반환한다.
+이 스킬에는 프로필과 origin 기본값이 없다. 빠진 값만 `needs_user`로 반환한다. 프로필 이름은 실행 식별자다. 프로필 파일·쿠키·계정 주소로 이를 추론하지 않는다.
 
-프로필 이름은 로컬 실행 식별자다. 계정 주소·쿠키·토큰·비밀번호·브라우저 저장소로 프로필을 추론하지 않는다.
+## 도구와 실행 경로
 
-## 단일 연결 절차
+현재 세션의 `mcp__cua_repl.js`를 사용한다. 이 도구의 첫 호출은 도구 안내대로 `await cua.getState();` 하나만 실행해 문서와 실행 전 목록을 읽는다. 이미 초기화했다면 같은 런타임을 재사용한다. Chrome 탭을 바인딩할 때 자동 반환되는 전체 브라우저 문서도 먼저 읽는다.
 
-아래 순서를 그대로 실행하고 다른 연결 경로를 만들지 않는다.
+`chrome:control-chrome`나 예전 `agent.browsers.*` 스킬 파일이 없다는 이유로 중단하지 않는다. 오래된 cache·backup 스킬을 활성 플러그인으로 대신 가져오지 않는다. 실제 호출 도구가 노출되지 않은 경우에만 도구 검색과 노출된 지원 API 문서를 확인하고 `control_tool_unavailable`로 구분한다. 도구 부재와 확장 연결 부재, 로그인 필요를 혼동하지 않는다.
 
-1. `$chrome:control-chrome`를 끝까지 읽는다. 지정 프로필 선택은 이 스킬이 소유하므로 그 스킬의 일반 초기 선택 예시는 적용하지 않는다.
-2. 사용자가 Chrome 탭을 명시적으로 멘션했다면 문서의 Tab Claiming 절차로 exact 브라우저와 탭을 검증하고 9번으로 간다.
-3. 같은 런타임에 `profile_directory`와 `target_origin`이 이미 검증된 exact 바인딩이 있으면 가벼운 probe를 한다. 성공하면 재사용하고 9번으로 간다. 명시적 `Browser is not available`·disconnected 오류면 바인딩과 검증값을 폐기한다.
-4. browser runtime이 이미 초기화돼 있으면 `agent.browsers.list()`의 모든 extension descriptor를 `agent.browsers.get(descriptor.id)`로 바인딩한다. 각 바인딩의 전체 `documentation()`을 별도 호출에서 먼저 읽고, 다음 호출에서 `user.openTabs()`를 읽어 실행 전 `baseline`을 만든다. fresh 런타임이면 아직 browser runtime을 bootstrap하지 않고 `baseline: []`을 사용한다.
-5. `CODEX_CHROME_PREFERENCES_PATH`를 기본 Chrome 사용자 데이터 루트의 `<profile_directory>/Preferences` 경로 문자열로 설정한다. 공식 `open-chrome-window.js --dry-run --json`을 실행하고 `profileDirectory`가 입력값과 정확히 같은지 확인한다.
-6. `launch_started_at`을 기록한 직후 같은 환경값으로 공식 `open-chrome-window.js`를 실행한다. 이 명령은 지정 프로필에 새 `about:blank` 창을 연다. fresh 런타임이면 2초 뒤 `$chrome:control-chrome`의 bootstrap block을 정확히 한 번 실행한다.
-7. 최대 20초 동안 매초 다음 작업을 반복한다.
-   - `agent.browsers.list()`를 다시 호출해 extension backend 목록을 refresh한다.
-   - 아직 문서를 읽지 않은 descriptor만 exact `id`로 바인딩하고 전체 문서를 먼저 읽는다.
-   - 다음 호출에서 현재 exact 바인딩들의 `user.openTabs()`를 읽어 `current`를 만든다.
-   - 필수 선택기 `.agents/skills/connect-chrome-profile/scripts/select-profile-delta.mjs`의 `selectProfileDelta()`를 호출한다. fresh 런타임은 `discoveryMode: "post_launch_initial"`, 기존 런타임은 `discoveryMode: "baseline_delta"`를 사용한다. 후보 선택 코드를 즉석에서 다시 작성하지 않는다.
-8. 선택기가 탭을 반환하면 그 exact 바인딩의 `user.claimTab(result.tab)`에 반환된 같은 탭 객체를 넘긴다. `new_browser`를 반환하면 그 exact 바인딩에 새 탭을 만든다. `about:blank`이면 선택된 탭만 `target_origin`으로 이동한다.
-9. 탭 URL이 `target_origin`인지, 호출자가 요구한 서비스 화면과 로그인 상태가 충족되는지 가시 상태로 검증한다. 모두 성공한 뒤에만 `connected`를 반환한다.
+프로필 실행은 `scripts/launch-profile.py`가 현재 설치된 공식 Chrome 패키지의 `open-chrome-window.js --dry-run --json`을 찾아 검증한다. 버전 경로나 SKILL.md 존재를 하드코딩하지 않는다.
 
-선택기는 활성 worktree의 절대 경로로 import한다.
-
-```js
-const { pathToFileURL } = await import("node:url");
-const { selectProfileDelta } = await import(
-  pathToFileURL("<active-root>/.agents/skills/connect-chrome-profile/scripts/select-profile-delta.mjs").href
-);
+```powershell
+python .agents/skills/connect-chrome-profile/scripts/launch-profile.py --profile-directory <caller-profile>
 ```
 
-## 금지
+기본 명령은 실행 계획만 확인한다. `profileDirectory`가 입력과 같고 `status: ready`일 때만 같은 명령에 `--launch`를 추가한다. 런처는 프로필 경로 문자열을 환경변수에 설정할 뿐 파일을 읽지 않는다. `launch_requested`는 접수 결과이며 연결 성공이 아니다.
 
-- 연결 전후에 `agent.browsers.get("extension")`, `getDefault()`, `getForUrl()`로 브라우저를 선택하지 않는다.
-- 목록 순서, 기존 대상 사이트 탭, 일반 `chrome`·`browser` 바인딩을 요청 프로필의 증거로 사용하지 않는다.
-- browser runtime을 reset·재import하거나 내장 브라우저, 별도 Playwright, Computer Use, 웹 검색으로 우회하지 않는다.
-- `Preferences`, `Secure Preferences`, `Extensions` 등 브라우저 프로필 파일을 읽거나 열거하지 않는다. 따라서 해당 파일을 읽는 `check-extension-installed.js`도 실행하지 않는다.
-- 검증 전 사용자에게 프로필 메뉴 전환을 요구하지 않는다.
+## 연결·재사용
 
-## 실패
+1. 같은 런타임에서 이 스킬이 이미 검증한 `profile_directory`와 `target_origin`의 바인딩이 있으면 탭의 가시 상태와 URL을 probe한다. 정상이라면 창을 다시 열지 않고 `same_runtime`으로 재사용한다. 탭만 사라졌다면 검증된 브라우저 ID로 탭을 복구하고 확인한다. 새 런타임에서는 파일에 기록된 connected만으로 프로필을 믿지 않는다.
+2. 새 연결에는 `cua.getState()`의 실행 전 목록을 baseline으로 보관한다. Chrome이 아직 목록에 없어도 정상적인 연결 전 상태이며, 설치 부재로 판정하지 않는다.
+3. 공식 런처 dry-run을 확인하고 실행 직전 시각을 기록한 뒤 `--launch`를 한 번 실행한다. 백그라운드 런처의 종료를 무한히 기다리지 않고 실제 목록 변화를 확인한다.
+4. 최대 20초 동안 실행 후 `cua.getState()`로 목록을 갱신한다. `scripts/select-profile-delta.mjs`의 `normalizeChromeSnapshot`으로 Chrome extension만 추리고 `selectProfileDelta`에 baseline과 current를 전달한다. 현재 API에서는 항상 실행 전 목록을 얻으므로 `discoveryMode: "baseline_delta"`를 사용한다. 빈 목록도 baseline이다.
+5. 유일한 실행 델타가 선택되면 `cua.getTab(result.tab.id, { browser: result.browserId })`로 정확한 탭을 바인딩한다. 새 브라우저만 선택되고 탭이 없으면 `cua.createBrowserTab(result.browserId, target_origin, { sessionName: "🔎 영상 제작" })`로 같은 브라우저에 생성한다. 일반 `"chrome"` 별칭, 목록 순서, 기존 서비스 탭을 프로필 근거로 사용하지 않는다.
+6. about:blank인 선택 탭만 `tab.goto(target_origin)`으로 이동한 뒤 `tab.getAXState()`를 읽는다. 브라우저 문서의 `tab.playwright`는 같은 탭 안에서 지원되는 제어 API이며 별도 Playwright가 아니다.
+7. 서비스 화면과 로그인 상태, origin을 확인한다. `matchesTargetOrigin`은 정확한 origin 외에 확인된 NotebookLM 이전 주소 `https://notebooklm.google.com` → `https://notebook.google.com`만 허용한다. 이 경우 입력은 유지하고 `resolved_origin`을 결과와 작업 기록에 추가한다. 유사 도메인이나 임의의 redirect는 허용하지 않는다.
+8. 연결된 탭과 메모리의 바인딩을 후속 단계에 그대로 넘긴다. 단계가 바뀌었다고 새 창·새 연결·새 노트북을 만들지 않는다.
 
-- 실제 확장 통신 실패는 Chrome 문제 해결 문서에 따라 2초 후 같은 호출을 한 번만 재시도한다.
-- 20초 뒤에도 선택기가 유일한 실행 델타를 찾지 못하면 추측하지 않는다. `status: unavailable`, `selection_reason: profile_launch_delta_not_found`를 반환한다.
-- 공식 프로필 실행이나 확장 통신 자체가 실패하면 확인된 오류를 반환한다. 설치 점검이 필요하면 프로필 파일을 읽지 않는 공식 `installed-browsers.js`, `chrome-is-running.js`, `check-native-host-manifest.js`만 사용한다.
-- `unavailable`일 때만 필요한 사용자 조치를 요청한다. 다른 프로필이나 기존 인스턴스를 성공 처리하지 않는다.
+선택기 import는 파일 처리용 Node 도구에서 활성 작업 root의 절대 경로로 한다. 브라우저 조작은 `cua_repl`에서만 수행한다. 선택기는 가시 목록을 받는 순수 함수이며 브라우저 저장소를 읽지 않는다.
 
-## 반환
+## 실제 오류의 처리
 
-- `status`: `connected`, `needs_user`, `unavailable`
-- `surface`: `chrome`
-- `profile_directory`
-- `target_origin`
-- `verification_method`: `same_runtime`, `explicit_tab_mention`, `profile_targeted_launch`
-- `selection_mode`: `same_runtime`, `explicit_tab_mention`, `post_launch_initial`, `existing_browser_new_tab`, `new_browser`
-- `selection_reason`
-- `extension_ready`
-- `tab_url`
-- `retry_count`
-- `user_action`: 없으면 빈 문자열
+- 확장 통신 오류가 실제 발생하면 현재 도구의 제공된 문제 해결 문서를 먼저 읽고 같은 호출을 한 번만 재시도한다. 동일 원인의 무진전 반복은 하지 않는다.
+- 20초 뒤 실행 델타가 없으면 `profile_launch_delta_not_found`, 여러 후보면 `profile_launch_delta_ambiguous`로 반환한다. 이를 플러그인 미설치라고 단정하지 않는다.
+- 공식 런처가 없으면 `launcher_unavailable`, 실행 오류면 `profile_launch_failed`, 로그인 화면이면 `login_required`로 필요한 조치만 설명한다.
+- 런처 실행 프로세스의 성공 응답보다 실제 Chrome 목록과 서비스 가시 상태가 연결의 완료 근거다.
+- `Preferences`, `Secure Preferences`, `Extensions` 등 프로필 파일과 계정 주소·쿠키·비밀번호를 읽거나 기록하지 않는다.
+- 내장 브라우저, 다른 프로필, 별도 Playwright, 웹 검색으로 로그인·프로필 검증을 우회하지 않는다. 현재 `cua_repl`의 검증된 Chrome extension 제어는 이 스킬의 정식 실행 경로다.
 
-호출 스킬은 `status: connected`일 때만 후속 웹 작업을 시작한다. 브라우저 ID와 확장 인스턴스 ID는 메모리에서만 사용하고 작업 파일에 저장하지 않는다.
+## 반환과 단계 진행
+
+`status`: `connected`, `needs_user` 또는 `unavailable`.
+그 밖의 값은 `surface: chrome`, `profile_directory`, `target_origin`, `resolved_origin`, `verification_method`(`same_runtime`, `explicit_tab_mention`, `profile_targeted_launch`), `selection_mode`, `selection_reason`, `extension_ready`, `tab_url`, `retry_count`, `user_action`.
+
+명시적 탭 멘션은 현재 도구의 `cua.getTab({ mention })`로 검증한다. 멘션만으로 프로필이 증명되지 않으면 프로필 실행 델타 절차를 사용한다.
+
+브라우저 ID·확장 인스턴스 ID·탭 바인딩은 메모리에서만 보관한다. 작업 기록의 프로필·검증 시각·resolved_origin은 재개 입력이며 새 런타임의 검증을 대신하지 않는다. coordinator가 위임된 제작을 수행 중이면 connected 직후 첫 미완료 단계로 이어간다.

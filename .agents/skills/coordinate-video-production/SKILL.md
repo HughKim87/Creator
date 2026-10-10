@@ -30,6 +30,7 @@ $activeBranch = $activation.active_branch
 - `activate_worktree.py`가 `redirected: true`를 반환하면 `active_root`가 스킬의 **유일한 작업 기준**이다. 이후 모든 셸 명령은 `workdir=$activeRoot`로 실행하고, 모든 상대 경로·작업 기록·검증 명령은 `$activeRoot`를 기준으로 해석한다.
 - `active_root`를 확보한 뒤에는 원래 세션 cwd의 파일을 다시 조회하지 않는다. `.`를 원래 cwd를 뜻하는 상태로 사용하지 않는다.
 - `active_root`의 재검증이 `valid`가 아니면 영상 파일이나 브라우저를 만지지 않는다. `main`으로 대체하지 않는다.
+- 활성 root에서 `python .agents/skills/coordinate-video-production/scripts/check_skill_bundle.py --root .`를 실행해 검증된 스킬·참조·검사기 묶음이 일치하는지 확인한다. 누락/불일치면 정확한 파일만 보고하고 제작을 시작하지 않는다. 유지보수에서 검토한 묶음을 반영한 뒤에만 manifest를 기록하며, 제작 실행 중에는 manifest를 갱신해 불일치를 숨기지 않는다.
 - 유효한 대상 root의 `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 `$activeRoot`에서 읽는다.
 - 대상 handoff가 비-NotebookLM 작업이고 이 스킬을 owner에서 제외하면 그 작업을 영상 단계로 승계하지 않는다.
 - 셸의 `Set-Location`이나 한 번의 명령에 지정한 `workdir`는 부모 Codex 세션의 cwd를 영구 변경하지 않을 수 있다. 따라서 “현재 세션이 전환됐다”고 추정하지 말고, 최종 보고에는 `workflow root`와 `workflow branch`를 명시한다. 실제 앱 세션 cwd를 별도로 확인하지 않았다면 이를 “현재 워크트리”라고 표현하지 않는다.
@@ -87,11 +88,11 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 
 `research`와 `video` 전에 작업 기록의 `browser.profile_directory`와 `browser.required_origin`을 그대로 `$connect-chrome-profile`에 전달한다. 둘 중 하나라도 없으면 연결을 시도하지 않고 작업 기록 검증 실패로 멈춘다.
 
-- Chrome 초기 선택 권한은 `$connect-chrome-profile`에만 있다. fresh 런타임에서는 이 스킬을 browser runtime bootstrap보다 먼저 실행한다. 이 스킬과 하위 NotebookLM 스킬은 연결 전후에 `agent.browsers.get("extension")`, `getDefault()`, `getForUrl()`로 브라우저를 다시 선택하지 않는다.
-- `connected`와 검증 방법을 반환할 때만 NotebookLM 단계를 시작한다.
+- Chrome 프로필·초기 탭 선택은 `$connect-chrome-profile`만 소유한다. 현재 제공되는 `cua_repl`의 Chrome extension 경로를 사용하며, 예전 스킬 파일이 없다는 이유만으로 멈추지 않는다.
+- `connected`와 검증 방법을 반환할 때만 NotebookLM 단계를 시작한다. 검증된 서비스 이전은 `browser.resolved_origin`으로 기록하고 기존 `browser.required_origin`과 프로필은 보존한다.
 - 반환된 exact Chrome 바인딩과 검증 탭만 하위 단계에 넘긴다. 같은 런타임의 검증 바인딩은 probe 성공 시 재사용하고, 명시적 unavailable·disconnected 오류나 새 런타임에서는 `$connect-chrome-profile`로 다시 검증한다.
-- 내장 브라우저, 다른 프로필, 별도 Playwright, Computer Use와 웹 검색으로 우회하지 않는다.
-- 연결 검증 시각을 기록하고 단계 검증기가 확인하게 한다.
+- 내장 브라우저, 다른 프로필, 별도 Playwright와 웹 검색으로 프로필·로그인 검증을 우회하지 않는다. `cua_repl`에서 검증된 Chrome을 제어하는 것은 정식 경로다.
+- 연결 검증 시각을 기록하고 단계 검증기가 확인하게 한다. `autonomous_local_pipeline`은 연결 복구가 검증되면 저장된 첫 미완료 단계로 계속한다. 이전 에이전트의 ‘플러그인 없음’ 메모를 현재 도구 검증 없이 재사용하지 않는다.
 
 ## 단계 순서
 
@@ -118,6 +119,8 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 초안은 `upload_package.note`에 경로와 미완성 항목만 기록한다. 기존 활성 단계·차단 사유·`next_action`을 유지하고 `upload_package`는 `pending`으로 둔다. 초안을 완료 산출물에 넣거나 finalizer·archive를 실행하지 않는다. 최종 조건이 충족되면 현재 자료로 최종 가이드를 새로 생성한다.
 
 ## 영상 내용 검수
+
+검수는 전체 내레이션 전사와 장면별 화면 문구를 함께 다룬다. 장면 전환별 대표 화면을 확인하고 날짜·숫자·정책 범위·결론을 출처와 대조하며, 오류가 있는 장면은 표시 구간 전체를 확인한다. 모델에게 준 제작 지시를 실제 정책으로 설명하지 않았는지도 확인한다. `review_scope`에 전체 내레이션 검토, 장면별 화면 검토 방법, 직접 청취 수행 여부와 미검증 범위를 각각 기록한다. 직접 청취를 하지 못한 경우 이를 전사 검토로 대체한 성공으로 기록하지 않고 제한을 공개한다.
 
 자막 전체 검수가 끝난 뒤 제목·썸네일 제작 전에 영상의 핵심 사실·비교·선택 권고를 실제 사용한 리서치 근거와 대조한다. `content_review`에 검수한 MP4·SRT 경로와 해시, 검토 범위, 발견한 주장 위치·근거·처리 결과를 [작업 기록 형식](references/video-job-format.md#영상-내용-검수-기록)에 따라 기록한다. 기계 검사는 기록·해시·완료 조건을 확인하며 주장 자체의 진위를 대신 판정하지 않는다.
 

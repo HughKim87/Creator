@@ -127,6 +127,7 @@ Creative delegation is decided only by the active project policy clause `creator
 
 - `status`: `pending` 또는 `reviewed`. 새 작업은 위 예시의 `pending`으로 시작한다.
 - `reviewed`일 때 `checked_at`(시간대 포함 시각), `summary`(검토한 핵심 사실·비교·권고와 근거 범위), `video`·`captions`(repository-relative 실제 MP4·SRT 경로), `artifact_hashes.video`·`artifact_hashes.captions`(현재 SHA-256)을 기록한다.
+- `review_scope`: `narration_full_read`(불리언), `visual_method`(`scene_samples`·`all_frames`·`continuous_playback`·`not_run`), `direct_listening`(`performed`·`not_run`), `limitations`(문자열 배열)을 기록한다. 필수 내용 검수 완료에는 전체 내레이션 읽기와 화면 검토가 필요하다. 직접 청취가 `not_run`이면 그 제한을 비어 있지 않은 배열에 기록한다. 이 필드는 실제 검수 수행을 대신하지 않는다.
 - `findings`: 문제 없으면 빈 배열. 각 문제는 `location`(cue 번호 또는 영상 시간), `claim`, `kind`(`factual_error`·`unsupported_claim`·`scope_limitation`), `severity`(`material`·`minor`), `reason`(중대성 이유), `evidence`(출처 URL 또는 작업 내 근거 참조의 비어 있지 않은 배열), `status`(`open`·`resolved`·`disclosed`)를 기록한다. 근거를 찾지 못한 경우 확인한 출처 범위와 미확인 사실을 근거 참조와 함께 남긴다.
 - `resolved`에는 `resolution.method`(`video_corrected` 또는 `evidence_verified`)와 `resolution.note`(수정 위치 또는 확인한 근거·판단)를 기록한다. `disclosed`는 `minor`에만 사용하며 `resolution.method: guide_note`와 설명란·가이드에 넣을 정확한 정정 문구를 `resolution.note`에 기록한다.
 - 검토가 끝나도 열린 문제가 있을 수 있다. 이때 `reviewed`는 검토 수행만 뜻한다. 제목·썸네일 완료와 업로드 패키지 시작·완료, job 완료에는 열린 문제 0이 필요하며, 미해결 중대 오류는 해당 단계의 차단으로 기록한다.
@@ -145,3 +146,13 @@ python .agents/skills/coordinate-video-production/scripts/validate_video_job.py 
 ```
 
 다음 단계 시작과 전체 완료에는 `status: valid`, `worktree.status: valid`가 필요하다. 기존 `video-job-v1`·`video-job-v2`는 읽기·검증 호환만 유지한다.
+
+## 현재 Chrome 제어와 서비스 이전
+
+연결은 현재 `cua_repl`의 Chrome extension 탭에서 검증한다. `connection_scope: browser_runtime`은 특정 예전 API의 이름이 아니라 검증된 실행 바인딩의 수명이다.
+
+`required_origin`에서 서비스가 실제로 이전되어 연결 스킬이 확인한 경우 `browser.resolved_origin`을 추가한다. NotebookLM의 허용 이전은 `https://notebooklm.google.com` → `https://notebook.google.com`이다. 입력 origin과 작업 프로필을 덮어쓰지 않는다. 두 공식 HTTPS 호스트의 노트북 URL을 연구 산출물로 인식하며, 다른 도메인·유사 주소는 인정하지 않는다.
+
+## 기존 검수 기록 변환
+
+구형 별도 검수 JSON이나 `reviewed_with_limitations`를 새 완료 상태로 자동 치환하지 않는다. 기존 기록의 실제 화면/전사 검토, 수정 위치, 출처 및 현재 산출물 해시를 확인한 뒤 위 형식의 `findings`·`review_scope`에 옮긴다. 직접 청취 `not_run`과 알려진 제한은 유지하며 증거가 없는 검토는 `pending`이다. 기존 근거 파일을 보존하고 최신 필수 옵션으로 재검사한다.

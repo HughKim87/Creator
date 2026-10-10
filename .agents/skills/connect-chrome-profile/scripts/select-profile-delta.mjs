@@ -20,11 +20,41 @@ function normalizedOrigin(value) {
   }
 }
 
+/**
+ * Normalize only the current control API's visible Chrome extension inventory.
+ * In-app, Edge, MCP app, and CDP sessions cannot prove this profile launch.
+ */
+export function normalizeChromeSnapshot(state) {
+  const browsers = Array.isArray(state) ? state : state?.browsers;
+  if (!Array.isArray(browsers)) {
+    throw new TypeError("state.browsers must be an array");
+  }
+  return browsers
+    .filter((browser) => browser?.type === "extension" && browser.family === "chrome")
+    .map((browser) => {
+      if (!nonemptyText(browser.id) || !Array.isArray(browser.tabs)) {
+        throw new TypeError("Chrome inventory requires id and tabs");
+      }
+      return { browserId: browser.id, tabs: browser.tabs };
+    });
+}
+
+/** One observed service migration; no wildcard Google domain acceptance. */
+export function matchesTargetOrigin(targetOrigin, actualUrl) {
+  const requested = normalizedOrigin(targetOrigin);
+  const actual = normalizedOrigin(actualUrl);
+  if (requested === null || actual === null) return false;
+  return actual === requested || (
+    requested === "https://notebooklm.google.com" &&
+    actual === "https://notebook.google.com"
+  );
+}
+
 function tabPriority(tab, targetOrigin) {
   if (tab?.url === "about:blank") {
     return 1;
   }
-  return normalizedOrigin(tab?.url) === targetOrigin ? 2 : 0;
+  return matchesTargetOrigin(targetOrigin, tab?.url) ? 2 : 0;
 }
 
 function openedAt(tab) {
