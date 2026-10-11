@@ -254,7 +254,7 @@ python -m video_editing premiere-xml `
 ## 10. Acceptance
 
 1. 루트 `PROJECT_RULES.md`가 활성 영상 편집 규칙 6개를 각각 정확히 한 번 라우팅하고, `extension/README.md`와 이 계약의 책임표는 병렬 라우터로 동작하지 않는다.
-2. 운영 규칙 R01~R22과 재현 사례 TC01~TC33은 각 rule owner에 정확히 한 번 존재한다.
+2. 운영 규칙 R01~R22과 재현 사례 TC01~TC40은 각 rule owner에 정확히 한 번 존재한다.
 3. 기존 TC01~TC12의 기대 판정이 이관 전과 동일하다.
 4. TC13~TC16이 current revision 동결, 상태 충돌 중단, 검증 주장 제한, validator 계층 분리를 재현한다.
 5. 정상 v2 timeline은 결정론적 editorial·payload·task payload·delivery fingerprint를 반환한다. payload는 content/revision identity, task payload는 payload+approval+validation state, delivery는 task payload+delivery 객체를 소유하며 각 내부 gate는 fingerprint 일치와 별도로 판정한다.

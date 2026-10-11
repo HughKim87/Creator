@@ -16,13 +16,12 @@
 
 ## 직전 게이트
 
-- 판정: pass. 승인된 정리 대상 부재·공통 자료 보존 확인, 상태 문서 검사와 도메인 route 검사 통과.
-- 공통 create-shorts 스킬과 테스트는 커밋 221922a에 보존됐다. 합성 helper 테스트와 스킬 구조·UTF-8·참조 링크 검사 통과.
-- 공통 스킬 source는 extension/skills/create-shorts/, 설치본은 C:/Users/Hugh/.codex/skills/create-shorts/다. 생성·등록 근거는 extension/work/create-shorts-skill-20261011/에 유지한다.
+- 판정: pass. 개선 초안을 기존 도메인 규칙에 흡수하고 작업용 자료를 제거했다. 정식 번들·helper·규칙·상태·workflow·기존 개선 회귀 검사 통과.
+- 공통 스킬 source는 extension/skills/create-shorts/, 설치본은 C:/Users/Hugh/.codex/skills/create-shorts/다. 번들 구조와 helper의 재현 가능한 검증은 extension/tests/test_create_shorts_bundle.py와 extension/tests/test_create_shorts_skill.py가 소유한다. 합성 시험 자료는 Git 제외 임시 폴더에서 생성하고 시험 종료 후 제거한다.
 
 ## 승인 상태
 
-- 위임: 목록으로 제시한 main의 영상별 로컬 자료 삭제와 공통 개발 경계 정리.
+- 위임: main의 영상별 자료와 불필요한 개선 작업 자료 정리, 필요한 개선의 구현·검증·로컬 커밋.
 - 미위임: 보호 경로 정리, 다른 워크트리 변경, push·외부 게시·업로드.
 
 ## 차단

@@ -17,6 +17,7 @@
 |---|---|
 | `main` | `state/main.md` |
 | `codex/ainotebook` | `state/ainotebook.md` |
+| `claude/dokkaebi` | `state/dokkaebi.md` |
 
 ## 직전 게이트
 

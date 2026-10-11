@@ -6,6 +6,7 @@ import http.server
 import importlib.util
 import json
 import subprocess
+import tempfile
 import threading
 import unittest
 import urllib.error
@@ -14,7 +15,7 @@ from pathlib import Path
 
 BASE = Path(__file__).resolve().parents[1]
 SKILL = BASE / 'skills/create-shorts'
-WORK = BASE / 'work/create-shorts-skill-20261011'
+WORK = None
 spec = importlib.util.spec_from_file_location('shorts_review', SKILL / 'scripts/shorts_review.py')
 helper = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(helper)
@@ -23,7 +24,12 @@ spec.loader.exec_module(helper)
 class ShortsSkillTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        WORK.mkdir(parents=True, exist_ok=True)
+        global WORK
+        scratch = BASE / 'data'
+        scratch.mkdir(parents=True, exist_ok=True)
+        cls.scratch = tempfile.TemporaryDirectory(prefix='shorts-skill-test-', dir=scratch)
+        cls.addClassCleanup(cls.scratch.cleanup)
+        WORK = Path(cls.scratch.name).resolve()
         cls.source = WORK / '합성 원본 fixture.mp4'
         if not cls.source.exists():
             subprocess.run(['ffmpeg', '-v', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=320x180:rate=30',
