@@ -28,7 +28,7 @@
 | CAND05 | 자동 spine coverage 보조 | 의미 적절성을 코드가 자동 승인할 수 없음 | 누락 후보 탐지가 reviewer의 실제 결함 탐지를 반복 보조함 |
 | CAND06 | 사용자 XML과 timeline block diff | 두 번째 실제 수정본과 반복되는 비교 비용이 아직 없음 | 범위 승인 무효화와 재작업을 유의미하게 줄이는 diff 사례 |
 | CAND07 | 채널 전역 편집 성향 owner | 한 영상 취향과 채널 불변 조건을 구분할 근거 부족 | 독립 영상 여러 건의 사용자 승인에서 동일 선호가 유지됨 |
-| CAND08 | Premiere 버전별 호환 profile | 합성 구조 검증만 있고 실제 앱 차이가 미검증 | 실제 import·재생에서 profile별 차이와 fixture가 확인됨 |
+| CAND08 | Premiere 버전별 호환 profile | CS6 실제 근거는 [CS6 XML 효과 호환표](PREMIERE_CS6_XML_COMPAT.md)에 기록(2026-10, R03이 확인 절차를 소유). 다른 버전 근거 없음 | 다른 Premiere 버전의 실제 import·재생에서 차이와 fixture가 확인됨 |
 | CAND09 | 전용 영상 편집 skill | 현재 규칙·도구의 두 번째 영상 재사용 효과가 미검증 | 반복 수동 orchestration을 줄이고 R01~R22을 안정적으로 수행함 |
 | CAND10 | 안전 확인·호흡·회복 행동의 상태 연결 보조 | 한 승인 샘플에서 유효했지만 모든 장르·상황의 기본 규칙으로 일반화할 반복 근거가 없음 | 독립 영상에서 무발화 호흡을 포함한 상태 전환 보존이 반복적으로 의미 결함을 줄임 |
 
