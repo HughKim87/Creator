@@ -1,0 +1,58 @@
+{
+  "purpose": "User-requested local Qwen3-TTS trial setup",
+  "requested_at": "2026-10-14",
+  "scope": "Isolated local installation, Korean browser interface, public-sample synthesis verification",
+  "authorization": "User requested to try Qwen after discussion of local installation",
+  "runtime": "extension/.runtime/qwen-tts",
+  "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+  "boundaries": [
+    "No Core writes or execution",
+    "No existing inputs/outputs access",
+    "No voice upload to external services",
+    "No paid API",
+    "No global Python changes",
+    "No commit or push"
+  ],
+  "gates": [
+    "CUDA available in isolated environment",
+    "Model loaded from local storage",
+    "Finite nonempty Korean WAV from official public reference",
+    "Loopback-only web UI responds"
+  ],
+  "rollback": "Stop task-owned UI process; installation is isolated under the runtime directory; removal requires exact target approval",
+  "status": "dual_engine_ready_for_user_trial",
+  "dual_engine_contract": {
+    "authorization": "2026-10-14 user: 진행해줘; install GPT-SoVITS and add engine selection to existing local UI",
+    "result": "Same loopback UI selects Qwen or GPT-SoVITS, saves voices separately, generates WAV",
+    "stages": [
+      "isolated GPT-SoVITS installation and public sample synthesis",
+      "UI integration and engine-switch regression"
+    ],
+    "active_stage": null,
+    "gates": [
+      "official pinned local model produces finite Korean WAV",
+      "Qwen to SoVITS to Qwen switches without concurrent GPU workers",
+      "UI engine selection and separate saved reference reuse"
+    ],
+    "rollback": "Stop only owned workers and UI; preserve existing Qwen voice cache. No deletion, commit, paid service, or voice upload.",
+    "stage_1_gate": "pass; v5turbo public English reference -> Korean WAV, finite 48kHz 4.12 seconds, load26.87s generation8.98s peak2214.5MiB",
+    "stage_2_gate": "pass: UI selection, both Korean WAVs, saved voice reuse without original, real worker subtree stop, 18 regressions",
+    "evidence": "extension/.runtime/qwen-tts/verification/dual-engine-evidence.json"
+  },
+  "verified": {
+    "cuda": "pass",
+    "offline_local_synthesis": "pass",
+    "loopback_ui_http": "pass",
+    "ui_generation_and_wav_download": "pass",
+    "user_voice_similarity": "not_run; perceptual similarity not evaluated",
+    "user_request_generation": "pass; existing user-uploaded audio/SRT/script restored in local UI and output WAV observed",
+    "long_reference_guard": "pass; 8 reference/SRT regression tests; minimum 20 seconds, maximum 60 seconds, matching SRT boundary",
+    "voice_reuse": "pass; public-sample first/memory/disk synthesis; one extraction; identical waveforms with same script and seed",
+    "voice_cache_regression": "pass; memory/disk feature preservation and invalidation tests; 7 total Qwen tests passed",
+    "current_user_voice_registered": "pass; 0.00-59.98 seconds registered under the new 20-60 second policy; features persisted locally",
+    "srt_file_upload": "pass; browser file selection auto-populated transcript; UTF-8 BOM and CP949 regression passed",
+    "evidence": "extension/.runtime/qwen-tts/verification/evidence.json",
+    "url": "http://127.0.0.1:7865"
+  },
+  "next_action": "Use Qwen or GPT-SoVITS in the existing loopback UI; personal model training is not configured"
+}

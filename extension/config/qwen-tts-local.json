@@ -1,0 +1,55 @@
+{
+  "purpose": "Shared local Korean voice-cloning UI: Qwen and GPT-SoVITS",
+  "owner": "extension/src/qwen_tts_local.py",
+  "runtime": "extension/.runtime/qwen-tts",
+  "install": "scripts/Install-QwenTTS.ps1",
+  "start": "scripts/Start-QwenTTS.cmd",
+  "packages": {
+    "qwen-tts": "0.1.1",
+    "torch": "2.8.0+cu128",
+    "torchaudio": "2.8.0+cu128",
+    "gradio": "6.13.0"
+  },
+  "license": "Apache-2.0",
+  "voice_reuse": {
+    "storage": "extension/.runtime/qwen-tts/voice-prompts",
+    "format": "numpy-npz-no-pickle",
+    "persists_after_restart": true,
+    "invalidate_on": [
+      "audio content",
+      "transcript",
+      "model and reference-processing version"
+    ]
+  },
+  "inference": {
+    "precision": "bfloat16",
+    "attention": "sdpa",
+    "language": "Korean",
+    "max_script_characters": 500,
+    "min_reference_seconds": 20,
+    "max_plain_reference_seconds": 60,
+    "srt_reference_window_seconds": 60,
+    "generation_deadline_seconds": 180
+  },
+  "models": [
+    {
+      "id": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+      "directory": "Qwen3-TTS-12Hz-0.6B-Base",
+      "revision": "5d83992436eae1d760afd27aff78a71d676296fc"
+    },
+    {
+      "id": "Qwen/Qwen3-TTS-Tokenizer-12Hz",
+      "directory": "Qwen3-TTS-Tokenizer-12Hz",
+      "revision": "7dd38ad4e9bad454aae9cd937d0cd577604fe229"
+    }
+  ],
+  "engines": {
+    "Qwen": "extension/config/qwen-tts-local.json",
+    "GPT-SoVITS": "extension/config/sovits-local.json"
+  },
+  "engine_workers": {
+    "controller": "extension/src/tts_engines.py",
+    "worker": "extension/src/tts_worker.py",
+    "gpu_policy": "one engine worker subtree at a time; terminate and wait on switch or cancel"
+  }
+}
