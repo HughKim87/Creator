@@ -109,3 +109,13 @@ python scripts/validate_package.py <package.json> --require-approved --require-e
 - 채널 근거 상태
 
 패키지 검증 후 멈춘다. 실제 YouTube 업로드·게시·공개 범위 변경은 하지 않는다.
+
+## Claude 실행 경로
+
+Claude(Cowork)에는 built-in image generation이 없다. `one_shot_imagegen`은 사용자의 ChatGPT 웹에서 같은 완성형 생성으로 수행한다. 생성 모드와 승인 순서는 바꾸지 않는다.
+
+1. `$connect-chrome-profile`의 Claude 실행 경로로 작업 기록의 프로필에 등록된 Chrome을 선택하고 `https://chatgpt.com`을 연다. 로그인 화면·사용량 한도는 `needs_user`로 반환한다.
+2. 승인된 문구를 글자 그대로 포함한 완성형 프롬프트(16:9, 안전 여백, 정확한 한글·제품명)를 새 대화에 입력해 생성한다. 이미지 생성 승인 전에는 입력하지 않는다.
+3. 생성 이미지는 ChatGPT의 다운로드로 사용자 다운로드 폴더에 저장한다. 다운로드 폴더 접근은 `device_request_folder_access`로 한 번 요청하고, 해당 파일만 `work/<job-id>/`의 `generated_source`로 복사한다. 다른 다운로드 파일을 열거·읽지 않는다.
+4. 패키지 `thumbnail`에 `generator: chatgpt_web`을 기록한다. 이 필드가 없으면 Codex built-in 생성으로 본다. 문구 오류 시 같은 대화에서 편집·재생성하며 로컬 합성 전환 조건은 위 규칙과 같다.
+5. 생성 이후의 정규화·미리보기·시각 검수·검증은 위 절차와 같다.

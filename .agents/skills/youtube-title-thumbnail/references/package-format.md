@@ -87,6 +87,7 @@ Creative delegation is decided only by the active project policy clause `creator
 ## 생성 모드
 
 - `one_shot_imagegen`: 기본값. 승인 문구·시각 요소·구도를 완성형 이미지 하나로 생성한다. `generated_source`를 기록한다.
+  - 선택 필드 `thumbnail.generator`: 생성 도구. 없으면 Codex built-in 생성이며, Claude가 ChatGPT 웹으로 생성하면 `chatgpt_web`을 기록한다.
 - `local_text_composite`: `generation_contract.allow_local_text_composite: true`일 때만 가능하다. 이 모드에서는 `generated_source` 대신 `background`와 `font`를 기록한다.
 - 로컬 합성에는 `thumbnail.local_composite_authorization`이 필요하다. `reason`은 `explicit_user_request` 또는 `repeated_text_errors`, `approved_by`는 `explicit_user`, `approved_at`은 시간대 포함 시각이다.
 - `reason: repeated_text_errors`이면 `one_shot_attempts`가 2 이상이어야 한다.

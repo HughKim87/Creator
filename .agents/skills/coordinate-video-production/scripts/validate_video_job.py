@@ -48,6 +48,9 @@ CONNECTION_METHODS = {
     "same_runtime",
     "explicit_tab_mention",
     "profile_targeted_launch",
+    # Claude in Chrome: deviceId registered to the profile in the
+    # worktree-local runtime defaults (claude_in_chrome.device_profiles).
+    "claude_in_chrome_device",
 }
 
 

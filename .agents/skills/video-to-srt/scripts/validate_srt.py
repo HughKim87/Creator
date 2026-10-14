@@ -10,8 +10,15 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_RUNTIME_DEPENDENCIES = PROJECT_ROOT / "extension" / ".runtime" / "python-deps"
-if DEFAULT_RUNTIME_DEPENDENCIES.is_dir():
-    sys.path.insert(0, str(DEFAULT_RUNTIME_DEPENDENCIES))
+# Windows (Codex) uses python-deps. Other platforms, such as the Linux VM that
+# Claude uses for connected folders, need their own binary wheels.
+PLATFORM_RUNTIME_DEPENDENCIES = (
+    DEFAULT_RUNTIME_DEPENDENCIES
+    if sys.platform == "win32"
+    else DEFAULT_RUNTIME_DEPENDENCIES.with_name(f"python-deps-{sys.platform}")
+)
+if PLATFORM_RUNTIME_DEPENDENCIES.is_dir():
+    sys.path.insert(0, str(PLATFORM_RUNTIME_DEPENDENCIES))
 
 
 TIMESTAMP = re.compile(

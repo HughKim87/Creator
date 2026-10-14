@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import subprocess
 from typing import Any
@@ -15,6 +16,34 @@ DEFAULT_ROUTE = (
     / "references"
     / "worktree-routing.json"
 )
+
+
+HOST_PATH_MAP_ENV = "CREATOR_HOST_PATH_MAP"
+
+
+def to_host_path(path: Path) -> str:
+    """Return the path as the host OS records it.
+
+    Agents that run inside a mounted VM (for example Claude) set
+    ``CREATOR_HOST_PATH_MAP=<local_prefix>=<host_prefix>`` so that job records
+    keep the same root text as agents running directly on the host (Codex).
+    Without the variable the local path is returned unchanged.
+    """
+    text = str(path)
+    mapping = os.environ.get(HOST_PATH_MAP_ENV, "")
+    local_prefix, separator, host_prefix = mapping.partition("=")
+    if not separator or not local_prefix or not host_prefix:
+        return text
+    local_prefix = local_prefix.rstrip("/") + "/"
+    if not text.startswith(local_prefix):
+        return text
+    remainder = text[len(local_prefix):]
+    if "\\" in host_prefix:
+        remainder = remainder.replace("/", "\\")
+        host_prefix = host_prefix.rstrip("\\") + "\\"
+    else:
+        host_prefix = host_prefix.rstrip("/") + "/"
+    return host_prefix + remainder
 
 
 def _git(root: Path, *args: str) -> str:
@@ -117,11 +146,13 @@ def inspect_worktree(
 
     return {
         "status": "valid" if not errors else "invalid",
-        "root": str(requested_root),
-        "git_root": str(git_root),
+        "root": to_host_path(requested_root),
+        "local_root": str(requested_root),
+        "git_root": to_host_path(git_root),
         "branch": branch,
         "expected_branch": routed_branch,
-        "expected_root": str(expected_root) if expected_root else None,
+        "expected_root": to_host_path(expected_root) if expected_root else None,
+        "expected_local_root": str(expected_root) if expected_root else None,
         "route": str(route_path.resolve()),
         "errors": errors,
     }

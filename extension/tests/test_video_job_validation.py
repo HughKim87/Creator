@@ -94,6 +94,15 @@ class VideoJobValidationTests(unittest.TestCase):
         result = MODULE.validate_video_job(job)
         self.assertEqual(result["status"], "valid", result["errors"])
 
+    def test_claude_in_chrome_device_is_a_supported_connection(self) -> None:
+        job = complete_job()
+        job["browser"]["verification_method"] = "claude_in_chrome_device"
+        result = MODULE.validate_video_job(job)
+        self.assertEqual(result["status"], "valid", result["errors"])
+        job["browser"]["verification_method"] = "builtin_browser"
+        result = MODULE.validate_video_job(job)
+        self.assertEqual(result["status"], "invalid")
+
     def test_missing_profile_directory_is_invalid(self) -> None:
         job = complete_job()
         job["browser"]["profile_directory"] = ""

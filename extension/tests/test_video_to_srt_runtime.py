@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import sys
 import unittest
 
 
@@ -51,6 +52,21 @@ class VideoToSrtRuntimeTests(unittest.TestCase):
             VALIDATE_MODULE.DEFAULT_RUNTIME_DEPENDENCIES,
             MODULE.DEFAULT_RUNTIME_DEPENDENCIES,
         )
+
+    def test_platform_runtime_keeps_windows_path_and_separates_other_platforms(self) -> None:
+        for module in (MODULE, VALIDATE_MODULE):
+            expected = (
+                module.DEFAULT_RUNTIME_DEPENDENCIES
+                if sys.platform == "win32"
+                else module.DEFAULT_RUNTIME_DEPENDENCIES.with_name(
+                    f"python-deps-{sys.platform}"
+                )
+            )
+            self.assertEqual(module.PLATFORM_RUNTIME_DEPENDENCIES, expected)
+            self.assertEqual(
+                module.PLATFORM_RUNTIME_DEPENDENCIES.parent,
+                module.DEFAULT_RUNTIME_DEPENDENCIES.parent,
+            )
 
     def test_skill_references_do_not_retain_task_glossaries(self) -> None:
         references = SKILL_ROOT / "references"

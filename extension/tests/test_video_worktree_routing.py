@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -105,6 +107,48 @@ class VideoWorktreeRoutingTests(unittest.TestCase):
         self.assertIn("`main`으로 대체하지 않는다", text)
         self.assertIn("비-NotebookLM 작업", text)
         self.assertIn("expected_root", text)
+
+    def test_host_path_map_is_identity_without_environment(self) -> None:
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop(MODULE.HOST_PATH_MAP_ENV, None)
+            self.assertEqual(MODULE.to_host_path(self.target), str(self.target))
+
+    def test_host_path_map_records_windows_root_for_mounted_vm(self) -> None:
+        mapping = f"{self.workspace}/=D:\\AI Agent\\GitHub\\"
+        with patch.dict(os.environ, {MODULE.HOST_PATH_MAP_ENV: mapping}):
+            self.assertEqual(
+                MODULE.to_host_path(self.target / "extension"),
+                "D:\\AI Agent\\GitHub\\ainotebook\\extension",
+            )
+            outside = Path("/elsewhere/ainotebook")
+            self.assertEqual(MODULE.to_host_path(outside), str(outside))
+            with patch.object(MODULE, "_git", side_effect=self._git):
+                result = MODULE.inspect_worktree(self.target, route_path=self.route)
+        self.assertEqual(result["status"], "valid", result["errors"])
+        self.assertEqual(result["root"], "D:\\AI Agent\\GitHub\\ainotebook")
+        self.assertEqual(result["local_root"], str(self.target.resolve()))
+
+    def test_activation_executes_in_local_root_and_reports_host_root(self) -> None:
+        sys.path.insert(0, str(SCRIPT.parent))
+        self.addCleanup(sys.path.remove, str(SCRIPT.parent))
+        spec = importlib.util.spec_from_file_location(
+            "activate_worktree", SCRIPT.parent / "activate_worktree.py"
+        )
+        assert spec and spec.loader
+        activate = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(activate)
+        mapping = f"{self.workspace}/=D:\\AI Agent\\GitHub\\"
+        checker = sys.modules["check_worktree"]
+        with patch.dict(os.environ, {MODULE.HOST_PATH_MAP_ENV: mapping}), patch.object(
+            checker, "_git", side_effect=self._git
+        ):
+            result = activate.resolve_active_worktree(self.main, route_path=self.route)
+        self.assertEqual(result["status"], "valid", result.get("errors"))
+        self.assertTrue(result["redirected"])
+        self.assertEqual(result["active_root"], str(self.target.resolve()))
+        self.assertEqual(
+            result["active_host_root"], "D:\\AI Agent\\GitHub\\ainotebook"
+        )
 
 
 if __name__ == "__main__":

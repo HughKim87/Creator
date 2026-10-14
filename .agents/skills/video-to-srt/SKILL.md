@@ -136,3 +136,16 @@ glossary 형식은 `references/glossary-format.md`를 따른다.
 ## 정지 조건
 
 구조 검증을 통과한 SRT, 원본 전사 JSON, `status: reviewed`인 전체 의미·맞춤법 검수 기록을 만든 뒤 멈춘다. 제목·썸네일 제작과 수동 업로드 자료 준비는 후속 스킬의 책임이며, 실제 YouTube 업로드는 사용자가 직접 수행한다.
+
+## Claude 실행 경로
+
+Codex(Windows)는 위 절차를 그대로 쓴다. Claude(Cowork)는 전사만 클라우드 작업공간에서 실행한다. 연결 폴더 셸(VM)은 2코어·3GB·디스크 여유 부족에 호출당 약 180초 제한이 있어 전사가 끝나지 않는다. 그 밖의 정제·검증·검수 스크립트는 VM에서 활성 root 기준으로 실행할 수 있다.
+
+1. 의존성(세션당 1회): `pip install --break-system-packages faster-whisper "av<16"`. `av` 16 이상은 현재 faster-whisper의 `metadata_errors` 인자와 맞지 않는다. 사용자 승인된 설치 범위이며 저장소 runtime에는 설치하지 않는다.
+2. 모델(세션당 1회): 클라우드에서 Hugging Face 접근이 막힐 수 있으므로 활성 worktree의 공용 캐시를 옮긴다.
+   - VM에서 `extension/.runtime/models/whisper/models--mobiuslabsgmbh--faster-whisper-large-v3-turbo/`의 `refs/main` 해시와 `snapshots/<hash>/` 파일을 확인한다.
+   - `model.bin`은 stage 한도 때문에 Git 제외 임시 폴더 `extension/.runtime/whisper-transfer/`에 `dd bs=1M count=350` 단위 조각으로 나눈다(VM 쓰기 속도 약 8MB/s라 조각마다 별도 호출).
+   - 조각과 json 파일을 stage한 뒤 클라우드에서 `<cache>/models--mobiuslabsgmbh--faster-whisper-large-v3-turbo/refs/main`과 `snapshots/<hash>/`로 복원하고 크기를 원본과 대조한다.
+   - 복원 확인 후 임시 폴더를 지운다(삭제 권한 필요). 모델 캐시는 저장소에 커밋하거나 작업 폴더에 복사하지 않는다.
+3. 실행: 영상·용어 사전·`scripts/`를 stage하고 클라우드에서 `HF_HUB_OFFLINE=1 python3 transcribe_to_srt.py <video> ... --model large-v3-turbo --model-dir <cache> --device cpu`로 실행한다. 2코어에서 약 3배속(음성 60초당 약 20초)이며 백그라운드로 실행한다.
+4. 생성된 SRT·원본 전사 JSON을 `device_commit_files`로 작업 폴더의 계획된 경로에 쓴다. 원본 전사의 `model_dir`는 클라우드 경로로 기록되며 실행 환경 기록으로 둔다.

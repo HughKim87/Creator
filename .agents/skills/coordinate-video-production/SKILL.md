@@ -181,3 +181,15 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 - archive 적용 후 output 파일 네 개와 archive 재검증 통과
 
 최종 보고에는 job ID, root·branch, 최종 제목, 네 output 파일, archive와 검증 결과를 반환한다. 실제 YouTube 업로드·게시·공개 범위 변경이나 결과 확인은 하지 않는다.
+
+## Claude 실행 경로
+
+Codex는 위 절차를 그대로 쓴다. Claude(Cowork)는 같은 단계·승인·검증을 지키고 실행 수단만 다음처럼 바꾼다.
+
+- 연결 폴더: 사용자 PC의 `Creator`와 라우팅된 worktree 폴더(예: `Creator-ainotebook`)가 모두 연결돼야 한다. 활성화가 `expected worktree does not exist`로 실패하면 그 폴더 연결을 한 번 요청하고 재실행한다.
+- 실행 환경: 연결 폴더 셸(`device_bash`)은 매 호출이 새 셸이다. 모든 호출 앞에 `source "$HOME/mnt/Creator/.agents/skills/coordinate-video-production/scripts/claude_runtime.sh"`를 붙인다. 이 helper는 Windows worktree 경로를 마운트 경로로 바꾸는 git shim과 `CREATOR_HOST_PATH_MAP`을 설정해, 작업 기록의 `execution_context.worktree.root`가 Codex와 같은 Windows 경로로 남게 한다.
+- 이 셸에서는 Windows worktree가 `prunable`로 보인다. `git worktree prune`·`repair`·`remove`를 실행하지 않는다.
+- 명령 변환: PowerShell 블록은 bash로, `python`은 `python3`로 바꾼다. `workdir=$activeRoot`는 매 호출의 `cd "<active_root>"`이며, 활성화 결과의 `active_root`(마운트 경로)에서 실행하고 보고에는 `active_host_root`를 함께 쓴다.
+- 하위 스킬: `$skill-name`은 활성 root의 `.agents/skills/<skill-name>/SKILL.md`를 읽어 수행한다. 각 스킬의 「Claude 실행 경로」가 있으면 그 절을 따른다.
+- 브라우저: `cua_repl` 대신 `$connect-chrome-profile`의 Claude 실행 경로(Claude in Chrome, `verification_method: claude_in_chrome_device`)를 사용한다. NotebookLM 하위 단계의 탭 조작도 같은 Chrome 탭에서 Claude in Chrome 도구로 수행한다.
+- 장시간 작업: 셸 호출은 약 180초에 종료되고 백그라운드 프로세스도 함께 종료된다. 오래 걸리는 처리는 하위 스킬의 Claude 경로가 정한 클라우드 작업공간에서 실행한다.
