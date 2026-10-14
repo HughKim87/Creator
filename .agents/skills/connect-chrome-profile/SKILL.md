@@ -59,3 +59,13 @@ python .agents/skills/connect-chrome-profile/scripts/launch-profile.py --profile
 명시적 탭 멘션은 현재 도구의 `cua.getTab({ mention })`로 검증한다. 멘션만으로 프로필이 증명되지 않으면 프로필 실행 델타 절차를 사용한다.
 
 브라우저 ID·확장 인스턴스 ID·탭 바인딩은 메모리에서만 보관한다. 작업 기록의 프로필·검증 시각·resolved_origin은 재개 입력이며 새 런타임의 검증을 대신하지 않는다. coordinator가 위임된 제작을 수행 중이면 connected 직후 첫 미완료 단계로 이어간다.
+
+## Claude 실행 경로
+
+Claude(Cowork)에는 `cua_repl`과 공식 런처 실행 경로가 없다. 대신 Claude in Chrome 확장 연결을 사용하며, 위 Codex 절차와 같은 입력·반환 계약을 지킨다.
+
+1. `list_connected_browsers`로 연결된 Chrome 확장 목록을 읽는다. 연결이 없으면 `unavailable`과 `user_action`(Chrome 실행·확장 연결)을 반환한다.
+2. 활성 worktree의 Git 제외 runtime 설정 `extension/.runtime/video-workflow-defaults.json`의 `claude_in_chrome.device_profiles`에서 입력 `profile_directory`에 등록된 `deviceId`를 찾는다. 등록은 사용자가 해당 확장의 프로필을 직접 확인해 준 경우에만 추가하며, 프로필 파일·쿠키·계정 주소로 추론하지 않는다. 등록이 없거나 등록된 장치가 목록에 없으면 `needs_user`로 확인을 요청한다.
+3. 등록된 장치를 `select_browser`로 선택하고 새 탭에서 `target_origin`을 연다. 화면과 로그인 상태, origin을 확인한다. 이전 주소 허용 규칙(`matchesTargetOrigin`)은 Codex 경로와 같다.
+4. 성공하면 `verification_method: claude_in_chrome_device`로 `connected`를 반환한다. 장치 ID·탭 ID는 메모리에서만 보관하며 작업 기록에 쓰지 않는다.
+5. 내장 브라우저와 다른 장치로 우회하지 않는다. 로그인 화면이면 `login_required`로 반환한다.

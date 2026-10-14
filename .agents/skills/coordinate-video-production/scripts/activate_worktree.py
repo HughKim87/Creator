@@ -44,13 +44,16 @@ def resolve_active_worktree(
             "status": "valid",
             "redirected": False,
             "source_root": str(source_root),
-            "active_root": probe["root"],
+            "active_root": probe.get("local_root", probe["root"]),
+            "active_host_root": probe["root"],
             "active_branch": probe["branch"],
             "initial_check": probe,
             "final_check": probe,
         }
 
-    expected_root_text = probe.get("expected_root")
+    expected_root_text = probe.get("expected_local_root") or probe.get(
+        "expected_root"
+    )
     if not expected_root_text:
         return {
             "status": "invalid",
@@ -97,7 +100,8 @@ def resolve_active_worktree(
         "status": "valid",
         "redirected": True,
         "source_root": str(source_root),
-        "active_root": final_check["root"],
+        "active_root": final_check.get("local_root", final_check["root"]),
+        "active_host_root": final_check["root"],
         "active_branch": final_check["branch"],
         "initial_check": probe,
         "final_check": final_check,

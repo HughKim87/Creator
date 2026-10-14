@@ -25,7 +25,7 @@
 | `.runtime/` | active owner와 설치·재구축 경로가 있는 로컬 도구·모델·의존성 cache; Git 제외 |
 | `../.agents/skills/` | 저장소 전체에서 자동 발견되는 Codex skill source |
 
-새 작업은 이 영역에 추가한다. extension 작업을 이유로 core 구현·계약·규칙을 자동 변경하지 않는다.
+공통 구현·스킬·workflow 개선은 main의 이 영역에 추가한다. 개별 영상 작업은 해당 영상 워크트리의 Extension에 배치한다. extension 작업을 이유로 core 구현·계약·규칙을 자동 변경하지 않는다.
 
 ## 활성 영상 owner
 
