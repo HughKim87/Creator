@@ -1,0 +1,17 @@
+{
+  "purpose": "Local Korean GPT-SoVITS inference in the shared voice UI",
+  "owner": "extension/src/sovits_local.py",
+  "runtime": "extension/.runtime/gpt-sovits",
+  "install": "scripts/Install-GPTSoVITS.ps1",
+  "requirements": "extension/config/sovits-requirements.txt",
+  "source": "https://github.com/RVC-Boss/GPT-SoVITS",
+  "source_revision": "1b47ca07ef43a284e0b8bd7f29d3e1e3ff76082a",
+  "model": "lj1995/GPT-SoVITS",
+  "model_revision": "8f8857563c040d542de108a2c18b0425abd6c9c5",
+  "variant": "v5turbo",
+  "license": "MIT (project and official model repository); dependencies retain their own licenses",
+  "inference": {"device": "cuda", "half_precision": true, "language": "all_ko", "reference_min_seconds": 3, "reference_max_seconds": 9.9, "cuda_graph": false},
+  "windows_adapters": ["jieba API used in place of jieba_fast", "g2pk2 uses python-mecab-ko without automatic pip installation", "FFmpeg uses installed executable"],
+  "voice_storage": "extension/.runtime/gpt-sovits/voices",
+  "scope": "Reference cloning only; no personal model training performed"
+}
