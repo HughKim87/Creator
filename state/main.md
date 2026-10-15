@@ -3,13 +3,13 @@
 - 목적: 재사용 가능한 Extension·스킬·workflow 개선과 유지보수의 현재 상태를 소유한다.
 - 읽는 시점: core/PROJECT_RULES.md, PROJECT_RULES.md, SESSION_HANDOFF.md 뒤.
 - 책임: main 작업 에이전트가 공통 개발 상태를 유지하고 사용자가 범위와 외부 효과를 승인한다.
-- 상태: 제목·썸네일 설계 개선과 길이·후보 수 검증 변경 완료. 사용자 승인으로 main 로컬 커밋에 반영한다. 영상 워크트리 반영은 미위임이다.
+- 상태: 공통 개선 유지. game-trend-brief의 조회수 전망 근거 개선을 반영했다. 영상 워크트리 반영은 미위임이다.
 - handoff mode: same-workspace.
 - 관련 권위: PROJECT_RULES.md의 「워크트리별 상태 문서」.
 
 ## 현재 단계
 
-- 세션 종료 E1 활성: game-trend-brief의 조회수 전망 근거를 개선했다. 활성 설계는 extension/docs/domain/youtube/SESSION_CLOSE_E1_20261016.md이며 현재 1단계 검증을 마치고 커밋 확인 후 정리 단계로 전환한다. E2 외부 코치·E3 썸네일 단독 계약은 보류했다.
+- game-trend-brief는 소재 수요와 사용자 채널의 조회수 전망을 분리한다. 비교 조건·기간·표본과 산정 근거가 부족하면 예측 불가로 표시하고, 사용자가 요청한 가정 계산은 시나리오로 구분한다. 활성 E1 설계는 없다. E2 외부 코치·E3 썸네일 단독 계약은 보류했다.
 
 - 제목·썸네일의 성과 근거를 요청받으면 유사 영상의 실제 패키징을 먼저 비교하고, 공개 조회수·직접 본 썸네일·편집 판단을 구분한다. 선택 근거 기록은 패키지 안내가 소유하며 단순 문장 수정에는 조사를 강제하지 않는다. 현재 활성 E1 작업은 없다.
 
@@ -28,7 +28,7 @@
 
 ## 직전 게이트
 
-- 조회수 전망 E1: 비교 조건·예측 근거 부족·가정 계산 등 합성 시나리오 6개를 수동 문맥 대조했다. 기존 회귀 21개, 스킬 번들 무결성, UTF-8·최소 frontmatter·Markdown fence와 diff 검사 pass. 공식 quick_validate는 PyYAML 부재로 not_run이며 독립 Agent 행동 재현과 실제 조회수 효과는 미검증이다.
+- 조회수 전망 E1: 수동 문맥 대조, 기존 회귀, 스킬 번들 무결성, UTF-8·최소 구조와 diff 검사 pass. 공식 quick_validate는 PyYAML 부재로 not_run이며 독립 Agent 행동 재현과 실제 조회수 효과는 미검증이다.
 
 - E1: 관련 package/session 합성 검사 18개, 스킬 번들 무결성, diff 검사 pass. 적용·구어체·중간 요청·near-miss·접근 제한·지표 해석의 6개 시나리오를 수동 문맥 검토했다. 독립 Agent 행동 재현 및 실제 CTR 효과는 not_run.
 
