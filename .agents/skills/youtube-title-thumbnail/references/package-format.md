@@ -109,6 +109,18 @@ Creative delegation is decided only by the active project policy clause `creator
 
 기존 `youtube-title-thumbnail-v1`·`youtube-title-thumbnail-v2`는 검증 호환만 유지한다. 새 작업에는 v3를 사용한다.
 
+## 벤치마크 관측 기록
+
+패키지를 만드는 작업에서 조건부 벤치마크를 수행했다면 선택 필드 `editorial.brief.benchmark`에 근거를 보존할 수 있다. 실행 조건·조사 순서·판단 기준은 SKILL.md의 「성과 근거를 요청받은 경우의 벤치마크」가 소유한다. 이 필드는 새 필수 스키마나 성과 인증을 만들지 않으며 기존 패키지는 그대로 읽는다.
+
+- `status`: `observed`, `partial`, `unavailable` 중 관측 범위에 맞는 값.
+- `checked_at`: 시간대 포함 확인 시각. `selection_scope`: 비교 대상의 언어·주제·영상 형식.
+- `examples`: 사례별 `url`, `title`, `channel`, `views`, `published_or_age`, 필요 시 `current_subscribers`. 확인하지 못한 값은 `null`로 두며 공개 표시가 반올림 값이면 그 표시를 보존한다.
+- 사례별 `thumbnail_observation`: `status: observed`와 직접 본 `text`·`composition`, 또는 `status: not_observed`와 이유. 텍스트 검색 결과만으로 이미지를 본 상태를 기록하지 않는다.
+- `interpretation`: 관측에서 도출한 편집 판단. `application`: 후보에 적용한 원리와 우리 영상의 답변 근거. `limitations`: 표본·접근·비교 가능성과 공개 지표의 한계.
+
+`source.channel_evidence`는 사용자 채널의 근거 상태이며 유사 영상 벤치마크의 관측 여부와 혼동하지 않는다. 위 선택 필드의 의미와 조사 진위는 직접 검토 대상이다. 기존 자동 검증이 조사 수행·해석·CTR 효과를 인증한다고 주장하지 않는다. 실제 영상 제목·계정 비공개 정보·대화 원문을 공통 스킬이나 합성 fixture에 복제하지 않는다.
+
 ## 새 제작의 근거·원문 계약
 
 새 작업과 새 문구 revision에는 아래 필드를 추가하고 `--require-editorial`로 검증한다. 기존 패키지에 필드가 없으면 읽기 호환은 유지하되 `editorial_status: legacy_unrecorded`로 표시한다. 필드가 있으면 일반 검증에서도 확인한다. 구조 검증은 해석의 타당성이나 실제 CTR을 입증하지 않는다.
