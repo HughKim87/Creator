@@ -21,15 +21,16 @@ def run(script: Path, *args: object) -> dict:
     return data
 
 
-def finalize(package: Path, *, apply: bool = False) -> dict:
+def finalize(package: Path, *, apply: bool = False, require_publish_timing: bool = False) -> dict:
     package = package.resolve()
     # Read-only validation checks paths, approvals and hashes before any write.
-    checks = {"package": run(SCRIPTS / "prepare_upload_package.py", package, "--check")}
+    timing_args = ("--require-publish-timing",) if require_publish_timing else ()
+    checks = {"package": run(SCRIPTS / "prepare_upload_package.py", package, "--check", *timing_args)}
     title = Path(checks["package"]["artifacts"]["title_thumbnail_package"])
     checks["title"] = run(SCRIPTS.parent.parent / "youtube-title-thumbnail/scripts/validate_package.py", title, "--require-approved", "--require-editorial")
     if not apply:
         return {"status": "ready", "checks": checks, "external_actions": "none"}
-    checks["guide"] = run(SCRIPTS / "prepare_upload_package.py", package)
+    checks["guide"] = run(SCRIPTS / "prepare_upload_package.py", package, *timing_args)
     checks["retention_plan"] = run(SCRIPTS / "retain_upload_package.py", package)
     if checks["retention_plan"]["unexpected_directories"]:
         raise ValueError("unexpected output directories; archive not applied")
@@ -37,7 +38,7 @@ def finalize(package: Path, *, apply: bool = False) -> dict:
     checks["retention_after"] = run(SCRIPTS / "retain_upload_package.py", package)
     if checks["retention_after"]["archive"] or checks["retention_after"]["unexpected_directories"]:
         raise ValueError("final output retention recheck failed")
-    checks["package_after"] = run(SCRIPTS / "prepare_upload_package.py", package, "--check")
+    checks["package_after"] = run(SCRIPTS / "prepare_upload_package.py", package, "--check", *timing_args)
     return {"status": "complete", "checks": checks, "external_actions": "none"}
 
 
@@ -45,9 +46,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("package", type=Path)
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--require-publish-timing", action="store_true")
     args = parser.parse_args()
     try:
-        result = finalize(args.package, apply=args.apply)
+        result = finalize(args.package, apply=args.apply, require_publish_timing=args.require_publish_timing)
         code = 0
     except (OSError, ValueError, KeyError) as exc:
         result = {"status": "invalid", "errors": [str(exc)], "external_actions": "none"}

@@ -6,8 +6,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 try:
     from PIL import Image
@@ -27,6 +29,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("package", type=Path)
     parser.add_argument("--guide", type=Path)
+    parser.add_argument(
+        "--require-publish-timing", action="store_true",
+        help="Require a documented, still-future publication recommendation.",
+    )
     parser.add_argument(
         "--check",
         action="store_true",
@@ -118,6 +124,78 @@ def bool_ko(value: bool) -> str:
     return "예" if value else "아니요"
 
 
+def validate_publish_timing(
+    value: Any, errors: list[str], *, required: bool = False,
+) -> None:
+    if value is None and not required:
+        return  # Existing packages remain readable without a recommendation.
+    timing = require_mapping(value, "publish_timing", errors)
+    basis = timing.get("basis")
+    if basis not in {"analytics", "provisional"}:
+        errors.append("publish_timing.basis must be analytics or provisional")
+    status = timing.get("analytics_status")
+    if status not in {"available", "insufficient_data", "unavailable"}:
+        errors.append("publish_timing.analytics_status is unsupported")
+    if basis == "analytics" and status != "available":
+        errors.append("analytics-based timing requires available audience data")
+    if timing.get("channel_verified") is not True and status != "unavailable":
+        errors.append("audience data requires a verified target channel")
+    for key in ("source", "period", "audience_activity", "rationale", "timezone"):
+        require_text(timing.get(key), f"publish_timing.{key}", errors)
+    limitations = timing.get("limitations")
+    if not isinstance(limitations, list) or any(
+        not isinstance(item, str) or not item.strip() for item in limitations
+    ):
+        errors.append("publish_timing.limitations must be a list of non-empty text")
+    elif basis == "provisional" and not limitations:
+        errors.append("provisional timing requires a disclosed limitation")
+    dates = {}
+    for key in ("recommended_at", "checked_at"):
+        raw = timing.get(key)
+        try:
+            parsed = datetime.fromisoformat(raw) if isinstance(raw, str) else None
+            if parsed is None or parsed.utcoffset() is None:
+                raise ValueError()
+            dates[key] = parsed
+        except ValueError:
+            errors.append(f"publish_timing.{key} must include a UTC offset")
+    try:
+        zone = ZoneInfo(timing.get("timezone", ""))
+    except (ValueError, TypeError, ZoneInfoNotFoundError):
+        errors.append("publish_timing.timezone must be an available IANA timezone")
+    else:
+        recommended = dates.get("recommended_at")
+        if recommended and recommended.utcoffset() != recommended.astimezone(zone).utcoffset():
+            errors.append("publish_timing.recommended_at offset differs from timezone")
+    if len(dates) == 2 and dates["recommended_at"] <= dates["checked_at"]:
+        errors.append("publication recommendation must follow the analysis time")
+    if required and "recommended_at" in dates:
+        if dates["recommended_at"] <= datetime.now(timezone.utc):
+            errors.append("publication recommendation has passed; refresh the analysis")
+
+
+def render_publish_timing(timing: dict[str, Any]) -> list[str]:
+    recommended = datetime.fromisoformat(timing["recommended_at"])
+    weekday = "월화수목금토일"[recommended.weekday()]
+    basis = "채널 실측 데이터 기반 추천" if timing["basis"] == "analytics" else "잠정 추천 (실측 최적 시간 아님)"
+    lines = [
+        "## 추천 공개 시간", "",
+        f"- 권장 공개: **{recommended:%Y-%m-%d}({weekday}) {recommended:%H:%M}** · {timing['timezone']} · UTC{recommended:%z}",
+        f"- 추천 성격: {basis}",
+        f"- 데이터 확인: {timing['checked_at']} · {timing['source']}",
+        f"- 조회 기간: {timing['period']}",
+        f"- 시청자 이용 시간대: {timing['audience_activity']}",
+        f"- 추천 근거: {timing['rationale']}",
+    ]
+    lines.extend(f"- 한계: {item}" for item in timing["limitations"])
+    if recommended <= datetime.now(timezone.utc):
+        lines.append("- 추천 시각이 지났습니다. 공개 전 현재 시각과 데이터로 다시 판단하세요.")
+    lines.extend([
+        "- 이 시각은 공개 추천입니다. 파일 업로드·검사·예약 설정은 사용자가 직접 수행합니다.", "",
+    ])
+    return lines
+
+
 def render_guide(
     package_path: Path,
     guide_path: Path,
@@ -152,6 +230,8 @@ def render_guide(
                 "",
             ]
         )
+    if data.get("publish_timing"):
+        lines.extend(render_publish_timing(data["publish_timing"]))
     lines.extend(
         [
             "## 선택할 파일",
@@ -328,6 +408,9 @@ def main() -> int:
     artifacts = require_mapping(data.get("artifacts"), "artifacts", errors)
     metadata = require_mapping(data.get("metadata"), "metadata", errors)
     preparation = require_mapping(data.get("preparation"), "preparation", errors)
+    validate_publish_timing(
+        data.get("publish_timing"), errors, required=args.require_publish_timing,
+    )
 
     require_text(channel.get("name"), "channel.name", errors)
     if "id" in channel:

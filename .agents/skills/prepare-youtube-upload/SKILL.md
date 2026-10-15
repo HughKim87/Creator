@@ -26,7 +26,9 @@ description: 완성 영상, 승인된 제목·썸네일, SRT, 설명과 설정�
 
 ## 검증과 가이드
 
-새 제작·수정본은 승인된 제목과 현재 네 입력 해시를 패키지에 기록한 뒤 `scripts/finalize_upload_package.py <youtube-manual-upload.json>`으로 먼저 검증한다. 통과하면 `--apply`를 붙여 아래의 검증·가이드 생성·archive 계획/적용·적용 후 재검증을 한 번에 실행한다. 이 도우미는 원문이나 해시를 자동 승인·교정하지 않으며, `--require-editorial` 계약까지 검사한다. 구버전 자료는 기존 개별 명령으로 호환 검증한다.
+coordinator가 새 제작·패키지 재완료를 요청하면 먼저 전달된 `publish_timing`을 확인한다. 이 스킬은 브라우저를 열지 않고 coordinator 또는 `youtube-channel-coach`가 읽기 전용으로 확인한 분석 결과를 사용한다. 정보가 빠졌다면 호출자에게 반환하며 일반적인 오전·저녁 시각을 실측처럼 만들어 넣지 않는다. 단독 호출에서 분석을 요청받지 않았고 전달된 추천도 없으면 기존 패키지 작성 범위를 유지한다.
+
+새 제작·수정본은 승인된 제목과 현재 네 입력 해시, 전달받은 공개 시간 추천을 패키지에 기록한 뒤 `scripts/finalize_upload_package.py <youtube-manual-upload.json> --require-publish-timing`으로 먼저 검증한다. 통과하면 `--apply`를 붙여 아래의 검증·가이드 생성·archive 계획/적용·적용 후 재검증을 한 번에 실행한다. 이 도우미는 원문이나 해시를 자동 승인·교정하지 않으며, `--require-editorial` 계약까지 검사한다. 기존 패키지의 열람·검증이나 추천 없는 단독 호출은 이 옵션 없이 호환 검증한다.
 
 아래는 구버전 호환 또는 실패 진단을 위한 개별 명령이다. 완료 도우미가 성공한 단계는 반복하지 않는다. 개별 실행에서는 먼저 쓰기 없이 검증한다.
 
@@ -45,6 +47,7 @@ python scripts/prepare_upload_package.py <youtube-manual-upload.json> --check
 - 채널 ID나 외부 작업 승인이 없음
 - final output 파일명이 정확히 네 개임
 - coordinator 호출에서는 현재 영상·SRT의 내용 검수가 완료되고 미해결 중대 오류가 없음. 공개할 경미한 한계는 `metadata.description`에 반영해 가이드에도 포함함
+- coordinator의 새 제작·재완료에서는 `publish_timing`의 확인 근거·시간대·실측 기반/잠정 구분·한계와 미래의 추천 시각이 검증됨. 가이드 생성기가 「추천 공개 시간」을 렌더하며 이 정보는 YouTube 설명란에 자동 추가하지 않음
 
 검증이 통과하면 가이드를 생성한다.
 
@@ -88,6 +91,6 @@ python scripts/retain_upload_package.py <youtube-manual-upload.json> --apply
 - retention 재검증의 archive 대상과 예상치 못한 디렉터리 0
 - `external_actions: none`
 
-업로드 시간 추천은 로컬 패키지 작성과 별개인 읽기 전용 채널 분석으로 전달한다. `youtube-channel-coach`의 공개 시간 추천 절차로 기존 Chrome Studio의 대상 채널과 시청자 시간대를 먼저 확인한다. 패키지 제작 자체의 Manual-only 경계는 유지하며, 추천은 예약 실행 권한을 뜻하지 않는다.
+공개 시간 추천은 가이드 안에 보존한다. 분석은 `youtube-channel-coach`가, 로컬 렌더링은 이 스킬이 소유하며 추천은 예약 실행 권한을 뜻하지 않는다.
 
 최종 보고에는 네 파일의 절대 경로와 archive 경로를 반환한다. 이후 수동 업로드 여부를 blocker나 후속 작업으로 남기지 않는다.

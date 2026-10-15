@@ -102,7 +102,7 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 | `video` | `$notebooklm-generate-video` | 완성 영상, 길이, 30초 이내 재생 확인 후 일시정지, 다운로드 상태 |
 | `captions` | `$video-to-srt` | MP4, SRT, 원본 전사와 전체 검수 |
 | `title_thumbnail` | `$youtube-title-thumbnail` | 승인된 제목·문구·생성·최종 시각과 썸네일 |
-| `upload_package` | `$prepare-youtube-upload` | 업로드용 네 파일, 별도 archive와 수동 가이드 |
+| `upload_package` | `$prepare-youtube-upload` | 공개 시간 추천이 포함된 수동 가이드, 업로드용 네 파일과 별도 archive |
 
 첫 `pending` 단계만 실행한다. 앞 단계가 모두 `complete`가 아니면 뒤 단계를 시작하지 않는다. 다만 아래의 업로드 가이드 초안은 단계 완료와 별개인 준비 작업으로 허용한다.
 
@@ -111,6 +111,16 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 하위 스킬에 호출자가 `coordinate-video-production`임을 밝히고 현재 작업 기록 경로, `execution_mode`, 해당 단계의 승인 범위와 검증된 입력을 전달한다. 하위 스킬의 “멈춘다”, “후속 단계 전에 종료한다”는 문구는 단독 호출의 작업 경계다. coordinator 호출에서는 해당 단계의 결과를 반환하며, coordinator가 검증·상태 갱신 후 현재 실행 모드에 따라 이어간다. 하위 스킬을 호출하는 데 별도 Agent 생성은 필요하지 않다.
 
 `autonomous_local_pipeline`에 이미 포함된 다음 단계는 하위 스킬의 반환만을 이유로 다시 승인받지 않는다. 로그인·한도·오류 등 실제 차단, 위임되지 않은 결정, 비용·권한·외부 효과 경계는 그대로 반환하고 해당 상태에서 멈춘다. `review_gated`에서는 기존 단계별 승인 경계를 유지한다.
+
+## 공개 시간 분석과 가이드 전달
+
+`upload_package`를 시작할 때 `youtube-channel-coach`의 「공개 시간만 추천하는 요청」 절차로 대상 채널의 Studio 시청자 이용 시간대를 읽기 전용으로 확인한다. 이 분석은 패키지 스킬 호출 전에 coordinator가 수행하며, 같은 런타임의 검증된 Chrome 연결을 재사용한다. 새 런타임은 작업의 확정 프로필과 `target_origin: https://studio.youtube.com`을 `$connect-chrome-profile`에 전달해 연결한다. 작업의 NotebookLM `browser.required_origin`은 덮어쓰지 않는다. 채널 ID는 작업의 확정 채널과 대조하고 표시 채널명은 실제 Studio 화면을 따른다.
+
+- 확인 시각·조회 기간·표시 시간대와 실제 이용 시간대 분포를 기록하고, 소재의 시의성과 사용자의 오전/저녁 등 일정 제약을 함께 고려해 미래의 구체적인 공개 시각 하나를 추천한다. 시간대 분포에 기반한 추천도 성과를 입증한 최적 시각으로 표현하지 않는다.
+- Studio가 데이터 부족을 표시하면 그 문구를 기록하고 `provisional`로 추천한다. 연결·로그인·대상 채널 검증을 수행한 뒤에도 확인할 수 없다면 실제 이유를 남긴 잠정 추천을 작성한다. 확인하지 못한 분석을 실측으로 기록하지 않는다.
+- 기존 추천이 아직 유효하면 근거 없이 바꾸지 않는다. 공개 시각이 지났거나 사용자가 오전 등 제약을 바꿨다면 현재 현지 날짜·시간으로 다시 선택하고 변경 이유를 남긴다. 고정된 요일·시간을 모든 영상의 기본 최적값으로 두지 않는다.
+- 분석 결과는 [수동 패키지 형식](../prepare-youtube-upload/references/manual-upload-package-format.md#공개-시간-추천)의 `publish_timing`으로 전달한다. 가이드의 「추천 공개 시간」에 날짜·요일·시각·시간대·실측 기반/잠정 구분·근거·한계를 반드시 포함한다. 채널 ID와 브라우저 식별자는 수동 패키지에 넣지 않는다.
+- 이 읽기 전용 확인을 채널 전체 진단으로 확대하지 않는다. 업로드·예약·공개 범위·메타데이터는 변경하지 않는다. 분석 접근이 불가능해도 이유가 표시된 잠정 추천과 로컬 패키지를 완성할 수 있다.
 
 ## 업로드 가이드 초안
 
@@ -152,7 +162,7 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 
 사용자 결정은 기존 정책에 따라 판정하고 패키지에 기록한다. `needs_user`에는 기다리는 정확한 영상 단계와 결정 대상을 `note`·`next_action`으로 남긴다. 재개 시 현재 승인과 실제 산출물을 확인해 첫 미완료 단계부터 이어간다. 새 승인을 추정하거나 Core의 대화 해석 규칙을 이 스킬에서 다시 정의하지 않는다.
 
-수정 후 문구·이미지 검수, 승인 포함 검증, 수동 패키지의 제목·해시 갱신을 완료한다. 새 제작은 `--require-editorial`을 포함한다. 최종 처리는 `$prepare-youtube-upload`의 `finalize_upload_package.py`로 가이드 생성·archive 적용 후 재검증까지 실행한 뒤 job을 완료한다.
+수정 후 문구·이미지 검수, 승인 포함 검증, 수동 패키지의 제목·해시 갱신을 완료한다. 새 제작은 `--require-editorial`을 포함한다. 최종 처리는 `$prepare-youtube-upload`의 `finalize_upload_package.py <package.json> --require-publish-timing`으로 검증한 뒤 `--apply`를 추가해 가이드 생성·archive 적용 후 재검증까지 실행하고 job을 완료한다. 추천 시각이 지났다면 공개 시간 분석을 갱신한 뒤 진행한다.
 
 ## 최종 output 파일
 
@@ -177,6 +187,7 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 - 제목·썸네일 승인 포함 검증 통과
 - `VIDEO_JOB.json`의 `thumbnail_contract`와 제목·썸네일 패키지의 생성·승인 계약 일치
 - 수동 패키지 errors·warnings 0, `external_actions: none`
+- 새 제작·패키지 재완료는 `--require-publish-timing` 검증 통과, 가이드에 현재 유효한 추천 공개 시간과 분석 근거·한계가 포함됨
 - 수동 패키지에 기록된 네 입력 해시가 현재 영상·썸네일·SRT·제목·썸네일 패키지와 일치
 - archive 적용 후 output 파일 네 개와 archive 재검증 통과
 

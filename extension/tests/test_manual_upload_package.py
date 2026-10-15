@@ -4,11 +4,13 @@ import importlib.util
 import io
 import json
 from contextlib import redirect_stdout
+from datetime import datetime, timedelta
 from pathlib import Path
 import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from zoneinfo import ZoneInfo
 
 from PIL import Image
 
@@ -32,6 +34,92 @@ TITLE = "AI 하네스란? 입문자를 위한 안전한 에이전트 적용 방�
 
 
 class ManualUploadPackageTests(unittest.TestCase):
+    def _timing(self, *, stale: bool = False) -> dict:
+        now = datetime.now(ZoneInfo("Asia/Seoul"))
+        checked = now - timedelta(days=2) if stale else now
+        recommended = now + timedelta(days=-1 if stale else 1)
+        return {
+            "recommended_at": recommended.isoformat(),
+            "timezone": "Asia/Seoul",
+            "basis": "provisional",
+            "analytics_status": "insufficient_data",
+            "channel_verified": True,
+            "checked_at": checked.isoformat(),
+            "source": "YouTube Studio → 분석 → 시청자층",
+            "period": "지난 28일",
+            "audience_activity": "시청자 데이터가 충분하지 않아 보고서 조회 불가",
+            "rationale": "뉴스 시의성과 사용자가 지정한 아침 조건을 고려함",
+            "limitations": ["시청자 이용 시간대가 없어 잠정 추천임"],
+        }
+
+    def test_timing_survives_guide_regeneration_without_entering_description(self):
+        temporary, package = self._package(schema="youtube-manual-upload-v3")
+        self.addCleanup(temporary.cleanup)
+        data = json.loads(package.read_text(encoding="utf-8"))
+        data["publish_timing"] = self._timing()
+        package.write_text(json.dumps(data), encoding="utf-8")
+        guide = package.parent / "output/YOUTUBE-MANUAL-UPLOAD.md"
+        for _ in range(2):
+            with patch.object(sys, "argv", [str(SCRIPT), str(package), "--require-publish-timing"]):
+                with redirect_stdout(io.StringIO()):
+                    self.assertEqual(MODULE.main(), 0)
+            rendered = guide.read_text(encoding="utf-8")
+            self.assertIn("Asia/Seoul", rendered)
+            self.assertIn(data["publish_timing"]["rationale"], rendered)
+            self.assertIn("잠정 추천", rendered)
+            self.assertIn("조회 불가", rendered)
+            description = rendered.split("## 복사할 설명")[1].split("## 설정")[0]
+            self.assertNotIn(data["publish_timing"]["rationale"], description)
+        self.assertEqual(data["metadata"]["description"], "description")
+
+    def test_unavailable_timing_cannot_claim_analytics_or_omit_limitation(self):
+        for status in ("insufficient_data", "unavailable"):
+            timing = self._timing()
+            timing.update(analytics_status=status, basis="analytics")
+            errors = []
+            MODULE.validate_publish_timing(timing, errors, required=True)
+            self.assertIn("analytics-based timing requires available audience data", errors)
+        timing.update(basis="provisional", limitations=[])
+        errors = []
+        MODULE.validate_publish_timing(timing, errors, required=True)
+        self.assertIn("provisional timing requires a disclosed limitation", errors)
+        timing["limitations"] = ["Studio connection unavailable"]
+        timing["channel_verified"] = False
+        errors = []
+        MODULE.validate_publish_timing(timing, errors, required=True)
+        self.assertEqual(errors, [])
+
+    def test_past_recommendation_is_rejected_before_guide_write(self):
+        temporary, package = self._package(schema="youtube-manual-upload-v3")
+        self.addCleanup(temporary.cleanup)
+        data = json.loads(package.read_text(encoding="utf-8"))
+        data["publish_timing"] = self._timing(stale=True)
+        package.write_text(json.dumps(data), encoding="utf-8")
+        guide = package.parent / "output/YOUTUBE-MANUAL-UPLOAD.md"
+        guide.write_text("existing guide", encoding="utf-8")
+        with patch.object(sys, "argv", [str(SCRIPT), str(package), "--require-publish-timing"]):
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(MODULE.main(), 1)
+        self.assertEqual(guide.read_text(encoding="utf-8"), "existing guide")
+        # Archived recommendations remain inspectable, with an explicit stale notice.
+        self.assertEqual(self._run(package)[0], 0)
+        self.assertIn("추천 시각이 지났습니다", "\n".join(MODULE.render_publish_timing(data["publish_timing"])))
+
+    def test_timing_requires_channel_identity_and_consistent_timezone(self):
+        timing = self._timing()
+        timing.update(basis="analytics", analytics_status="available")
+        errors = []
+        MODULE.validate_publish_timing(timing, errors, required=True)
+        self.assertEqual(errors, [])
+        timing["channel_verified"] = False
+        MODULE.validate_publish_timing(timing, errors, required=True)
+        self.assertIn("audience data requires a verified target channel", errors)
+        timing["channel_verified"] = True
+        timing["timezone"] = "UTC"
+        errors = []
+        MODULE.validate_publish_timing(timing, errors, required=True)
+        self.assertIn("publish_timing.recommended_at offset differs from timezone", errors)
+
     def test_finalizer_rechecks_retention_and_rejects_stale_hashes_before_writes(self) -> None:
         spec = importlib.util.spec_from_file_location("editorial_fixture", Path(__file__).with_name("test_title_thumbnail_package.py"))
         fixture_module = importlib.util.module_from_spec(spec)
@@ -54,14 +142,20 @@ class ManualUploadPackageTests(unittest.TestCase):
         guide = title_path.parent / "output/YOUTUBE-MANUAL-UPLOAD.md"
         self.assertEqual(finalizer.finalize(package)["status"], "ready")
         self.assertFalse(guide.exists())
+        with self.assertRaises(ValueError):
+            finalizer.finalize(package, apply=True, require_publish_timing=True)
+        self.assertFalse(guide.exists())
+        data["publish_timing"] = self._timing()
+        package.write_text(json.dumps(data), encoding="utf-8")
         extra = title_path.parent / "output/technical.txt"
         extra.write_text("technical", encoding="utf-8")
-        result = finalizer.finalize(package, apply=True)
+        result = finalizer.finalize(package, apply=True, require_publish_timing=True)
         self.assertEqual(result["status"], "complete")
         self.assertEqual(result["checks"]["retention_after"]["archive"], [])
         self.assertFalse(extra.exists())
         self.assertEqual(len(list(guide.parent.iterdir())), 4)
         self.assertIn(data["metadata"]["title"], guide.read_text(encoding="utf-8"))
+        self.assertIn(data["publish_timing"]["rationale"], guide.read_text(encoding="utf-8"))
         original_guide = guide.read_bytes()
         data["artifact_hashes"]["thumbnail"] = "0" * 64
         package.write_text(json.dumps(data), encoding="utf-8")

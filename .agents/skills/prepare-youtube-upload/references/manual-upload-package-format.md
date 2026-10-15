@@ -63,6 +63,35 @@
 
 채널 ID, placeholder 채널 ID, 외부 작업 승인과 Chrome 프로필 필드는 넣지 않는다. 대상 채널은 사용자가 YouTube Studio에서 직접 확인한다.
 
+## 공개 시간 추천
+
+coordinator의 새 제작·패키지 재완료에는 아래 `publish_timing`을 최상위 필드로 추가한다. 기존 패키지에 없는 경우의 읽기 호환은 유지한다. `--require-publish-timing`은 누락과 현재 기준 이미 지난 추천을 거부하며, 옵션 없이 과거 패키지를 다시 렌더하면 지난 시각이라는 안내를 표시한다. 추천 변경은 이 필드를 갱신하고 가이드를 다시 생성한다.
+
+```json
+{
+  "publish_timing": {
+    "recommended_at": "2026-10-16T08:00:00+09:00",
+    "timezone": "Asia/Seoul",
+    "basis": "provisional",
+    "analytics_status": "insufficient_data",
+    "channel_verified": true,
+    "checked_at": "2026-10-15T10:00:00+09:00",
+    "source": "YouTube Studio → 분석 → 시청자층",
+    "period": "화면에 표시된 지난 28일의 시작일 ~ 종료일",
+    "audience_activity": "시청자 데이터가 충분하지 않아 이 보고서를 조회할 수 없습니다.",
+    "rationale": "뉴스성 소재의 빠른 전달과 사용자가 지정한 아침 공개 조건을 고려한 시험 시간입니다.",
+    "limitations": ["시청자 이용 시간대 실측에 근거한 최적 시각은 아닙니다."]
+  }
+}
+```
+
+- 예시 시각은 형식 설명이며 새 영상에 그대로 복사하지 않는다. `recommended_at`·`checked_at`은 UTC offset이 있는 ISO 시각이고, 추천은 확인 시각 이후여야 한다. `timezone`은 실제 offset과 일치하는 IANA 시간대다.
+- `basis`: `analytics`는 확인한 이용 시간대 분포를 근거로 한 추천, `provisional`은 데이터 부족·접근 불가 등 한계를 공개한 잠정 추천이다. 둘 다 조회수나 최적 시간을 보장하지 않는다.
+- `analytics_status`: `available`, `insufficient_data`, `unavailable`. 데이터가 부족하거나 접근 불가이면 `analytics`를 사용할 수 없다. `unavailable`이면 `period`·`audience_activity`에 확인 불가와 실제 원인을 적고 `limitations`에도 공개한다.
+- `channel_verified`: 대상 채널을 대조했는지 여부다. `available`·`insufficient_data`에는 `true`가 필요하다. 채널 ID·이메일·브라우저 식별자 대신 실제 표시 채널명은 `channel.name`에만 기록한다.
+- `source`·`period`·`audience_activity`는 실제 확인 범위를, `rationale`는 분포·소재 시의성·사용자 시간 제약을 반영한 판단을 기록한다. 잠정 추천의 `limitations`는 비어 있을 수 없다.
+- 이 정보는 가이드의 「추천 공개 시간」에 렌더한다. 업로드 완료를 권하는 시간과 시청자에게 공개하는 시간을 혼동하지 않고, 공개·예약은 사용자가 직접 설정한다. 최종 파일 개수는 네 개로 유지한다.
+
 ## 가이드 초안
 
 초안은 최종 패키지 JSON과 별개인 `work/<job-id>/YOUTUBE-MANUAL-UPLOAD-DRAFT.md`다. 다음 내용을 현재 확보한 자료만으로 작성한다.
