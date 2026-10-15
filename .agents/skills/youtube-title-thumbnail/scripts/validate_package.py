@@ -202,14 +202,12 @@ def validate_title(
         if "\n" in selected or "\r" in selected:
             errors.append("title.selected must be one line")
         title_length = len(selected)
-        if not 40 <= title_length <= 65:
+        if title_length > 100:
             errors.append(
-                f"title.selected length must be 40-65, got {title_length}"
+                f"title.selected length must be at most 100, got {title_length}"
             )
         candidates = require_list(title.get("candidates"), "title.candidates")
         candidate_texts: list[str] = []
-        if len(candidates) < 5:
-            errors.append("title.candidates must contain at least 5 items")
         for index, item in enumerate(candidates, start=1):
             if not isinstance(item, dict):
                 errors.append(f"title.candidates[{index}] must be an object")
@@ -225,9 +223,11 @@ def validate_title(
                 errors.append(str(exc))
                 continue
             candidate_texts.append(candidate_text)
-            if not 40 <= len(candidate_text) <= 65:
+            if "\n" in candidate_text or "\r" in candidate_text:
+                errors.append(f"title.candidates[{index}].text must be one line")
+            if len(candidate_text) > 100:
                 errors.append(
-                    f"title.candidates[{index}].text length must be 40-65, "
+                    f"title.candidates[{index}].text length must be at most 100, "
                     f"got {len(candidate_text)}"
                 )
         if selected not in candidate_texts:

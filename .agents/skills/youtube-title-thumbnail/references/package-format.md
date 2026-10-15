@@ -27,7 +27,7 @@ Creative delegation is decided only by the active project policy clause `creator
     }
   },
   "title": {
-    "selected": "검색어가 앞에 있는 40~65자 제목",
+    "selected": "대상과 클릭 이유가 선명한 제목",
     "status": "approved",
     "approval_method": "explicit_user",
     "candidates": [
@@ -103,7 +103,9 @@ Creative delegation is decided only by the active project policy clause `creator
 - 문구 승인과 생성 승인은 `generated_at`보다 빠르거나 같아야 하고, 시각 승인은 생성 이후여야 한다.
 - 원문 대화나 계정 정보는 저장하지 않고 안전한 승인 방법과 시각만 기록한다.
 
-`channel_evidence.status`는 `verified`, `unavailable`, `not_provided` 중 하나다. 제목 후보는 최소 5개다. 자동 검증은 사용자 승인을 대신하지 않는다.
+`channel_evidence.status`는 `verified`, `unavailable`, `not_provided` 중 하나다. 제목 후보 수는 사용자 요청을 따르며 지정이 없으면 5개를 기본으로 한다. 패키지에는 최소 1개가 필요하고 선정 제목이 후보에 포함돼야 한다. 선정 제목과 각 후보는 비어 있지 않은 한 줄이며 최대 100자다. 40~65자는 권장 범위일 뿐 검증의 합격 조건이 아니다. 기술 상한의 근거는 [YouTube 공식 도움말](https://support.google.com/youtube/answer/57404)이다.
+
+후보의 `angle`에는 실제 클릭 관점을 적는다. 선택 필드 `thumbnail_text`(문구 블록 배열), `click_rationale`, `weakness`를 사용해 세트별 판단을 보존할 수 있다. 선정 이유는 `title.rationale`, 최종 역할 분담은 `editorial.brief.title_thumbnail_roles`에 기록한다. 미선정 후보의 문구를 최종 `thumbnail.text`나 승인 원문으로 취급하지 않는다. 자동 검증은 문구의 매력이나 사용자 승인을 대신하지 않는다.
 
 기존 `youtube-title-thumbnail-v1`·`youtube-title-thumbnail-v2`는 검증 호환만 유지한다. 새 작업에는 v3를 사용한다.
 

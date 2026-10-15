@@ -29,6 +29,45 @@ TITLE = "AI Agent 입문 도구 추천: Obsidian·Graphiti·RAG를 구분하는 
 
 
 class TitleThumbnailPackageTests(unittest.TestCase):
+    def test_requested_candidate_counts_and_title_lengths_preserve_approval(self) -> None:
+        _, path = self._editorial_package()
+        data = json.loads(path.read_text(encoding="utf-8"))
+        for count in (1, 3, 5, 10):
+            for text in ("갈아탈까?", "가" * 66, "가" * 100):
+                with self.subTest(count=count, length=len(text)):
+                    data["title"].update(
+                        selected=text, approved_text=text,
+                        candidates=[{"text": text, "angle": "선택"}] + [
+                            {"text": f"다른 질문 {index}", "angle": "비교"}
+                            for index in range(count - 1)
+                        ],
+                    )
+                    path.write_text(json.dumps(data), encoding="utf-8")
+                    result = MODULE.validate(path, require_approved=True, require_editorial=True)
+                    self.assertEqual(result["errors"], [])
+                    self.assertEqual(result["warnings"], [])
+                    self.assertTrue(result["approval_ready"])
+
+    def test_invalid_title_boundaries_and_missing_selection_are_rejected(self) -> None:
+        cases = [
+            ("", [{"text": TITLE, "angle": "비교"}], "title.selected must be non-empty text"),
+            ("가" * 101, [{"text": TITLE, "angle": "비교"}], "title.selected length must be at most 100"),
+            (TITLE, [], "title.candidates must be a non-empty list"),
+            (TITLE, [{"text": "", "angle": "비교"}], "title.candidates[1].text must be non-empty text"),
+            (TITLE, [{"text": "가" * 101, "angle": "비교"}], "title.candidates[1].text length must be at most 100"),
+            (TITLE, [{"text": "첫 줄\n둘째 줄", "angle": "비교"}], "title.candidates[1].text must be one line"),
+            ("첫 줄\n둘째 줄", [{"text": TITLE, "angle": "비교"}], "title.selected must be one line"),
+            (TITLE, [{"text": "다른 제목", "angle": "비교"}], "title.selected must appear in title.candidates"),
+        ]
+        for selected, candidates, expected in cases:
+            with self.subTest(expected=expected):
+                errors = []
+                MODULE.validate_title(
+                    {"title": {"selected": selected, "candidates": candidates, "status": "draft"}},
+                    errors, require_approved=False,
+                )
+                self.assertTrue(any(expected in error for error in errors), errors)
+
     def _editorial_package(self) -> tuple[tempfile.TemporaryDirectory[str], Path]:
         temporary, path = self._package(schema="youtube-title-thumbnail-v3")
         self.addCleanup(temporary.cleanup)
