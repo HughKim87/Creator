@@ -114,7 +114,7 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
         replay_ids = re.findall(r"(?m)^\| (TC\d{2}) \|", rules_text)
 
         expected_rules = {f"R{number:02d}" for number in range(1, 23)}
-        expected_replays = {f"TC{number:02d}" for number in range(1, 41)}
+        expected_replays = {f"TC{number:02d}" for number in range(1, 43)}
         self.assertEqual(expected_rules, set(rule_ids))
         self.assertEqual(expected_replays, set(replay_ids))
         self.assertEqual(
@@ -176,7 +176,7 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertNotRegex(contract, r"(?m)^### R\d{2} —")
         self.assertIn("R01~R22", contract)
-        self.assertIn("TC01~TC40", contract)
+        self.assertIn("TC01~TC42", contract)
 
     def test_video_artifacts_separate_scratch_from_approved_baseline_lifecycle(self):
         lineage = (

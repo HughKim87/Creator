@@ -39,14 +39,17 @@
 
 한 단계의 계획을 이미 승인받았으면 같은 범위에서 반복 확인하지 않는다. 실제 `inputs/`·`outputs/`의 새 항목, 외부 효과, 삭제·이동, 결과를 바꾸는 충돌이 생길 때만 다시 확인한다.
 
-## 3. 네 작업 층
+## 3. 다섯 작업 층
 
 | 층 | 질문 | 주요 결과 | 종료 조건 |
 |---|---|---|---|
-| 1차 내용 분석 | 원본에 어떤 사건·반응·변화가 있는가 | 방향을 고정하지 않은 내용 지도 | 구성 가능한 근거와 공백을 설명 가능 |
+| 1차 내용 분석 | 원본에 어떤 발화·사건·반응·변화가 있는가 | 자막 정확도·화자 불확실성을 구분한 내용 지도 | 구성 가능한 근거와 공백을 설명 가능 |
+| 시청자 관점 분석 | 시청자는 무엇을 궁금해하고 보고 싶어 하는가 | 궁금증별 source anchor 또는 공백 | 원본에 없는 답 없이 방향 선택 근거를 설명 가능 |
 | 2차 상세 분석 | 선택 방향에 무엇을 쓸 것인가 | 후보 범위·스파인 기능·예상 위험 | 각 후보의 유지·축소·제외 이유가 있음 |
 | 1차 구성 편집 | 사건 블록을 어떤 순서로 놓을 것인가 | 블록 순서와 대략 범위 | 도입·전개·회수의 인과가 연결됨 |
 | 2차 편집 | 후보 내부를 어디서 실제로 자를 것인가 | frame 단위 video/audio timeline | 모든 블록이 microbeat 검수 완료 |
+
+새 전체 편집의 시청자 관점 분석은 1차 내용 지도를 바탕으로 방향 선택 전에 수행한다. 원본에 발화가 있으면 기존 자막을 확보하거나 승인 범위에서 추출하고, 사용할 발화의 오인식과 진행자·게임·NPC 등 화자 구분을 원본 음성으로 확인한다. 불확실한 발화·화자는 확인 대상으로 남기며 확정 사실로 쓰지 않는다. 무발화 원본은 발화·화자 검증이 비해당이고 자막을 억지로 만들지 않는다. 질문별 source anchor·공백, 방향 선택과 도입·결말 연결의 판단은 R03·R05·R06이 소유하며 별도 영구 문서를 요구하지 않는다.
 
 XML은 2차 편집의 전달 형식이다. 후보 범위나 이야기 블록을 clip 하나로 배치한 것은 1차 구성 편집이며, 완성 편집으로 승인할 수 없다.
 
@@ -60,12 +63,14 @@ XML은 2차 편집의 전달 형식이다. 후보 범위나 이야기 블록을 
 
 | profile | 사용할 때 | 필수 흐름 | 제외 |
 |---|---|---|---|
-| `new_full_edit` | 방향과 전체 구성이 아직 없는 새 편집 | 입력 계약 → 1차 내용 분석 → 필요한 방향 비교와 사용자 선택 → 2차 분석 → 구성·microbeat 편집 → 의미·구조 gate → XML | 방향이 이미 확정됐는데 세 안을 다시 만들지 않음 |
+| `new_full_edit` | 방향과 전체 구성이 아직 없는 새 편집 | 입력 계약 → 자막·화자 확인과 1차 내용 분석 → 시청자 관점 분석 → 필요한 방향 비교와 사용자 선택 → 2차 분석 → 구성·microbeat 편집 → 의미·구조 gate → XML | 방향이 이미 확정됐는데 세 안을 다시 만들지 않음 |
 | `calibration` | 유효한 승인 편집 문법이 없거나 최신 교정이 기존 문법을 무효화함 | exact 교정 범위 → 사건 anchor·microbeat 설계 → 단일 sequence XML → 의미·구조 gate → 사용자 방향 확인 | 전체 영상 확장, calibration 사용자 승인 추정 |
 | `approved_delta` | 사용자 승인본이나 수정본의 특정 결함만 수정 | exact protected baseline reference → defect·positive lock·untouched scope → 실제 diff와 영향 구간 편집 → 국소·전역 회귀 → 새 XML | 승인된 무관 범위 재설계, fingerprint 문자열만을 기준본으로 사용 |
 | `format_regeneration` | 편집 내용은 그대로 두고 전달 profile만 재생성 | exact current/approved baseline 확인 → editorial fingerprint 보존 → delivery만 변경 → 구조 회귀 | 의미 결정·clip 범위·editorial evidence 변경 |
 
-`new_full_edit`에서 창작 방향이 실제로 미정일 때만 촬영본이 뒷받침하는 방향을 최대 3개 비교한다. 근거가 부족하면 수를 채우지 않는다. 사용자가 자동 진행을 위임했더라도 사용자 소유 방향 승인과 결과 승인은 자동 통과시키지 않는다.
+`new_full_edit`에서 창작 방향이 실제로 미정일 때만 촬영본이 뒷받침하는 방향을 최대 3개 비교한다. 각 방향은 시청자 궁금증과 원본 근거를 연결한다. 근거가 부족하면 수를 채우지 않는다. 사용자가 자동 진행을 위임했더라도 사용자 소유 방향 승인과 결과 승인은 자동 통과시키지 않는다.
+
+방향이 이미 확정된 작업은 기존 질문·근거를 재사용하며 전체 시청자 관점 분석을 반복하지 않는다. `approved_delta`·`format_regeneration`·국소 `calibration`에도 신규 전체 분석을 강제하지 않고 해당 변경이 영향을 주는 근거만 확인한다.
 
 각 프로필은 하나의 v2 payload에서 source manifest, sequence, editorial evidence, revision, approval, validation, delivery를 유지한다. 채택 전 `working_candidate` payload와 임시 sidecar는 선언된 하나의 Git 제외 scratch root에 둔다. `current` 또는 `approved`가 후속 `approved_delta`의 기준이 되면 exact v2 artifact나 불변 snapshot을 보호 evidence owner로 승격하고 대체 revision이나 만료 조건이 충족될 때까지 보존한다. 사용자가 XML 하나만 요청하면 전달 폴더에는 XML 하나만 만든다.
 
@@ -254,7 +259,7 @@ python -m video_editing premiere-xml `
 ## 10. Acceptance
 
 1. 루트 `PROJECT_RULES.md`가 활성 영상 편집 규칙 6개를 각각 정확히 한 번 라우팅하고, `extension/README.md`와 이 계약의 책임표는 병렬 라우터로 동작하지 않는다.
-2. 운영 규칙 R01~R22과 재현 사례 TC01~TC40은 각 rule owner에 정확히 한 번 존재한다.
+2. 운영 규칙 R01~R22과 재현 사례 TC01~TC42은 각 rule owner에 정확히 한 번 존재한다.
 3. 기존 TC01~TC12의 기대 판정이 이관 전과 동일하다.
 4. TC13~TC16이 current revision 동결, 상태 충돌 중단, 검증 주장 제한, validator 계층 분리를 재현한다.
 5. 정상 v2 timeline은 결정론적 editorial·payload·task payload·delivery fingerprint를 반환한다. payload는 content/revision identity, task payload는 payload+approval+validation state, delivery는 task payload+delivery 객체를 소유하며 각 내부 gate는 fingerprint 일치와 별도로 판정한다.
