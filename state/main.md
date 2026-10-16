@@ -9,7 +9,7 @@
 
 ## 현재 단계
 
-- 활성 E1: 시청자 관점 분석 개선. 전체·단계 설계는 `extension/docs/domain/youtube/VIEWER_ANALYSIS_E1_DESIGN.md`가 소유한다. 설계 커밋을 확인했으며 계약·R03/R05/R06·TC41~TC42를 구현했다. 관련 회귀와 문맥 대조 뒤 단계 커밋을 확인한다.
+- 새 전체 편집은 내용 지도 뒤 시청자 궁금증을 source anchor 또는 공백에 연결하고 방향·도입·결말의 근거로 쓴다. 발화·화자 불확실성을 구분하고 승인된 방향·국소 수정·형식 재생성은 기존 근거를 재사용한다. 활성 시청자 분석 E1 설계는 없다.
 
 - game-trend-brief는 소재 수요와 사용자 채널의 조회수 전망을 분리한다. 비교 조건·기간·표본과 산정 근거가 부족하면 예측 불가로 표시하고, 사용자가 요청한 가정 계산은 시나리오로 구분한다. 활성 E1 설계는 없다. E2 외부 코치·E3 썸네일 단독 계약은 보류했다.
 
@@ -25,8 +25,8 @@
   - `video-to-srt`: 플랫폼별 python-deps 경로(Windows는 기존 `python-deps`). Claude 전사는 클라우드 작업공간에서 실행.
   - `connect-chrome-profile`·`youtube-title-thumbnail`·`coordinate-video-production`·`video-to-srt` SKILL.md에 「Claude 실행 경로」 절 추가. skill-bundle manifest 갱신.
 - inputs/outputs 보호 경로는 접근하지 않았다.
-- 활성 전체 설계: `extension/docs/domain/youtube/VIEWER_ANALYSIS_E1_DESIGN.md`.
-- 활성 단계 설계: 위 E1 설계의 현재 구현 단계 정의.
+- 활성 전체 설계: 없음.
+- 활성 단계 설계: 없음.
 
 ## 직전 게이트
 
@@ -70,8 +70,6 @@
 - 기존 스킬 등록의 공식 quick_validate는 PyYAML 부재로 not_run이다.
 
 ## 첫 다음 행동
-
-1. E1 관련 회귀·문맥 검토를 완료하고 구현 커밋 snapshot을 확인한 뒤 승인된 임시 설계를 정리한다.
 
 1. 사용자가 공통 변경을 `codex/ainotebook`에 병합했는지 확인한 뒤 해당 워크트리에서 새 제작을 진행한다.
 2. 공통 개선 요청을 받으면 영향받는 Extension·스킬·workflow owner를 확인하고 해당 범위의 구현과 검증을 진행한다.
