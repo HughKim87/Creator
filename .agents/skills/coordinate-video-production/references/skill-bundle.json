@@ -16,7 +16,7 @@
     ".agents/skills/coordinate-video-production/scripts/resolve_browser_profile.py": "d16dabd00e9272752a1374dd01de575da1f6a24ce7e0101e761c320a3b125c90",
     ".agents/skills/coordinate-video-production/scripts/revise_thumbnail_package.py": "650ee9259b6ba0fbef295d8135c397e13aa64b4f356016fe78b63a145ded916d",
     ".agents/skills/coordinate-video-production/scripts/validate_video_job.py": "24300b7a58d78e4e1868e3e8d05586ad9b61a55ff8693ecf352968f64fe7907d",
-    ".agents/skills/coordinate-video-production/SKILL.md": "71418400e614533a178c33606229188008751a1575de2a520a5370964aeadc63",
+    ".agents/skills/coordinate-video-production/SKILL.md": "7dd2654253e16de2d1de12f65236b652f574d26912915490d7de6e1ef86dcaa7",
     ".agents/skills/notebooklm-research-topic/agents/openai.yaml": "d5eca3389b222f5ede13476b3d00de9473fdadc827f21b6ba366426547cfccd1",
     ".agents/skills/notebooklm-research-topic/references/research-brief-template.md": "8414d10b724fb8a7165b3cd0bbadb2be648400e00316996ba051dfa850e9a3ef",
     ".agents/skills/notebooklm-research-topic/SKILL.md": "13d8306fa812fb40734c09fcb11e08820423674b8194900fc524d78ecf033bbd",

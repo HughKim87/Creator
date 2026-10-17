@@ -187,6 +187,50 @@ class VideoWorkflowEngineTests(unittest.TestCase):
         self.assertEqual(finished["job"]["next_action"], "none")
         self.assertTrue(all(finished["job"]["stages"][name]["status"] == "complete" for name in STAGES))
 
+    def autonomous_engine(self) -> tuple[WorkflowEngine, CountingAdapter, SyntheticArtifactStore]:
+        job = job_fixture()
+        job["execution_mode"] = "autonomous_local_pipeline"
+        job["thumbnail_contract"]["approval_mode"] = "delegated_by_user"
+        store = SyntheticArtifactStore()
+        adapter = CountingAdapter(store)
+        return WorkflowEngine(
+            job, adapters={name: adapter for name in STAGES},
+            artifact_store=store, validator=VALIDATOR_MODULE.validate_video_job,
+        ), adapter, store
+
+    def test_delegated_pipeline_completes_without_intermediate_user_approval(self) -> None:
+        engine, adapter, _ = self.autonomous_engine()
+        # Five executions plus the existing runner's terminal-state observation.
+        result = engine.run_until_boundary(max_steps=len(STAGES) + 1)
+        self.assertEqual(result["status"], "complete", result)
+        self.assertEqual(adapter.execute_count, len(STAGES))
+        self.assertEqual(result["job"]["next_action"], "none")
+        self.assertTrue(all("approval" not in stage for stage in result["job"]["stages"].values()))
+
+    def test_verified_recovery_continues_without_reexecuting_or_new_approval(self) -> None:
+        engine, adapter, store = self.autonomous_engine()
+        engine.run_next()
+        engine.run_next()
+        # Model an already recovered local caption artifact, not actual ASR/audio review.
+        reference = "fixture://video-workflow/recovered-captions"
+        fingerprint = store.put(reference, "verified recovered captions")
+        engine.job["stages"]["captions"].update({
+            "status": "in_progress", "artifacts": [reference],
+            "artifact_hashes": {reference: fingerprint},
+        })
+        result = engine.run_until_boundary()
+        self.assertEqual(result["status"], "complete", result)
+        self.assertEqual(adapter.execute_count, len(STAGES) - 1)
+        self.assertEqual(result["job"]["stages"]["captions"]["artifacts"], [reference])
+
+    def test_explicit_review_is_preserved_in_autonomous_execution_mode(self) -> None:
+        engine, _, _ = self.autonomous_engine()
+        engine.job["thumbnail_contract"]["approval_mode"] = "review_gated"
+        result = engine.run_until_boundary()
+        self.assertEqual(result["status"], "needs_user", result)
+        self.assertEqual(result["step"]["stage"], "title_thumbnail")
+        self.assertEqual(result["job"]["stages"]["upload_package"]["status"], "pending")
+
     def test_external_unavailable_is_a_boundary_not_success(self) -> None:
         engine = WorkflowEngine(
             job_fixture(),
