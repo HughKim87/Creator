@@ -1,0 +1,18 @@
+using System;using System.IO;using System.Linq;using System.Collections.Generic;using System.Threading;using System.Threading.Tasks;using System.Web.Script.Serialization;
+namespace ReplierDesktop {
+ public static class FocusedGrounding {
+  public static async Task<GroundingReview> Assess(LocalModel model,Func<object,CancellationToken,Task<string>> chat,string fact,string comment,KeyValuePair<string,CaptionCue>[] evidence,CancellationToken token){
+   var json=new JavaScriptSerializer();var schema=new{type="object",properties=new{added_fact=new{type="string",maxLength=80},meaning_clear=new{type="boolean"},reason=new{type="string",maxLength=100}},required=new[]{"added_fact","meaning_clear","reason"},additionalProperties=false};
+   string raw=await chat(new{model=model.Name,stream=false,think=false,format=schema,keep_alive="30s",options=new{temperature=0.0,num_ctx=8192,num_predict=250},messages=new[]{
+    new{role="system",content="댓글에서 영상 속 사실이라고 주장하는 부분만 확인합니다. added_fact에는 fact에 없는 실제 사건·대상·결과·원인을 추가했을 때 그 주장만 쓰고, 추가한 사실이 없으면 반드시 빈 문자열로 둡니다. 시청자의 웃기다·답답하다·긴장된다·궁금하다 같은 주관적인 감정에는 영상 속 증거가 필요하지 않습니다. 감정이나 단순한 내용 반복은 added_fact가 아닙니다. meaning_clear는 fact의 대상·행동을 추측 없이 이해할 수 있는지입니다. 뜻 모를 자동자막 조각이면 false입니다. 감상·긴장·기대·궁금증은 시청자의 반응이므로 사실과 연결되면 허용합니다. 질문형이나 추측형으로 말해도 실패·죽음 같은 결과를 전제하면 그 결과의 근거가 필요합니다. 제목·다른 사람의 경험·상식으로 빈 내용을 채우지 말고 제공된 fact만 봅니다. reason은 실제 추가된 내용 또는 연결된 반응을 설명합니다."},
+    new{role="user",content="{\"fact\":\"마감 시간이 있다\",\"comment\":\"결국 못 끝냈다는 거야ㅋㅋ\"}"},new{role="assistant",content="{\"added_fact\":\"실제로 못 끝냈다는 결과\",\"meaning_clear\":true,\"reason\":\"마감 존재만으로 실제 실패 여부는 알 수 없다\"}"},
+    new{role="user",content="{\"fact\":\"마감 시간이 있다\",\"comment\":\"시간 보면서 하면 더 긴장되겠네요\"}"},new{role="assistant",content="{\"added_fact\":\"\",\"meaning_clear\":true,\"reason\":\"주어진 시간 조건에 대한 시청자의 감상\"}"},
+    new{role="user",content="{\"fact\":\"가격이 두 배가 됐다\",\"comment\":\"성능까지 두 배라니 좋네요\"}"},new{role="assistant",content="{\"added_fact\":\"성능이 두 배로 변함\",\"meaning_clear\":true,\"reason\":\"가격 변화에 성능 변화라는 없는 사실을 덧붙였다\"}"},
+    new{role="user",content="{\"fact\":\"색상이 두 가지다\",\"comment\":\"둘 중에 고르기 고민되겠다ㅋㅋ\"}"},new{role="assistant",content="{\"added_fact\":\"\",\"meaning_clear\":true,\"reason\":\"두 선택지에 대한 반응이며 다른 사건을 만들지 않았다\"}"},
+    new{role="user",content=json.Serialize(new{fact=fact,comment=comment})}}},token).ConfigureAwait(false);
+   var parsed=SceneMaterial.Json(raw);string verdict=CaptionService.Get(parsed,"verdict") as string,reason=CaptionService.Get(parsed,"reason") as string;
+   if(verdict==null){var added=CaptionService.Get(parsed,"added_fact") as string;var clear=CaptionService.Get(parsed,"meaning_clear");if(added==null || !(clear is bool))throw new InvalidDataException("추가된 사실과 원문 명확성을 확인하지 못했습니다.");verdict=!(bool)clear?"unclear":string.IsNullOrWhiteSpace(added)?"supported":"unsupported";}if(!new[]{"supported","unsupported","unclear"}.Contains(verdict)||string.IsNullOrWhiteSpace(reason))throw new InvalidDataException("선택한 사실과 댓글의 연결을 확인하지 못했습니다.");
+   return new GroundingReview{Supported=verdict=="supported",SourceIndexes=verdict=="supported"?Enumerable.Range(0,evidence.Length).ToArray():new int[0],Reason="한 가지 사실 대조: "+verdict+"\n확인한 사실: "+fact+"\n판단: "+reason+"\n보존한 실제 원문: "+string.Join(" / ",evidence.Select(e=>e.Value.Text))};
+  }
+ }
+}
