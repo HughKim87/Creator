@@ -32,7 +32,7 @@ namespace ReplierDesktop
         static string Clean(string value){return Regex.Replace(value ?? "",@"\s+"," ").Trim().TrimEnd('.',',','!','?','~','…','。');}
         public static string ContextKey(Video video,VideoContent content,IList<CommentSuggestion> comments)
         {
-            var input=new {version="scene-reaction-v13-added-fact",title=video.Title,content=content,comments=comments.Select(c=>new {text=c.Text,cue=c.CueId,excerpt=c.GroundingQuote,material=c.Material}).ToArray()};
+            var input=new {version="scene-reaction-v14-shared-writing-context",title=video.Title,content=content,comments=comments.Select(c=>new {text=c.Text,cue=c.CueId,excerpt=c.GroundingQuote,material=c.Material}).ToArray()};
             using(var hash=SHA256.Create())return Convert.ToBase64String(hash.ComputeHash(Encoding.UTF8.GetBytes(new JavaScriptSerializer{MaxJsonLength=8*1024*1024}.Serialize(input))));
         }
         static int Part(object row,string name,int maximum)
