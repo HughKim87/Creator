@@ -1,4 +1,5 @@
-$ErrorActionPreference='Stop'
+﻿$ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'replier_probe_request.ps1')
 $root='D:\AI Agent\GitHub\Creator-24HReplier'
 $runtime=Join-Path $root 'extension\.runtime\replier-llm'
 $out=Join-Path $root 'extension\data\replier-prompt-probe'
@@ -37,7 +38,7 @@ $examples=@(
  @{role='user';content="대화 원문: 연습할 때는 다 맞았는데 시작 누르니까 또 틀리네. 방금까지 됐잖아.`n댓글 한 개"},
  @{role='assistant';content='{"comments":["연습할 땐 잘되는 게 더 약오름ㅋㅋ"]}'}
 )
-function Post($path,$data){Invoke-RestMethod -Uri ($uri+$path) -Method Post -ContentType 'application/json' -Body ([Text.Encoding]::UTF8.GetBytes(($data|ConvertTo-Json -Depth 16 -Compress))) -TimeoutSec 70}
+function Post($path,[string]$requestJson){Invoke-RestMethod -Uri ($uri+$path) -Method Post -ContentType 'application/json' -Body ([Text.Encoding]::UTF8.GetBytes($requestJson)) -TimeoutSec 70}
 $models=@('qwen3.5:4b','gemma4:e2b-it-qat')
 $report=[ordered]@{video=$source.video;system_prompt=$prompt;input=$inputData;examples=$examples;request_count=0;polishing=$false;model_evaluation=$false;runs=@()}
 $p=$null
@@ -47,18 +48,20 @@ try{
  for($i=0;$i -lt 40;$i++){try{$null=Invoke-RestMethod "$uri/api/version" -TimeoutSec 1;$ready=$true;break}catch{Start-Sleep -Milliseconds 300}}
  if(-not $ready){throw 'Server did not start'}
  foreach($name in $models){
-  $data=@{model=$name;stream=$false;think=$false;keep_alive=0;format=@{type='object';properties=@{comments=@{type='array';minItems=3;maxItems=3;items=@{type='string'}}};required=@('comments');additionalProperties=$false};options=@{num_ctx=8192;num_batch=128;num_predict=420;temperature=0.45;top_p=0.9;seed=20261020};messages=@(@{role='system';content=$prompt},@{role='user';content=$inputData})}
-  $watch=[Diagnostics.Stopwatch]::StartNew();$report.request_count++
-  try{$r=Post '/api/chat' $data;$row=[ordered]@{model=$name;seconds=[Math]::Round($watch.Elapsed.TotalSeconds,3);load_seconds=[Math]::Round($r.load_duration/1e9,3);prompt_seconds=[Math]::Round($r.prompt_eval_duration/1e9,3);generation_seconds=[Math]::Round($r.eval_duration/1e9,3);done=$r.done;done_reason=$r.done_reason;raw=$r.message.content}}
-  catch{$row=[ordered]@{model=$name;seconds=[Math]::Round($watch.Elapsed.TotalSeconds,3);error=$_.Exception.Message}}
+  $requestJson=New-ReplierProbeRequest -Model $name -Prompt $prompt -InputText $inputData -Examples $examples -Format @{type='object';properties=@{comments=@{type='array';minItems=3;maxItems=3;items=@{type='string'}}};required=@('comments');additionalProperties=$false} -Options @{num_ctx=8192;num_batch=128;num_predict=420;temperature=0.45;top_p=0.9;seed=20261020}
+  $row=[ordered]@{model=$name;request_sent=($requestJson|ConvertFrom-Json);status='pending'}
   $report.runs+= $row
-  $report|ConvertTo-Json -Depth 20|Set-Content -LiteralPath (Join-Path $out 'generation-only-v4.json') -Encoding UTF8
+  $report|ConvertTo-Json -Depth 24|Set-Content -LiteralPath (Join-Path $out 'generation-only-v4-repaired.json') -Encoding UTF8
+  $watch=[Diagnostics.Stopwatch]::StartNew();$report.request_count++
+  try{$r=Post '/api/chat' $requestJson;$row.status='complete';$row.seconds=[Math]::Round($watch.Elapsed.TotalSeconds,3);$row.load_seconds=[Math]::Round($r.load_duration/1e9,3);$row.prompt_seconds=[Math]::Round($r.prompt_eval_duration/1e9,3);$row.generation_seconds=[Math]::Round($r.eval_duration/1e9,3);$row.done=$r.done;$row.done_reason=$r.done_reason;$row.raw=$r.message.content}
+  catch{$row.status='error';$row.seconds=[Math]::Round($watch.Elapsed.TotalSeconds,3);$row.error=$_.Exception.Message}
+  $report|ConvertTo-Json -Depth 24|Set-Content -LiteralPath (Join-Path $out 'generation-only-v4-repaired.json') -Encoding UTF8
   $row|ConvertTo-Json -Depth 7 -Compress|Write-Output
  }
 }finally{
  if($p -and -not $p.HasExited){& taskkill.exe /PID $p.Id /T /F|Out-Null}
  $report.cleanup_port_open=[bool](Get-NetTCPConnection -State Listen -LocalPort 11440 -ErrorAction SilentlyContinue)
- $report|ConvertTo-Json -Depth 20|Set-Content -LiteralPath (Join-Path $out 'generation-only-v4.json') -Encoding UTF8
+ $report|ConvertTo-Json -Depth 24|Set-Content -LiteralPath (Join-Path $out 'generation-only-v4-repaired.json') -Encoding UTF8
 }
 
 
