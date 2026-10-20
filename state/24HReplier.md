@@ -10,7 +10,7 @@
 
 ## 현재 단계
 
-승인된 E1·E2의 소스 수정과 모의 검증을 마쳤으며 단계 커밋·최종 보고를 정리한다. 설계는 extension/work/24hreplier-session-close-design.md다. 사용자 삭제 금지 지시에 따라 완료 후 비활성 설계로 보존한다. Core·gitlink·정책은 변경하지 않는다.
+승인된 E1·E2의 소스 수정·모의 검증·단계 커밋·종료 보고를 완료했다. 보고서는 D:/AI Agent/GitHub/24HReplier-session-close-report.md에 있다. extension/work/24hreplier-session-close-design.md는 삭제 금지 지시에 따라 비활성 완료 설계로 보존한다. Core·gitlink·정책은 변경하지 않는다.
 
 **실제 댓글 품질과 5~10초 목표는 여전히 미해결이다.** 이번 수정은 실험 입력의 진실성과 작성·평가 근거 일치를 고친 것이다. 실제 모델 생성, 앱 UI 실행, OAuth·게시를 시험하지 않았다. 사용자용 운영 exe는 덮어쓰지 않았다. 별도 컴파일 출력은 extension/.runtime/replier-checks/session-close-e1-e2/에 있다. 따라서 현재 실행 파일을 켜면 새 소스가 아직 반영되지 않는다.
 
