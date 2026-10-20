@@ -16,6 +16,7 @@
 | 브랜치 | 상태 파일 |
 |---|---|
 | `main` | `state/main.md` |
+| `codex/TRYALLGAME` | `state/TRYALLGAME.md` |
 | `codex/ainotebook` | `state/ainotebook.md` |
 | `claude/dokkaebi` | `state/dokkaebi.md` |
 

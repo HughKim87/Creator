@@ -18,3 +18,6 @@ __pycache__/
 
 # Generated extension work data
 extension/data/
+
+# TRYALLGAME local editorial materials
+extension/work/TRYALLGAME/
