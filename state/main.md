@@ -9,7 +9,7 @@
 
 ## 현재 단계
 
-승인된 E2·E3 Extension 실행 보강을 진행한다. 현재 E3는 자동 사전검수·직접 청취·최종 품질 주장 분리를 기존 MP4/XML 전달 절차에 연결하는 단계다. 활성 설계는 extension/docs/plans/session-close-excerpt-qa-20261022.md다. Core 구현은 제외하며 저장 원칙 개선은 제안 문서로만 보고한다.
+승인된 E2·E3의 원본 발췌·MP4/XML 검수 보고 절차를 반영하고 검증했다. 이번 전용 임시 설계를 종료했으며 활성 설계는 없다. Core 구현은 제외하며 저장 원칙 제안서와 개선 보고서를 내부 보존하는 단계다.
 
 공용 도구는 extension/.runtime에서 재사용하며 운영 안내는 extension/docs/WORKSPACE.md가 소유한다. 프로젝트별 자료와 상태는 extension/jobs/<job-id>/에 둔다. 공통 유지보수와 개별 영상 제작의 상태를 분리하며, 새 작업 시작 시 실제 Git 상태를 확인한다.
 
@@ -35,7 +35,7 @@ E1의 현재 상태 안내 정정과 단계별 로컬 커밋·임시 설계 정�
 
 ## 첫 다음 행동
 
-1. E3 단계 커밋을 확인한 뒤 이번 전용 임시 설계만 정리하고 Core 제안서·최종 보고를 내부에 보존한다.
+1. extension/docs/reports/에 Core 저장 원칙 제안서와 E2·E3 개선 보고서를 작성하고 문서·링크·Core 불변·최종 Git 상태를 대조한다.
 
 1. git status --short --ignore-submodules=all로 현재 변경을 확인하고, 공통 코드 변경이 있으면 해당 변경의 소유자와 처리 범위를 먼저 확정한다.
 2. 도구는 scripts/creator_job.py runtime --component <component-id>로 현재 경로를 조회한다.
