@@ -9,13 +9,13 @@
 
 ## 현재 단계
 
-승인된 E2·E3 Extension 실행 보강을 진행한다. 현재 E2는 원본 발췌 요청을 실제 대사·source anchor·누적 피드백·결과 대조로 연결하는 단계다. 활성 설계는 extension/docs/plans/session-close-excerpt-qa-20261022.md다. Core 구현은 제외하며 저장 원칙 개선은 제안 문서로만 보고한다.
+승인된 E2·E3 Extension 실행 보강을 진행한다. 현재 E3는 자동 사전검수·직접 청취·최종 품질 주장 분리를 기존 MP4/XML 전달 절차에 연결하는 단계다. 활성 설계는 extension/docs/plans/session-close-excerpt-qa-20261022.md다. Core 구현은 제외하며 저장 원칙 개선은 제안 문서로만 보고한다.
 
 공용 도구는 extension/.runtime에서 재사용하며 운영 안내는 extension/docs/WORKSPACE.md가 소유한다. 프로젝트별 자료와 상태는 extension/jobs/<job-id>/에 둔다. 공통 유지보수와 개별 영상 제작의 상태를 분리하며, 새 작업 시작 시 실제 Git 상태를 확인한다.
 
 ## 직전 게이트
 
-E2: 기존 editorial state 회귀 19개와 네 문맥 사례(전체 원본 교정·새 대사 요청·source 미확정·피드백 해소 누락) 대조를 통과했다. 실제 영상 내용·청취 검증이 아니라 절차와 기존 구조 검사의 확인이다.
+E3: 검수 후보 전달 회귀 7개, ASR recorded 허용·speech passed 승격 거부·semantic not_run 보존 대조를 통과했다. 자동 사전검수·실제 청취·기술 검사 요청 문맥을 대조했다. 실제 영상 직접 청취·연속 재생과 독립 Agent 재현은 not_run이다.
 
 상태 안내를 실제 Git 상태와 대조하고, 이미 정리된 미커밋 삭제·문서 수정이 남아 있다는 안내를 제거했다. 이는 실제 영상 제작·모델 추론 검증이 아니다.
 
@@ -35,7 +35,7 @@ E1의 현재 상태 안내 정정과 단계별 로컬 커밋·임시 설계 정�
 
 ## 첫 다음 행동
 
-1. 활성 설계의 E3에서 자동 사전검수와 직접 청취·최종 품질 주장 분리를 기존 검증·전달 절에 연결한다.
+1. E3 단계 커밋을 확인한 뒤 이번 전용 임시 설계만 정리하고 Core 제안서·최종 보고를 내부에 보존한다.
 
 1. git status --short --ignore-submodules=all로 현재 변경을 확인하고, 공통 코드 변경이 있으면 해당 변경의 소유자와 처리 범위를 먼저 확정한다.
 2. 도구는 scripts/creator_job.py runtime --component <component-id>로 현재 경로를 조회한다.
