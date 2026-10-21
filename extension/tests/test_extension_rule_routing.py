@@ -114,7 +114,7 @@ class ExtensionRuleRoutingTests(unittest.TestCase):
         replay_ids = re.findall(r"(?m)^\| (TC\d{2}) \|", rules_text)
 
         expected_rules = {f"R{number:02d}" for number in range(1, 23)}
-        expected_replays = {f"TC{number:02d}" for number in range(1, 43)}
+        expected_replays = {f"TC{number:02d}" for number in range(1, 47)}
         self.assertEqual(expected_rules, set(rule_ids))
         self.assertEqual(expected_replays, set(replay_ids))
         self.assertEqual(

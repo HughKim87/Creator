@@ -1,0 +1,4 @@
+interface:
+  display_name: "게임플레이영상제작"
+  short_description: "게임 컷편집과 자막·밈·확대 후편집, 지정 아웃트로 결합 및 기술 검사"
+  default_prompt: "$edit-gameplay-video 현재 제작 단계와 원본 계보를 확인하고, 요청한 컷편집 또는 후편집을 샘플·전체 후보·검수까지 진행해줘."

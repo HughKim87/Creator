@@ -10,7 +10,7 @@
 
 - 조건: 영구 증거, timeline, XML 또는 검토 산출물을 만든다.
 - 행동: 영구 화면·오디오·전사·XML clip은 exact 원본 미디어에서 직접 유도하고, 사용자에게 약속한 산출물만 만든다. `working_candidate` v2 payload와 cut decision·contact sheet·WAV·RMS·임시 frame·보조 전사는 작업 계약이 선언한 하나의 Git 제외 scratch root나 메모리에서 필요한 범위만 유지한다. task evidence는 활성 규칙 owner가 아니며, 반복 가능한 지식은 기존 rule-governance를 거쳐 가장 좁은 기존 rule 또는 candidate owner에만 반영한다. 사용자가 별도 산출물로 요청하지 않으면 내부 자료를 deliverable 폴더에 두지 않는다. XML 하나를 약속했다면 v2 payload는 내부 gate 입력이지 전달 sidecar가 아니다. `approved_delta`가 재사용할 `current` 또는 `approved` 기준본은 fingerprint 문자열만 남기지 않고 exact v2 artifact나 불변 snapshot을 하나의 보호 evidence owner로 승격해 `artifact_id / editorial_fingerprint / payload_fingerprint / task_payload_fingerprint / source_manifest / consumer / validation / superseded_by 또는 expiry`를 함께 유지한다. 전달 시 `source_manifest.path`는 XML이 실제 참조할 absolute canonical path여야 한다. source는 쓰기·삭제 공유를 거부하는 mandatory read handle로 잠근 채 처음 hash·size를 검사하고 XML 생성 뒤와 원자적 publish 직전에 같은 handle을 다시 검사한다. 이 snapshot을 보장할 수 없는 platform이나 filesystem에서는 fail closed한다. 기존 출력은 덮어쓰지 않는다.
-- 예외: 편집본은 사용자 재생 비교와 결함 확인에만 사용할 수 있으며 후속 편집 source나 영구 증거가 될 수 없다.
+- 예외: 편집본은 사용자 재생 비교와 결함 확인에 사용할 수 있다. 사용자가 특정 완성본과 별도 아웃트로의 단순 결합을 명시한 경우에만 그 exact 파일을 결합 입력으로 허용한다. 입력별 hash·size·read lock과 본편 영상 보존 검증, 추가 구간의 계보를 유지한다. 이 예외를 새 컷·자막·효과를 편집본 위에 누적하는 후속 편집이나 영구 원본 증거로 확대하지 않는다.
 - 검증: v2 source byte hash·size와 mandatory locked handle이 가리키는 exact source를 대조하고, 선언 경로가 absolute canonical path인지 확인한다. XML 생성 중 source byte가 바뀌거나 lock을 얻지 못하면 XML과 임시 파일이 0개이고 기존 출력은 그대로인지 결함 주입으로 확인한다. source lineage와 작업 시작 전후의 신규 영구 파일 목록에서 원본 이외 reference·계약 밖 산출물·deliverable 폴더의 내부 sidecar가 각각 0개인지 확인한다. 보존 evidence에는 source 범위·자료 유형·장면 의미·검증 상태·소비자·만료 조건이 있다. closeout 뒤 disposable scratch와 채택되지 않은 `working_candidate`는 0개이고, 아직 소비 중인 `current` 또는 `approved` 기준본은 exact evidence owner 하나에 남아 있는지 확인한다.
 
 ## 수명
@@ -26,3 +26,4 @@
 | ID | 상황 | 기대 판정 |
 |---|---|---|
 | TC04 | XML만 요청했는데 검토 MP4와 contact sheet도 만들려 함 | XML 외 산출물을 만들지 않는다 |
+| TC43 | 사용자가 지정한 완성본 뒤에 지정 아웃트로만 붙임 | exact 두 입력과 본편 영상 보존을 검증하는 결합만 허용하고 레이어 재편집에 재사용하지 않는다 |
