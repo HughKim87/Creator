@@ -9,7 +9,7 @@
 
 ## 현재 단계
 
-공통 구현과 유지보수는 state/main.md가 소유한다. 영상 데이터와 현재 상태는 extension/jobs/<job-id>/가 소유한다. 기존 브랜치별 상태는 archive와 before 태그에서 보존하는 역사 자료다.
+공통 구현과 유지보수는 state/main.md가 소유한다. 영상 데이터와 현재 상태는 extension/jobs/<job-id>/가 소유한다. 공용 도구의 사용 경로는 extension/docs/WORKSPACE.md를 따른다.
 
 | 브랜치 | 상태 파일 |
 |---|---|
@@ -17,11 +17,11 @@
 
 ## 직전 게이트
 
-자료 이전·복구 검증·기존 worktree 퇴역 후 main의 ignored·미추적 자료까지 외부 archive로 비웠다. 상세 근거와 한계는 extension/reports/workspace-consolidation-20261021.md가 소유한다.
+공용 도구의 main 내 재배치와 경로·기본 실행 확인을 마쳤다. 운영 안내에서 종료된 자료의 백업·복구 경로를 제거했다.
 
 ## 승인 상태
 
-현재 통합·정리의 로컬 구현·이전·복구 검증·커밋은 위임됐다. 새 외부 게시·push·영구 데이터 폐기·Core 변경은 위임되지 않았다.
+운영 문서의 이전 백업·복구 안내 제거가 승인됐다. 외부 게시·push·영구 데이터 폐기·Core 변경은 이번 작업 범위가 아니다.
 
 ## 차단
 
@@ -29,12 +29,12 @@
 
 ## 알려진 위험
 
-실제 모델 추론·Premiere 재생·로그인 검증은 이번 파일 정리와 별개다. 복구 범위와 사용자 제외 원본은 보고서·WORKSPACE.md를 따른다.
+실제 모델 추론·Premiere 재생·로그인 검증은 이번 문서 정리에서 실행하지 않았다. 남아 있는 전용 기능 참조와 미커밋 변경은 state/main.md를 따른다.
 
 ## 첫 다음 행동
 
 1. 공통 유지보수는 state/main.md를 읽는다.
-2. 기존 영상·도구는 extension/docs/WORKSPACE.md의 cleanup snapshot 복구 절차로 필요한 경로를 먼저 복원하고 해당 job의 state.md를 읽는다.
+2. 도구 경로는 scripts/creator_job.py runtime --component <component-id>로 조회한다. 진행 중 영상은 해당 job의 state.md를 읽는다.
 3. 새 영상은 scripts/creator_job.py init --job <job-id>로 main 안에 만든다.
 
 ## 다음 세션 시작 prompt

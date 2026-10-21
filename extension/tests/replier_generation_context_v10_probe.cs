@@ -1,8 +1,0 @@
-using System;using System.IO;using System.Collections.Generic;using System.Diagnostics;using System.Threading;using System.Web.Script.Serialization;using ReplierDesktop;
-public static class GenerationContextProbe {
- public static int Main(string[] args){var root=args[0];var json=new JavaScriptSerializer{MaxJsonLength=8388608};var dir=Path.Combine(root,"extension/data/replier-prompt-probe");var tests=json.DeserializeObject(File.ReadAllText(Path.Combine(dir,"generation-context-v10-requests.json"))) as object[];var results=new List<object>();
- using(var model=new LocalModel(Path.Combine(root,"extension/.runtime/replier-llm"),"gemma4:e2b-it-qat")){
- foreach(var test in tests){var body=CaptionService.Get(test,"request");var watch=Stopwatch.StartNew();string raw=null,error=null;using(var limit=new CancellationTokenSource(TimeSpan.FromSeconds(60))){try{model.EnsureReady(limit.Token).GetAwaiter().GetResult();raw=model.Chat(body,limit.Token).GetAwaiter().GetResult();}catch(Exception ex){error=ex.GetType().Name+": "+ex.Message;}}
- var row=new{input_kind=CaptionService.Get(test,"input_kind"),seconds=Math.Round(watch.Elapsed.TotalSeconds,3),raw=raw,error=error};results.Add(row);Console.WriteLine(json.Serialize(row));File.WriteAllText(Path.Combine(dir,"generation-context-v10-results.json"),json.Serialize(new{video_id="vDWt01ul5F0",requests_file="generation-context-v10-requests.json",polishing=false,model_evaluation=false,runs=results}));if(error!=null)break;
- }}return 0;}
-}

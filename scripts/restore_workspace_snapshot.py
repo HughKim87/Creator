@@ -1,7 +1,7 @@
 """Restore an archived filesystem snapshot into a new, empty directory.
 
 Default is read-only planning. A snapshot includes historical .git pointer files;
-it is not a registered Git checkout. See WORKSPACE.md for bundle-based recovery.
+it is not a registered Git checkout.
 """
 from __future__ import annotations
 import argparse
