@@ -3,7 +3,7 @@
 - 목적: main 공통 유지보수와 영상별 job의 상태 owner로 안내한다.
 - 읽는 시점: core/PROJECT_RULES.md, PROJECT_RULES.md 뒤.
 - 책임: main 유지보수 세션과 해당 job 작업 세션.
-- 상태: 안내판. 활성 전체 설계·단계 설계 없음.
+- 상태: 안내판. 공통 유지보수와 개별 job의 상태 owner를 분리한다.
 - handoff mode: same-workspace.
 - 관련 권위: PROJECT_RULES.md의 영상별 작업 공간과 상태.
 
@@ -17,25 +17,25 @@
 
 ## 직전 게이트
 
-공용 도구의 main 내 재배치와 경로·기본 실행 확인을 마쳤다. 운영 안내에서 종료된 자료의 백업·복구 경로를 제거했다.
+공통 현재 상태 안내를 실제 작업 상태와 대조했다. 제작·모델 추론·앱 재생 검증과는 구분한다.
 
 ## 승인 상태
 
-운영 문서의 이전 백업·복구 안내 제거가 승인됐다. 외부 게시·push·영구 데이터 폐기·Core 변경은 이번 작업 범위가 아니다.
+E1의 현재 상태 안내 정정·단계별 로컬 커밋·임시 설계 정리·저장소 밖 종료 보고가 승인됐다. 개별 영상 제작·자료 처분·설치·외부 게시·push·Core 변경은 별도 작업 범위다.
 
 ## 차단
 
-없음.
+확인된 공통 차단은 없다. 실제 Git 변경과 개별 job의 차단은 작업 시작 시 해당 owner에서 확인한다.
 
 ## 알려진 위험
 
-실제 모델 추론·Premiere 재생·로그인 검증은 이번 문서 정리에서 실행하지 않았다. 남아 있는 전용 기능 참조와 미커밋 변경은 state/main.md를 따른다.
+실제 모델 추론·Premiere 재생·로그인 검증은 이번 상태 안내 정정에서 실행하지 않았다. 공통 runtime의 제약은 state/main.md를, 개별 자료와 제작 기록의 한계는 해당 job의 state.md를 따른다.
 
 ## 첫 다음 행동
 
 1. 공통 유지보수는 state/main.md를 읽는다.
 2. 도구 경로는 scripts/creator_job.py runtime --component <component-id>로 조회한다. 진행 중 영상은 해당 job의 state.md를 읽는다.
-3. 새 영상은 scripts/creator_job.py init --job <job-id>로 main 안에 만든다.
+3. 새 작업은 기존 job 재사용 여부와 범위를 먼저 확인하고, 필요한 경우에만 scripts/creator_job.py init --job <job-id>로 main 안에 만든다.
 
 ## 다음 세션 시작 prompt
 
