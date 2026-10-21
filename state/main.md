@@ -9,7 +9,7 @@
 
 ## 현재 단계
 
-승인된 E2·E3의 원본 발췌·MP4/XML 검수 보고 절차를 반영하고 검증했다. 이번 전용 임시 설계를 종료했으며 활성 설계는 없다. Core 구현은 제외하며 저장 원칙 제안서와 개선 보고서를 내부 보존하는 단계다.
+승인된 E2·E3의 원본 발췌·MP4/XML 검수 보고 절차를 반영하고 검증했다. 활성 설계는 없다. 결과는 extension/docs/reports/SESSION_CLOSE_EXTENSION_2026-10-22.md, 미구현 Core 저장 원칙 제안은 extension/docs/reports/CORE_ARTIFACT_STORAGE_PROPOSAL_2026-10-22.md가 소유한다. 작업 보고서는 프로젝트 내부에 보존한다.
 
 공용 도구는 extension/.runtime에서 재사용하며 운영 안내는 extension/docs/WORKSPACE.md가 소유한다. 프로젝트별 자료와 상태는 extension/jobs/<job-id>/에 둔다. 공통 유지보수와 개별 영상 제작의 상태를 분리하며, 새 작업 시작 시 실제 Git 상태를 확인한다.
 
@@ -35,7 +35,7 @@ E1의 현재 상태 안내 정정과 단계별 로컬 커밋·임시 설계 정�
 
 ## 첫 다음 행동
 
-1. extension/docs/reports/에 Core 저장 원칙 제안서와 E2·E3 개선 보고서를 작성하고 문서·링크·Core 불변·최종 Git 상태를 대조한다.
+1. 다음 원본 발췌 편집에서 기존 workflow의 원본 대사·source anchor·feedback·결과 보존 대조 순서를 적용한다. 발화 품질 요청에 직접 청취가 없으면 미검증 상태를 보고한다.
 
 1. git status --short --ignore-submodules=all로 현재 변경을 확인하고, 공통 코드 변경이 있으면 해당 변경의 소유자와 처리 범위를 먼저 확정한다.
 2. 도구는 scripts/creator_job.py runtime --component <component-id>로 현재 경로를 조회한다.
