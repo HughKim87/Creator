@@ -4,7 +4,7 @@
 
 `core/`는 공통 Agent 정책과 공개 계약을 제공하는 읽기 전용 submodule이다. 실제 영상·YouTube·게임 도메인 기능과 작업 절차는 이 저장소의 `extension/`과 `.agents/skills/`가 소유한다.
 
-`main`에서는 재사용 가능한 Extension·스킬·workflow를 개선한다. 개별 영상 제작과 편집은 영상 작업용 워크트리에서 진행하며, 입력·산출물·분석·승인과 작업 상태도 그 워크트리가 소유한다. 상세 경계는 `PROJECT_RULES.md`의 「워크트리별 상태 문서」를 따른다.
+main 하나에서 공통 기능과 영상 작업을 수행한다. 영상별 데이터·상태는 Git 제외 `extension/jobs/<job-id>/`, 설치·모델은 공용 `extension/.runtime/`가 소유한다. 새 작업과 실행 방법은 [단일 작업 공간](extension/docs/WORKSPACE.md)을 따른다. 기존 worktree와 자료는 이전 승인 전까지 보존한다.
 
 ## 주요 workflow
 

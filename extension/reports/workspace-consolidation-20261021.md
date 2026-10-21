@@ -3,7 +3,7 @@
 - 목적: 제거될 브랜치에 재사용 개선이 남지 않도록 출처별 흡수 판정과 자료 처분 대상을 기록한다.
 - 읽는 시점: 단일 workspace 전환 검토와 기존 자료·worktree 처분 승인 시.
 - 책임: main 유지보수 세션이 실제 파일·검사를 갱신하고 사용자가 자료 처분을 승인한다.
-- 상태: 개선 통합 진행. 기존 자료 이동·삭제와 worktree 제거 미실행.
+- 상태: 개선 통합과 단일 workspace 코드 구현 완료. 기존 자료 이동·삭제와 worktree 제거 미실행.
 - 관련 권위: `../docs/WORKSPACE.md`, 루트 `PROJECT_RULES.md`.
 
 ## 개선사항 출처 대조
@@ -36,3 +36,34 @@
 ## 자료 정리 승인
 
 기존 자료·worktree는 아직 이동·삭제하지 않았다. 최종 XML이 참조하는 원본·PNG·WAV를 포함한 종속 자산은 단순 중간본으로 처분하지 않는다. 해당 작업의 최종 승인 근거와 dependency를 대조한 뒤 정확한 유지·보관·삭제 목록을 제시한다. 사용자 확인 전에는 이 절을 실행 승인으로 해석하지 않는다.
+
+## 단일 workspace 구현 검증
+
+- `creator_workspace.py`와 `creator_job.py`가 job 생성·경로 조회·실행·provenance를 소유한다. 같은 job 중복 실행, GPU 충돌, 실패·취소·프로세스 종료 후 잠금 해제, 코드 버전 변경과 경로 이탈을 검사했다.
+- 관련 합성 회귀 80개 중 sandbox에서 79개 pass, junction 검사 1개는 별도 권한으로 pass. 추가 편집/workflow 관련 48개 중 47개 pass, NTFS 원자적 no-clobber 검사 1개는 별도 권한으로 pass. 중복 검사 수를 독립 표본으로 합산하지 않는다.
+- 기존 Qwen 환경에서 참고 구간·음성 cache·엔진 검사 18개 pass. C# 앱 재빌드와 writing-context / pipeline / candidate-isolation / recovery 네 검사 프로그램, 새 workspace 경로 검사 프로그램 pass. 실제 모델 음성 생성·Premiere import·전체 제작은 not_run이다. 기존 환경의 SoX·flash-attn 안내는 이번에 설치로 해소하지 않았다.
+- 변경한 제작 스킬 6종은 기존 환경의 PyYAML로 공식 quick_validate pass. 번들 무결성과 PowerShell 문법 검사 pass. 실제 브라우저 병행 실행은 not_run이며 같은 프로필은 순차 사용한다.
+- `audit_branch_absorption.py`는 before 태그들의 net tracked 변경 193개를 재현해 unreviewed 0을 확인한다. 다른 네 worktree의 Git 제외되지 않은 미추적 파일도 0개였다. 이는 의미 검토·관련 기능 검사를 대체하지 않는다. ignored 작업 스크립트·자료는 이전 gate에서 별도로 확인한다.
+- 부모 Git bundle을 독립 임시 저장소로 fetch해 7개 before ref와 전체 객체 무결성을 확인했다. 각 worktree의 Core bundle도 complete history로 verify했다. receipt는 로컬 `extension/data/consolidation/recovery/verification.json`이다.
+
+## 자료 이전·정리 제안 — 실행 미승인
+
+정확한 파일별 목록은 로컬 `extension/data/consolidation/cleanup-plan.json`이다. 계획기는 읽기 전용이며 이동·삭제 기능이 없다. metadata와 출력 XML 참조만 읽었고 원본 입력·비밀 설정은 열지 않았다. 아래는 최종 보존 후보이며 승인·상호 호환이 검증되지 않은 파일을 확정본으로 바꾸어 부르지 않는다.
+
+| 작업 | 보존 권장안 | 이전 후 위치 |
+|---|---|---|
+| wardogs | post-r27 최종 MP4·전체 SRT·설명, thumbnail-r2 master | `extension/jobs/wardogs/outputs/` |
+| Zeus 월간 리뷰 | r9 XML + 실제 참조 자산. 이전 버전 처분 전 최종성 확인 | `extension/jobs/zeus-month-review/outputs/` |
+| 도깨비 첫날 리뷰 | 사용자 확정 post-r6 XML·SRT + 참조 자산 | `extension/jobs/dokkaebi-play-review/outputs/` |
+| 도깨비 음성 리뷰 | 사용자 편집본 SRT를 우선 보존하고 voice-cut-r6 XML은 별도 기준본으로 보관. 동일 편집이라고 가정하지 않음 | `extension/jobs/dokkaebi-voice-review/` |
+| 도깨비 덱 | cut-r4 XML·SRT. 미선택 썸네일 시안은 work archive에 보존 | `extension/jobs/dokkaebi-deck/` |
+| 백룸 쇼츠 | 명시된 final-r6 폴더의 결과와 필요한 metadata | `extension/jobs/backroom-shorts/` |
+| NotebookLM 5개 작업 | 각 기존 output의 MP4·SRT·썸네일·가이드 네 파일 그대로 | `extension/jobs/<기존-ID>/outputs/` |
+
+공용 도구는 main의 기존 FFmpeg·whisper.cpp·Qwen·GPT-SoVITS를 유지하고, wardogs의 qwen-asr, ainotebook의 models/python-deps, Replier의 replier-llm을 catalog 위치로 이전하는 안이다. 기존 Windows venv는 이동 후 실행 검증 전 원래 환경을 처분하지 않는다. 다운로드를 반복하는 방식으로 대체하지 않는다.
+
+나머지 15,338개 metadata 항목(논리 크기 약 188.12 GiB)은 **검토·archive 후보**다. 중복·재생성 가능·영구 삭제 가능을 증명한 목록이 아니다. 특히 main `.runtime/wardogs-c-drive-media-archive`는 nested output까지 포함해 약 113.53 GiB이며 원본 보존 역할이 있을 수 있어 일괄 삭제하면 안 된다. 보존 후보 XML의 참조 수는 Zeus 519, 도깨비 첫날 935, 음성 리뷰 272, 덱 1이다. 참조 원본의 내용·이동 후 앱 재생은 아직 검사하지 않았다.
+
+권장 archive 위치는 `D:/AI Agent/Creator-Archive/2026-10-21/`이다. 사용자 승인 후 기존 파일을 최종·공용 도구·복구 archive로 나누고, 각 파일의 source/target·해시·크기를 기록해 되돌릴 수 있게 한다. 동일 볼륨 이동과 다른 볼륨 copy+hash 검증을 구분한다. archive로 보존하는 동안 전체 디스크 사용량이 그 크기만큼 줄지는 않는다. 영구 삭제는 검증된 재생성 가능 항목과 승인된 정확한 대상에만 별도로 적용한다.
+
+제거 대기 worktree는 wardogs(`C:/Users/Hugh/.codex/worktrees/wardogs/Creator`), `D:/AI Agent/GitHub/Creator-24HReplier`, `Creator-ainotebook`, `Creator-dokkaebi` 네 곳이다. 별도 브랜치만 있는 TRYALLGAME·backroom도 before 태그와 bundle에 복구 지점이 있다. worktree 안의 독립 Core·도구 Git·링크·private 설정·원본 inputs는 상위 폴더 승인에 묶어 삭제하지 않는다. 해당 owner의 보존과 새 경로 검증을 마친 뒤 제거 승인 범위를 대조한다.

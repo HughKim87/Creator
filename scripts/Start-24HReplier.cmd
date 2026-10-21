@@ -1,13 +1,12 @@
 @echo off
 setlocal
 cd /d "%~dp0.."
-set "REPLIER_APP=%CD%\extension\.runtime\replier-desktop\24HReplier.exe"
-if not exist "%REPLIER_APP%" (
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Build-24HReplier.ps1"
-  if errorlevel 1 (
-    pause
-    exit /b 1
-  )
+set "PYTHONDONTWRITEBYTECODE=1"
+set "PYTHONUTF8=1"
+if "%~1"=="" (
+  echo Usage: Start-24HReplier.cmd job-id
+  exit /b 2
 )
-start "" "%REPLIER_APP%"
+python -B scripts\start_local_app.py replier --job "%~1"
+if errorlevel 1 pause
 endlocal

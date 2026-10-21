@@ -19,6 +19,7 @@ from check_worktree import inspect_worktree
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
+    parser.add_argument("--job", required=True, help="Explicit job ID; never inferred from another session")
     parser.add_argument(
         "--expected-branch",
         help="Explicit user override; otherwise use the committed route.",
@@ -115,6 +116,14 @@ def main() -> int:
         args.expected_branch,
         args.route,
     )
+    if result['status'] == 'valid':
+        import sys
+        sys.path.insert(0, str(Path(__file__).resolve().parents[4] / 'extension/src'))
+        from creator_workspace import inspect_job
+        try:
+            result['job'] = inspect_job(args.job, Path(result['active_root']))
+        except (ValueError, OSError, KeyError) as exc:
+            result.update(status='invalid', errors=[str(exc)])
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result["status"] == "valid" else 1
 

@@ -723,6 +723,29 @@ def validate_video_job(
             if not nonempty_text(value) or Path(value).is_absolute():
                 errors.append(f"paths.{field} must be a repository-relative path")
 
+    if isinstance(paths, dict) and (data.get("storage_mode") == "job-folder-v1" or any(
+        isinstance(v, str) and v.startswith("extension/jobs/") for v in paths.values()
+    )):
+        import sys
+        sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "extension/src"))
+        from creator_workspace import identifier, safe_path
+        try:
+            job_id = identifier(data.get("job_id"))
+            prefix = "extension/jobs/" + job_id
+            for key, leaf in (("input_dir", "inputs"), ("work_dir", "work"), ("output_dir", "outputs")):
+                if paths.get(key) != prefix + "/" + leaf:
+                    errors.append("job-folder path mismatch: paths." + key)
+                if root is not None:
+                    safe_path(root, prefix + "/" + leaf)
+            if root is not None:
+                job_root = safe_path(root, prefix)
+                for stage_paths in local_artifacts.values():
+                    for artifact in stage_paths:
+                        if not artifact.resolve().is_relative_to(job_root):
+                            errors.append("artifact belongs outside this job")
+        except (ValueError, TypeError) as exc:
+            errors.append(str(exc))
+
     if schema_version in {"video-job-v2", "video-job-v3"}:
         execution = data.get("execution_context")
         worktree = (

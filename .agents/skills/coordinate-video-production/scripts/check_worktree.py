@@ -34,10 +34,14 @@ def to_host_path(path: Path) -> str:
     local_prefix, separator, host_prefix = mapping.partition("=")
     if not separator or not local_prefix or not host_prefix:
         return text
-    local_prefix = local_prefix.rstrip("/") + "/"
-    if not text.startswith(local_prefix):
+    local_prefix = local_prefix.replace('\\', '/').rstrip("/")
+    normalized = text.replace('\\', '/')
+    if normalized == local_prefix:
+        return host_prefix.rstrip('/\\')
+    local_prefix += '/'
+    if not normalized.startswith(local_prefix):
         return text
-    remainder = text[len(local_prefix):]
+    remainder = normalized[len(local_prefix):]
     if "\\" in host_prefix:
         remainder = remainder.replace("/", "\\")
         host_prefix = host_prefix.rstrip("\\") + "\\"

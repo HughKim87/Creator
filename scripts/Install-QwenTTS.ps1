@@ -1,6 +1,12 @@
 $ErrorActionPreference = 'Stop'
 $qwenRoot = Split-Path -Parent $PSScriptRoot
-$qwenRuntime = Join-Path $qwenRoot 'extension\.runtime\qwen-tts'
+. (Join-Path $PSScriptRoot 'Shared-Runtime.ps1')
+$taskRuntimeLease = Enter-CreatorRuntimeLease -Root $qwenRoot -Name 'install-qwen-tts'
+try {
+$taskInstallGpuLease = Enter-CreatorRuntimeLease -Root $qwenRoot -Name 'gpu'
+try {
+$qwenRuntime = & python -B (Join-Path $qwenRoot 'scripts/creator_job.py') --root $qwenRoot runtime --component qwen-tts
+if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve shared runtime' }
 $qwenPython = Join-Path $qwenRuntime 'venv\Scripts\python.exe'
 $env:UV_CACHE_DIR = Join-Path $qwenRuntime 'uv-cache'
 $env:HF_HOME = Join-Path $qwenRuntime 'hf-cache'
@@ -19,3 +25,5 @@ uv pip install --python $qwenPython 'qwen-tts==0.1.1' 'gradio==6.13.0'
 if ($LASTEXITCODE -ne 0) { throw 'Qwen installation failed' }
 & $qwenPython -B (Join-Path $PSScriptRoot 'download_qwen_tts.py')
 if ($LASTEXITCODE -ne 0) { throw 'Model download failed' }
+} finally { $taskInstallGpuLease.Dispose() }
+} finally { $taskRuntimeLease.Dispose() }

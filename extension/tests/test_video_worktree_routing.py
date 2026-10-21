@@ -104,9 +104,12 @@ class VideoWorktreeRoutingTests(unittest.TestCase):
     def test_skill_forbids_current_branch_and_unrelated_handoff_fallbacks(self) -> None:
         text = SKILL.read_text(encoding="utf-8")
         self.assertIn("현재 브랜치를 기대값으로 채우지 않는다", text)
-        self.assertIn("`main`으로 대체하지 않는다", text)
+        self.assertIn("기본 기대 브랜치는 main", text)
         self.assertIn("비-NotebookLM 작업", text)
         self.assertIn("expected_root", text)
+
+    def test_default_production_route_is_main(self) -> None:
+        self.assertEqual(MODULE.load_expected_branch(), 'main')
 
     def test_host_path_map_is_identity_without_environment(self) -> None:
         with patch.dict(os.environ, {}, clear=False):
@@ -114,18 +117,18 @@ class VideoWorktreeRoutingTests(unittest.TestCase):
             self.assertEqual(MODULE.to_host_path(self.target), str(self.target))
 
     def test_host_path_map_records_windows_root_for_mounted_vm(self) -> None:
-        mapping = f"{self.workspace}/=D:\\AI Agent\\GitHub\\"
+        mapping = f"{self.workspace}/=" + r"D:\AI Agent\GitHub"
         with patch.dict(os.environ, {MODULE.HOST_PATH_MAP_ENV: mapping}):
             self.assertEqual(
                 MODULE.to_host_path(self.target / "extension"),
-                "D:\\AI Agent\\GitHub\\ainotebook\\extension",
+                r"D:\AI Agent\GitHub\ainotebook\extension",
             )
             outside = Path("/elsewhere/ainotebook")
             self.assertEqual(MODULE.to_host_path(outside), str(outside))
             with patch.object(MODULE, "_git", side_effect=self._git):
                 result = MODULE.inspect_worktree(self.target, route_path=self.route)
         self.assertEqual(result["status"], "valid", result["errors"])
-        self.assertEqual(result["root"], "D:\\AI Agent\\GitHub\\ainotebook")
+        self.assertEqual(result["root"], r"D:\AI Agent\GitHub\ainotebook")
         self.assertEqual(result["local_root"], str(self.target.resolve()))
 
     def test_activation_executes_in_local_root_and_reports_host_root(self) -> None:
@@ -137,7 +140,7 @@ class VideoWorktreeRoutingTests(unittest.TestCase):
         assert spec and spec.loader
         activate = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(activate)
-        mapping = f"{self.workspace}/=D:\\AI Agent\\GitHub\\"
+        mapping = f"{self.workspace}/=" + r"D:\AI Agent\GitHub"
         checker = sys.modules["check_worktree"]
         with patch.dict(os.environ, {MODULE.HOST_PATH_MAP_ENV: mapping}), patch.object(
             checker, "_git", side_effect=self._git
@@ -147,7 +150,7 @@ class VideoWorktreeRoutingTests(unittest.TestCase):
         self.assertTrue(result["redirected"])
         self.assertEqual(result["active_root"], str(self.target.resolve()))
         self.assertEqual(
-            result["active_host_root"], "D:\\AI Agent\\GitHub\\ainotebook"
+            result["active_host_root"], r"D:\AI Agent\GitHub\ainotebook"
         )
 
 

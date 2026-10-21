@@ -5,7 +5,10 @@ from pathlib import Path
 from huggingface_hub import HfApi, hf_hub_download
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNTIME = ROOT / 'extension/.runtime/gpt-sovits'
+import sys
+sys.path.insert(0, str(ROOT / "extension/src"))
+from creator_workspace import runtime_path
+RUNTIME = runtime_path("gpt-sovits", ROOT)
 os.environ['HF_HUB_DISABLE_IMPLICIT_TOKEN'] = '1'
 os.environ['HF_HUB_DISABLE_TELEMETRY'] = '1'
 os.environ['HF_HOME'] = str(RUNTIME / 'hf-cache')

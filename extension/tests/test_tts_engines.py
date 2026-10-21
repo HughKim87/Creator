@@ -9,6 +9,13 @@ from sovits_local import select_sovits_reference, SovitsVoice
 from tts_engines import EngineManager
 
 
+def prepare_catalog(root):
+    import shutil
+    target = root / 'extension/config/workspace-runtime.json'
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(Path(__file__).resolve().parents[1] / 'config/workspace-runtime.json', target)
+
+
 class References(unittest.TestCase):
     def test_long_srt_uses_matching_complete_words(self):
         srt = '1\n00:00:00,000 --> 00:00:02,840\n첫 문장\n\n2\n00:00:02,840 --> 00:00:06,440\n둘째 문장'
@@ -35,6 +42,7 @@ class Workers(unittest.TestCase):
     def test_switch_waits_for_old_process_before_new_start(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
+            prepare_catalog(root)
             python = root / 'extension/.runtime/gpt-sovits/venv/Scripts/python.exe'
             python.parent.mkdir(parents=True)
             python.touch()

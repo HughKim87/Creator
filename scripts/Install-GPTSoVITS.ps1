@@ -1,6 +1,12 @@
 $ErrorActionPreference = 'Stop'
 $sovitsRoot = Split-Path -Parent $PSScriptRoot
-$sovitsRuntime = Join-Path $sovitsRoot 'extension\.runtime\gpt-sovits'
+. (Join-Path $PSScriptRoot 'Shared-Runtime.ps1')
+$taskRuntimeLease = Enter-CreatorRuntimeLease -Root $sovitsRoot -Name 'install-gpt-sovits'
+try {
+$taskInstallGpuLease = Enter-CreatorRuntimeLease -Root $sovitsRoot -Name 'gpu'
+try {
+$sovitsRuntime = & python -B (Join-Path $sovitsRoot 'scripts/creator_job.py') --root $sovitsRoot runtime --component gpt-sovits
+if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve shared runtime' }
 $sovitsRepo = Join-Path $sovitsRuntime 'repo'
 $sovitsPython = Join-Path $sovitsRuntime 'venv\Scripts\python.exe'
 $env:UV_CACHE_DIR = Join-Path $sovitsRuntime 'uv-cache'
@@ -25,3 +31,5 @@ if ($LASTEXITCODE -ne 0) { throw 'Dependencies installation failed' }
 if ($LASTEXITCODE -ne 0) { throw 'Official model download failed' }
 & $sovitsPython -B -m nltk.downloader -d (Join-Path $sovitsRuntime 'nltk-data') cmudict averaged_perceptron_tagger averaged_perceptron_tagger_eng
 if ($LASTEXITCODE -ne 0) { throw 'Pronunciation dictionary download failed' }
+} finally { $taskInstallGpuLease.Dispose() }
+} finally { $taskRuntimeLease.Dispose() }

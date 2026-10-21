@@ -7,6 +7,7 @@ import threading
 import time
 import uuid
 import psutil
+from creator_workspace import runtime_path, current_job_paths, Lease
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -22,7 +23,9 @@ class EngineManager:
         self.cancelled = threading.Event()
         self.process_lock = threading.Lock()
         self.log = None
-        self.jobs = self.root / 'extension/.runtime/qwen-tts/jobs'
+        job = current_job_paths(self.root)
+        self.jobs = job['work'] / 'tts/jobs' if job else self.root / 'extension/.runtime/qwen-tts/jobs'
+        self.gpu_lease = None
         self.jobs.mkdir(parents=True, exist_ok=True)
         atexit.register(self.stop)
 
@@ -60,6 +63,9 @@ class EngineManager:
                 psutil.wait_procs(remaining, timeout=5)
                 if process.stdin:
                     process.stdin.close()
+            if self.gpu_lease:
+                self.gpu_lease.__exit__(None, None, None)
+                self.gpu_lease = None
             if self.log:
                 self.log.close()
                 self.log = None
@@ -91,27 +97,34 @@ class EngineManager:
             raise ValueError('지원하는 음성 엔진을 선택하세요.')
         if self.engine == engine and self.process and self.process.poll() is None:
             return
-        python = self.root / 'extension/.runtime' / ENGINES[engine] / 'venv/Scripts/python.exe'
+        python = runtime_path(ENGINES[engine], self.root) / 'venv/Scripts/python.exe'
         if not python.is_file():
             raise ValueError(f'{engine}가 설치되어 있지 않습니다.')
         self.stop()
         if progress:
             progress(None, desc=f'{engine} 모델 불러오는 중 · 처음 전환 시 잠시 걸립니다')
+        if os.environ.get('CREATOR_GPU_LEASE_HELD') != '1':
+            self.gpu_lease = Lease('gpu', self.root)
+            try:
+                self.gpu_lease.__enter__()
+            except RuntimeError as exc:
+                self.gpu_lease = None
+                raise ValueError(str(exc)) from None
         ready = self.jobs / f'{uuid.uuid4().hex}-ready.json'
         environment = dict(os.environ, PYTHONUTF8='1', PYTHONWARNINGS='ignore',
                            TTS_OWNER_PID=str(os.getpid()),
-                           MPLCONFIGDIR=str(self.root / 'extension/.runtime/gpt-sovits/matplotlib'))
-        with self.process_lock:
-            if self.cancelled.is_set():
-                raise ValueError('생성을 중단했습니다.')
-            self.log = (self.jobs / 'worker-startup.log').open('a', encoding='utf-8')
-            self.process = subprocess.Popen([str(python), '-B', str(self.root / 'extension/src/tts_worker.py'), engine, str(ready)],
-                cwd=self.root, env=environment, stdin=subprocess.PIPE, stdout=self.log, stderr=self.log,
-                text=True, encoding='utf-8', creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-            self.engine = engine
+                           MPLCONFIGDIR=str(self.jobs / 'matplotlib'))
         try:
+            with self.process_lock:
+                if self.cancelled.is_set():
+                    raise ValueError('생성을 중단했습니다.')
+                self.log = (self.jobs / 'worker-startup.log').open('a', encoding='utf-8')
+                self.process = subprocess.Popen([str(python), '-B', str(self.root / 'extension/src/tts_worker.py'), engine, str(ready)],
+                    cwd=self.root, env=environment, stdin=subprocess.PIPE, stdout=self.log, stderr=self.log,
+                    text=True, encoding='utf-8', creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+                self.engine = engine
             self._wait(ready, 180)
-        except Exception:
+        except BaseException:
             self.stop()
             raise
 

@@ -14,8 +14,7 @@ namespace ReplierDesktop
             if(!Path.IsPathRooted(runtime))return;
             try
             {
-                string extension=Path.GetFullPath(Path.Combine(runtime,"..",".."));
-                string file=Path.Combine(extension,"data","replier","llm-diagnostics.jsonl");
+                string file=Path.Combine(CreatorWorkspace.StateDirectory(),"llm-diagnostics.jsonl");
                 lock(gate)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(file));

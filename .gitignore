@@ -18,3 +18,6 @@ __pycache__/
 
 # Generated extension work data
 extension/data/
+
+# Job-scoped media, approvals, logs and scratch stay local.
+/extension/jobs/

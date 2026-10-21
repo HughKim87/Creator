@@ -1,6 +1,6 @@
 ---
 name: coordinate-video-production
-description: 영상 하나의 NotebookLM 리서치·동영상 생성·SRT·문구 승인 기반 제목과 썸네일·사용자용 네 파일만 남기는 수동 YouTube 업로드 준비 단계를 검증된 worktree에서 관리한다. 사용자가 새 영상 제작, 진행 중 작업의 다음 단계, 여러 단계를 끝까지 진행하거나 영상 제작 스킬의 안전한 연결을 요청할 때 사용한다.
+description: 영상 하나의 NotebookLM 리서치·동영상 생성·SRT·문구 승인 기반 제목과 썸네일·사용자용 네 파일만 남기는 수동 YouTube 업로드 준비 단계를 main의 영상별 폴더에서 관리한다. 사용자가 새 영상 제작, 진행 중 작업의 다음 단계, 여러 단계를 끝까지 진행하거나 영상 제작 스킬의 안전한 연결을 요청할 때 사용한다.
 ---
 
 # Coordinate Video Production
@@ -15,11 +15,12 @@ Creative delegation is owned only by the active project policy clause `creator-v
 
 이 게이트는 영상 제작·재개에 적용한다. 스킬·Extension 유지보수에서는 사용자가 지정한 개발 브랜치와 root를 사용하며 제작 worktree로 이동하지 않는다.
 
-이 스킬을 읽은 뒤 첫 실행 명령으로 **라우팅된 worktree를 활성 실행 root로 확정**한다. 파일 조회·생성·변경, 브라우저 연결과 작업 기록 판정보다 먼저 실행한다.
+이 스킬을 읽은 뒤 첫 실행 명령으로 **main 작업 공간과 명시된 job을 활성 실행 범위로 확정**한다. 브라우저 연결과 영상 파일 접근보다 먼저 실행한다. 새 job의 경로 초기화는 이 검사 전에 허용한다.
 
 ```powershell
+# 새 작업은 먼저 python -B scripts/creator_job.py init --job <job-id> 로 초기화한다.
 $activation = python .agents/skills/coordinate-video-production/scripts/activate_worktree.py `
-  --root . | ConvertFrom-Json
+  --root . --job <job-id> | ConvertFrom-Json
 if ($activation.status -ne 'valid') { throw ($activation | ConvertTo-Json -Depth 8) }
 $activeRoot = $activation.active_root
 $activeBranch = $activation.active_branch
@@ -29,7 +30,7 @@ $activeBranch = $activation.active_branch
 - 초기 검사에 `expected_root`가 있으면 활성화 스크립트가 그 경로를 다시 검증한 `active_root`만 사용한다.
 - `activate_worktree.py`가 `redirected: true`를 반환하면 `active_root`가 스킬의 **유일한 작업 기준**이다. 이후 모든 셸 명령은 `workdir=$activeRoot`로 실행하고, 모든 상대 경로·작업 기록·검증 명령은 `$activeRoot`를 기준으로 해석한다.
 - `active_root`를 확보한 뒤에는 원래 세션 cwd의 파일을 다시 조회하지 않는다. `.`를 원래 cwd를 뜻하는 상태로 사용하지 않는다.
-- `active_root`의 재검증이 `valid`가 아니면 영상 파일이나 브라우저를 만지지 않는다. `main`으로 대체하지 않는다.
+- `active_root`의 재검증이 `valid`가 아니면 영상 파일이나 브라우저를 만지지 않는다. 현재 브랜치로 대체하지 않는다. 기본 기대 브랜치는 main이다.
 - 활성 root에서 `python .agents/skills/coordinate-video-production/scripts/check_skill_bundle.py --root .`를 실행해 검증된 스킬·참조·검사기 묶음이 일치하는지 확인한다. 누락/불일치면 정확한 파일만 보고하고 제작을 시작하지 않는다. 유지보수에서 검토한 묶음을 반영한 뒤에만 manifest를 기록하며, 제작 실행 중에는 manifest를 갱신해 불일치를 숨기지 않는다.
 - 유효한 대상 root의 `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 `$activeRoot`에서 읽는다.
 - 대상 handoff가 비-NotebookLM 작업이고 이 스킬을 owner에서 제외하면 그 작업을 영상 단계로 승계하지 않는다.
@@ -40,9 +41,11 @@ $activeBranch = $activation.active_branch
 
 진행 중 영상은 지정된 작업의 `VIDEO_JOB.json`을 먼저 확인하고 기존 browser·완료 단계·승인 범위를 재사용한다. 새 작업용 기본값 해석을 재개 작업에 반복하지 않는다.
 
-지정 worktree가 없으면 누락을 전체 제작 불가로 보고하지 않는다. 승인된 제작 범위 안에서 route의 정확한 root·branch, 기존 브랜치와 로컬 기준 ref를 확인하고 충돌 없는 경로에 생성한 뒤 활성화 검사를 재실행한다. 기준 ref가 불명확하거나 기존 경로가 다른 데이터이면 생성하지 않고 그 결정만 확인한다. 다른 작업의 runtime 파일을 임의 검색·복사하거나 빈 디렉터리를 검증된 worktree로 간주하지 않는다.
+main 작업 공간을 사용하며 영상마다 worktree를 만들지 않는다. 새 job은 `creator_job.py init --job <job-id>`로 만들고, 재개 job은 같은 ID로 inspect한다. 다른 job의 상태·승인·프로필을 승계하지 않는다. 브라우저 연결은 프로필별로 직렬화하고 반환된 exact 탭만 사용한다.
 
-[references/video-job-format.md](references/video-job-format.md)에 따라 새 작업마다 `extension/work/<job-id>/VIDEO_JOB.json`을 만든다.
+로컬 전사·렌더·생성 명령은 `python -B scripts/creator_job.py run --job <job-id> -- <명령>`으로 실행한다. GPU 작업에는 `--gpu`를 추가한다. 설치·모델은 공용 catalog의 경로를 사용하고 출력·로그·임시는 job 경로를 사용한다. 전역 상태나 공용 runtime에 영상 데이터를 쓰지 않는다. 코드 버전 변경 시 재개 전에 영향 범위를 확인하고 `--accept-code-change`를 명시한다.
+
+[references/video-job-format.md](references/video-job-format.md)에 따라 새 작업마다 `extension/jobs/<job-id>/VIDEO_JOB.json`을 만든다.
 
 - 프로필 설정은 두 계층만 사용한다. Git에서 제외된 worktree-local `extension/.runtime/video-workflow-defaults.json`은 새 작업의 기본값이고, 영상별 `VIDEO_JOB.json`의 `browser`는 그 작업에 확정된 현재값이다. `SESSION_HANDOFF.md`는 프로필 설정에 사용하거나 수정하지 않는다.
 - 새 작업의 프로필은 `.agents/skills/coordinate-video-production/scripts/resolve_browser_profile.py`로 결정한다. 스킬 호출에 프로필 directory나 alias가 있으면 그 입력을 사용하고, 없으면 worktree-local 기본값을 자동 사용한다.
@@ -54,19 +57,19 @@ $activeBranch = $activation.active_branch
 - `browser.profile_label`은 선택적 표시명이다. 별도 값이 없으면 전달받은 `profile_directory`와 같은 문자열을 기록한다.
 - `browser.required_origin`은 같은 우선순위로 확정하되, 이 worktree의 runtime 기본값은 NotebookLM origin이다.
 - 진행 중 작업은 사용자의 명시적 변경이 없는 한 기존 `VIDEO_JOB.json` 값을 보존한다. runtime 기본값 변경, 연결 스킬, 다른 작업, 현재 Chrome 창에서 값을 추론하거나 덮어쓰지 않는다.
-- 새 작업은 `video-job-v3`를 사용하고 worktree 검증 결과를 `execution_context`에 기록한다.
+- 새 작업은 `video-job-v3`, `storage_mode: job-folder-v1`을 사용하고 main 검증 결과를 `execution_context`에 기록한다. `paths.input_dir/work_dir/output_dir`는 각각 `extension/jobs/<job-id>/inputs`, `work`, `outputs`로 고정한다. 기존 경로 기록은 읽기 호환만 유지하며 자동 이동하지 않는다.
 - `execution_mode`는 `autonomous_local_pipeline` 또는 `review_gated`로 기록한다.
 - `execution_mode`는 단계 사이의 자동 진행만 제어한다. 제목·문구·이미지·최종 시각의 승인 권한을 부여하지 않는다.
 - `thumbnail_contract`에 `generation_mode`, `allow_local_text_composite`, `approval_mode`, `instruction_source`를 기록한다. `approval_mode`와 위임 근거는 활성 정책의 `creator-video-creative-delegation-v1` 판정에서만 가져오며, 이 스킬이 사용자 표현을 별도로 재해석하지 않는다.
 - 사용자가 웹 ChatGPT와 같은 생성을 요구하면 `generation_mode: one_shot_imagegen`, `allow_local_text_composite: false`, `instruction_source: explicit_user`로 기록한다.
-- 기술 패키지와 생성 원본은 `work/<job-id>/`, 최종 사용자 파일은 `outputs/<job-id>/`에 둔다.
+- 기술 패키지와 생성 원본은 `extension/jobs/<job-id>/work/`, 최종 사용자 파일은 `extension/jobs/<job-id>/outputs/`에 둔다.
 - `.gitignore`나 추적 정책을 임의로 바꾸지 않는다.
 
 작업 기록 생성·변경 직후와 각 단계 시작 전에 실행한다.
 
 ```powershell
 python .agents/skills/coordinate-video-production/scripts/validate_video_job.py `
-  extension/work/<job-id>/VIDEO_JOB.json `
+  extension/jobs/<job-id>/VIDEO_JOB.json `
   --root . `
   --check-artifacts `
   --require-content-review
@@ -172,14 +175,14 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 
 수동 가이드를 만든 뒤 `$prepare-youtube-upload`의 archive dry-run을 확인하고 적용한다. 파일을 삭제하지 않는다.
 
-완료 시 `outputs/<job-id>/`에는 정확히 다음만 남긴다.
+완료 시 `extension/jobs/<job-id>/outputs/`에는 정확히 다음만 남긴다.
 
 - MP4 영상
 - 최종 썸네일
 - SRT 자막
 - `YOUTUBE-MANUAL-UPLOAD.md`
 
-기술 JSON, 설명 원본, 전사·검수 기록, 생성 원본과 이전 썸네일은 `work/<job-id>/` 또는 `work/<job-id>/archive/`에 둔다.
+기술 JSON, 설명 원본, 전사·검수 기록, 생성 원본과 이전 썸네일은 `extension/jobs/<job-id>/work/` 또는 `extension/jobs/<job-id>/work/archive/`에 둔다.
 
 ## 완료
 
@@ -201,7 +204,7 @@ python .agents/skills/coordinate-video-production/scripts/resolve_browser_profil
 
 Codex는 위 절차를 그대로 쓴다. Claude(Cowork)는 같은 단계·승인·검증을 지키고 실행 수단만 다음처럼 바꾼다.
 
-- 연결 폴더: 사용자 PC의 `Creator`와 라우팅된 worktree 폴더(예: `Creator-ainotebook`)가 모두 연결돼야 한다. 활성화가 `expected worktree does not exist`로 실패하면 그 폴더 연결을 한 번 요청하고 재실행한다.
+- 연결 폴더: 사용자 PC의 main `Creator` 하나를 연결한다. 영상 데이터도 그 안의 명시된 job 폴더를 사용한다.
 - 실행 환경: 연결 폴더 셸(`device_bash`)은 매 호출이 새 셸이다. 모든 호출 앞에 `source "$HOME/mnt/Creator/.agents/skills/coordinate-video-production/scripts/claude_runtime.sh"`를 붙인다. 이 helper는 Windows worktree 경로를 마운트 경로로 바꾸는 git shim과 `CREATOR_HOST_PATH_MAP`을 설정해, 작업 기록의 `execution_context.worktree.root`가 Codex와 같은 Windows 경로로 남게 한다.
 - 이 셸에서는 Windows worktree가 `prunable`로 보인다. `git worktree prune`·`repair`·`remove`를 실행하지 않는다.
 - 명령 변환: PowerShell 블록은 bash로, `python`은 `python3`로 바꾼다. `workdir=$activeRoot`는 매 호출의 `cd "<active_root>"`이며, 활성화 결과의 `active_root`(마운트 경로)에서 실행하고 보고에는 `active_host_root`를 함께 쓴다.

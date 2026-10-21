@@ -393,6 +393,7 @@ def verify_runtime(
     """Verify manifest structure and local capability state."""
 
     manifest = load_manifest(manifest_path)
+    use_catalog = runtime_root is None and manifest_path.resolve() == DEFAULT_MANIFEST.resolve()
     if runtime_root is None:
         runtime_root = ROOT.joinpath(
             *PurePosixPath(manifest["runtime_root"]).parts
@@ -401,6 +402,12 @@ def verify_runtime(
     for component in manifest["components"]:
         relative_root = PurePosixPath(component["relative_root"])
         component_root = runtime_root.joinpath(*relative_root.parts)
+        if use_catalog:
+            from creator_workspace import runtime_path
+            if str(relative_root).startswith('ffmpeg/'):
+                component_root = runtime_path('ffmpeg', ROOT)
+            elif str(relative_root).startswith('whisper.cpp'):
+                component_root = runtime_path('whisper-cpp', ROOT)
         result: dict[str, Any] = {
             "id": component["id"],
             "declared_status": component["status"],

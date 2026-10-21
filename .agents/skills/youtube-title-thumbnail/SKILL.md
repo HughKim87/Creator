@@ -24,7 +24,7 @@ Creative delegation is owned only by the active project policy clause `creator-v
 - 정확한 완성 영상과 검증된 SRT
 - 사용한 리서치 근거
 - 선택적 채널 URL·최근 승인 썸네일 패턴
-- `extension/work/<job-id>/`와 `extension/outputs/<job-id>/`
+- `extension/jobs/<job-id>/work/`와 `extension/jobs/<job-id>/outputs/`
 
 영상과 SRT의 길이·주제·파일명을 확인한다. 기술 패키지, 생성 원본, 마스터와 미리보기는 `work/<job-id>/`에 둔다. `outputs/<job-id>/`에는 최종 업로드 썸네일만 둔다.
 
@@ -136,3 +136,7 @@ Claude(Cowork)에는 built-in image generation이 없다. `one_shot_imagegen`은
 3. 생성 이미지는 ChatGPT의 다운로드로 사용자 다운로드 폴더에 저장한다. 다운로드 폴더 접근은 `device_request_folder_access`로 한 번 요청하고, 해당 파일만 `work/<job-id>/`의 `generated_source`로 복사한다. 다른 다운로드 파일을 열거·읽지 않는다.
 4. 패키지 `thumbnail`에 `generator: chatgpt_web`을 기록한다. 이 필드가 없으면 Codex built-in 생성으로 본다. 문구 오류 시 같은 대화에서 편집·재생성하며 로컬 합성 전환 조건은 위 규칙과 같다.
 5. 생성 이후의 정규화·미리보기·시각 검수·검증은 위 절차와 같다.
+
+## main의 작업별 폴더
+
+새 작업은 `scripts/creator_job.py init --job <job-id>`로 만든 main의 `extension/jobs/<job-id>/`를 사용한다. coordinator가 전달한 기존 작업은 그 exact 경로를 재사용하며 자동 이동하지 않는다. 로컬 명령은 job runner 안에서 실행하고 출력·검수·임시 파일을 해당 job에 기록한다. 도구·모델은 `creator_job.py runtime --component <component>`가 반환한 공용 경로를 사용한다. 다른 job의 파일·승인·현재 프로필로 대체하지 않는다.

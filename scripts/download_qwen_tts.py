@@ -4,7 +4,10 @@ import os
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
-runtime = root / "extension" / ".runtime" / "qwen-tts"
+import sys
+sys.path.insert(0, str(root / "extension/src"))
+from creator_workspace import runtime_path
+runtime = runtime_path("qwen-tts", root)
 os.environ.update({"HF_HOME": str(runtime / "hf-cache"),
                    "HF_HUB_DISABLE_IMPLICIT_TOKEN": "1",
                    "HF_HUB_DISABLE_TELEMETRY": "1"})

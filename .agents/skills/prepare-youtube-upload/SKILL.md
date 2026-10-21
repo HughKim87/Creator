@@ -11,9 +11,9 @@ description: 완성 영상, 승인된 제목·썸네일, SRT, 설명과 설정�
 
 ## 입력과 위치
 
-[references/manual-upload-package-format.md](references/manual-upload-package-format.md)에 따라 새 작업은 `youtube-manual-upload-v3` JSON을 `extension/work/<job-id>/`에 둔다.
+[references/manual-upload-package-format.md](references/manual-upload-package-format.md)에 따라 새 작업은 `youtube-manual-upload-v3` JSON을 `extension/jobs/<job-id>/work/`에 둔다.
 
-- 영상·썸네일·SRT는 `extension/outputs/<job-id>/`에 둔다.
+- 영상·썸네일·SRT는 `extension/jobs/<job-id>/outputs/`에 둔다.
 - 제목·썸네일 패키지와 기술 메타데이터는 `work/<job-id>/`에 둔다.
 - 가이드는 `outputs/<job-id>/YOUTUBE-MANUAL-UPLOAD.md`로 생성한다.
 - `outputs/<job-id>/`의 최종 파일은 MP4·썸네일·SRT·가이드 네 개뿐이다.
@@ -94,3 +94,7 @@ python scripts/retain_upload_package.py <youtube-manual-upload.json> --apply
 공개 시간 추천은 가이드 안에 보존한다. 분석은 `youtube-channel-coach`가, 로컬 렌더링은 이 스킬이 소유하며 추천은 예약 실행 권한을 뜻하지 않는다.
 
 최종 보고에는 네 파일의 절대 경로와 archive 경로를 반환한다. 이후 수동 업로드 여부를 blocker나 후속 작업으로 남기지 않는다.
+
+## main의 작업별 폴더
+
+새 작업은 `scripts/creator_job.py init --job <job-id>`로 만든 main의 `extension/jobs/<job-id>/`를 사용한다. coordinator가 전달한 기존 작업은 그 exact 경로를 재사용하며 자동 이동하지 않는다. 로컬 명령은 job runner 안에서 실행하고 출력·검수·임시 파일을 해당 job에 기록한다. 도구·모델은 `creator_job.py runtime --component <component>`가 반환한 공용 경로를 사용한다. 다른 job의 파일·승인·현재 프로필로 대체하지 않는다.

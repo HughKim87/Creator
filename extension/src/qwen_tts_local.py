@@ -11,7 +11,10 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-RUNTIME = ROOT / "extension" / ".runtime" / "qwen-tts"
+from creator_workspace import runtime_path, current_job_paths
+RUNTIME = runtime_path("qwen-tts", ROOT)
+JOB = current_job_paths(ROOT)
+STATE = JOB["work"] / "tts" if JOB else RUNTIME
 MODEL_DIR = RUNTIME / "models" / "Qwen3-TTS-12Hz-0.6B-Base"
 os.environ.update({
     "HF_HOME": str(RUNTIME / "hf-cache"),
@@ -20,7 +23,7 @@ os.environ.update({
     "HF_HUB_DISABLE_TELEMETRY": "1",
     "TRANSFORMERS_OFFLINE": "1",
     "GRADIO_ANALYTICS_ENABLED": "False",
-    "GRADIO_TEMP_DIR": str(RUNTIME / "audio-temp"),
+    "GRADIO_TEMP_DIR": str(STATE / "audio-temp"),
     "NUMBA_CACHE_DIR": str(RUNTIME / "numba-cache"),
     "TORCH_HOME": str(RUNTIME / "torch-cache"),
     "PYTHONDONTWRITEBYTECODE": "1",
@@ -50,7 +53,7 @@ from qwen_voice_cache import VoicePromptCache
 
 CANCEL = threading.Event()
 VOICE_NAMESPACE = "qwen-0.6b-5d83992436eae1d760afd27aff78a71d676296fc-bf16-ref20-60-v2"
-VOICE_CACHE = VoicePromptCache(RUNTIME / "voice-prompts", VOICE_NAMESPACE)
+VOICE_CACHE = VoicePromptCache(STATE / "voice-prompts", VOICE_NAMESPACE)
 LAST_METRICS = {}
 
 
@@ -128,12 +131,13 @@ def clone(model, reference, transcript, script, progress=None, cache=None):
 
 def main():
     from tts_engines import EngineManager
-    (RUNTIME / "ui.pid").write_text(str(os.getpid()), encoding="ascii")
+    STATE.mkdir(parents=True, exist_ok=True)
+    (STATE / "ui.pid").write_text(str(os.getpid()), encoding="ascii")
     manager = EngineManager()
     qwen_help = "Qwen: 목소리 등록에는 **최소 20초 녹음**이 필요합니다. **20~60초는 전체를 사용**하고, 긴 녹음은 SRT 문장 경계에 맞춰 **최대 60초까지 사용**합니다."
     sovits_help = "GPT-SoVITS V5 Turbo: **3~10초 녹음과 해당 발화문**, 또는 **긴 녹음과 일치하는 SRT**를 넣으세요. 긴 녹음에서는 완전한 문장 구간을 선택합니다. 현재는 참고 음성 복제 방식이며 전용 학습 모델은 아닙니다."
     def saved_status(engine):
-        exists = VOICE_CACHE.active_key() if engine == 'Qwen' else (ROOT / 'extension/.runtime/gpt-sovits/voices/active.json').is_file()
+        exists = VOICE_CACHE.active_key() if engine == 'Qwen' else ((JOB['work'] / 'tts/gpt-sovits' if JOB else runtime_path('gpt-sovits', ROOT)) / 'voices/active.json').is_file()
         return f"**{engine} 저장된 목소리 사용 가능 — 새 대본만 입력하세요.**" if exists else f"{engine} 목소리를 한 번 등록하면 이후에는 대본만 입력하면 됩니다. 엔진별로 따로 저장됩니다."
     initial_engine = os.environ.get('TTS_DEFAULT_ENGINE', 'Qwen')
     if initial_engine not in ['Qwen', 'GPT-SoVITS']:
@@ -146,13 +150,13 @@ def main():
         previous_reference = os.environ.get("QWEN_PREVIOUS_REFERENCE")
         if previous_reference:
             previous_reference_path = Path(previous_reference).resolve()
-            if not previous_reference_path.is_relative_to(RUNTIME.resolve()) or not previous_reference_path.is_file():
+            if not previous_reference_path.is_relative_to(STATE.resolve()) or not previous_reference_path.is_file():
                 previous_reference = None
         reference = gr.Audio(value=previous_reference, label="1. 본인 목소리 녹음", sources=["upload", "microphone"], type="filepath")
         previous_srt = os.environ.get('QWEN_PREVIOUS_SRT')
         if previous_srt:
             srt_path = Path(previous_srt).resolve()
-            if not srt_path.is_relative_to(RUNTIME.resolve()) or not srt_path.is_file():
+            if not srt_path.is_relative_to(STATE.resolve()) or not srt_path.is_file():
                 previous_srt = None
         srt_file = gr.File(value=previous_srt, label="녹음의 SRT 파일 (선택)", file_types=[".srt"], type="filepath")
         srt_notice = gr.Markdown("SRT 파일을 넣으면 아래 녹음 내용이 자동으로 채워집니다.")
@@ -173,7 +177,7 @@ def main():
         previous_audio = os.environ.get("QWEN_PREVIOUS_AUDIO")
         if previous_audio:
             previous_path = Path(previous_audio).resolve()
-            if not previous_path.is_relative_to(RUNTIME.resolve()) or not previous_path.is_file():
+            if not previous_path.is_relative_to(STATE.resolve()) or not previous_path.is_file():
                 previous_audio = None
         result = gr.Audio(value=previous_audio, label="생성된 음성 · 재생 / 다운로드", format="wav")
         timing = gr.Markdown()

@@ -9,7 +9,9 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
-DEFAULT_RUNTIME_DEPENDENCIES = PROJECT_ROOT / "extension" / ".runtime" / "python-deps"
+sys.path.insert(0, str(PROJECT_ROOT / 'extension/src'))
+from creator_workspace import runtime_path
+DEFAULT_RUNTIME_DEPENDENCIES = runtime_path('python-deps', PROJECT_ROOT)
 # Windows (Codex) uses python-deps. Other platforms, such as the Linux VM that
 # Claude uses for connected folders, need their own binary wheels.
 PLATFORM_RUNTIME_DEPENDENCIES = (

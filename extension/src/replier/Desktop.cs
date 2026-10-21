@@ -226,9 +226,9 @@ namespace ReplierDesktop
 
             publisher=youtube ?? new YoutubePublisher(new EncryptedYoutubeCredentialStore(Path.Combine(directory,"youtube-private","connection.bin")));
             contentStore = new ContentStore(Path.Combine(directory, "content"));
-            string extension = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", ".."));
-            comments = new DualCommentService(Path.Combine(extension, ".runtime", "replier-llm"));
-            channelModel = new LocalModel(Path.Combine(extension,".runtime","replier-llm"),LocalModel.Model,true);
+            string extension = CreatorWorkspace.ExtensionRoot();
+            comments = new DualCommentService(CreatorWorkspace.Runtime("replier-llm"));
+            channelModel = new LocalModel(CreatorWorkspace.Runtime("replier-llm"),LocalModel.Model,true);
             SelectionTask = Task.FromResult(0);
             ConnectionTask = Task.FromResult(0);
             history = new History();
@@ -935,8 +935,8 @@ namespace ReplierDesktop
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             // The executable is built at extension/.runtime/replier-desktop/.
-            string extension = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", ".."));
-            string state = Path.Combine(extension, "data", "replier", "desktop-history.json");
+            string extension = CreatorWorkspace.ExtensionRoot();
+            string state = Path.Combine(CreatorWorkspace.StateDirectory(), "desktop-history.json");
             Application.Run(new MainForm(state));
         }
     }

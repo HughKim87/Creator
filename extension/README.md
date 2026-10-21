@@ -18,14 +18,15 @@
 | `tests/` | extension 회귀와 수직 acceptance test |
 | `examples/` | 보호 데이터가 아닌 실행 예시 |
 | `reports/` | 사용자가 명시적으로 요청한 시점 보고서 |
-| `work/` | 활성 작업과 core 변경 차단 실패 |
+| `work/` | 기존 작업 자료와 유지보수 설계. 기존 파일은 이전 승인 전 보존 |
+| `jobs/` | Git 제외 영상별 입력·작업·출력·상태·로그 |
 | `data/` | 실행 시 생성되는 disposable record·event |
 | `inputs/` | 영상별 보호 원본; Git 제외 |
 | `outputs/` | 영상·SRT·썸네일·업로드 패키지 같은 보호 파생물; Git 제외 |
 | `.runtime/` | active owner와 설치·재구축 경로가 있는 로컬 도구·모델·의존성 cache; Git 제외 |
 | `../.agents/skills/` | 저장소 전체에서 자동 발견되는 Codex skill source |
 
-공통 구현·스킬·workflow 개선은 main의 이 영역에 추가한다. 개별 영상 작업은 해당 영상 워크트리의 Extension에 배치한다. extension 작업을 이유로 core 구현·계약·규칙을 자동 변경하지 않는다.
+공통 구현·스킬·workflow 개선은 main의 이 영역에 추가한다. 개별 영상 작업은 main의 `jobs/<job-id>/`에 격리한다. [단일 작업 공간](docs/WORKSPACE.md)의 CLI와 공용 runtime catalog를 사용한다. extension 작업을 이유로 core 구현·계약·규칙을 자동 변경하지 않는다.
 
 ## 활성 영상 owner
 

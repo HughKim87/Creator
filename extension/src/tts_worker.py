@@ -10,11 +10,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 engine, ready = sys.argv[1:3]
-runtime = ROOT / 'extension/.runtime' / ('qwen-tts' if engine == 'Qwen' else 'gpt-sovits')
+from creator_workspace import runtime_path, current_job_paths
+runtime = runtime_path('qwen-tts' if engine == 'Qwen' else 'gpt-sovits', ROOT)
+job_paths = current_job_paths(ROOT)
+state = job_paths['work'] / 'tts' if job_paths else runtime
 os.environ.update(HF_HUB_OFFLINE='1', TRANSFORMERS_OFFLINE='1', HF_HUB_DISABLE_IMPLICIT_TOKEN='1',
                   HF_HUB_DISABLE_TELEMETRY='1', PYTHONDONTWRITEBYTECODE='1', PYTHONUTF8='1',
-                  NLTK_DATA=str(ROOT / 'extension/.runtime/gpt-sovits/nltk-data'),
-                  NUMBA_CACHE_DIR=str(runtime / 'numba-cache'))
+                  NLTK_DATA=str(runtime_path('gpt-sovits', ROOT) / 'nltk-data'),
+                  NUMBA_CACHE_DIR=str(state / 'numba-cache'))
 
 def watch_parent():
     import psutil

@@ -1,35 +1,35 @@
 # Creator main 공통 개발 상태
 
-- 목적: 공통 구현 유지보수와 단일 workspace 전환의 현재 상태를 소유한다.
-- 읽는 시점: 시작 세 문서 뒤.
+- 목적: 단일 workspace와 공통 구현 유지보수의 현재 상태를 소유한다.
+- 읽는 시점: 시작 3문서 뒤.
 - 책임: main 유지보수 세션과 사용자.
-- 상태: 단일 workspace 전환 진행.
+- 상태: 코드 구현 완료, 기존 자료 정리 승인 대기.
 - handoff mode: same-workspace.
 - 관련 권위: PROJECT_RULES.md, extension/docs/WORKSPACE.md.
 
 ## 현재 단계
 
-브랜치 개선 통합 완료 후보. 전체 설계와 단계별 게이트는 `extension/docs/WORKSPACE.md`가 소유한다. 다음 단계는 단일 workspace 구조 구현이다.
+브랜치 개선 통합과 단일 workspace 구현을 마쳤다. 현재 단계는 기존 자료·output·worktree의 정확한 처분 확인이다. 전체 설계는 extension/docs/WORKSPACE.md, 출처·검증·정리 제안은 extension/reports/workspace-consolidation-20261021.md가 소유한다.
 
 ## 직전 게이트
 
-브랜치별 공통 조상 이후 변경을 현재 main과 대조했다. 누락된 Replier 구현과 CS6 호환 지식을 흡수하고 앱 빌드·관련 합성 검사를 통과했다. 출처·판정·실측 한계는 extension/reports/workspace-consolidation-20261021.md가 소유한다.
+job 격리·프로세스 잠금·실패/취소/재개·provenance·경로 이탈 및 관련 workflow 검사 통과. 기존 환경의 음성 단위 검사와 Replier 합성 검사 통과. before Git bundle 독립 복원 통과. 실제 전체 제작과 새 경로로 이전한 실데이터 검증은 not_run이다.
 
 ## 승인 상태
 
-위임: before 및 브랜치 복구 지점, 모든 브랜치의 개선사항 main 흡수, 영상별 폴더·공용 도구 구조 구현·검증·로컬 커밋. 합리적인 구현 선택은 권장안으로 진행한다.
-미위임: 기존 자료 이동·삭제, worktree 제거. 정확한 대상과 보존·복구 방법을 제시해 먼저 확인받는다. push·외부 게시·Core 수정은 제외한다.
+위임: 모든 브랜치의 재사용 개선 main 흡수, 영상별 폴더·공용 도구 구조와 관련 검증·로컬 커밋. 구현 선택은 권장안으로 진행한다.
+미위임: 기존 파일 이동·삭제와 worktree 제거. 보고서의 정확한 대상·보존·복구 조건을 사용자에게 먼저 확인받는다. push·외부 게시·Core 수정은 제외한다.
 
 ## 차단
 
-구현 차단 없음. 최종 자료 처분은 대상별 승인 대기 전 단계다.
+기존 자료 이전·정리와 worktree 제거는 사용자 대상 확인 대기다. 코드 구현 차단은 없다.
 
 ## 알려진 위험
 
-Git 태그는 미추적·ignored 데이터와 설치 환경을 백업하지 않는다. 기존 자료를 유지하고 삭제 전 별도의 복구 가능성을 확보한다. 실제 앱·GPU와 새 구조의 전체 제작은 아직 검증하지 않았다.
+Git 태그·bundle에는 Git 제외 미디어·설치 환경·비밀 설정이 들어 있지 않다. 기존 데이터는 원위치에 있다. XML은 외부 자산을 참조하므로 XML만 보존하면 편집 프로젝트를 복구할 수 없다. 기존 입력·private 설정은 정리 목록에서 제외했다.
 
 ## 첫 다음 행동
 
-1. branch별 공통 조상 이후 변경을 main과 대조해 개선사항을 누락 없이 판정한다.
-2. 고유 공통 구현을 main에 반영하고 관련 검사·앱 빌드를 실행한다.
-3. 기존 자료 이동·삭제 없이 job 경로·공용 runtime과 제작 진입점을 구현한다.
+1. 사용자에게 extension/reports/workspace-consolidation-20261021.md의 보존·archive·worktree 대상에 대한 승인을 받는다.
+2. 승인 후 로컬 cleanup-plan.json의 각 원본을 재확인하고 내용 hash·종속 자산·복구 owner와 이동 journal을 확보한다.
+3. 작업별 최종 결과와 공용 도구를 이전·검증한 뒤에만 승인된 기존 경로를 처분한다. before 태그와 recovery bundle은 유지한다.

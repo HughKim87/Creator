@@ -22,7 +22,7 @@ description: NotebookLM 등에서 생성한 동영상의 음성을 로컬 Whispe
 
 다운로드 이벤트 대기가 시간 초과해도 실패로 단정하지 않는다. 이벤트가 반환한 경로나 실행 직전 확정한 다운로드 폴더의 해당 아티팩트 파일만 확인해, 요청 시각 이후 생성된 파일의 이름·크기와 비디오/오디오 스트림·길이를 검증한다. 전체 다운로드 폴더를 재귀 검색하거나 기존 동명 파일을 이번 결과로 간주하지 않는다. 파일이 아직 부분 다운로드 중이면 완료 여부만 확인한다. 결과가 확인되기 전에는 다운로드를 반복하지 않는다. 정상 파일이 확인되면 이벤트 오류와 실제 성공을 구분해 기록하고 전사 단계로 이어간다.
 
-원본 다운로드 파일을 이동하거나 삭제하지 말고 Git에서 제외된 `extension/outputs/<job-id>/`에 복사해 사용한다. 복사본은 아래 환경 점검에서 실제 영상 파일, video·audio stream, 전체 길이를 통과해야 한다.
+원본 다운로드 파일을 이동하거나 삭제하지 말고 Git에서 제외된 `extension/jobs/<job-id>/outputs/`에 복사해 사용한다. 복사본은 아래 환경 점검에서 실제 영상 파일, video·audio stream, 전체 길이를 통과해야 한다.
 
 | 다운로드 판정 사례 | 기대 행동 |
 |---|---|
@@ -38,7 +38,7 @@ description: NotebookLM 등에서 생성한 동영상의 음성을 로컬 Whispe
    `python -m pip install --target <runtime-deps> faster-whisper`
 
 4. 기본 모델은 다국어 정확도와 속도의 균형이 좋은 `large-v3-turbo`다. `transcribe_to_srt.py`는 별도 `--model-dir`가 없으면 공용 모델 캐시를 자동으로 사용한다.
-5. 모델 캐시와 Python 의존성을 `extension/work/<job-id>/`에 복사하거나 커밋하지 않는다. 작업 폴더에는 영상별 SRT·원본 전사·용어 사전만 둔다. 영상별 용어 사전은 `.agents/skills/video-to-srt/references/`에 두지 않는다. 이 디렉터리는 재사용 형식과 절차만 소유한다.
+5. 모델 캐시와 Python 의존성을 `extension/jobs/<job-id>/work/`에 복사하거나 커밋하지 않는다. 작업 폴더에는 영상별 SRT·원본 전사·용어 사전만 둔다. 영상별 용어 사전은 `.agents/skills/video-to-srt/references/`에 두지 않는다. 이 디렉터리는 재사용 형식과 절차만 소유한다.
 6. `transcribe_to_srt.py`와 `validate_srt.py`는 프로젝트의 `extension/.runtime/python-deps`를 자동으로 우선 참조한다. 검증 명령을 위해 별도 `PYTHONPATH`를 만들지 않는다.
 7. Windows에서는 CUDA 장치가 보여도 실제 추론 시 `cublas64_12.dll` 또는 cuDNN이 없을 수 있다. CUDA를 쓰려면 라이브러리까지 확인한다. 확실하지 않으면 `cpu/int8`을 기본값으로 사용한다.
 
@@ -81,7 +81,7 @@ Whisper 결과를 그대로 최종본으로 취급하지 않는다.
 
 glossary 형식은 `references/glossary-format.md`를 따른다.
 
-영상별 glossary는 현재 `extension/work/<job-id>/`의 task scratch에 둔다. closeout에서는 재사용 가능한 교정 원칙만 이 스킬이나 형식 문서에 흡수하고, 고유 제품명·인명·오인식 치환을 담은 task glossary는 후속 소비자가 명시된 유지 산출물이 아닌 한 scratch와 함께 제거한다.
+영상별 glossary는 현재 `extension/jobs/<job-id>/work/`의 task scratch에 둔다. closeout에서는 재사용 가능한 교정 원칙만 이 스킬이나 형식 문서에 흡수하고, 고유 제품명·인명·오인식 치환을 담은 task glossary는 후속 소비자가 명시된 유지 산출물이 아닌 한 scratch와 함께 제거한다.
 
 ## 구조 검증
 
@@ -149,3 +149,7 @@ Codex(Windows)는 위 절차를 그대로 쓴다. Claude(Cowork)는 전사만 �
    - 복원 확인 후 임시 폴더를 지운다(삭제 권한 필요). 모델 캐시는 저장소에 커밋하거나 작업 폴더에 복사하지 않는다.
 3. 실행: 영상·용어 사전·`scripts/`를 stage하고 클라우드에서 `HF_HUB_OFFLINE=1 python3 transcribe_to_srt.py <video> ... --model large-v3-turbo --model-dir <cache> --device cpu`로 실행한다. 2코어에서 약 3배속(음성 60초당 약 20초)이며 백그라운드로 실행한다.
 4. 생성된 SRT·원본 전사 JSON을 `device_commit_files`로 작업 폴더의 계획된 경로에 쓴다. 원본 전사의 `model_dir`는 클라우드 경로로 기록되며 실행 환경 기록으로 둔다.
+
+## main의 작업별 폴더
+
+새 작업은 `scripts/creator_job.py init --job <job-id>`로 만든 main의 `extension/jobs/<job-id>/`를 사용한다. coordinator가 전달한 기존 작업은 그 exact 경로를 재사용하며 자동 이동하지 않는다. 로컬 명령은 job runner 안에서 실행하고 출력·검수·임시 파일을 해당 job에 기록한다. 도구·모델은 `creator_job.py runtime --component <component>`가 반환한 공용 경로를 사용한다. 다른 job의 파일·승인·현재 프로필로 대체하지 않는다.

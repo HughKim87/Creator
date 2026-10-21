@@ -156,3 +156,7 @@ python .agents/skills/coordinate-video-production/scripts/validate_video_job.py 
 ## 기존 검수 기록 변환
 
 구형 별도 검수 JSON이나 `reviewed_with_limitations`를 새 완료 상태로 자동 치환하지 않는다. 기존 기록의 실제 화면/전사 검토, 수정 위치, 출처 및 현재 산출물 해시를 확인한 뒤 위 형식의 `findings`·`review_scope`에 옮긴다. 직접 청취 `not_run`과 알려진 제한은 유지하며 증거가 없는 검토는 `pending`이다. 기존 근거 파일을 보존하고 최신 필수 옵션으로 재검사한다.
+
+## 단일 workspace 저장 모드
+
+새 main 제작 기록은 `storage_mode: job-folder-v1`을 사용한다. `job_id`는 `creator_job.py init`에서 만든 ID와 같다. 작업 기록은 `extension/jobs/<job-id>/VIDEO_JOB.json`, `paths`의 input_dir/work_dir/output_dir는 각각 같은 job의 inputs/work/outputs다. 로컬 산출물은 이 job 루트 안에 있어야 하며 다른 job의 파일을 참조하지 않는다. legacy 경로는 기존 기록의 읽기 호환을 위해서만 허용하고 자동 이동하지 않는다.

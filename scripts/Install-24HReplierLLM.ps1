@@ -1,7 +1,13 @@
 param([ValidateSet('qwen3.5:4b','gemma4:e2b-it-qat')][string]$ReplierModel = 'qwen3.5:4b')
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
-$taskRuntime = Join-Path $taskRoot 'extension/.runtime/replier-llm'
+. (Join-Path $PSScriptRoot 'Shared-Runtime.ps1')
+$taskRuntimeLease = Enter-CreatorRuntimeLease -Root $taskRoot -Name 'install-replier-llm'
+try {
+$taskInstallGpuLease = Enter-CreatorRuntimeLease -Root $taskRoot -Name 'gpu'
+try {
+$taskRuntime = & python -B (Join-Path $taskRoot 'scripts/creator_job.py') --root $taskRoot runtime --component replier-llm
+if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve shared runtime' }
 $taskOllama = Join-Path $taskRuntime 'ollama'
 $taskArchive = Join-Path $taskRuntime 'ollama-windows-amd64-v0.40.4.zip'
 $taskUrl = 'https://github.com/ollama/ollama/releases/download/v0.40.4/ollama-windows-amd64.zip'
@@ -87,3 +93,5 @@ try {
 } finally {
     if ($taskStarted -and -not $taskStarted.HasExited) { $taskStarted.Kill(); $taskStarted.WaitForExit() }
 }
+} finally { $taskInstallGpuLease.Dispose() }
+} finally { $taskRuntimeLease.Dispose() }

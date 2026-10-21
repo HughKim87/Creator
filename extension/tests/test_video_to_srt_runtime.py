@@ -36,13 +36,14 @@ SKILL_ROOT = SCRIPT.parents[1]
 class VideoToSrtRuntimeTests(unittest.TestCase):
     def test_default_runtime_paths_are_project_scoped_and_not_job_scoped(self) -> None:
         project_root = Path(__file__).resolve().parents[2]
+        from creator_workspace import runtime_path
         self.assertEqual(
             MODULE.DEFAULT_RUNTIME_DEPENDENCIES,
-            project_root / "extension" / ".runtime" / "python-deps",
+            runtime_path('python-deps', project_root),
         )
         self.assertEqual(
             MODULE.DEFAULT_MODEL_DIR,
-            project_root / "extension" / ".runtime" / "models" / "whisper",
+            runtime_path('whisper-models', project_root),
         )
         self.assertNotIn("extension\\work", str(MODULE.DEFAULT_MODEL_DIR))
         self.assertNotIn("extension\\work", str(MODULE.DEFAULT_RUNTIME_DEPENDENCIES))

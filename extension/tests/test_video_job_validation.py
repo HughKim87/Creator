@@ -63,6 +63,25 @@ def complete_job() -> dict[str, object]:
 
 
 class VideoJobValidationTests(unittest.TestCase):
+    def test_job_folder_paths_are_bound_to_the_record_id(self) -> None:
+        job = complete_job()
+        job['storage_mode'] = 'job-folder-v1'
+        prefix = 'extension/jobs/' + job['job_id']
+        job['paths'] = {key: prefix + '/' + leaf for key, leaf in (
+            ('input_dir', 'inputs'), ('work_dir', 'work'), ('output_dir', 'outputs'))}
+        result = MODULE.validate_video_job(job)
+        self.assertEqual(result['status'], 'valid', result['errors'])
+        job['paths']['output_dir'] = 'extension/jobs/another-video/outputs'
+        result = MODULE.validate_video_job(job)
+        self.assertIn('job-folder path mismatch: paths.output_dir', result['errors'])
+
+    def test_job_folder_mode_rejects_traversal_ids(self) -> None:
+        job = complete_job()
+        job.update(storage_mode='job-folder-v1', job_id='../other')
+        result = MODULE.validate_video_job(job)
+        self.assertEqual(result['status'], 'invalid')
+        self.assertTrue(any('ID must be' in e for e in result['errors']))
+
     def test_current_notebook_host_is_recognized_without_accepting_lookalikes(self) -> None:
         for host in ("notebooklm.google.com", "notebook.google.com"):
             self.assertTrue(MODULE.is_notebooklm_url(f"https://{host}/notebook/example"))

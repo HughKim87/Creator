@@ -10,7 +10,9 @@ from typing import Any
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
-DEFAULT_RUNTIME_DEPENDENCIES = PROJECT_ROOT / "extension" / ".runtime" / "python-deps"
+sys.path.insert(0, str(PROJECT_ROOT / 'extension/src'))
+from creator_workspace import runtime_path, current_job_paths, Lease
+DEFAULT_RUNTIME_DEPENDENCIES = runtime_path('python-deps', PROJECT_ROOT)
 # Windows (Codex) uses python-deps. Other platforms, such as the Linux VM that
 # Claude uses for connected folders, need their own binary wheels.
 PLATFORM_RUNTIME_DEPENDENCIES = (
@@ -18,7 +20,7 @@ PLATFORM_RUNTIME_DEPENDENCIES = (
     if sys.platform == "win32"
     else DEFAULT_RUNTIME_DEPENDENCIES.with_name(f"python-deps-{sys.platform}")
 )
-DEFAULT_MODEL_DIR = PROJECT_ROOT / "extension" / ".runtime" / "models" / "whisper"
+DEFAULT_MODEL_DIR = runtime_path('whisper-models', PROJECT_ROOT)
 if PLATFORM_RUNTIME_DEPENDENCIES.is_dir():
     sys.path.insert(0, str(PLATFORM_RUNTIME_DEPENDENCIES))
 
@@ -183,13 +185,14 @@ def transcribe(
             ),
             flush=True,
         )
-        model = WhisperModel(
-            args.model,
-            device=device,
-            compute_type=selected_compute_type,
-            cpu_threads=args.cpu_threads,
-            download_root=str(args.model_dir) if args.model_dir else None,
-        )
+        with Lease('install-whisper', PROJECT_ROOT):
+            model = WhisperModel(
+                args.model,
+                device=device,
+                compute_type=selected_compute_type,
+                cpu_threads=args.cpu_threads,
+                download_root=str(args.model_dir) if args.model_dir else None,
+            )
         iterator, info = model.transcribe(
             str(args.video),
             language=args.language,
@@ -385,10 +388,13 @@ def main() -> None:
     if not args.video.is_file() or args.video.stat().st_size == 0:
         raise SystemExit(f"Video is missing or empty: {args.video}")
 
-    output = (args.output or args.video.with_suffix(".srt")).resolve()
+    job = current_job_paths(PROJECT_ROOT)
+    output = (args.output or (job['outputs'] / (args.video.stem + '.srt') if job else args.video.with_suffix(".srt"))).resolve()
     raw_json = (
-        args.raw_json or output.with_name(output.stem + ".transcript.json")
+        args.raw_json or (job['work'] / (output.stem + '.transcript.json') if job else output.with_name(output.stem + ".transcript.json"))
     ).resolve()
+    if job and (not output.is_relative_to(job['outputs']) or not raw_json.is_relative_to(job['work'])):
+        raise SystemExit('SRT and transcript must stay in the selected job outputs/work folders')
     terms, replacements = load_glossary(args.glossary)
     initial_prompt = ", ".join(
         item for item in [args.initial_prompt.strip(), *terms] if item

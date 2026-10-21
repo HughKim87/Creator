@@ -7,7 +7,10 @@ from pathlib import Path
 from qwen_reference import TIME_LINE, seconds
 
 ROOT = Path(__file__).resolve().parents[2]
-RUNTIME = ROOT / 'extension/.runtime/gpt-sovits'
+from creator_workspace import runtime_path, current_job_paths
+RUNTIME = runtime_path("gpt-sovits", ROOT)
+JOB = current_job_paths(ROOT)
+STATE = JOB["work"] / "tts/gpt-sovits" if JOB else RUNTIME
 
 
 def select_sovits_reference(duration, transcript):
@@ -44,7 +47,7 @@ def select_sovits_reference(duration, transcript):
 
 class SovitsVoice:
     def __init__(self, directory=None):
-        self.directory = Path(directory or RUNTIME / 'voices')
+        self.directory = Path(directory or STATE / 'voices')
         self.directory.mkdir(parents=True, exist_ok=True)
 
     def register(self, reference, transcript):
@@ -100,5 +103,5 @@ def load_pipeline():
         'bert_base_path': str(weights / 'chinese-roberta-wwm-ext-large'),
         'cnhuhbert_base_path': str(weights / 'chinese-hubert-base'),
     }})
-    config.configs_path = str(RUNTIME / 'tts-infer.yaml')
+    config.configs_path = str(STATE / 'tts-infer.yaml')
     return TTS(config)
