@@ -32,14 +32,14 @@ description: NotebookLM 등에서 생성한 동영상의 음성을 로컬 Whispe
 ## 환경 점검
 
 1. 영상 크기가 0보다 크고 비디오·오디오 스트림과 총 길이가 있는지 PyAV로 확인한다.
-2. 먼저 공용 Git 제외 런타임을 확인한다. Python 의존성은 `extension/.runtime/python-deps/`, Whisper 모델 캐시는 `extension/.runtime/models/whisper/`를 기본 경로로 재사용한다.
+2. 먼저 공용 Git 제외 런타임을 확인한다. `python -B scripts/creator_job.py runtime --component python-deps`와 `--component whisper-models`가 반환한 Python 의존성·Whisper 모델 경로를 재사용한다. 정본 위치는 runtime catalog가 소유한다.
 3. `faster-whisper`가 공용 런타임에 없으면 사용자 승인 없이 설치하지 않는다. 한 번 승인·설치한 뒤에는 영상별 `work/<job-id>/`에 다시 설치하지 않는다.
 
    `python -m pip install --target <runtime-deps> faster-whisper`
 
 4. 기본 모델은 다국어 정확도와 속도의 균형이 좋은 `large-v3-turbo`다. `transcribe_to_srt.py`는 별도 `--model-dir`가 없으면 공용 모델 캐시를 자동으로 사용한다.
 5. 모델 캐시와 Python 의존성을 `extension/jobs/<job-id>/work/`에 복사하거나 커밋하지 않는다. 작업 폴더에는 영상별 SRT·원본 전사·용어 사전만 둔다. 영상별 용어 사전은 `.agents/skills/video-to-srt/references/`에 두지 않는다. 이 디렉터리는 재사용 형식과 절차만 소유한다.
-6. `transcribe_to_srt.py`와 `validate_srt.py`는 프로젝트의 `extension/.runtime/python-deps`를 자동으로 우선 참조한다. 검증 명령을 위해 별도 `PYTHONPATH`를 만들지 않는다.
+6. `transcribe_to_srt.py`와 `validate_srt.py`는 runtime catalog의 `python-deps` 경로를 자동으로 우선 참조한다. 검증 명령을 위해 별도 `PYTHONPATH`를 만들지 않는다.
 7. Windows에서는 CUDA 장치가 보여도 실제 추론 시 `cublas64_12.dll` 또는 cuDNN이 없을 수 있다. CUDA를 쓰려면 라이브러리까지 확인한다. 확실하지 않으면 `cpu/int8`을 기본값으로 사용한다.
 
 ## 전사 실행
@@ -51,7 +51,6 @@ description: NotebookLM 등에서 생성한 동영상의 음성을 로컬 Whispe
   --output <captions.srt> `
   --raw-json <transcript.json> `
   --model large-v3-turbo `
-  --model-dir extension/.runtime/models/whisper `
   --language ko `
   --device cpu `
   --glossary <glossary.json>
@@ -142,8 +141,8 @@ glossary 형식은 `references/glossary-format.md`를 따른다.
 Codex(Windows)는 위 절차를 그대로 쓴다. Claude(Cowork)는 전사만 클라우드 작업공간에서 실행한다. 연결 폴더 셸(VM)은 2코어·3GB·디스크 여유 부족에 호출당 약 180초 제한이 있어 전사가 끝나지 않는다. 그 밖의 정제·검증·검수 스크립트는 VM에서 활성 root 기준으로 실행할 수 있다.
 
 1. 의존성(세션당 1회): `pip install --break-system-packages faster-whisper "av<16"`. `av` 16 이상은 현재 faster-whisper의 `metadata_errors` 인자와 맞지 않는다. 사용자 승인된 설치 범위이며 저장소 runtime에는 설치하지 않는다.
-2. 모델(세션당 1회): 클라우드에서 Hugging Face 접근이 막힐 수 있으므로 활성 worktree의 공용 캐시를 옮긴다.
-   - VM에서 `extension/.runtime/models/whisper/models--mobiuslabsgmbh--faster-whisper-large-v3-turbo/`의 `refs/main` 해시와 `snapshots/<hash>/` 파일을 확인한다.
+2. 모델(세션당 1회): 클라우드에서 Hugging Face 접근이 막힐 수 있으므로 main의 공용 캐시를 옮긴다.
+   - VM에서 runtime catalog의 `whisper-models` 경로 아래 `models--mobiuslabsgmbh--faster-whisper-large-v3-turbo/`의 `refs/main` 해시와 `snapshots/<hash>/` 파일을 확인한다.
    - `model.bin`은 stage 한도 때문에 Git 제외 임시 폴더 `extension/.runtime/whisper-transfer/`에 `dd bs=1M count=350` 단위 조각으로 나눈다(VM 쓰기 속도 약 8MB/s라 조각마다 별도 호출).
    - 조각과 json 파일을 stage한 뒤 클라우드에서 `<cache>/models--mobiuslabsgmbh--faster-whisper-large-v3-turbo/refs/main`과 `snapshots/<hash>/`로 복원하고 크기를 원본과 대조한다.
    - 복원 확인 후 임시 폴더를 지운다(삭제 권한 필요). 모델 캐시는 저장소에 커밋하거나 작업 폴더에 복사하지 않는다.

@@ -37,7 +37,7 @@ def classify(tag, path):
         '7ea3474f7ada43ff91ab3634b78bb7e8/content/V0000000001.json', 'comment-display-preview.png'}:
         return 'generated-fixture-preserved', 'Synthetic V0000000001 cache / UI preview; implementation and fixture generators are absorbed. Historical bytes remain in the source tag and recovery bundle.'
     if path.startswith(('state/', 'extension/work/')) or path == 'SESSION_HANDOFF.md':
-        return 'task-record-preserved', 'Historical task data remains in its original worktree and recovery bundle; not a reusable implementation.'
+        return 'task-record-preserved', 'Historical task data remains in the verified archive and recovery bundle; not a reusable implementation.'
     if tag == 'before-codex-24HReplier' and (path.startswith(('extension/src/replier/', 'extension/tests/replier_'))
             or path == 'extension/tests/test_replier.py' or path in REPLIER_SCRIPTS):
         return 'absorbed', 'Replier implementation/checks inherited in 5b5c6c9; runtime paths adapted for shared main workspace.'

@@ -8,6 +8,7 @@ $taskInstallGpuLease = Enter-CreatorRuntimeLease -Root $taskRoot -Name 'gpu'
 try {
 $taskRuntime = & python -B (Join-Path $taskRoot 'scripts/creator_job.py') --root $taskRoot runtime --component replier-llm
 if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve shared runtime' }
+$taskRelativeRuntime = $taskRuntime.Substring($taskRoot.Length).TrimStart([char[]]@('\', '/')).Replace('\', '/')
 $taskOllama = Join-Path $taskRuntime 'ollama'
 $taskArchive = Join-Path $taskRuntime 'ollama-windows-amd64-v0.40.4.zip'
 $taskUrl = 'https://github.com/ollama/ollama/releases/download/v0.40.4/ollama-windows-amd64.zip'
@@ -82,7 +83,7 @@ try {
     }
     $taskRecord = @{
         component = 'ollama'; version = 'v0.40.4'; source = $taskUrl; sha256 = $taskDigest
-        model = $taskSelectedModel; modelRebuild = ('scripts/Install-24HReplierLLM.ps1 -ReplierModel ' + $taskSelectedModel); root = 'extension/.runtime/replier-llm'; rebuild = 'scripts/Install-24HReplierLLM.ps1'
+        model = $taskSelectedModel; modelRebuild = ('scripts/Install-24HReplierLLM.ps1 -ReplierModel ' + $taskSelectedModel); root = $taskRelativeRuntime; rebuild = 'scripts/Install-24HReplierLLM.ps1'
         commentModels = @('gemma4:e2b-it-qat','qwen3.5:4b')
         commentRebuild = @('scripts/Install-24HReplierLLM.ps1 -ReplierModel gemma4:e2b-it-qat','scripts/Install-24HReplierLLM.ps1 -ReplierModel qwen3.5:4b')
         models = @($taskTags.models | ForEach-Object { @{name=$_.name; digest=$_.digest; size=$_.size; source=('https://ollama.com/library/'+$_.name)} })

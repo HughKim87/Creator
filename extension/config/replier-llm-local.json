@@ -4,7 +4,7 @@
   "source": "https://github.com/ollama/ollama/releases/download/v0.40.4/ollama-windows-amd64.zip",
   "version": "v0.40.4",
   "model": "gemma4:e2b-it-qat",
-  "root": "extension/.runtime/replier-llm",
+  "root": "extension/.runtime/environments/replier-llm/0.40.4",
   "rebuild": "scripts/Install-24HReplierLLM.ps1",
   "models": [
     {

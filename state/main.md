@@ -1,35 +1,34 @@
 # Creator main 공통 개발 상태
 
 - 목적: 단일 workspace와 공통 구현 유지보수의 현재 상태를 소유한다.
-- 읽는 시점: 시작 3문서 뒤.
+- 읽는 시점: 시작 문서 뒤.
 - 책임: main 유지보수 세션과 사용자.
-- 상태: 코드 구현 완료, 기존 자료 정리 승인 대기.
+- 상태: 통합·이전·복구 검증 완료. 활성 단계 없음.
 - handoff mode: same-workspace.
 - 관련 권위: PROJECT_RULES.md, extension/docs/WORKSPACE.md.
 
 ## 현재 단계
 
-브랜치 개선 통합과 단일 workspace 구현을 마쳤다. 현재 단계는 기존 자료·output·worktree의 정확한 처분 확인이다. 전체 설계는 extension/docs/WORKSPACE.md, 출처·검증·정리 제안은 extension/reports/workspace-consolidation-20261021.md가 소유한다.
+main의 영상별 job·공용 runtime 구조와 브랜치 개선 흡수, 기존 자료의 archive 보관 및 worktree 퇴역을 완료했다. 설계·복구 절차는 extension/docs/WORKSPACE.md, 출처·실측 gate는 extension/reports/workspace-consolidation-20261021.md가 소유한다.
 
 ## 직전 게이트
 
-job 격리·프로세스 잠금·실패/취소/재개·provenance·경로 이탈 및 관련 workflow 검사 통과. 기존 환경의 음성 단위 검사와 Replier 합성 검사 통과. before Git bundle 독립 복원 통과. 실제 전체 제작과 새 경로로 이전한 실데이터 검증은 not_run이다.
+원본별 archive 복구 기록·내용 해시·비공개 개인설정 복원, 이전 경로의 실행·import·모델 manifest, XML 참조와 기존 worktree 퇴역 gate를 통과했다.
 
 ## 승인 상태
 
-위임: 모든 브랜치의 재사용 개선 main 흡수, 영상별 폴더·공용 도구 구조와 관련 검증·로컬 커밋. 구현 선택은 권장안으로 진행한다.
-미위임: 기존 파일 이동·삭제와 worktree 제거. 보고서의 정확한 대상·보존·복구 조건을 사용자에게 먼저 확인받는다. push·외부 게시·Core 수정은 제외한다.
+이번 로컬 통합·정리·커밋은 위임됐다. archive·before 태그·원래 브랜치·bundle을 유지한다. 영구 데이터 폐기·push·외부 게시·Core 변경은 위임되지 않았다.
 
 ## 차단
 
-기존 자료 이전·정리와 worktree 제거는 사용자 대상 확인 대기다. 코드 구현 차단은 없다.
+없음. 기존에 누락된 Zeus 원본은 사용자 지시로 제외한 상태다.
 
 ## 알려진 위험
 
-Git 태그·bundle에는 Git 제외 미디어·설치 환경·비밀 설정이 들어 있지 않다. 기존 데이터는 원위치에 있다. XML은 외부 자산을 참조하므로 XML만 보존하면 편집 프로젝트를 복구할 수 없다. 기존 입력·private 설정은 정리 목록에서 제외했다.
+새 제작 전체 실행·실모델 추론·Premiere 재생·개인설정 복호화와 로그인은 not_run이다. 파일 복원 검증을 이들 기능의 성공으로 확대하지 않는다. archive는 별도 물리 디스크 백업이 아니다.
 
 ## 첫 다음 행동
 
-1. 사용자에게 extension/reports/workspace-consolidation-20261021.md의 보존·archive·worktree 대상에 대한 승인을 받는다.
-2. 승인 후 로컬 cleanup-plan.json의 각 원본을 재확인하고 내용 hash·종속 자산·복구 owner와 이동 journal을 확보한다.
-3. 작업별 최종 결과와 공용 도구를 이전·검증한 뒤에만 승인된 기존 경로를 처분한다. before 태그와 recovery bundle은 유지한다.
+1. 영상 재개는 해당 job의 state.md와 work/migration.json을 읽는다.
+2. 새 영상은 scripts/creator_job.py init --job <job-id>로 생성하고 job runner 안에서 실행한다.
+3. 복구가 필요하면 extension/docs/WORKSPACE.md의 복구 절차로 새 빈 경로에 snapshot을 복원한다.
