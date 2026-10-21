@@ -17,6 +17,7 @@
 
 | 효과·요소 | 판정 | 확인 일자 | 근거·메모 |
 |---|---|---|---|
+| 오디오 Gain 필터(`Gain(dB)` value) | ✗ | 2026-10-14 | CS6가 내보낸 XML의 Gain value 3을 그대로 넣어 가져오면 모든 클립에 "+6db 넘는 오디오 레벨 → +6db로 클램프" 경고. 값을 dB로 읽지 않음(선형 배율로 해석 추정, 미검증). XML에 넣지 않고 Premiere에서 오디오 게인으로 직접 적용 |
 | Time Remap(클립 속도) | ✗ | 2026-10-10 | 모든 클립에서 "Time Remap 효과가 변환되지 않았습니다"로 무시됨. XML로 배속을 전달할 수 없다 |
 | Basic Motion scale·center(확대·위치) | ✓ export 구조 → 사용자 사용 | 2026-10-11 | video clipitem 안 `<file/>` 뒤·`<link>` 앞에 `<filter><effect>` (effectid basic, parameter scale·rotation·center·centerOffset). center = ((X−960)/1920, (Y−540)/1080) |
 | 투명 PNG still 오버레이(자막·카드·강조, 프레임별 연출) | ✓ 사용자 사용 확정 | 2026-10-11 | alphatype straight, stillframe. CS6 키프레임 대신 프레임별 PNG로 움직임을 구움 |

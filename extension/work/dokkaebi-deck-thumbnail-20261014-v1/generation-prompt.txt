@@ -1,0 +1,13 @@
+Use case: ads-marketing.
+Asset type: finished 16:9 Korean gaming YouTube thumbnail, landscape 1280x720 composition.
+Create a polished, highly clickable thumbnail for a video about "도깨비의 세계" comparing a sniper-only spell deck against a mixed ambush/sniper deck. The viewer should feel curious that their low damage may come from an overlooked deck choice. Use symbolic fantasy spell cards and magical combat energy, not fabricated screenshots or actual UI, no invented game characters or logos.
+Exact Korean copy, reproduce verbatim:
+Small top-left topic text: "도깨비의 세계"
+Medium-size supporting text above the headline: "내 딜이 낮았던 이유"
+Very large dominant headline in two lines:
+"아직도 저격만"
+"쓰세요??"
+All these strings must be present and spelled perfectly; no other text or numbers.
+Typography is the main subject, not an illustration. Use heavy condensed Korean display typography, the headline filling about 65 percent of the image across the left and center. The word "저격만" should be bright electric yellow, remaining headline ivory white, strong dark outline and subtle depth for exceptional readability at 320x180. Supporting line medium-sized white, clearly secondary, top game-name modest yellow/ivory. Keep exactly the double question marks.
+On right and behind the text, show a dramatic small fan of mystical ability cards, with one dim blue card contrasted with glowing orange-gold mixed spell cards and energetic arc-shaped magical motion. Generic symbolic artwork with card borders and abstract magical shapes; no readable card text, no guns, no faces. Do not represent this as actual game footage.
+Background: deep midnight navy, contrasting amber and orange illumination on the right, purposeful dark negative space behind type, premium clean gaming editorial art. Integrated composition, punchy controlled light, not cluttered. No damage numbers, no percent increase, no graphs, arrows, icons, watermark or fake official logo. At least 5 percent safe margin around all text, nothing cropped; keep the bottom-right timestamp area clear.

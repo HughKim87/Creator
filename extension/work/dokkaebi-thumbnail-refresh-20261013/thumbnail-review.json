@@ -1,0 +1,18 @@
+{
+  "upload": "D:\\AI Agent\\GitHub\\Creator-dokkaebi\\extension\\work\\dokkaebi-thumbnail-refresh-20261013\\dokkaebi-thumbnail-mainquest-v1.jpg",
+  "preview": "D:\\AI Agent\\GitHub\\Creator-dokkaebi\\extension\\work\\dokkaebi-thumbnail-refresh-20261013\\preview-320x180.jpg",
+  "size": [
+    1280,
+    720
+  ],
+  "bytes": 360304,
+  "sha256": "97e0f0dab1842f074b2ce04928a4375075b297edbc15204602402ccc2355f53f",
+  "copy": "메인퀘만 밀었더니…",
+  "mode": "one_shot_imagegen",
+  "visual_status": "pending_user_review",
+  "performance_status": "not_measured",
+  "reference": "YouTube thumbnail observed in current conversation for MAfz1uhzZXU",
+  "scope": "thumbnail-only request; title selection and full video packaging are not requested",
+  "mobile_readability": "Reviewed at 320x180: headline fully readable; tiger and adventurer distinct.",
+  "text_exact": true
+}

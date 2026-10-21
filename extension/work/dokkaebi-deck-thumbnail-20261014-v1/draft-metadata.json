@@ -1,0 +1,22 @@
+{
+  "source_captions": "D:/AI Agent/GitHub/Creator-dokkaebi/extension/outputs/dokkaebi-deck/dokkaebi-deck-cut-r4.srt",
+  "generation_mode": "one_shot_imagegen",
+  "generator": "built_in_image_gen",
+  "copy": [
+    "도깨비의 세계",
+    "내 딜이 낮았던 이유",
+    "아직도 저격만 쓰세요??"
+  ],
+  "copy_approval": "explicit_user",
+  "image_generation_approval": "explicit_user",
+  "visual_approval": "pending",
+  "assessment_kind": "editorial_judgment",
+  "performance_status": "not_measured",
+  "visual_subject": "symbolic spell cards, not actual gameplay",
+  "size": [
+    1280,
+    720
+  ],
+  "captions_sha256": "e11711c3545ce3de59bd4e9e929307969bffdab7f49898bd6ea1eb46538c11a4",
+  "thumbnail_sha256": "2f4109f19503fdf53b0291010a92fca7318cc56e3a5e529b1dbe2d63840b7bd0"
+}

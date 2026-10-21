@@ -1,0 +1,9 @@
+{
+  "revision": 2,
+  "generation_mode": "one_shot_imagegen",
+  "generator": "built_in_image_gen",
+  "reference_image": "C:/Users/Hugh/AppData/Local/Temp/codex-clipboard-7b5493a1-f2d1-447b-9a55-dd319d99d165.png",
+  "change": "Recreated skill icon art from screenshot reference; existing copy and layout retained",
+  "visual_approval": "pending",
+  "performance_status": "not_measured"
+}
