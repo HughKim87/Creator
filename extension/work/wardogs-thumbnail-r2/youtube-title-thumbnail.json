@@ -1,0 +1,153 @@
+{
+  "schema_version": "youtube-title-thumbnail-v3",
+  "generation_contract": {
+    "required_mode": "one_shot_imagegen",
+    "allow_local_text_composite": false,
+    "instruction_source": "explicit_user"
+  },
+  "approval_policy": {
+    "mode": "review_gated",
+    "instruction_source": "explicit_user"
+  },
+  "source": {
+    "video": "../../outputs/wardogs/post-r26/wardogs-post-r26.mp4",
+    "captions": "../../outputs/wardogs/post-r26/subtitles/wardogs-post-r26.ko.srt",
+    "channel_evidence": {
+      "status": "not_provided",
+      "note": "Public competitor benchmark observed; own channel analytics not provided."
+    }
+  },
+  "title": {
+    "selected": "사람 살리려다 제가 먼저 죽었습니다ㅋㅋ｜워독스 초보 메딕 적응기",
+    "approved_text": "사람 살리려다 제가 먼저 죽었습니다ㅋㅋ｜워독스 초보 메딕 적응기",
+    "status": "approved",
+    "approval_method": "explicit_user",
+    "candidates": [
+      {
+        "text": "사람 살리려다 제가 먼저 죽었습니다ㅋㅋ｜워독스 초보 메딕 적응기",
+        "angle": "beginner-medic-role-reversal"
+      }
+    ],
+    "rationale": "User approved the SEO recommendation with game name, beginner and medic scope."
+  },
+  "thumbnail": {
+    "generation_mode": "one_shot_imagegen",
+    "generated_source": "thumbnail-source.png",
+    "master": "thumbnail-master.png",
+    "upload": "thumbnail-review.jpg",
+    "mobile_preview": "thumbnail-preview-320.jpg",
+    "text": [
+      "나 메딕인데…?",
+      "살리러 왔다가 같이 누움ㅋㅋ",
+      "WARDOGS"
+    ],
+    "generation_prompt": "Revise this finished thumbnail. Preserve exact layout, all three text blocks, the two downed soldiers, foreground medic's bandage and reaching hand, and the industrial rooftop. Required text verbatim: \"나 메딕인데…?\", \"살리러 왔다가 같이 누움ㅋㅋ\", \"WARDOGS\". Critical changes: (1) Remove the human silhouette embedded in WARDOGS and replace with a normal fully readable letter O. Use plain bold compact white WARDOGS game-name lettering, no invented logo symbols. (2) Make the entire scene visibly a REAL-TIME TACTICAL PC GAME SCREENSHOT aesthetic, substantially less photographic: the foreground character must be a 3D videogame NPC with smooth simplified skin, NO photo pores, NO stubble microtexture, geometric face planes, clearly rendered eyes, lower-detail in-game cloth and helmet textures; moderate polygonal asset detail and crisp game-engine ambient occlusion, broad even daylight, sharper background than a cinema photo. Keep a middle-aged sheepish confused face but render as game character, not live-action actor. Olive and khaki equipment, darker green vest, grey steel industrial rooftop, tactical military sandbox. Not cartoon or anime, not a movie poster. Dramatic change from live-action photography to convincingly game-rendered soldiers is mandatory. Maintain readable white/yellow Korean typography and safe margins. No added UI or extra text. Complete 16:9 thumbnail.",
+    "generated_at": "2026-10-21T08:04:16.276765+00:00",
+    "copy_strategy": {
+      "hook": "A medic is himself awaiting rescue.",
+      "payoff": "Repeated failed rescues and mutual revives.",
+      "scope": "Humorous symbolic reconstruction of WARDOGS beginner gameplay."
+    },
+    "visual_status": "pending_user_review",
+    "reference_image": "D:/AI Agent/GitHub/Creator/extension/.runtime/wardogs-thumbnail-r1/reference.jpg",
+    "reference_video_seconds": 948.4,
+    "badge": "WARDOGS",
+    "revision_source": "../wardogs-thumbnail-r1/thumbnail-master.png",
+    "generation_attempts": 2
+  },
+  "approval": {
+    "copy": {
+      "status": "approved",
+      "method": "explicit_user",
+      "approved_at": "2026-10-21T08:02:36.824Z",
+      "timestamp_basis": "Recorded before image generation after explicit user revision request.",
+      "text_blocks": [
+        "나 메딕인데…?",
+        "살리러 왔다가 같이 누움ㅋㅋ",
+        "WARDOGS"
+      ]
+    },
+    "image_generation": {
+      "status": "approved",
+      "method": "explicit_user",
+      "approved_at": "2026-10-21T08:02:36.824Z",
+      "timestamp_basis": "Recorded before image generation after explicit user revision request."
+    },
+    "visual": {
+      "status": "pending"
+    }
+  },
+  "validation": {
+    "facts_traceable": true,
+    "text_exact": true,
+    "mobile_preview_reviewed": true,
+    "clickability_reviewed": true,
+    "title_thumbnail_not_duplicate": true
+  },
+  "editorial": {
+    "version": 1,
+    "captions_sha256": "b014ab25b42ff724b66e65bdf944c8f9cbffd9418b906e005c666b53a9429175",
+    "brief": {
+      "audience": "Korean viewers enjoying middle-aged beginner FPS mishaps.",
+      "core_message": "A novice medic repeatedly needs rescue himself while learning to support teammates.",
+      "promise_boundary": "Entertainment gameplay, not a medic guide or real war footage. AI reconstructed scene is symbolic.",
+      "evidence": [
+        {
+          "cue": 82,
+          "excerpt": "나 메딕인데?"
+        },
+        {
+          "cue": 87,
+          "excerpt": "메딕 시작도 못 해보고 그냥 끝."
+        },
+        {
+          "cue": 209,
+          "excerpt": "서로 죽으면 한 번씩 살려주고 있어요."
+        }
+      ],
+      "visual_priority": "Korean medic reaction first, confused game-rendered medic second; WARDOGS label identifies the game.",
+      "title_thumbnail_roles": "Title narrates the failed helpful intent; thumbnail gives the confused reaction and joint-down punchline.",
+      "benchmark": {
+        "status": "partial",
+        "checked_at": "2026-10-21T16:31:32+09:00",
+        "selection_scope": "Korean WARDOGS edited long-form videos",
+        "examples": [
+          {
+            "url": "https://www.youtube.com/watch?v=-sLH6k-vatY",
+            "title": "워독스 뉴비가 24시간 동안 정찰병만 하면 어떻게 변할까?",
+            "channel": "함다",
+            "views": "14만",
+            "published_or_age": "2주 전",
+            "thumbnail_observation": {
+              "status": "observed",
+              "text": "24시간 동안 정찰병",
+              "composition": "Prominent role character and bold role text."
+            }
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=39sHkwHu-54",
+            "title": "워독스 북미 서버에서 싸움이 일어났습니다 ㅋㅋ",
+            "channel": "BADFINGER",
+            "views": "14만",
+            "published_or_age": "2주 전",
+            "thumbnail_observation": {
+              "status": "observed",
+              "text": "워독스 개빡친 미국인ㅋㅋ",
+              "composition": "Helicopter players plus reaction copy."
+            }
+          }
+        ],
+        "application": "Large role-focused copy plus a concrete humorous human reaction.",
+        "limitations": "Rounded public views; audience, age and channel differences; no CTR causality established."
+      }
+    },
+    "review": {
+      "thumbnail_sha256": "a2f4511f2f7105ef8e6053532fd87c4ea7ea692e4cecee0c5e7a0e4eb744f557",
+      "assessment_kind": "editorial_judgment",
+      "content_fit": "Symbolic AI reconstruction of two downed teammates; reduced photographic skin detail, game-like materials, industrial rooftop and readable WARDOGS title. Not an actual gameplay screenshot.",
+      "mobile_readability": "Directly inspected 320x180 preview: both exact Korean copy blocks and WARDOGS name readable, no clipping; face, bandage and second downed teammate distinguishable.",
+      "click_rationale": "Helpful medic becoming the patient creates an immediate comic contradiction."
+    },
+    "performance_status": "not_measured"
+  }
+}

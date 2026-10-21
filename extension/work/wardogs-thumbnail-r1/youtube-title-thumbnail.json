@@ -1,0 +1,148 @@
+{
+  "schema_version": "youtube-title-thumbnail-v3",
+  "generation_contract": {
+    "required_mode": "one_shot_imagegen",
+    "allow_local_text_composite": false,
+    "instruction_source": "explicit_user"
+  },
+  "approval_policy": {
+    "mode": "review_gated",
+    "instruction_source": "explicit_user"
+  },
+  "source": {
+    "video": "../../outputs/wardogs/post-r26/wardogs-post-r26.mp4",
+    "captions": "../../outputs/wardogs/post-r26/subtitles/wardogs-post-r26.ko.srt",
+    "channel_evidence": {
+      "status": "not_provided",
+      "note": "Public competitor benchmark observed; own channel analytics not provided."
+    }
+  },
+  "title": {
+    "selected": "사람 좀 살려보려다 제가 먼저 죽었습니다ㅋㅋ｜아재의 워독스 적응기",
+    "approved_text": "사람 좀 살려보려다 제가 먼저 죽었습니다ㅋㅋ｜아재의 워독스 적응기",
+    "status": "approved",
+    "approval_method": "explicit_user",
+    "candidates": [
+      {
+        "text": "사람 좀 살려보려다 제가 먼저 죽었습니다ㅋㅋ｜아재의 워독스 적응기",
+        "angle": "beginner-medic-role-reversal"
+      }
+    ],
+    "rationale": "User selected the middle-aged beginner medic adaptation framing."
+  },
+  "thumbnail": {
+    "generation_mode": "one_shot_imagegen",
+    "generated_source": "thumbnail-source.png",
+    "master": "thumbnail-master.png",
+    "upload": "thumbnail-review.jpg",
+    "mobile_preview": "thumbnail-preview-320.jpg",
+    "text": [
+      "나 메딕인데…?",
+      "살리러 왔다가 같이 누움ㅋㅋ"
+    ],
+    "generation_prompt": "Use case: ads-marketing. Create ONE finished 16:9 Korean gaming YouTube thumbnail, landscape 1536x864 or 1920x1080. Reference image is a genuine WARDOGS gameplay still: use its military industrial rooftop environment, muted green/brown modern tactical gear, and downed-player context as visual reference ONLY. This is a humorous cinematic promotional reconstruction of the video's repeated down-and-revive mishaps, not an exact gameplay screenshot. No UI, no copied existing captions.\nCore scene: two modern tactical soldiers have BOTH fallen on a metal rooftop after a failed rescue. In the immediate foreground on the right, a middle-aged Korean male medic character, stocky ordinary middle-aged face, helmet and olive tactical vest, half-reclines awkwardly against a low rooftop barrier, looks directly toward viewer with confused, sheepish expression, one hand still holding a loose bandage roll. His other hand helplessly reaches outward. A second soldier is clearly lying down behind him, near his feet, also awaiting rescue; visually unmistakable two fallen teammates, no third standing rescuer. Medical pouch with a simple white plus on a green patch (not red cross). No blood or wounds. Humor and relatable incompetent beginner, not tragedy. Keep realistic game-render quality, not cartoon, no celebrity resemblance. Camera medium close and low, characters occupy lower/right 65%, shallow depth, rooftop and hills soft in background. Warm daylight, crisp readable silhouette, bright enough on mobile, subtle cinematic depth, restrained warm/cool contrast.\nTypography is crucial. Render EXACTLY TWO Korean text blocks with these exact characters and NO other text:\nMain headline: \"나 메딕인데…?\"\nSecondary: \"살리러 왔다가 같이 누움ㅋㅋ\"\nMain headline huge extra-bold Korean sans, white with thick dark outline, key word 메딕 in bright yellow. Across upper-left and upper-middle, safely inset 6% from all edges, single line if possible. Secondary smaller but strong bold white/yellow with dark outline on clean darker lower-left area, can split line between 왔다가 and 같이. All text must be legible at 320x180. Keep protagonist face and both downed figures visible. Avoid clutter, floating labels, speech bubbles, logos, fake killfeed, extra words, decorative arrows, borders. Do not include video title inside image. Deliver complete polished thumbnail with typography integrated in a single image.",
+    "generated_at": "2026-10-21T07:55:56.050916+00:00",
+    "copy_strategy": {
+      "hook": "A medic is himself awaiting rescue.",
+      "payoff": "Repeated failed rescues and mutual revives.",
+      "scope": "Humorous symbolic reconstruction of WARDOGS beginner gameplay."
+    },
+    "visual_status": "pending_user_review",
+    "reference_image": "D:/AI Agent/GitHub/Creator/extension/.runtime/wardogs-thumbnail-r1/reference.jpg",
+    "reference_video_seconds": 948.4
+  },
+  "approval": {
+    "copy": {
+      "status": "approved",
+      "method": "explicit_user",
+      "approved_at": "2026-10-21T07:55:56.050916+00:00",
+      "timestamp_basis": "Upper-bound recording time; explicit user copy and generation authorization preceded tool invocation.",
+      "text_blocks": [
+        "나 메딕인데…?",
+        "살리러 왔다가 같이 누움ㅋㅋ"
+      ]
+    },
+    "image_generation": {
+      "status": "approved",
+      "method": "explicit_user",
+      "approved_at": "2026-10-21T07:55:56.050916+00:00",
+      "timestamp_basis": "Upper-bound recording time; explicit user copy and generation authorization preceded tool invocation."
+    },
+    "visual": {
+      "status": "pending"
+    }
+  },
+  "validation": {
+    "facts_traceable": true,
+    "text_exact": true,
+    "mobile_preview_reviewed": true,
+    "clickability_reviewed": true,
+    "title_thumbnail_not_duplicate": true
+  },
+  "editorial": {
+    "version": 1,
+    "captions_sha256": "b014ab25b42ff724b66e65bdf944c8f9cbffd9418b906e005c666b53a9429175",
+    "brief": {
+      "audience": "Korean viewers enjoying middle-aged beginner FPS mishaps.",
+      "core_message": "A novice medic repeatedly needs rescue himself while learning to support teammates.",
+      "promise_boundary": "Entertainment gameplay, not a medic guide or real war footage. AI reconstructed scene is symbolic.",
+      "evidence": [
+        {
+          "cue": 82,
+          "excerpt": "나 메딕인데?"
+        },
+        {
+          "cue": 87,
+          "excerpt": "메딕 시작도 못 해보고 그냥 끝."
+        },
+        {
+          "cue": 209,
+          "excerpt": "서로 죽으면 한 번씩 살려주고 있어요."
+        }
+      ],
+      "visual_priority": "Read the medic reaction first, then notice both downed soldiers.",
+      "title_thumbnail_roles": "Title narrates the failed helpful intent; thumbnail gives the confused reaction and joint-down punchline.",
+      "benchmark": {
+        "status": "partial",
+        "checked_at": "2026-10-21T16:31:32+09:00",
+        "selection_scope": "Korean WARDOGS edited long-form videos",
+        "examples": [
+          {
+            "url": "https://www.youtube.com/watch?v=-sLH6k-vatY",
+            "title": "워독스 뉴비가 24시간 동안 정찰병만 하면 어떻게 변할까?",
+            "channel": "함다",
+            "views": "14만",
+            "published_or_age": "2주 전",
+            "thumbnail_observation": {
+              "status": "observed",
+              "text": "24시간 동안 정찰병",
+              "composition": "Prominent role character and bold role text."
+            }
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=39sHkwHu-54",
+            "title": "워독스 북미 서버에서 싸움이 일어났습니다 ㅋㅋ",
+            "channel": "BADFINGER",
+            "views": "14만",
+            "published_or_age": "2주 전",
+            "thumbnail_observation": {
+              "status": "observed",
+              "text": "워독스 개빡친 미국인ㅋㅋ",
+              "composition": "Helicopter players plus reaction copy."
+            }
+          }
+        ],
+        "application": "Large role-focused copy plus a concrete humorous human reaction.",
+        "limitations": "Rounded public views; audience, age and channel differences; no CTR causality established."
+      }
+    },
+    "review": {
+      "thumbnail_sha256": "32cb1b4a79d18421c5a672deccbcf2a00f9fe14bced6ac6b1dbb0dcdc5084b13",
+      "assessment_kind": "editorial_judgment",
+      "content_fit": "Confused downed medic and second downed teammate depict the selected role reversal symbolically. Not an actual captured camera angle.",
+      "mobile_readability": "Directly viewed the 320x180 JPEG: headline, subline, medic face, bandage and second downed soldier readable; no text clipped. Both exact approved text blocks visually checked.",
+      "click_rationale": "Helpful medic becoming the patient creates an immediate comic contradiction."
+    },
+    "performance_status": "not_measured"
+  }
+}

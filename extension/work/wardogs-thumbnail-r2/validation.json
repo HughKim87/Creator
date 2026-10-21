@@ -1,0 +1,28 @@
+{
+  "status": "valid",
+  "schema_version": "youtube-title-thumbnail-v3",
+  "package": "C:\\Users\\Hugh\\.codex\\worktrees\\wardogs\\Creator\\extension\\work\\wardogs-thumbnail-r2\\youtube-title-thumbnail.json",
+  "selected_title": "사람 살리려다 제가 먼저 죽었습니다ㅋㅋ｜워독스 초보 메딕 적응기",
+  "title_length": 35,
+  "video": "C:\\Users\\Hugh\\.codex\\worktrees\\wardogs\\Creator\\extension\\outputs\\wardogs\\post-r26\\wardogs-post-r26.mp4",
+  "captions": "C:\\Users\\Hugh\\.codex\\worktrees\\wardogs\\Creator\\extension\\outputs\\wardogs\\post-r26\\subtitles\\wardogs-post-r26.ko.srt",
+  "thumbnail": "C:\\Users\\Hugh\\.codex\\worktrees\\wardogs\\Creator\\extension\\work\\wardogs-thumbnail-r2\\thumbnail-review.jpg",
+  "thumbnail_size": [
+    1280,
+    720
+  ],
+  "thumbnail_format": "JPEG",
+  "thumbnail_bytes": 478604,
+  "thumbnail_sha256": "a2f4511f2f7105ef8e6053532fd87c4ea7ea692e4cecee0c5e7a0e4eb744f557",
+  "generation_mode": "one_shot_imagegen",
+  "master": "C:\\Users\\Hugh\\.codex\\worktrees\\wardogs\\Creator\\extension\\work\\wardogs-thumbnail-r2\\thumbnail-master.png",
+  "source_image": "C:\\Users\\Hugh\\.codex\\worktrees\\wardogs\\Creator\\extension\\work\\wardogs-thumbnail-r2\\thumbnail-source.png",
+  "mobile_preview": "C:\\Users\\Hugh\\.codex\\worktrees\\wardogs\\Creator\\extension\\work\\wardogs-thumbnail-r2\\thumbnail-preview-320.jpg",
+  "approval_ready": false,
+  "editorial_status": "recorded_not_performance_verified",
+  "performance_verified": false,
+  "errors": [],
+  "warnings": [
+    "approval.visual is not approved"
+  ]
+}
