@@ -9,11 +9,11 @@
 
 ## 현재 단계
 
-main의 영상별 job·공용 runtime 구조와 브랜치 개선 흡수, 기존 자료의 archive 보관 및 worktree 퇴역을 완료했다. 설계·복구 절차는 extension/docs/WORKSPACE.md, 출처·실측 gate는 extension/reports/workspace-consolidation-20261021.md가 소유한다.
+영상별 job·공용 runtime 코드와 브랜치 개선 흡수, archive 보관 및 worktree 퇴역을 완료했다. main의 기존 job·설치 runtime·data·cache도 외부 cleanup snapshot으로 옮겨 비웠다. 설계·복구 절차는 extension/docs/WORKSPACE.md, 출처·실측 gate는 extension/reports/workspace-consolidation-20261021.md가 소유한다.
 
 ## 직전 게이트
 
-원본별 archive 복구 기록·내용 해시·비공개 개인설정 복원, 이전 경로의 실행·import·모델 manifest, XML 참조와 기존 worktree 퇴역 gate를 통과했다.
+cleanup 대상의 이동 전후 파일 identity·metadata 일치와 main의 ignored·미추적 항목 부재를 확인했다. 기존 원본 복구 검증 결과는 외부 archive에 유지한다.
 
 ## 승인 상태
 
@@ -29,6 +29,6 @@ main의 영상별 job·공용 runtime 구조와 브랜치 개선 흡수, 기존 
 
 ## 첫 다음 행동
 
-1. 영상 재개는 해당 job의 state.md와 work/migration.json을 읽는다.
+1. 영상 재개는 extension/docs/WORKSPACE.md의 cleanup snapshot에서 필요한 job·도구 경로를 먼저 복원한 뒤 해당 job의 state.md와 work/migration.json을 읽는다.
 2. 새 영상은 scripts/creator_job.py init --job <job-id>로 생성하고 job runner 안에서 실행한다.
 3. 복구가 필요하면 extension/docs/WORKSPACE.md의 복구 절차로 새 빈 경로에 snapshot을 복원한다.

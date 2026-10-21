@@ -31,7 +31,7 @@
 
 ## 복구 범위
 
-`before`와 `before-*` 태그·브랜치를 유지한다. Git 복구 bundle은 로컬 extension/data/consolidation/recovery와 archive/recovery 양쪽에 보존했다. 부모 bundle의 before ref 독립 복구와 Core bundle 다섯 개의 정확한 부모 gitlink 커밋 복구·독립 fsck를 통과했다.
+`before`와 `before-*` 태그·브랜치를 유지한다. Git 복구 bundle은 외부 archive/recovery에 보존한다. main에 있던 사본은 마지막 실제 cleanup snapshot에 포함했다. 부모 bundle의 before ref 독립 복구와 Core bundle 다섯 개의 정확한 부모 gitlink 커밋 복구·독립 fsck를 통과했다.
 
 자료 복구는 `D:/AI Agent/Creator-Archive/2026-10-21/`의 original-inventory.json·recovery-ledger.jsonl·migration-state.json이 소유한다. 전체 파일 gate를 통과한 뒤 검증한 cross-volume 원래 사본과 stale Git registration을 퇴역시켰다. 초기 Windows DirEntry inventory의 file ID 0은 원본 ID로 간주하지 않는다. 실제 동일 볼륨 rename receipt 또는 유지된 원래 경로와 크기·수정 시각·현재 SHA-256을 연결한다. C: 사본은 원본을 읽으며 산출한 SHA-256과 대상 read-back 해시를 별도로 대조했다.
 
@@ -48,9 +48,9 @@
 - `audit_branch_absorption.py`는 before 태그들의 net tracked 변경 193개를 재현해 unreviewed 0을 확인한다. 다른 네 worktree의 Git 제외되지 않은 미추적 파일도 0개였다. 이는 의미 검토·관련 기능 검사를 대체하지 않는다. ignored 작업 스크립트·자료는 이전 gate에서 별도로 확인한다.
 - 부모 Git bundle을 독립 임시 저장소로 fetch해 7개 before ref와 전체 객체 무결성을 확인했다. 각 worktree의 Core bundle도 complete history로 verify했다. receipt는 로컬 `extension/data/consolidation/recovery/verification.json`이다.
 
-## 승인된 자료 이전 결과
+## 승인된 자료 이전 결과 (cleanup 이전 이력)
 
-선정 근거는 로컬 cleanup-plan.json이며 실제 이전 기록은 migration-state.json·migration-journal.jsonl이다. 아래 선정 파일을 main의 job으로 보존했다. 기존 파일의 편집 승인 상태를 새로 만들지 않으며 XML 사본은 pathurl만 변경했다. 원본 XML은 archive에 유지한다.
+선정 근거는 cleanup-plan.json이며 실제 이전 기록은 migration-state.json·migration-journal.jsonl이다. 당시 아래 선정 파일을 main의 job으로 보존했다. 마지막 cleanup에서 이 job과 기록도 외부 snapshot으로 이동했으므로 아래 경로는 현재 존재하는 경로가 아닌 당시 main 상대경로다. 기존 파일의 편집 승인 상태를 새로 만들지 않으며 XML 사본은 pathurl만 변경했다. 원본 XML은 archive에 유지한다.
 
 | 작업 | 보존 권장안 | 이전 후 위치 |
 |---|---|---|
@@ -87,3 +87,9 @@ main의 이전 중간 output·task runtime·TTS 생성물·이전 상태는 arch
 이전 전 파일 124,534개(논리 크기 261.42 GiB)의 원래 경로와 독립 archive 위치를 연결하고 내용 해시를 검증했다. private 복원 probe는 314개 파일을 바이트 비공개 방식으로 복원·재해시해 통과했다. 존재하는 XML 참조 1,726개를 확인했고 사용자 제외 누락 원본은 1개다.
 
 기존 worktree 네 곳을 퇴역시켰다. C: 원래 사본은 전체 ledger와 archive 대상의 identity·크기·수정 시각을 다시 확인한 뒤 검증된 cross-volume 이동의 마지막 단계로 정리했다. 데이터는 모두 archive에 남아 있다. D: 세 checkout은 archive의 일반 snapshot이며 활성 Git checkout으로 취급하지 않는다. before 태그·원래 브랜치·복구 bundle·archive는 유지한다. 최종 main clean 판정은 로컬 final-receipt.json에 커밋 SHA와 함께 기록한다.
+
+## 실제 main cleanup
+
+앞선 Git status 청결 판정에는 ignored 자료가 남아 있었다. 사용자 교정에 따라 main의 모든 미추적·ignored 폴더를 외부 `D:/AI Agent/Creator-Archive/2026-10-21/main-cleanup-20261021-220805/tree/`로 이동했다. 대상은 `extension/jobs/`, `extension/.runtime/`, `extension/data/`와 Python `__pycache__` 폴더들이다. 새 지식 추출은 없으며 기존 job 상태·최종본·필수 자산·개인설정·검증 근거는 폴더 그대로 보존한다. 추적 코드·Core·before 태그·기존 archive는 유지한다.
+
+약 78.2 GiB의 논리 파일 크기를 main 밖으로 옮겼다. 같은 D: 볼륨 rename이므로 디스크 전체 여유 공간이 그만큼 늘어난 것은 아니다. 모든 이동 항목의 파일 identity·크기·수정 시각·속성을 전후 대조했고 원래 경로 부재를 확인했다. 새 snapshot의 receipt.json과 inventory-*.json이 이 대조의 근거다. `git clean -nffdx`의 출력은 비어 있으며 main의 ignored·미추적 정리 대상은 없다. 기존 도구 실행 probe는 cleanup 이전의 결과이며 현재 main에는 도구와 기존 job이 설치돼 있지 않다. 필요할 때만 WORKSPACE.md의 절차로 선택 복원한다.

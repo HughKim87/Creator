@@ -3,7 +3,7 @@
 - 목적: main 하나에서 영상별 데이터와 공용 실행 자원을 분리하고 기존 worktree를 안전하게 통합한다.
 - 읽는 시점: 새 영상 생성·재개, 공용 도구 설치, 저장소 정리·복구 시.
 - 책임: 공통 코드는 main 유지보수 세션, 영상 데이터는 명시된 job ID의 작업 세션, 기존 자료 처분은 사용자.
-- 상태: 단일 workspace 코드 구현 완료. 승인된 자료 이전·복구 검증·기존 worktree 퇴역 완료.
+- 상태: 단일 workspace 코드 구현 완료. 기존 작업·설치 도구·캐시까지 main 밖으로 보관하는 실제 cleanup 완료.
 - 관련 권위: 루트 PROJECT_RULES.md, core/PROJECT_RULES.md.
 
 ## 작업 계약과 단계
@@ -15,9 +15,11 @@
 3. 구조 구현: 아래 작업 경로·공용 runtime·프로세스 잠금·제작 진입점을 적용한다. 서로 다른 두 합성 job의 병행 실행, 같은 job 중복 실행 차단, GPU 잠금, 실패·취소·재개, 경로 이탈 방지와 기존 계약 회귀를 확인한다. 필요한 코드만 커밋한다.
 4. 정리 준비: 기존 작업별 최종 결과물·종속 자산·복구 근거·삭제 후보를 분리해 정확한 경로와 용량을 사용자에게 제시한다. 이동·삭제·worktree 제거는 별도 승인 후 진행한다. 최종 XML이 외부 PNG/WAV/원본을 참조하면 그 의존 파일도 최종 패키지의 일부다.
 
-실패 시 해당 단계에서 멈추고 직전 커밋의 변경을 되돌리는 커밋으로 복구한다. `git reset --hard`와 `git clean -fdx`는 데이터 복구 수단이 아니다. `before`를 별도 경로에 checkout하면 공통 코드를 조사할 수 있지만 ignored 데이터는 아래 archive 복구 절차로 별도로 복구해야 한다. 기존 worktree를 제거하기 전에는 미커밋·미추적·ignored 자료와 submodule의 독립 복구 수단을 확인한다. 현재 Git 복구 bundle과 검증 receipt는 Git 제외 `extension/data/consolidation/recovery/`에 있으며, 코드 복구는 이 bundle만으로 독립 검증했다. 미디어는 포함하지 않는다.
+실패 시 해당 단계에서 멈추고 직전 커밋의 변경을 되돌리는 커밋으로 복구한다. `git reset --hard`와 `git clean -fdx`는 데이터 복구 수단이 아니다. `before`를 별도 경로에 checkout하면 공통 코드를 조사할 수 있지만 ignored 데이터는 아래 archive 복구 절차로 별도로 복구해야 한다. 기존 worktree를 제거하기 전에는 미커밋·미추적·ignored 자료와 submodule의 독립 복구 수단을 확인한다. Git 복구 bundle과 검증 receipt는 외부 `D:/AI Agent/Creator-Archive/2026-10-21/recovery/`에 있다. 코드 복구는 이 bundle만으로 독립 검증했다. bundle에는 미디어를 포함하지 않는다.
 
 ## 경로와 실행
+
+현재 main에는 기존 job·설치 runtime·data·Python cache가 없다. 아래 경로는 앞으로 생성할 작업의 구조다. 기존 작업이나 도구가 필요하면 먼저 아래 cleanup snapshot에서 해당 경로를 복원한다. runtime catalog 조회만으로 도구가 설치되지는 않는다.
 
 `extension/jobs/<job-id>/`는 Git 제외 작업 루트다. job ID는 ASCII 소문자·숫자·하이픈으로 만든다. `job.json`, `state.md`, `inputs/`, `work/`, `outputs/`, `logs/`를 작업별로 소유한다. 다른 영상의 경로를 상대 참조하지 않는다. 작업 상태와 프로필은 전역 현재 작업 변수로 선택하지 않는다.
 
@@ -61,6 +63,14 @@ GPU UI launcher는 앱이 종료될 때까지 GPU lease를 유지한다. 다른 
 
 
 ## 복구 절차
+
+### 실제 cleanup 직전 상태
+
+`D:/AI Agent/Creator-Archive/2026-10-21/main-cleanup-20261021-220805/`에 정리 직전 main의 모든 ignored·미추적 폴더를 보관했다. `tree/` 아래의 상대경로가 원래 main 상대경로이며 `receipt.json`과 `inventory-*.json`이 이동 전후 파일 identity·크기·수정 시각·속성 대조를 소유한다. 기존 job의 최종본·참조 자산·개인설정, 공용 도구와 모델, data의 이전 검증 자료도 이 snapshot에 포함된다. 동일 D: 볼륨 rename으로 파일 자체를 이동했고 중첩 저장소·링크도 그대로 보존한다.
+
+복원은 필요한 `tree/<상대경로>`를 원래 main의 동일 상대경로로 옮기는 방식이다. 대상 경로가 없을 때만 수행하고 기존 파일에 덮어쓰지 않는다. 도구만 필요하면 `tree/extension/.runtime`, 특정 영상만 필요하면 `tree/extension/jobs/<job-id>`를 선택한다. XML의 main 절대경로와 Windows 환경은 원래 위치로 복원한 뒤 사용한다. archive 내부에서 실행하는 것은 보장하지 않는다. 이전 전 원본 복원은 다음 별도 절차를 사용한다.
+
+### 통합 이전 원본
 
 복구 소유자는 `D:/AI Agent/Creator-Archive/2026-10-21/`다. `original-inventory.json`은 이전 전 파일 목록, `recovery-ledger.jsonl`은 원래 경로·독립 보관 위치·SHA-256, `migration-state.json`은 최종 검증 receipt를 소유한다. main에 옮긴 자료도 archive/snapshots에 독립 복사한다. archive 내부에서만 같은 원본 inode의 파일을 hardlink로 공유하며 main과 archive가 같은 파일 inode를 공유하지 않는다. 따라서 main의 후속 편집은 복구본을 바꾸지 않는다.
 

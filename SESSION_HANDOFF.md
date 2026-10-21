@@ -17,7 +17,7 @@
 
 ## 직전 게이트
 
-자료 이전·복구 검증·기존 worktree 퇴역을 완료했다. 상세 근거와 한계는 extension/reports/workspace-consolidation-20261021.md가 소유한다.
+자료 이전·복구 검증·기존 worktree 퇴역 후 main의 ignored·미추적 자료까지 외부 archive로 비웠다. 상세 근거와 한계는 extension/reports/workspace-consolidation-20261021.md가 소유한다.
 
 ## 승인 상태
 
@@ -34,7 +34,7 @@
 ## 첫 다음 행동
 
 1. 공통 유지보수는 state/main.md를 읽는다.
-2. 기존 영상은 scripts/creator_job.py inspect --job <job-id>로 경로를 확인하고 해당 job의 state.md를 읽는다.
+2. 기존 영상·도구는 extension/docs/WORKSPACE.md의 cleanup snapshot 복구 절차로 필요한 경로를 먼저 복원하고 해당 job의 state.md를 읽는다.
 3. 새 영상은 scripts/creator_job.py init --job <job-id>로 main 안에 만든다.
 
 ## 다음 세션 시작 prompt
