@@ -1,0 +1,32 @@
+{
+  "component": "ollama",
+  "modelRebuild": "scripts/Install-24HReplierLLM.ps1 -ReplierModel gemma4:e2b-it-qat",
+  "source": "https://github.com/ollama/ollama/releases/download/v0.40.4/ollama-windows-amd64.zip",
+  "version": "v0.40.4",
+  "model": "gemma4:e2b-it-qat",
+  "root": "extension/.runtime/replier-llm",
+  "rebuild": "scripts/Install-24HReplierLLM.ps1",
+  "models": [
+    {
+      "name": "gemma4:e2b-it-qat",
+      "source": "https://ollama.com/library/gemma4:e2b-it-qat",
+      "digest": "07ea59a474013479c8b6b802bef095c40e964a1d776ba02f264c0e30e1aede0c",
+      "size": 4336358185
+    },
+    {
+      "name": "qwen3.5:4b",
+      "source": "https://ollama.com/library/qwen3.5:4b",
+      "digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+      "size": 3324173934
+    }
+  ],
+  "sha256": "7485a1172f8527db4342a63521b9342fc466185ff0855da378cc864ecf6354cf",
+  "commentModels": [
+    "gemma4:e2b-it-qat",
+    "qwen3.5:4b"
+  ],
+  "commentRebuild": [
+    "scripts/Install-24HReplierLLM.ps1 -ReplierModel gemma4:e2b-it-qat",
+    "scripts/Install-24HReplierLLM.ps1 -ReplierModel qwen3.5:4b"
+  ]
+}

@@ -9,11 +9,11 @@
 
 ## 현재 단계
 
-복구 지점 확보 완료 후보. 전체 설계와 단계별 게이트는 `extension/docs/WORKSPACE.md`가 소유한다. 다음 단계는 브랜치 개선 통합이다.
+브랜치 개선 통합 완료 후보. 전체 설계와 단계별 게이트는 `extension/docs/WORKSPACE.md`가 소유한다. 다음 단계는 단일 workspace 구조 구현이다.
 
 ## 직전 게이트
 
-로컬 before 태그와 브랜치별 복구 태그를 생성하고 원본 커밋과 대조했다. 기존 worktree의 부모 저장소 추적 변경은 없었다. ignored 데이터는 원래 위치에 유지하며 metadata 목록은 로컬 extension/data/consolidation/baseline.json에 있다.
+브랜치별 공통 조상 이후 변경을 현재 main과 대조했다. 누락된 Replier 구현과 CS6 호환 지식을 흡수하고 앱 빌드·관련 합성 검사를 통과했다. 출처·판정·실측 한계는 extension/reports/workspace-consolidation-20261021.md가 소유한다.
 
 ## 승인 상태
 
