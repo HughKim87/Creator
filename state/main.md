@@ -3,13 +3,13 @@
 - 목적: 단일 workspace의 공통 구현 유지보수와 현재 재개 지점을 소유한다.
 - 읽는 시점: 시작 문서 뒤.
 - 책임: main 유지보수 세션과 사용자.
-- 상태: session-close E3 구현·검증과 snapshot 확인 완료. 한시 설계 정리 후 보고 단계 진입.
+- 상태: session-close E3 반영·정리 완료. 보고 commit과 최종 Git 상태 확인 뒤 새 공통 요청 대기.
 - handoff mode: same-workspace.
 - 관련 권위: PROJECT_RULES.md, extension/docs/WORKSPACE.md.
 
 ## 현재 단계
 
-E3 후편집 피크 경계값 수정과 구현 commit의 선택 게이트를 확인했다. 한시 설계는 검증된 설계 commit에서 복구할 수 있도록 유지하고 활성 트리에서 정리한다. 활성 설계는 없다. 다음 단계는 기존 종료 보고 갱신이며 E2 실제 게임 평가는 보류다.
+E3 후편집 피크 경계값 수정·검증·설계 정리를 완료했다. 활성 설계는 없다. 결과·복구·검증 한계는 `extension/docs/reports/SESSION_CLOSE_GAMEPLAY_2026-10-23.md`가 소유한다. E1은 기존 완료 상태, E2 실제 게임 평가는 기존 보류를 유지한다.
 
 공통 게임 편집 스킬은 `.agents/skills/edit-gameplay-video/`, 영상별 상태는 `extension/jobs/<job-id>/`가 소유한다. E3는 normalize_audio의 내부 피크 계산만 수정하며 최종 verify_audio와 기존 지원 범위를 유지한다.
 
@@ -33,6 +33,6 @@ E3의 설계·최소 수정·회귀 검사·단계별 로컬 커밋·이번 한�
 
 ## 첫 다음 행동
 
-1. 설계 정리 commit의 정확한 삭제 대상·활성 참조 해제와 코드/검사 불변을 확인한다.
-2. 기존 세션 종료 보고에 E3 승인·검증·단계별 commit과 한계를 추가하고 보고와 현재 상태만 커밋한다.
-3. 보고 commit 뒤 부모/Core/gitlink 상태를 확인한다. 미결 결정이 없을 때만 종료한다.
+1. 새 공통 작업을 시작할 때 git status --short --ignore-submodules=all과 state/main.md를 대조한다. 다른 작업의 변경이나 job 자료를 자동 정리하지 않는다.
+2. 다음 게임 편집 요청이면 `.agents/skills/edit-gameplay-video/SKILL.md`의 준비 단계부터 해당 job의 입력·프로필·가능한 A/V 검수 방법을 확인한다.
+3. 보류한 E2 실제 전편 평가는 별도 요청이 있을 때 범위와 방법을 확정한다. 합성 통과를 실제 게임 의미·청취 검수 완료로 사용하지 않는다.
