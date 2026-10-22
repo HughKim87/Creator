@@ -3,13 +3,13 @@
 - 목적: 단일 workspace의 공통 구현 유지보수와 현재 재개 지점을 소유한다.
 - 읽는 시점: 시작 문서 뒤.
 - 책임: main 유지보수 세션과 사용자.
-- 상태: session-close E1 구현 검증 후 커밋·정리 단계.
+- 상태: session-close E1 구현·snapshot 검증 후 최종 보고 단계.
 - handoff mode: same-workspace.
 - 관련 권위: PROJECT_RULES.md, extension/docs/WORKSPACE.md.
 
 ## 현재 단계
 
-승인된 E1의 선택적 전사 입력 읽기·분석을 MP4 후보 렌더 전에 수행하도록 수정하고 검증했다. 활성 설계는 `extension/work/session-close-gameplay-2026-10-23.md`다. 구현 commit과 snapshot을 확인한 뒤 이 설계만 정리하고 승인된 내부 보고를 작성한다.
+승인된 E1의 전사 입력 사전검사 수정을 구현 commit으로 보존했고 동일 snapshot에서 선택한 검사를 통과했다. 이번 한시 설계는 승인대로 제거했으며 Git 이력에서 복구할 수 있다. 활성 설계는 없다. 승인된 내부 최종 보고와 보고 commit을 마칠 단계다.
 
 공통 게임 편집 스킬은 `.agents/skills/edit-gameplay-video/`, 영상별 상태는 `extension/jobs/<job-id>/`가 소유한다. 후편집의 기존 기능·지원 범위는 해당 스킬의 references/post-production.md와 기존 코드가 소유하며 E1에서 변경하지 않았다.
 
@@ -33,6 +33,6 @@ E1만 구현·단계별 로컬 커밋·정확한 한시 설계 삭제·`extensio
 
 ## 첫 다음 행동
 
-1. E1 script·기존 검사·이 상태 파일만 구현 commit으로 만들고 snapshot 경로와 테스트한 blob을 대조한다.
-2. 승인된 한시 설계의 Git 복구 가능성·참조 해제를 확인한 뒤 그 파일만 삭제하고 별도 정리 commit을 만든다.
-3. 승인된 내부 보고에 E1 결과·단계 commit·E2 보류·실제 검수 한계를 기록하고 보고 commit 뒤 main/Core clean 상태를 재확인한다.
+1. 이번 설계 삭제와 상태 전환만 정리 commit으로 보존하고 삭제 snapshot·코드 보존을 확인한다.
+2. `extension/docs/reports/SESSION_CLOSE_GAMEPLAY_2026-10-23.md`에 E1 결과·단계 commit·E2 보류·검수 한계를 기록한다.
+3. 보고와 현재 상태만 마지막 로컬 commit으로 보존한 뒤 main/Core clean과 승인된 변경 범위를 재확인한다.
