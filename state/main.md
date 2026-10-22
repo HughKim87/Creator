@@ -3,13 +3,13 @@
 - 목적: 단일 workspace의 공통 구현 유지보수와 현재 재개 지점을 소유한다.
 - 읽는 시점: 시작 문서 뒤.
 - 책임: main 유지보수 세션과 사용자.
-- 상태: session-close E3 구현·검증 통과. 구현 commit 확인 후 설계 정리 단계 진입.
+- 상태: session-close E3 구현·검증과 snapshot 확인 완료. 한시 설계 정리 후 보고 단계 진입.
 - handoff mode: same-workspace.
 - 관련 권위: PROJECT_RULES.md, extension/docs/WORKSPACE.md.
 
 ## 현재 단계
 
-E3 후편집 피크 경계값 수정을 구현·검증했다. 활성 설계는 `extension/work/session-close-post-peak-2026-10-23.md`다. 구현 commit의 경로·내용·선택 검증을 확인한 뒤 승인된 설계 정리로 전환한다. E1은 기존 완료 상태를 유지하며 E2 실제 게임 평가는 보류다.
+E3 후편집 피크 경계값 수정과 구현 commit의 선택 게이트를 확인했다. 한시 설계는 검증된 설계 commit에서 복구할 수 있도록 유지하고 활성 트리에서 정리한다. 활성 설계는 없다. 다음 단계는 기존 종료 보고 갱신이며 E2 실제 게임 평가는 보류다.
 
 공통 게임 편집 스킬은 `.agents/skills/edit-gameplay-video/`, 영상별 상태는 `extension/jobs/<job-id>/`가 소유한다. E3는 normalize_audio의 내부 피크 계산만 수정하며 최종 verify_audio와 기존 지원 범위를 유지한다.
 
@@ -33,6 +33,6 @@ E3의 설계·최소 수정·회귀 검사·단계별 로컬 커밋·이번 한�
 
 ## 첫 다음 행동
 
-1. E3 구현 commit의 정확한 3파일 snapshot과 선택 검사 통과를 확인한다.
-2. 설계의 복구 가능성·내용 불변·활성 참조 해제를 확인한 뒤 승인된 한시 설계만 정리하고 별도로 커밋한다.
-3. 기존 세션 종료 보고에 E3 결과를 추가하고 보고 commit 뒤 부모/Core/gitlink 상태를 확인한다. 미결 결정이 없을 때만 종료한다.
+1. 설계 정리 commit의 정확한 삭제 대상·활성 참조 해제와 코드/검사 불변을 확인한다.
+2. 기존 세션 종료 보고에 E3 승인·검증·단계별 commit과 한계를 추가하고 보고와 현재 상태만 커밋한다.
+3. 보고 commit 뒤 부모/Core/gitlink 상태를 확인한다. 미결 결정이 없을 때만 종료한다.
