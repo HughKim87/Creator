@@ -180,6 +180,8 @@ def main():
                 baseline_reference=read(args.baseline_timeline_json) if args.baseline_timeline_json else None,
                 reference_payloads=[read(p) for p in args.reference_timeline_json])
     timeline, _, _, frames, editorial = checked_spec(value, state, **refs)
+    # Optional input must be readable and analyzable before render can publish.
+    findings = speech_findings(timeline, read(args.raw_json)) if args.raw_json else None
     if args.check_only:
         result = dict(status='structure_checked', frames=frames, editorial_structure=editorial, semantic_status='not_run')
     else:
@@ -192,8 +194,8 @@ def main():
         tools = runtime_path('ffmpeg', ROOT) / 'bin'
         result = render(value, state, work=paths['work'], output=target,
                         ffmpeg=tools / 'ffmpeg.exe', ffprobe=tools / 'ffprobe.exe', references=refs)
-    if args.raw_json:
-        result['asr_word_edge_findings'] = speech_findings(timeline, read(args.raw_json))
+    if findings is not None:
+        result['asr_word_edge_findings'] = findings
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 

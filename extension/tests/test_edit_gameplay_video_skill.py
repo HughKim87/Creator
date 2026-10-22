@@ -1,7 +1,9 @@
 """Candidate mechanics and source/continuity failure injection, not semantic QA."""
 from copy import deepcopy
+from contextlib import ExitStack, redirect_stdout
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -9,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.dont_write_bytecode = True
@@ -66,6 +69,89 @@ class CandidateChecks(unittest.TestCase):
         self.state = synthetic_state(self.value)
         with self.assertRaisesRegex(ValueError, 'Fractional'):
             renderer.checked_spec(self.value, self.state)
+
+
+class CandidateCliPreflight(unittest.TestCase):
+    """Exercise real JSON/ASR preflight with rendering and I/O isolated."""
+
+    def invoke(self, raw=None, *, raw_error=None, check_only=False):
+        value = candidate()
+        state = synthetic_state(value)
+        output = ROOT / 'extension/jobs/cli-probe/outputs/candidate.mp4'
+        arguments = ['render_candidate.py', '--timeline-json', 'timeline.json',
+                     '--editorial-state-json', 'state.json', '--output', str(output)]
+        if raw is not None or raw_error is not None:
+            arguments += ['--raw-json', 'raw.json']
+        if check_only:
+            arguments += ['--check-only']
+        order = []
+        inputs = {'timeline.json': json.dumps(value), 'state.json': json.dumps(state)}
+
+        def read(path, *args, **kwargs):
+            if path.name == 'raw.json':
+                order.append('raw_read')
+                if raw_error is not None:
+                    raise raw_error
+                return raw
+            return inputs[path.name]
+
+        def render_stub(*args, **kwargs):
+            order.append('render')
+            return {'status': 'working_candidate', 'semantic_status': 'not_run'}
+
+        stream = io.StringIO()
+        with ExitStack() as stack:
+            stack.enter_context(patch.object(sys, 'argv', arguments))
+            stack.enter_context(patch.object(Path, 'read_text', read))
+            stack.enter_context(patch.object(renderer, 'canonical', lambda p: Path(p)))
+            stack.enter_context(patch.object(renderer, 'current_job_paths', return_value={
+                'outputs': output.parent, 'work': ROOT / 'extension/jobs/cli-probe/work'}))
+            stack.enter_context(patch.object(renderer, 'runtime_path', return_value=ROOT / 'extension/.runtime/test-tools'))
+            render = stack.enter_context(patch.object(renderer, 'render', side_effect=render_stub))
+            stack.enter_context(redirect_stdout(stream))
+            try:
+                renderer.main()
+            except Exception:
+                # Observe absence of publication before propagating input error.
+                self.assertFalse(render.called)
+                self.assertEqual(stream.getvalue(), '')
+                raise
+        return json.loads(stream.getvalue()), order, render.call_count
+
+    def test_invalid_raw_json_fails_before_render(self):
+        with self.assertRaises(json.JSONDecodeError):
+            self.invoke('{not JSON')
+
+    def test_missing_raw_file_fails_before_render(self):
+        with self.assertRaises(FileNotFoundError):
+            self.invoke(raw_error=FileNotFoundError('raw transcript missing'))
+
+    def test_invalid_word_time_fails_before_render(self):
+        raw = json.dumps({'segments': [{'words': [{'start': 'invalid', 'end': 2.1, 'word': 'x'}]}]})
+        with self.assertRaises(ValueError):
+            self.invoke(raw)
+
+    def test_valid_raw_is_read_before_render_and_keeps_hints(self):
+        raw = json.dumps({'segments': [{'words': [{'start': 1.9, 'end': 2.1, 'word': 'unfinished'}]}]})
+        result, order, count = self.invoke(raw)
+        self.assertEqual(order, ['raw_read', 'render'])
+        self.assertEqual(count, 1)
+        self.assertTrue(result['asr_word_edge_findings'])
+        self.assertEqual(result['asr_word_edge_findings'][0]['status'], 'needs_observation')
+        self.assertEqual(result['semantic_status'], 'not_run')
+
+    def test_no_raw_option_keeps_existing_render_path(self):
+        result, order, count = self.invoke()
+        self.assertEqual((order, count), (['render'], 1))
+        self.assertNotIn('asr_word_edge_findings', result)
+        self.assertEqual(result['semantic_status'], 'not_run')
+
+    def test_check_only_keeps_empty_findings_without_media_access(self):
+        result, order, count = self.invoke(json.dumps({'segments': []}), check_only=True)
+        self.assertEqual((order, count), (['raw_read'], 0))
+        self.assertEqual(result['asr_word_edge_findings'], [])
+        self.assertEqual(result['status'], 'structure_checked')
+        self.assertEqual(result['semantic_status'], 'not_run')
 
 
 @unittest.skipUnless(os.name == 'nt', 'Mandatory immutable source handle is Windows-only')
