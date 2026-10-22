@@ -3,13 +3,13 @@
 - 목적: 단일 workspace의 공통 구현 유지보수와 현재 재개 지점을 소유한다.
 - 읽는 시점: 시작 문서 뒤.
 - 책임: main 유지보수 세션과 사용자.
-- 상태: session-close E1 구현·snapshot 검증 후 최종 보고 단계.
+- 상태: session-close E1 반영 완료. 새 공통 유지보수 요청 대기.
 - handoff mode: same-workspace.
 - 관련 권위: PROJECT_RULES.md, extension/docs/WORKSPACE.md.
 
 ## 현재 단계
 
-승인된 E1의 전사 입력 사전검사 수정을 구현 commit으로 보존했고 동일 snapshot에서 선택한 검사를 통과했다. 이번 한시 설계는 승인대로 제거했으며 Git 이력에서 복구할 수 있다. 활성 설계는 없다. 승인된 내부 최종 보고와 보고 commit을 마칠 단계다.
+승인된 E1의 선택적 전사 입력 사전검사 수정을 구현·검증·정리했다. 활성 설계는 없다. 결과·복구·검증 한계는 `extension/docs/reports/SESSION_CLOSE_GAMEPLAY_2026-10-23.md`가 소유한다. E2 실제 게임 평가는 보류다.
 
 공통 게임 편집 스킬은 `.agents/skills/edit-gameplay-video/`, 영상별 상태는 `extension/jobs/<job-id>/`가 소유한다. 후편집의 기존 기능·지원 범위는 해당 스킬의 references/post-production.md와 기존 코드가 소유하며 E1에서 변경하지 않았다.
 
@@ -33,6 +33,6 @@ E1만 구현·단계별 로컬 커밋·정확한 한시 설계 삭제·`extensio
 
 ## 첫 다음 행동
 
-1. 이번 설계 삭제와 상태 전환만 정리 commit으로 보존하고 삭제 snapshot·코드 보존을 확인한다.
-2. `extension/docs/reports/SESSION_CLOSE_GAMEPLAY_2026-10-23.md`에 E1 결과·단계 commit·E2 보류·검수 한계를 기록한다.
-3. 보고와 현재 상태만 마지막 로컬 commit으로 보존한 뒤 main/Core clean과 승인된 변경 범위를 재확인한다.
+1. 새 공통 작업을 시작할 때 git status --short --ignore-submodules=all과 state/main.md를 대조한다. 다른 작업의 변경이나 job 자료를 자동 정리하지 않는다.
+2. 다음 게임 편집 요청이면 `.agents/skills/edit-gameplay-video/SKILL.md`의 준비 단계부터 해당 job의 입력·프로필·가능한 A/V 검수 방법을 확인한다.
+3. 보류한 E2의 실제 전편 평가는 별도 요청이 있을 때 범위를 확정한다. 현재 합성 검사 결과를 실제 게임 의미·청취 검수 완료로 사용하지 않는다.
