@@ -164,9 +164,11 @@ def verify_audio(m,a):
 
 
 def normalize_audio(ffmpeg,source,target,a,samples,rate,channels,temp):
-    measured=measured_audio(ffmpeg,source,temp,dict(a,true_peak_dbtp=a['true_peak_dbtp']-.4))
+    # Keep AAC headroom within loudnorm's supported TP range; final QA uses the user's goal.
+    target_peak=max(-9,a['true_peak_dbtp']-.4)
+    measured=measured_audio(ffmpeg,source,temp,dict(a,true_peak_dbtp=target_peak))
     if not math.isfinite(float(measured['input_i'])):raise ValueError('silent audio cannot be normalized')
-    filt=(f'loudnorm=I={a["integrated_lufs"]}:TP={a["true_peak_dbtp"]-.4}:LRA=11:'
+    filt=(f'loudnorm=I={a["integrated_lufs"]}:TP={target_peak}:LRA=11:'
           f'measured_I={measured["input_i"]}:measured_TP={measured["input_tp"]}:'
           f'measured_LRA={measured["input_lra"]}:measured_thresh={measured["input_thresh"]}:'
           f'offset={measured["target_offset"]}:linear=true,aresample={rate},apad,atrim=end_sample={samples},asetpts=N/SR/TB')

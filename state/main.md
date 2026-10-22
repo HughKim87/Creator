@@ -3,23 +3,23 @@
 - 목적: 단일 workspace의 공통 구현 유지보수와 현재 재개 지점을 소유한다.
 - 읽는 시점: 시작 문서 뒤.
 - 책임: main 유지보수 세션과 사용자.
-- 상태: session-close E1 반영 완료. 새 공통 유지보수 요청 대기.
+- 상태: session-close E3 구현·검증 통과. 구현 commit 확인 후 설계 정리 단계 진입.
 - handoff mode: same-workspace.
 - 관련 권위: PROJECT_RULES.md, extension/docs/WORKSPACE.md.
 
 ## 현재 단계
 
-승인된 E1의 선택적 전사 입력 사전검사 수정을 구현·검증·정리했다. 활성 설계는 없다. 결과·복구·검증 한계는 `extension/docs/reports/SESSION_CLOSE_GAMEPLAY_2026-10-23.md`가 소유한다. E2 실제 게임 평가는 보류다.
+E3 후편집 피크 경계값 수정을 구현·검증했다. 활성 설계는 `extension/work/session-close-post-peak-2026-10-23.md`다. 구현 commit의 경로·내용·선택 검증을 확인한 뒤 승인된 설계 정리로 전환한다. E1은 기존 완료 상태를 유지하며 E2 실제 게임 평가는 보류다.
 
-공통 게임 편집 스킬은 `.agents/skills/edit-gameplay-video/`, 영상별 상태는 `extension/jobs/<job-id>/`가 소유한다. 후편집의 기존 기능·지원 범위는 해당 스킬의 references/post-production.md와 기존 코드가 소유하며 E1에서 변경하지 않았다.
+공통 게임 편집 스킬은 `.agents/skills/edit-gameplay-video/`, 영상별 상태는 `extension/jobs/<job-id>/`가 소유한다. E3는 normalize_audio의 내부 피크 계산만 수정하며 최종 verify_audio와 기존 지원 범위를 유지한다.
 
 ## 직전 게이트
 
-`test_edit_gameplay_video_skill` 15개 pass. 신규 CLI 6개에서 잘못된 JSON·없는 raw 파일·잘못된 단어 시각이 렌더 미호출로 끝나고, 정상 raw·옵션 없음·check-only의 결과가 유지되는지 확인했다. 기존 합성 FFmpeg의 프레임 내용·독립 J/L 오디오·원본 hash·비덮어쓰기 검사도 pass다. 이 결과는 실제 게임 의미·청취 검수의 통과가 아니다.
+`test_gameplay_postproduction` 15개와 `test_edit_gameplay_video_skill` 15개, 총 30개 pass. 내부 TP 경계값·기본 여유값·잘못된 프로필 거부, 실제 합성 AAC의 최종 음량/피크·길이·샘플 수, 기존 최종 피크 실패 시 미게시를 확인했다. Python 구문·UTF-8·diff 검사 pass. 합성 결과는 실제 게임 의미·청취 검수 통과가 아니다.
 
 ## 승인 상태
 
-E1만 구현·단계별 로컬 커밋·정확한 한시 설계 삭제·`extension/docs/reports/SESSION_CLOSE_GAMEPLAY_2026-10-23.md` 내부 보고 커밋이 승인됐다. E2 실제 게임 전편·일반화 평가는 보류한다. Core·규칙·모델·실제 영상·설치·외부 전송·push는 제외한다.
+E3의 설계·최소 수정·회귀 검사·단계별 로컬 커밋·이번 한시 설계 삭제·기존 `extension/docs/reports/SESSION_CLOSE_GAMEPLAY_2026-10-23.md` 갱신 커밋이 승인됐다. E2 실제 게임 전편·일반화 평가는 기존 보류를 유지한다. Core·규칙·모델·실제 영상·설치·외부 전송·push는 제외한다.
 
 ## 차단
 
@@ -27,12 +27,12 @@ E1만 구현·단계별 로컬 커밋·정확한 한시 설계 삭제·`extensio
 
 ## 알려진 위험
 
-실제 게임 영상의 재미·연속 A/V·직접 청취·실모델 추론·앱 재생·job runner 전체 실행은 이번 E1에서 not_run이다. ASR 단어 경계 힌트는 발화 품질 판정이 아니다. 기존 스킬의 상위 승인 경계·단일 CFR/샘플 정렬/Windows 잠금 등 지원 제약은 그대로다.
+실제 게임 영상의 재미·연속 A/V·직접 청취·실모델 추론·앱 재생·job runner 전체 실행은 E3에서 not_run이다. 내부 피크를 유효 범위로 제한해도 모든 음원의 최종 목표 달성을 보장하지 않으며, 최종 목표를 벗어나면 기존처럼 게시하지 않는다. 기존 상위 승인 경계·단일 CFR/샘플 정렬/Windows 잠금 등 지원 제약은 그대로다.
 
 기존 ignored runtime/jobs는 보존하며, clean Git 상태와 디스크 자료 정리는 별개다. 작업 상태·승인·원본은 다른 job에서 재사용하지 않는다.
 
 ## 첫 다음 행동
 
-1. 새 공통 작업을 시작할 때 git status --short --ignore-submodules=all과 state/main.md를 대조한다. 다른 작업의 변경이나 job 자료를 자동 정리하지 않는다.
-2. 다음 게임 편집 요청이면 `.agents/skills/edit-gameplay-video/SKILL.md`의 준비 단계부터 해당 job의 입력·프로필·가능한 A/V 검수 방법을 확인한다.
-3. 보류한 E2의 실제 전편 평가는 별도 요청이 있을 때 범위를 확정한다. 현재 합성 검사 결과를 실제 게임 의미·청취 검수 완료로 사용하지 않는다.
+1. E3 구현 commit의 정확한 3파일 snapshot과 선택 검사 통과를 확인한다.
+2. 설계의 복구 가능성·내용 불변·활성 참조 해제를 확인한 뒤 승인된 한시 설계만 정리하고 별도로 커밋한다.
+3. 기존 세션 종료 보고에 E3 결과를 추가하고 보고 commit 뒤 부모/Core/gitlink 상태를 확인한다. 미결 결정이 없을 때만 종료한다.

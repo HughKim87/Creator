@@ -56,6 +56,28 @@ class PlanTests(unittest.TestCase):
         self.p['audio']['integrated_lufs']=float('nan')
         with self.assertRaises(ValueError):self.check()
 
+    def test_normalization_keeps_internal_peak_in_ffmpeg_range(self):
+        import re
+        measured=dict(input_i='-20',input_tp='-16',input_lra='0',input_thresh='-30',target_offset='0')
+        for goal,expected in ((-9,-9),(-8.8,-9),(-8.6,-9),(-8.5,-8.9),(-1,-1.4)):
+            with self.subTest(goal=goal):
+                cfg=dict(self.p['audio'],true_peak_dbtp=goal)
+                post.loudness_config(cfg)
+                before=deepcopy(cfg)
+                with patch.object(post,'measured_audio',return_value=measured) as meter,patch.object(post.cut,'run') as run:
+                    post.normalize_audio('ffmpeg','source','target',cfg,192000,48000,2,Path('.'))
+                self.assertAlmostEqual(meter.call_args.args[3]['true_peak_dbtp'],expected)
+                args=run.call_args.args[0];filt=args[args.index('-af')+1]
+                target=float(re.search(r'TP=([^:]+)',filt).group(1))
+                self.assertAlmostEqual(target,expected)
+                self.assertGreaterEqual(target,-9);self.assertLessEqual(target,0)
+                self.assertEqual(cfg,before)
+
+    def test_invalid_peak_profiles_remain_rejected(self):
+        for peak in (-9.01,-.99,float('nan'),float('inf'),True):
+            with self.subTest(peak=peak),self.assertRaises(ValueError):
+                post.loudness_config(dict(self.p['audio'],true_peak_dbtp=peak))
+
     def test_ass_emphasis_replaces_literal_cue(self):
         with tempfile.TemporaryDirectory(dir=ROOT/'extension/.runtime') as d:
             path=Path(d)/'x.ass'
@@ -115,6 +137,25 @@ class MediaTests(existing.RealCandidateRender):
         self.assertEqual(target.read_bytes(),before)
         cues=parse_srt(target)
         self.assertEqual(cues[:2],parse_srt(self.srt));self.assertEqual(cues[2].start_ms,4100)
+
+    def test_normalization_boundary_profiles_with_actual_aac(self):
+        original=post.digest(self.source)
+        for i,peak in enumerate((-9,-8.8,-8.6,-1)):
+            with self.subTest(peak=peak):
+                target=self.scratch/f'normalized-{i}.m4a'
+                cfg=dict(self.p['audio'],true_peak_dbtp=peak)
+                post.loudness_config(cfg)
+                post.normalize_audio(self.ffmpeg,self.source,target,cfg,192000,48000,2,self.scratch)
+                post.verify_audio(post.measured_audio(self.ffmpeg,target,self.scratch),cfg)
+                streams=json.loads(post.cut.run([self.ffprobe,'-v','error','-show_streams','-of','json',target],self.scratch))['streams']
+                self.assertEqual(len(streams),1)
+                audio=streams[0]
+                self.assertEqual((audio['codec_name'],audio['sample_rate'],audio['channels']),('aac','48000',2))
+                self.assertAlmostEqual(float(audio['duration']),4,places=3)
+                raw=post.cut.run([self.ffmpeg,'-v','error','-nostdin','-i',target,'-f','f32le','pipe:1'],self.scratch)
+                padding=len(raw)//8-192000
+                self.assertGreaterEqual(padding,0);self.assertLess(padding,1024)
+        self.assertEqual(post.digest(self.source),original)
 
     def test_layers_pixels_cache_and_delta(self):
         image=self.scratch/'red.png'
