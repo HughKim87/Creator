@@ -17,7 +17,7 @@
 
 ## 직전 게이트
 
-공통 현재 상태 안내를 실제 작업 상태와 대조했다. 제작·모델 추론·앱 재생 검증과는 구분한다.
+`pass` — 공통 상태 안내와 `state/main.md` owner 링크를 대조했다. 제작·모델 추론·앱 재생의 검증과 구분한다.
 
 ## 승인 상태
 
@@ -33,9 +33,9 @@ E1의 현재 상태 안내 정정·단계별 로컬 커밋·임시 설계 정리
 
 ## 첫 다음 행동
 
-1. 공통 유지보수는 state/main.md를 읽는다.
-2. 도구 경로는 scripts/creator_job.py runtime --component <component-id>로 조회한다. 진행 중 영상은 해당 job의 state.md를 읽는다.
-3. 새 작업은 기존 job 재사용 여부와 범위를 먼저 확인하고, 필요한 경우에만 scripts/creator_job.py init --job <job-id>로 main 안에 만든다.
+1. `state/main.md`에서 공통 유지보수의 현재 단계·승인·차단을 확인한다.
+2. 명시된 job 작업에 필요한 도구는 `scripts/creator_job.py runtime --component <component-id>`로 조회하고 해당 job의 state.md와 대조한다.
+3. 기존 job 재사용 범위와 정확한 입력 승인을 먼저 확인하고, 새 job 생성이 필요한 경우에만 `scripts/creator_job.py init --job <job-id>`를 실행한다.
 
 ## 다음 세션 시작 prompt
 
