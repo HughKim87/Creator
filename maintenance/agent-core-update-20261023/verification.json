@@ -1,0 +1,170 @@
+{
+  "revision": "2c8baec1baa1afcfcc1e4ef527cf4fa7f3d073f4",
+  "candidate_commit": "17a8e53019f38e5ab46ac22053bcd2ecb34b8c8c",
+  "deployment_commit": "dc5214b5749e288b95052bdc6d5743eeb880fb6c",
+  "verified_parent_commit": "1de784ef2c1047b7508d9a185c500552a25b87a7",
+  "candidate_gate": {
+    "returncode": 0,
+    "stdout": "{\r\n  \"contract_version\": 2,\r\n  \"failed_step\": null,\r\n  \"ok\": true,\r\n  \"steps\": [\r\n    {\r\n      \"detail\": \"Python 3.12.14 / core 0.3.0 / tools none\",\r\n      \"evidence\": {},\r\n      \"name\": \"preflight-runtime\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"\",\r\n      \"evidence\": {},\r\n      \"name\": \"preflight-layout\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"부모 gitlink와 clean Core 상태를 하나의 실행 기준선으로 고정했다\",\r\n      \"evidence\": {},\r\n      \"name\": \"host-core-read-only-preflight\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"검사 13종, 위반 0\",\r\n      \"evidence\": {},\r\n      \"name\": \"core-integrity\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"Host는 검증된 Core library를 소비하므로 Core 내부 회귀 테스트를 실행하지 않는다\",\r\n      \"evidence\": {},\r\n      \"name\": \"regression-tests\",\r\n      \"required\": false,\r\n      \"status\": \"not_applicable\"\r\n    },\r\n    {\r\n      \"detail\": \"정적 discovery 1종의 선언 일치만 확인했다. 기능 소비·가용성·완료 검증이 아니다\",\r\n      \"evidence\": {},\r\n      \"name\": \"optional-features\",\r\n      \"required\": false,\r\n      \"status\": \"not_applicable\"\r\n    },\r\n    {\r\n      \"detail\": \"검사 9종, 위반 0\",\r\n      \"evidence\": {},\r\n      \"name\": \"consumer-integrity\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"12751자 / 예산 20000자\",\r\n      \"evidence\": {},\r\n      \"name\": \"startup-context\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"소비 계약 표면을 바꾸지 않았다\",\r\n      \"evidence\": {},\r\n      \"name\": \"consumer-no-side-effects\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"Host 부모 gitlink와 Core tree·HEAD/index 상태가 실행 전후 동일하다\",\r\n      \"evidence\": {},\r\n      \"name\": \"core-no-side-effects\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    }\r\n  ]\r\n}\r\n",
+    "stderr": "",
+    "payload": {
+      "contract_version": 2,
+      "failed_step": null,
+      "ok": true,
+      "steps": [
+        {
+          "detail": "Python 3.12.14 / core 0.3.0 / tools none",
+          "evidence": {},
+          "name": "preflight-runtime",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "",
+          "evidence": {},
+          "name": "preflight-layout",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "부모 gitlink와 clean Core 상태를 하나의 실행 기준선으로 고정했다",
+          "evidence": {},
+          "name": "host-core-read-only-preflight",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "검사 13종, 위반 0",
+          "evidence": {},
+          "name": "core-integrity",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "Host는 검증된 Core library를 소비하므로 Core 내부 회귀 테스트를 실행하지 않는다",
+          "evidence": {},
+          "name": "regression-tests",
+          "required": false,
+          "status": "not_applicable"
+        },
+        {
+          "detail": "정적 discovery 1종의 선언 일치만 확인했다. 기능 소비·가용성·완료 검증이 아니다",
+          "evidence": {},
+          "name": "optional-features",
+          "required": false,
+          "status": "not_applicable"
+        },
+        {
+          "detail": "검사 9종, 위반 0",
+          "evidence": {},
+          "name": "consumer-integrity",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "12751자 / 예산 20000자",
+          "evidence": {},
+          "name": "startup-context",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "소비 계약 표면을 바꾸지 않았다",
+          "evidence": {},
+          "name": "consumer-no-side-effects",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "Host 부모 gitlink와 Core tree·HEAD/index 상태가 실행 전후 동일하다",
+          "evidence": {},
+          "name": "core-no-side-effects",
+          "required": true,
+          "status": "pass"
+        }
+      ]
+    }
+  },
+  "actual_gate": {
+    "returncode": 0,
+    "stdout": "{\r\n  \"contract_version\": 2,\r\n  \"failed_step\": null,\r\n  \"ok\": true,\r\n  \"steps\": [\r\n    {\r\n      \"detail\": \"Python 3.12.14 / core 0.3.0 / tools none\",\r\n      \"evidence\": {},\r\n      \"name\": \"preflight-runtime\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"\",\r\n      \"evidence\": {},\r\n      \"name\": \"preflight-layout\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"부모 gitlink와 clean Core 상태를 하나의 실행 기준선으로 고정했다\",\r\n      \"evidence\": {},\r\n      \"name\": \"host-core-read-only-preflight\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"검사 13종, 위반 0\",\r\n      \"evidence\": {},\r\n      \"name\": \"core-integrity\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"Host는 검증된 Core library를 소비하므로 Core 내부 회귀 테스트를 실행하지 않는다\",\r\n      \"evidence\": {},\r\n      \"name\": \"regression-tests\",\r\n      \"required\": false,\r\n      \"status\": \"not_applicable\"\r\n    },\r\n    {\r\n      \"detail\": \"정적 discovery 1종의 선언 일치만 확인했다. 기능 소비·가용성·완료 검증이 아니다\",\r\n      \"evidence\": {},\r\n      \"name\": \"optional-features\",\r\n      \"required\": false,\r\n      \"status\": \"not_applicable\"\r\n    },\r\n    {\r\n      \"detail\": \"검사 9종, 위반 0\",\r\n      \"evidence\": {},\r\n      \"name\": \"consumer-integrity\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"12793자 / 예산 20000자\",\r\n      \"evidence\": {},\r\n      \"name\": \"startup-context\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"소비 계약 표면을 바꾸지 않았다\",\r\n      \"evidence\": {},\r\n      \"name\": \"consumer-no-side-effects\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    },\r\n    {\r\n      \"detail\": \"Host 부모 gitlink와 Core tree·HEAD/index 상태가 실행 전후 동일하다\",\r\n      \"evidence\": {},\r\n      \"name\": \"core-no-side-effects\",\r\n      \"required\": true,\r\n      \"status\": \"pass\"\r\n    }\r\n  ]\r\n}\r\n",
+    "stderr": "",
+    "payload": {
+      "contract_version": 2,
+      "failed_step": null,
+      "ok": true,
+      "steps": [
+        {
+          "detail": "Python 3.12.14 / core 0.3.0 / tools none",
+          "evidence": {},
+          "name": "preflight-runtime",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "",
+          "evidence": {},
+          "name": "preflight-layout",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "부모 gitlink와 clean Core 상태를 하나의 실행 기준선으로 고정했다",
+          "evidence": {},
+          "name": "host-core-read-only-preflight",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "검사 13종, 위반 0",
+          "evidence": {},
+          "name": "core-integrity",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "Host는 검증된 Core library를 소비하므로 Core 내부 회귀 테스트를 실행하지 않는다",
+          "evidence": {},
+          "name": "regression-tests",
+          "required": false,
+          "status": "not_applicable"
+        },
+        {
+          "detail": "정적 discovery 1종의 선언 일치만 확인했다. 기능 소비·가용성·완료 검증이 아니다",
+          "evidence": {},
+          "name": "optional-features",
+          "required": false,
+          "status": "not_applicable"
+        },
+        {
+          "detail": "검사 9종, 위반 0",
+          "evidence": {},
+          "name": "consumer-integrity",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "12793자 / 예산 20000자",
+          "evidence": {},
+          "name": "startup-context",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "소비 계약 표면을 바꾸지 않았다",
+          "evidence": {},
+          "name": "consumer-no-side-effects",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "detail": "Host 부모 gitlink와 Core tree·HEAD/index 상태가 실행 전후 동일하다",
+          "evidence": {},
+          "name": "core-no-side-effects",
+          "required": true,
+          "status": "pass"
+        }
+      ]
+    }
+  }
+}
