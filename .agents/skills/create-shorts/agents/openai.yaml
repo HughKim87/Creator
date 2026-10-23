@@ -1,0 +1,6 @@
+interface:
+  display_name: "쇼츠 후보와 영상 제작"
+  short_description: "원본·자막·음원 분석으로 후보를 찾고 웹에서 재생·선택해 쇼츠 제작"
+  default_prompt: "$create-shorts 원본 영상과 자막으로 쇼츠 후보를 빠르게 만들고, 웹페이지에서 재생·선택할 수 있게 준비해줘."
+policy:
+  allow_implicit_invocation: true

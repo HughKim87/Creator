@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parents[1]
-SKILL = BASE / 'skills/create-shorts'
+SKILL = BASE.parent / '.agents/skills/create-shorts'
 
 
 def validate_bundle(root):

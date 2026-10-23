@@ -1,0 +1,4 @@
+interface:
+  display_name: "유튜브 채널 코치"
+  short_description: "프로젝트 원본으로 채널 진단·주간 편성·공개 시간 추천을 수행"
+  default_prompt: "$youtube-channel-coach로 요청한 채널 진단·주간 계획·공개 시간 중 필요한 모드만 진행해줘."

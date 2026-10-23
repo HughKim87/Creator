@@ -48,6 +48,10 @@
 
 ## 최종 output 계약
 
+아래 네 파일 계약은 `preparation.output_dir`에만 적용한다. 동일 job의 복수 최종 결과는 `outputs/upload/`와 `outputs/shorts/` 같은 형제 폴더에 분리한다. `guide`와 video/thumbnail/captions는 upload 폴더 안의 네 파일을 가리킨다. 상대 경로 기준은 기존처럼 패키지 파일의 부모 폴더이며 형제 결과·job 전체를 archive 대상으로 삼지 않는다.
+
+`preparation.archive_files`는 선택적인 파일명 배열이다. 과거 **동일 패키지 소유 중간 결과**를 확인한 경우에만 정확한 이름을 추가한다. 미디어·이미지·자막·ZIP 같은 비최종 결과는 이 목록에 없으면 `unowned_outputs`로 보고하고 이동을 차단한다. 최종 네 파일·경로 이동 문자열·중복 이름은 목록에 허용하지 않는다. 이 필드는 다른 결과물을 정리할 권한을 만들지 않는다.
+
 `final_output_files`는 사용자가 YouTube Studio에서 선택하거나 복사할 다음 네 파일만 포함한다.
 
 - MP4 영상

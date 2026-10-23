@@ -1,0 +1,4 @@
+interface:
+  display_name: "유튜브 댓글 대응"
+  short_description: "댓글 분류와 사실 확인을 거쳐 자연스러운 한국어 답글 초안 작성"
+  default_prompt: "$youtube-comment로 이 댓글들을 분류하고 답글 초안과 고정 댓글 후보를 추천해줘."

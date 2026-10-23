@@ -147,6 +147,13 @@ class ManualUploadPackageTests(unittest.TestCase):
         self.assertFalse(guide.exists())
         data["publish_timing"] = self._timing()
         package.write_text(json.dumps(data), encoding="utf-8")
+        foreign = title_path.parent / 'output/shorts.zip'
+        foreign.write_bytes(b'Synthetic other result')
+        with self.assertRaises(ValueError):
+            finalizer.finalize(package, apply=True, require_publish_timing=True)
+        self.assertFalse(guide.exists())
+        self.assertEqual(foreign.read_bytes(), b'Synthetic other result')
+        foreign.unlink()  # This test's own temporary fixture only.
         extra = title_path.parent / "output/technical.txt"
         extra.write_text("technical", encoding="utf-8")
         result = finalizer.finalize(package, apply=True, require_publish_timing=True)

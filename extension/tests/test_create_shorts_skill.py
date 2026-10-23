@@ -14,7 +14,7 @@ import urllib.request
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parents[1]
-SKILL = BASE / 'skills/create-shorts'
+SKILL = BASE.parent / '.agents/skills/create-shorts'
 WORK = None
 spec = importlib.util.spec_from_file_location('shorts_review', SKILL / 'scripts/shorts_review.py')
 helper = importlib.util.module_from_spec(spec)

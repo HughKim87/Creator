@@ -138,6 +138,101 @@ class UploadRetentionTests(unittest.TestCase):
         ):
             MODULE.build_plan(package)
 
+    def test_other_media_and_zip_are_not_archived(self) -> None:
+        temporary, package, output, archive = self._package(schema='youtube-manual-upload-v3')
+        self.addCleanup(temporary.cleanup)
+        for name in ['001_short.mp4', 'shorts.zip', 'other-captions.srt', 'short-thumb.png']:
+            (output / name).write_bytes(b'other final result')
+        before = {p.name: p.read_bytes() for p in output.iterdir()}
+        plan = MODULE.build_plan(package)
+        self.assertEqual(plan['status'], 'blocked')
+        self.assertEqual(len(plan['unowned_outputs']), 4)
+        self.assertEqual([Path(r['source']).name for r in plan['archive']], ['technical.json'])
+        with self.assertRaises(ValueError):
+            MODULE.apply_plan(plan)
+        self.assertEqual(before, {p.name: p.read_bytes() for p in output.iterdir()})
+        self.assertFalse(archive.exists())
+
+    def test_sibling_shorts_folder_survives_upload_finalization(self) -> None:
+        temporary, package, output, _ = self._package(schema='youtube-manual-upload-v3')
+        self.addCleanup(temporary.cleanup)
+        shorts = output.with_name('shorts'); shorts.mkdir()
+        short = shorts / '001.mp4'; short.write_bytes(b'short result')
+        bundle = shorts / 'shorts.zip'; bundle.write_bytes(b'short bundle')
+        MODULE.apply_plan(MODULE.build_plan(package))
+        plan = MODULE.build_plan(package)
+        self.assertEqual(plan['status'], 'ready')
+        self.assertEqual(plan['archive'], [])
+        self.assertEqual(len(list(output.iterdir())), 4)
+        self.assertEqual(short.read_bytes(), b'short result')
+        self.assertEqual(bundle.read_bytes(), b'short bundle')
+
+    def test_explicit_package_intermediate_can_be_archived(self) -> None:
+        temporary, package, output, archive = self._package()
+        self.addCleanup(temporary.cleanup)
+        (output / 'previous-thumbnail.png').write_bytes(b'known package intermediate')
+        data = json.loads(package.read_text(encoding='utf-8'))
+        data['preparation']['archive_files'] = ['previous-thumbnail.png']
+        package.write_text(json.dumps(data), encoding='utf-8')
+        MODULE.apply_plan(MODULE.build_plan(package))
+        self.assertEqual((archive / 'previous-thumbnail.png').read_bytes(), b'known package intermediate')
+
+    def test_invalid_archive_ownership_list_is_rejected(self) -> None:
+        temporary, package, _, _ = self._package()
+        self.addCleanup(temporary.cleanup)
+        data = json.loads(package.read_text(encoding='utf-8'))
+        for names in [['../other.mp4'], ['video.mp4'], ['old.png', 'old.png'], 'old.png']:
+            with self.subTest(names=names), self.assertRaises(ValueError):
+                data['preparation']['archive_files'] = names
+                package.write_text(json.dumps(data), encoding='utf-8')
+                MODULE.build_plan(package)
+
+    def test_new_result_after_planning_blocks_before_any_move(self) -> None:
+        temporary, package, output, archive = self._package()
+        self.addCleanup(temporary.cleanup)
+        plan = MODULE.build_plan(package)
+        (output / 'new-short.mp4').write_bytes(b'concurrent result')
+        with self.assertRaises(ValueError):
+            MODULE.apply_plan(plan)
+        self.assertTrue((output / 'technical.json').exists())
+        self.assertFalse(archive.exists())
+
+    def test_modified_intermediate_after_planning_blocks_before_any_move(self) -> None:
+        temporary, package, output, archive = self._package()
+        self.addCleanup(temporary.cleanup)
+        plan = MODULE.build_plan(package)
+        (output / 'technical.json').write_text('changed', encoding='utf-8')
+        with self.assertRaises(ValueError):
+            MODULE.apply_plan(plan)
+        self.assertTrue((output / 'technical.json').exists())
+        self.assertFalse(archive.exists())
+
+    def test_preflight_allows_missing_guide_but_is_never_an_apply_plan(self) -> None:
+        temporary, package, output, archive = self._package(schema='youtube-manual-upload-v3')
+        self.addCleanup(temporary.cleanup)
+        (output / 'YOUTUBE-MANUAL-UPLOAD.md').unlink()
+        plan = MODULE.build_plan(package, preflight=True)
+        self.assertEqual(plan['status'], 'ready')
+        self.assertTrue(plan['preflight_only'])
+        with self.assertRaises(ValueError):
+            MODULE.apply_plan(plan)
+        self.assertFalse(archive.exists())
+        with self.assertRaises(ValueError):
+            MODULE.build_plan(package)
+
+    def test_nested_shorts_are_blocked_without_traversal_or_moves(self) -> None:
+        temporary, package, output, archive = self._package()
+        self.addCleanup(temporary.cleanup)
+        shorts=output/'shorts'; shorts.mkdir()
+        (shorts/'001.mp4').write_bytes(b'short')
+        plan=MODULE.build_plan(package)
+        self.assertEqual(plan['status'], 'blocked')
+        self.assertEqual(plan['unexpected_directories'], [str(shorts.resolve())])
+        with self.assertRaises(ValueError):
+            MODULE.apply_plan(plan)
+        self.assertEqual((shorts/'001.mp4').read_bytes(), b'short')
+        self.assertFalse(archive.exists())
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,213 +1,110 @@
 ---
 name: coordinate-video-production
-description: 영상 하나의 NotebookLM 리서치·동영상 생성·SRT·문구 승인 기반 제목과 썸네일·사용자용 네 파일만 남기는 수동 YouTube 업로드 준비 단계를 main의 영상별 폴더에서 관리한다. 사용자가 새 영상 제작, 진행 중 작업의 다음 단계, 여러 단계를 끝까지 진행하거나 영상 제작 스킬의 안전한 연결을 요청할 때 사용한다.
+description: 영상 종류와 요청 범위에 따라 소재·리서치·NotebookLM 생성·게임 편집·자막·제목과 썸네일·쇼츠·업로드 준비·성과·댓글 전문 스킬을 연결하고 작업 상태와 결과를 검증한다. 영상 제작 총괄, 여러 단계 연결, 기존 작업 재개에 사용한다. 부분 요청은 해당 범위만 수행한다.
 ---
 
 # Coordinate Video Production
 
-## Default end-to-end delegation
+총괄은 요청 범위, 전문 스킬 선택, 입력·결과 전달, 재개와 완료 판정을 소유한다. 리서치·생성·컷·자막·패키징·쇼츠·분석·댓글의 작업 방법은 각 전문 스킬을 읽어 수행한다. 스킬 호출은 해당 SKILL.md를 읽고 절차를 실행하는 것이며 별도 Agent 생성이나 실제 실행을 보장하는 함수 호출이 아니다.
 
-Creative delegation is owned only by the active project policy clause `creator-video-creative-delegation-v1`. This skill does not define or override delegation triggers. When that clause applies, record `execution_mode: autonomous_local_pipeline`, `thumbnail_contract.approval_mode: delegated_by_user`, and `thumbnail_contract.instruction_source: explicit_user`; use the clause ID as the semantic authority, choose the reversible local title and thumbnail elements, and continue through `prepare-youtube-upload`. When the clause does not apply, use `review_gated`. A later explicit review request changes only the named stage as defined by the same clause.
+## 요청 범위를 먼저 선택
 
-영상별 상태를 관리하고 다섯 제작 스킬을 순서대로 연결한다. 단계 작업은 해당 스킬에 맡긴다.
+기존 대화·작업 기록에서 영상 종류, 제공 자료, 요청한 결과와 종료점을 확인한다. 주제만 있다는 이유로 게임 원본을 생성 영상으로 대체하거나, 게임이라는 단어만으로 설명 영상을 실황 편집으로 분류하지 않는다. 명확한 부분 요청이 전체 제작 기본값보다 우선한다.
+
+| 요청과 입력 | 호출할 기존 스킬 | 호출 범위와 종료점 |
+|---|---|---|
+| 소재를 골라 달라 / 무엇을 만들지 미정 | [game-trend-brief](../game-trend-brief/SKILL.md) | 소재·기획 근거까지만. 제작 요청이 함께 있을 때 선정 결과를 제작으로 전달 |
+| 신작·업데이트 날짜·공식 사실이 필요 | [korean-game-research](../korean-game-research/SKILL.md) | 필요한 사실·출처. 캘린더 등록까지 자동 확대하지 않음 |
+| 설명 영상용 근거 조사만 | [notebooklm-research-topic](../notebooklm-research-topic/SKILL.md) | 노트북·검수 출처까지 |
+| 준비된 NotebookLM 노트북에서 영상 생성만 | [notebooklm-generate-video](../notebooklm-generate-video/SKILL.md) | 기존 출처에서 생성·재생·다운로드 가능 상태까지 |
+| 주제에서 설명 영상 전체 제작 | NotebookLM 리서치 → 생성 → 자막 → 제목·썸네일 → 업로드 준비 | [NotebookLM 전체 제작 연결](references/notebooklm-workflow.md)의 기존 5단계 |
+| 게임 원본 컷편집·수정·후편집 | [edit-gameplay-video](../edit-gameplay-video/SKILL.md) | 요청한 모드의 영상·자막·검수. 기존 컷 수정은 해당 revision에서 재개 |
+| 완성 영상에서 자막만 | [video-to-srt](../video-to-srt/SKILL.md) | 로컬 전사·정제·검증 절. NotebookLM 다운로드·영상 재생성을 추가하지 않음 |
+| 제목·썸네일만 | [youtube-title-thumbnail](../youtube-title-thumbnail/SKILL.md) | 요청한 문구/이미지/패키지까지. 필요한 실제 영상·SRT 근거를 전달 |
+| 완성 자료의 설명·챕터·수동 업로드 가이드 | [prepare-youtube-upload](../prepare-youtube-upload/SKILL.md) | 초안 또는 최종 준비 모드. 부족한 승인·자료를 임의 생성하지 않음 |
+| 긴 영상에서 쇼츠·후보·선택본 출력 | [create-shorts](../create-shorts/SKILL.md) | 후보/선택/최종 중 요청 모드. 후보 선택과 불확실 발화 확인 경계 유지 |
+| 주간 편성·채널 진단·공개 시간 | [youtube-channel-coach](../youtube-channel-coach/SKILL.md) | 요청한 모드만. 단일 영상 성과는 아래 진단으로 연결 |
+| 게시 영상의 CTR·검색 유입·유지율 | `youtube-title-thumbnail`의 [실적 진단](../youtube-title-thumbnail/references/performance-review.md) | 관측·가설·다음 선택. 기존 게시물 수정으로 확대하지 않음 |
+| 댓글 분류·답글·반복 질문 소재 | [youtube-comment](../youtube-comment/SKILL.md) | 답글 초안·소재 후보. 실제 댓글 게시·고정은 포함하지 않음 |
+| 기존 게시물 설명의 타임스탬프·해시태그 수정 | [youtube-timestamp-hashtag](../youtube-timestamp-hashtag/SKILL.md) | 정확한 대상·외부 쓰기 승인이 있는 요청만 전문 owner로 전달 |
+
+이 표의 프로젝트 상대 링크를 해당 기능의 관리 원본으로 사용한다. 같은 이름의 플러그인·개인 사본이 노출돼도 프로젝트 원본을 읽는다. 프로젝트 원본이 없으면 누락으로 보고하고 외부 사본으로 자동 대체하거나 덮어쓰지 않는다. 선택한 스킬이 없으면 해당 호출의 누락만 알리고 가능한 독립 작업을 진행한다. 자동 설치하거나 다른 기능을 실행한 것으로 기록하지 않는다.
+
+여러 결과를 요청하면 선행 관계가 있는 것만 연결한다. 게임 편집과 업로드 준비를 함께 요청했다면 편집 → 최신 편집본 SRT 확인 → 제목·썸네일 → 수동 패키지 순서로 연결하고, 편집 스킬이 이미 검증한 SRT를 이유 없이 재전사하지 않는다. 쇼츠·댓글·성과 분석은 요청한 경우의 별도 결과이며 롱폼 제작 완료의 필수 단계가 아니다.
+
+동일 job에서 업로드 패키지와 쇼츠 등 여러 최종 결과를 요청받으면 **첫 출력 전에** `outputs/upload/`는 업로드 네 파일, `outputs/shorts/`는 쇼츠 MP4·ZIP으로 구분해 각 호출에 exact 출력 범위를 전달한다. 검토본·로그는 기존 `work/` owner에 둔다. 네 파일 검증·archive는 수동 패키지의 `preparation.output_dir`인 `outputs/upload/`에만 적용하며 형제 결과 폴더를 스캔·이동하지 않는다. 단일 결과의 기존 outputs 배치는 유지한다. 기존 결과가 섞여 있으면 자동 이동하거나 쇼츠를 scratch로 재분류하지 말고 정리 범위를 먼저 재확정한다.
+
+전달할 때 경로를 `NotebookLM 전체 제작 / 게임 편집 / 부분 작업 / 기획 / 게시 후 분석` 중 하나로 명시한다. 최종 수동 패키지가 요청됐으면 업로드 준비 스킬이 요구하는 기존 자산·승인·내용 검수와 공개 시간 근거를 확인하고, 필요한 공개 시간 분석만 채널 코치에 요청한다. 가이드 초안·설명 문구만 요청한 경우 최종 패키지의 모든 자산 생성으로 확장하지 않는다. 사용자가 제공한 유효한 자료는 해당 전문 검증을 거쳐 재사용한다.
+
+소재 브리핑만, 댓글 답글 하나만, 제목 어법 수정만 같은 요청에는 새 job·브라우저 연결·전체 분석을 강제하지 않는다. 경로/대상/결정이 결과를 바꾸고 기존 근거로 특정할 수 없을 때 해당 미정 항목만 확인한다.
+
+## 창작 선택과 요청 범위
+
+Creative delegation is owned only by the active project policy clause `creator-video-creative-delegation-v1`. 총괄은 이 조항의 적용 판단을 전달하며 새로운 위임 trigger를 정의하지 않는다. 적용되는 작업에만 `execution_mode: autonomous_local_pipeline`, `thumbnail_contract.approval_mode: delegated_by_user`, `thumbnail_contract.instruction_source: explicit_user`와 조항 근거를 기록한다. 그 밖에는 기존 `review_gated`를 유지한다. 이미 승인된 다음 단계는 하위 스킬 반환만으로 다시 승인받지 않는다.
+
+위임은 현재 요청 범위에서만 유효하다. 분석·제목·자막만 요청했으면 전체 영상 생성이나 게시로 확장하지 않는다. 외부 쓰기·비용·설치·보호 자료 접근과 전문 스킬의 사용자 선택 경계는 현재 승인에 따라 판정한다.
 
 ## 첫 실행 게이트
 
-이 게이트는 영상 제작·재개에 적용한다. 스킬·Extension 유지보수에서는 사용자가 지정한 개발 브랜치와 root를 사용하며 제작 worktree로 이동하지 않는다.
-
-이 스킬을 읽은 뒤 첫 실행 명령으로 **main 작업 공간과 명시된 job을 활성 실행 범위로 확정**한다. 브라우저 연결과 영상 파일 접근보다 먼저 실행한다. 새 job의 경로 초기화는 이 검사 전에 허용한다.
+미디어를 읽거나 로컬 제작 산출물·NotebookLM 아티팩트를 관리할 때 main과 exact job을 먼저 확정한다. 새 job이 필요할 때만 `python -B scripts/creator_job.py init --job <job-id>`로 초기화한다. 기존 작업은 같은 job을 재사용하고 상태를 먼저 읽는다. 이 스킬 유지보수에는 제작 활성화를 실행하지 않는다.
 
 ```powershell
-# 새 작업은 먼저 python -B scripts/creator_job.py init --job <job-id> 로 초기화한다.
-$activation = python .agents/skills/coordinate-video-production/scripts/activate_worktree.py `
+$activation = python -B .agents/skills/coordinate-video-production/scripts/activate_worktree.py `
   --root . --job <job-id> | ConvertFrom-Json
 if ($activation.status -ne 'valid') { throw ($activation | ConvertTo-Json -Depth 8) }
 $activeRoot = $activation.active_root
 $activeBranch = $activation.active_branch
 ```
 
-- 사용자가 이번 요청에서 다른 브랜치를 명시한 경우에만 `--expected-branch`로 덮어쓴다. 현재 브랜치를 기대값으로 채우지 않는다.
-- 초기 검사에 `expected_root`가 있으면 활성화 스크립트가 그 경로를 다시 검증한 `active_root`만 사용한다.
-- `activate_worktree.py`가 `redirected: true`를 반환하면 `active_root`가 스킬의 **유일한 작업 기준**이다. 이후 모든 셸 명령은 `workdir=$activeRoot`로 실행하고, 모든 상대 경로·작업 기록·검증 명령은 `$activeRoot`를 기준으로 해석한다.
-- `active_root`를 확보한 뒤에는 원래 세션 cwd의 파일을 다시 조회하지 않는다. `.`를 원래 cwd를 뜻하는 상태로 사용하지 않는다.
-- `active_root`의 재검증이 `valid`가 아니면 영상 파일이나 브라우저를 만지지 않는다. 현재 브랜치로 대체하지 않는다. 기본 기대 브랜치는 main이다.
-- 활성 root에서 `python .agents/skills/coordinate-video-production/scripts/check_skill_bundle.py --root .`를 실행해 검증된 스킬·참조·검사기 묶음이 일치하는지 확인한다. 누락/불일치면 정확한 파일만 보고하고 제작을 시작하지 않는다. 유지보수에서 검토한 묶음을 반영한 뒤에만 manifest를 기록하며, 제작 실행 중에는 manifest를 갱신해 불일치를 숨기지 않는다.
-- 유효한 대상 root의 `AGENTS.md`, `PROJECT_RULES.md`, `SESSION_HANDOFF.md`를 `$activeRoot`에서 읽는다.
-- 대상 handoff가 비-NotebookLM 작업이고 이 스킬을 owner에서 제외하면 그 작업을 영상 단계로 승계하지 않는다.
-- 셸의 `Set-Location`이나 한 번의 명령에 지정한 `workdir`는 부모 Codex 세션의 cwd를 영구 변경하지 않을 수 있다. 따라서 “현재 세션이 전환됐다”고 추정하지 말고, 최종 보고에는 `workflow root`와 `workflow branch`를 명시한다. 실제 앱 세션 cwd를 별도로 확인하지 않았다면 이를 “현재 워크트리”라고 표현하지 않는다.
-- 최종 보고에 검증한 절대 root와 branch, 그리고 `redirected` 여부를 포함한다.
+- 기본 기대 브랜치는 main이다. 사용자가 이번 요청에서 다른 브랜치를 지정했을 때만 `--expected-branch`로 전달하며 현재 브랜치를 기대값으로 채우지 않는다.
+- `expected_root`가 있으면 재검증된 `active_root`만 사용한다. `redirected: true`이면 이후 모든 명령과 상대 경로를 그 root에 맞추고 원래 cwd를 다시 사용하지 않는다.
+- 실제 작업 root의 시작 문서와 job 상태를 확인한다. 비-NotebookLM 작업은 그 전문 owner의 기존 상태·timeline·revision을 사용하며 NotebookLM 단계로 승계하지 않는다.
+- 로컬 명령은 `python -B scripts/creator_job.py run --job <job-id> -- <명령>`으로 실행한다. GPU는 `--gpu`, 공용 도구는 runtime catalog를 사용한다. 원본·결과 접근은 exact 대상과 목적의 승인 범위 안에서만 한다.
+- `check_skill_bundle.py --root .`는 버전 관리되는 로컬 제작 스킬 묶음을 확인한다. 외부 개인·플러그인 스킬의 현재 가용성과 일치 여부를 대신 보증하지 않는다. 제작 중 `--record-reviewed`로 불일치를 덮지 않는다.
+- job 잠금·경로·산출물 배치는 [단일 작업 공간](../../../extension/docs/WORKSPACE.md)과 선택한 전문 스킬을 따른다. 일반 부분 작업을 위해 `VIDEO_JOB.json`을 만들지 않는다.
 
-## 작업 기록
+## 상태와 재개
 
-진행 중 영상은 지정된 작업의 `VIDEO_JOB.json`을 먼저 확인하고 기존 browser·완료 단계·승인 범위를 재사용한다. 새 작업용 기본값 해석을 재개 작업에 반복하지 않는다.
+NotebookLM 전체 제작과 그 재개에만 [VIDEO_JOB 형식](references/video-job-format.md), 검증기와 고정 5단계 엔진을 사용한다. 다른 경로의 결과를 기존 research/video 단계에 가짜 완료로 넣거나 `skipped` 같은 미지원 상태를 만들지 않는다. 이 연결 개선은 엔진이나 v3 스키마를 범용 작업 엔진으로 바꾸지 않는다.
 
-main 작업 공간을 사용하며 영상마다 worktree를 만들지 않는다. 새 job은 `creator_job.py init --job <job-id>`로 만들고, 재개 job은 같은 ID로 inspect한다. 다른 job의 상태·승인·프로필을 승계하지 않는다. 브라우저 연결은 프로필별로 직렬화하고 반환된 exact 탭만 사용한다.
+게임 편집은 기존 editorial-state·timeline·job state, 쇼츠는 기존 manifest·선택 revision, 부분 미디어 작업은 job의 기존 `state.md`에 요청 범위·호출 owner·현재 입력 버전·확인된 결과·남은 경계만 기록한다. 제목·수동 업로드는 각 기존 패키지를 정본으로 참조한다. 같은 근거를 새 공통 JSON으로 복제하지 않는다. 단순 채팅 결과는 채팅으로 완료한다.
 
-로컬 전사·렌더·생성 명령은 `python -B scripts/creator_job.py run --job <job-id> -- <명령>`으로 실행한다. GPU 작업에는 `--gpu`를 추가한다. 설치·모델은 공용 catalog의 경로를 사용하고 출력·로그·임시는 job 경로를 사용한다. 전역 상태나 공용 runtime에 영상 데이터를 쓰지 않는다. 코드 버전 변경 시 재개 전에 영향 범위를 확인하고 `--accept-code-change`를 명시한다.
-
-[references/video-job-format.md](references/video-job-format.md)에 따라 새 작업마다 `extension/jobs/<job-id>/VIDEO_JOB.json`을 만든다.
-
-- 프로필 설정은 두 계층만 사용한다. Git에서 제외된 worktree-local `extension/.runtime/video-workflow-defaults.json`은 새 작업의 기본값이고, 영상별 `VIDEO_JOB.json`의 `browser`는 그 작업에 확정된 현재값이다. `SESSION_HANDOFF.md`는 프로필 설정에 사용하거나 수정하지 않는다.
-- 새 작업의 프로필은 `.agents/skills/coordinate-video-production/scripts/resolve_browser_profile.py`로 결정한다. 스킬 호출에 프로필 directory나 alias가 있으면 그 입력을 사용하고, 없으면 worktree-local 기본값을 자동 사용한다.
-- 결정된 결과는 새 `VIDEO_JOB.json`의 `browser`에 기록한다. runtime 기본값 파일은 수정하지 않는다.
-- 진행 중 작업의 하위 단계는 이미 확정된 `VIDEO_JOB.json`의 `browser`를 그대로 전달한다. 사용자가 해당 작업의 프로필 변경을 명시한 경우에만 resolver를 다시 실행하고, 실제로 사용할 새 결과를 작업의 현재값으로 기록한다.
-- 사용자가 `메인프로필`처럼 runtime 설정의 `profile_aliases` 키를 입력하면 대응하는 label과 directory를 사용한다. 입력도 worktree-local 기본값도 없을 때만 작업 기록 생성과 browser runtime 초기화 전에 사용자에게 한 번 요청한다.
-- 연결 스킬과 하위 단계 스킬 자체에는 프로필 기본값을 두지 않는다.
-- 기본값 파일이 없어도 명시 입력을 먼저 병합해 검증한다. resolver의 `--required-origin`으로 호출자가 가진 origin을 전달할 수 있다. `needs_input.missing_fields`에 나온 값만 확인하며, 잘못된 JSON이나 알 수 없는 alias는 입력 누락으로 숨기지 않는다. 이 초기화는 runtime 설정을 자동 저장하지 않는다.
-- `browser.profile_label`은 선택적 표시명이다. 별도 값이 없으면 전달받은 `profile_directory`와 같은 문자열을 기록한다.
-- `browser.required_origin`은 같은 우선순위로 확정하되, 이 worktree의 runtime 기본값은 NotebookLM origin이다.
-- 진행 중 작업은 사용자의 명시적 변경이 없는 한 기존 `VIDEO_JOB.json` 값을 보존한다. runtime 기본값 변경, 연결 스킬, 다른 작업, 현재 Chrome 창에서 값을 추론하거나 덮어쓰지 않는다.
-- 새 작업은 `video-job-v3`, `storage_mode: job-folder-v1`을 사용하고 main 검증 결과를 `execution_context`에 기록한다. `paths.input_dir/work_dir/output_dir`는 각각 `extension/jobs/<job-id>/inputs`, `work`, `outputs`로 고정한다. 기존 경로 기록은 읽기 호환만 유지하며 자동 이동하지 않는다.
-- `execution_mode`는 `autonomous_local_pipeline` 또는 `review_gated`로 기록한다.
-- `execution_mode`는 단계 사이의 자동 진행만 제어한다. 제목·문구·이미지·최종 시각의 승인 권한을 부여하지 않는다.
-- `thumbnail_contract`에 `generation_mode`, `allow_local_text_composite`, `approval_mode`, `instruction_source`를 기록한다. `approval_mode`와 위임 근거는 활성 정책의 `creator-video-creative-delegation-v1` 판정에서만 가져오며, 이 스킬이 사용자 표현을 별도로 재해석하지 않는다.
-- 사용자가 웹 ChatGPT와 같은 생성을 요구하면 `generation_mode: one_shot_imagegen`, `allow_local_text_composite: false`, `instruction_source: explicit_user`로 기록한다.
-- 기술 패키지와 생성 원본은 `extension/jobs/<job-id>/work/`, 최종 사용자 파일은 `extension/jobs/<job-id>/outputs/`에 둔다.
-- `.gitignore`나 추적 정책을 임의로 바꾸지 않는다.
-
-작업 기록 생성·변경 직후와 각 단계 시작 전에 실행한다.
-
-```powershell
-python .agents/skills/coordinate-video-production/scripts/validate_video_job.py `
-  extension/jobs/<job-id>/VIDEO_JOB.json `
-  --root . `
-  --check-artifacts `
-  --require-content-review
-```
-
-`status: valid`와 `worktree.status: valid`가 아니면 진행하지 않는다.
-
-새 작업의 browser 값은 다음처럼 확정한다. `<profile-input>`이 없으면 관련 옵션을 생략한다.
-
-```powershell
-python .agents/skills/coordinate-video-production/scripts/resolve_browser_profile.py `
-  --config extension/.runtime/video-workflow-defaults.json `
-  --profile-alias <profile-input>
-```
-
-프로필 디렉터리를 직접 전달받았으면 `--profile-alias` 대신 `--profile-directory`를 사용한다. 출력의 `browser` 객체를 `VIDEO_JOB.json`에 그대로 기록한다.
-
-## Chrome 게이트
-
-`research`와 `video` 전에 작업 기록의 `browser.profile_directory`와 `browser.required_origin`을 그대로 `$connect-chrome-profile`에 전달한다. 둘 중 하나라도 없으면 연결을 시도하지 않고 작업 기록 검증 실패로 멈춘다.
-
-- Chrome 프로필·초기 탭 선택은 `$connect-chrome-profile`만 소유한다. 현재 제공되는 `cua_repl`의 Chrome extension 경로를 사용하며, 예전 스킬 파일이 없다는 이유만으로 멈추지 않는다.
-- `connected`와 검증 방법을 반환할 때만 NotebookLM 단계를 시작한다. 검증된 서비스 이전은 `browser.resolved_origin`으로 기록하고 기존 `browser.required_origin`과 프로필은 보존한다.
-- 반환된 exact Chrome 바인딩과 검증 탭만 하위 단계에 넘긴다. 같은 런타임의 검증 바인딩은 probe 성공 시 재사용하고, 명시적 unavailable·disconnected 오류나 새 런타임에서는 `$connect-chrome-profile`로 다시 검증한다.
-- 내장 브라우저, 다른 프로필, 별도 Playwright와 웹 검색으로 프로필·로그인 검증을 우회하지 않는다. `cua_repl`에서 검증된 Chrome을 제어하는 것은 정식 경로다.
-- 연결 검증 시각을 기록하고 단계 검증기가 확인하게 한다. `autonomous_local_pipeline`은 연결 복구가 검증되면 저장된 첫 미완료 단계로 계속한다. 이전 에이전트의 ‘플러그인 없음’ 메모를 현재 도구 검증 없이 재사용하지 않는다.
-
-## 단계 순서
-
-| 단계 | 스킬 | 완료 근거 |
-|---|---|---|
-| `research` | `$notebooklm-research-topic` | 노트북 URL과 출처 품질 |
-| `video` | `$notebooklm-generate-video` | 완성 영상, 길이, 30초 이내 재생 확인 후 일시정지, 다운로드 상태 |
-| `captions` | `$video-to-srt` | MP4, SRT, 원본 전사와 전체 검수 |
-| `title_thumbnail` | `$youtube-title-thumbnail` | 승인된 제목·문구·생성·최종 시각과 썸네일 |
-| `upload_package` | `$prepare-youtube-upload` | 공개 시간 추천이 포함된 수동 가이드, 업로드용 네 파일과 별도 archive |
-
-첫 `pending` 단계만 실행한다. 앞 단계가 모두 `complete`가 아니면 뒤 단계를 시작하지 않는다. 다만 아래의 업로드 가이드 초안은 단계 완료와 별개인 준비 작업으로 허용한다.
+재개 시 요청 범위와 최신 실제 산출물·해시·revision을 대조해 첫 미완료 작업을 선택한다. 범위 밖의 기존 pending 단계나 선택되지 않은 스킬은 이번 부분 요청의 차단이 아니다. 입력이 바뀌면 그 결과에 의존한 검수·자막·패키지만 무효화하고 유효한 독립 결과는 재사용한다.
 
 ## 하위 스킬 호출 계약
 
-하위 스킬에 호출자가 `coordinate-video-production`임을 밝히고 현재 작업 기록 경로, `execution_mode`, 해당 단계의 승인 범위와 검증된 입력을 전달한다. 하위 스킬의 “멈춘다”, “후속 단계 전에 종료한다”는 문구는 단독 호출의 작업 경계다. coordinator 호출에서는 해당 단계의 결과를 반환하며, coordinator가 검증·상태 갱신 후 현재 실행 모드에 따라 이어간다. 하위 스킬을 호출하는 데 별도 Agent 생성은 필요하지 않다.
+선택한 전문 스킬을 읽고 다음을 전달한다. 이미 확정된 값은 사용자에게 다시 묻지 않는다.
 
-`autonomous_local_pipeline`에 이미 포함된 다음 단계는 하위 스킬의 반환만을 이유로 다시 승인받지 않는다. 로그인·한도·오류 등 실제 차단, 위임되지 않은 결정, 비용·권한·외부 효과 경계는 그대로 반환하고 해당 상태에서 멈춘다. `review_gated`에서는 기존 단계별 승인 경계를 유지한다.
+- 호출자가 `coordinate-video-production`임과 **이번에 요청한 작업·모드·종료점**.
+- exact job/root와 기존 상태/패키지 위치. 채팅 작업이면 해당 입력 식별자.
+- 승인된 입력, 최신 산출물 경로·해시·revision, 사용할 근거와 미검증 범위.
+- 이번 요청의 실행·창작 위임과 자료 접근 범위. 하위 스킬의 별도 선택 경계.
+- 필요한 결과와 해당 스킬이 소유한 검증. 브라우저 작업일 때만 확정 프로필·origin과 유효한 연결을 전달.
 
-## 공개 시간 분석과 가이드 전달
+반환에서는 실제 결과 참조, 최신 버전, 실행한 검사와 `not_run`, 승인/선택 상태, 남은 오류·필요 입력을 확인한다. 반환의 상태 이름은 각 전문 형식을 유지하며 구조 검사·ASR·화면 표본을 실제 청취나 의미 승인으로 바꾸지 않는다.
 
-`upload_package`를 시작할 때 `youtube-channel-coach`의 「공개 시간만 추천하는 요청」 절차로 대상 채널의 Studio 시청자 이용 시간대를 읽기 전용으로 확인한다. 이 분석은 패키지 스킬 호출 전에 coordinator가 수행하며, 같은 런타임의 검증된 Chrome 연결을 재사용한다. 새 런타임은 작업의 확정 프로필과 `target_origin: https://studio.youtube.com`을 `$connect-chrome-profile`에 전달해 연결한다. 작업의 NotebookLM `browser.required_origin`은 덮어쓰지 않는다. 채널 ID는 작업의 확정 채널과 대조하고 표시 채널명은 실제 Studio 화면을 따른다.
+단독 스킬의 마지막 정지는 총괄이 **이미 요청된 다음 작업**으로 넘기는 반환점이다. 다만 `create-shorts`의 후보 선택·불확실 발화 확인 등 실제 사용자 결정, 로그인·한도·실패·비용·권한 경계는 그대로 유지한다. 하위 스킬을 호출하는 데 별도 Agent 생성은 필요하지 않다.
 
-- 확인 시각·조회 기간·표시 시간대와 실제 이용 시간대 분포를 기록하고, 소재의 시의성과 사용자의 오전/저녁 등 일정 제약을 함께 고려해 미래의 구체적인 공개 시각 하나를 추천한다. 시간대 분포에 기반한 추천도 성과를 입증한 최적 시각으로 표현하지 않는다.
-- Studio가 데이터 부족을 표시하면 그 문구를 기록하고 `provisional`로 추천한다. 연결·로그인·대상 채널 검증을 수행한 뒤에도 확인할 수 없다면 실제 이유를 남긴 잠정 추천을 작성한다. 확인하지 못한 분석을 실측으로 기록하지 않는다.
-- 기존 추천이 아직 유효하면 근거 없이 바꾸지 않는다. 공개 시각이 지났거나 사용자가 오전 등 제약을 바꿨다면 현재 현지 날짜·시간으로 다시 선택하고 변경 이유를 남긴다. 고정된 요일·시간을 모든 영상의 기본 최적값으로 두지 않는다.
-- 분석 결과는 [수동 패키지 형식](../prepare-youtube-upload/references/manual-upload-package-format.md#공개-시간-추천)의 `publish_timing`으로 전달한다. 가이드의 「추천 공개 시간」에 날짜·요일·시각·시간대·실측 기반/잠정 구분·근거·한계를 반드시 포함한다. 채널 ID와 브라우저 식별자는 수동 패키지에 넣지 않는다.
-- 이 읽기 전용 확인을 채널 전체 진단으로 확대하지 않는다. 업로드·예약·공개 범위·메타데이터는 변경하지 않는다. 분석 접근이 불가능해도 이유가 표시된 잠정 추천과 로컬 패키지를 완성할 수 있다.
+## 전문 내용의 단일 소유
 
-## 업로드 가이드 초안
+컷 설계·발화/음향 검수는 게임 편집, 전사·자막 품질은 자막, 제목·이미지와 승인·실적 분석은 제목/썸네일, 설명·챕터·최종 네 파일은 업로드 준비, 쇼츠 선정·렌더는 쇼츠, 댓글 분류·한국어 답글은 댓글 스킬이 소유한다. 해당 방법·임계값·도구 코드를 총괄에 복사하지 않는다.
 
-사용자가 가이드를 먼저 요청하거나 썸네일 단계가 대기·차단된 경우, 확보한 영상·SRT·제목·근거로 `$prepare-youtube-upload`의 초안 경로를 실행할 수 있다. 작업 폴더에 `YOUTUBE-MANUAL-UPLOAD-DRAFT.md`를 만들고 미확정 제목·썸네일·내용 검수 등 남은 항목을 표시한다. 확인되지 않은 항목은 확정하지 않는다.
+총괄은 필요한 부분만 호출하고 결과의 동일성·선행 조건·요청 완료를 확인한다. 실제 전문 검수는 담당 스킬을 실행한 근거로 남긴다. 채널 말투는 기존 [공통 참고](../youtube-title-thumbnail/references/channel-voice.md)를 재사용한다.
 
-초안은 `upload_package.note`에 경로와 미완성 항목만 기록한다. 기존 활성 단계·차단 사유·`next_action`을 유지하고 `upload_package`는 `pending`으로 둔다. 초안을 완료 산출물에 넣거나 finalizer·archive를 실행하지 않는다. 최종 조건이 충족되면 현재 자료로 최종 가이드를 새로 생성한다.
+## NotebookLM 전체 제작과 Chrome
 
-## 영상 내용 검수
+이 경로를 선택한 경우에만 [NotebookLM 전체 제작 연결](references/notebooklm-workflow.md)을 읽는다. 그 문서가 작업 기록, 단계 전환, 영상 내용 검수 결속, 공개 시간 분석 전달, 기존 수정·완료 절차를 소유한다. 생성 UI·대기·전사·썸네일 생성·업로드 가이드의 세부 방법은 각 전문 스킬이 소유한다.
 
-검수는 전체 내레이션 전사와 장면별 화면 문구를 함께 다룬다. 장면 전환별 대표 화면을 확인하고 날짜·숫자·정책 범위·결론을 출처와 대조하며, 오류가 있는 장면은 표시 구간 전체를 확인한다. 모델에게 준 제작 지시를 실제 정책으로 설명하지 않았는지도 확인한다. `review_scope`에 전체 내레이션 검토, 장면별 화면 검토 방법, 직접 청취 수행 여부와 미검증 범위를 각각 기록한다. 직접 청취를 하지 못한 경우 이를 전사 검토로 대체한 성공으로 기록하지 않고 제한을 공개한다.
+브라우저가 필요한 호출에만 `connect-chrome-profile`을 사용한다. NotebookLM의 프로필 설정은 두 계층만 사용한다. 프로필 directory나 alias가 있으면 그 입력을 사용하고, 없으면 worktree-local 기본값을 자동 사용한다. `resolve_browser_profile.py` 결과를 작업의 `browser.profile_directory`·origin에 기록하며 `SESSION_HANDOFF.md`를 프로필 설정에 사용하거나 수정하지 않는다. 재개 작업의 확정 프로필을 새 기본값으로 덮지 않는다. 상세 기록은 NotebookLM 연결 문서를 따른다.
 
-자막 전체 검수가 끝난 뒤 제목·썸네일 제작 전에 영상의 핵심 사실·비교·선택 권고를 실제 사용한 리서치 근거와 대조한다. `content_review`에 검수한 MP4·SRT 경로와 해시, 검토 범위, 발견한 주장 위치·근거·처리 결과를 [작업 기록 형식](references/video-job-format.md#영상-내용-검수-기록)에 따라 기록한다. 기계 검사는 기록·해시·완료 조건을 확인하며 주장 자체의 진위를 대신 판정하지 않는다.
+NotebookLM 리서치만·생성만 요청한 부분 작업도 하위 스킬이 요구하는 `browser.profile_directory`·`browser.required_origin`을 확정한다. resolver의 기존 `--config`·프로필 입력·`--required-origin` 인터페이스를 사용하고 해당 job의 기존 `state.md`에 확정값과 연결 검증을 기록해 전달한다. 이를 위해 전체 VIDEO_JOB를 만들거나 5단계 엔진을 실행하지 않는다. 기존 VIDEO_JOB가 있으면 그 유효한 연결값을 재사용하되 독립 부분 요청으로 전체 상태를 완료 처리하지 않는다.
 
-결제·제품 선택·기능 이해·영상 결론을 바꿀 수 있는 사실 오류나 근거 없는 핵심 단정은 `material`, 그 밖의 표현 한계는 `minor`로 분류하고 이유를 남긴다. 중대한 오류는 영상 수정 또는 실제 근거 재확인으로 해결한다. 설명란 주의 문구, 사용자 승인, SRT만의 사실 교정으로 해결 처리하지 않는다. 경미한 한계는 정확한 정정·범위를 최종 설명란과 가이드에 공개할 수 있다.
+### 영상 내용 검수
 
-미해결 중대 오류가 있으면 `title_thumbnail`을 `blocked`로 두고 job의 차단 사유와 수정 행동을 기록한다. 기술적으로 완료된 영상·자막 단계는 유지한다. 검수 미완료도 제목·썸네일 제작 전에 해결한다. 내용 수정에 별도 권한·비용이 필요하면 그 결정만 요청한다. 영상·SRT 변경 시 검수 해시와 영향받는 제목·썸네일·수동 패키지를 다시 확인한다.
+NotebookLM 제작의 사실·비교·권고 검수와 중대 오류의 단계 차단은 [기존 검수 절차](references/notebooklm-workflow.md#영상-내용-검수)를 따른다. 게임·쇼츠·독립 부분 작업은 각 전문 owner의 검수 범위를 따른다. 분석만 맡은 작업에 영상 수정·전체 검수를 새 필수 단계로 추가하지 않는다.
 
-`autonomous_local_pipeline`의 국소 보정은 이미 승인된 원본·목적·로컬 산출물 범위에서 처리한다. 근거가 확인된 오류의 제거·수정이나 실제 음성으로 확인된 자막 정정이 영상의 주제·구성·선택 권고 방향을 바꾸지 않고 원본을 보존하는 경우, 에이전트가 보정하고 기존 내용·자막·경계 품질 검수를 수행한 뒤 다음 미완료 단계로 계속한다. 내부 보정이나 복구가 필요하다는 이유만으로 사용자 승인 대기로 바꾸지 않는다. 보정 위치·근거·해시는 기존 검수 기록에 남기며 새 승인 단계나 별도 기록 형식을 만들지 않는다.
+## 완료와 전달
 
-이 보정은 새 편집 문법을 설계해 전체 분량으로 확장하거나 Premiere timeline·XML을 전달하는 작업과 구분한다. 후자의 calibration·revision 승인 절차를 보정에 자동 적용하지 않는다. 반대로 수정이 짧다는 이유만으로 의미 보존을 확정하지 않는다. 의미·결론·권고 변경 여부나 음성이 불확실하면 추가 근거 확인으로 해소하고, 해소할 수 없어 사용자 판단이 필요한 항목만 요청한다. 사용자의 명시적 검수 요청, 별도 권한·비용·외부 효과 경계, 미해결 중대 오류의 차단은 유지한다. 직접 청취하지 않은 검수를 청취 완료로 기록하지 않는다. 실제 차단이 해소되면 기존 승인과 유효한 산출물을 재사용해 이어간다.
+선택한 호출의 필수 입력과 검증이 충족됐는지 확인하고 요청한 결과·경로·실행 검사·한계를 보고한다. 로컬 제작은 검증한 workflow root·branch·redirected 여부도 전달한다. 결과 형식은 전문 스킬을 따른다. 네 파일 규칙은 수동 업로드 패키지를 요청했을 때 적용하며 쇼츠 ZIP·편집 후보·댓글 초안에 강제하지 않는다.
 
-새 작업에는 `content_review`를 포함한다. 기존 기록의 읽기·검증 호환은 유지하되, 이 스킬로 제작을 재개하거나 패키지를 다시 완료할 때 기록이 없으면 `pending` 검수를 추가한다. 이미 제목·썸네일과 업로드 단계가 완료였다면 파일·승인 근거를 보존한 채 해당 단계만 `pending`, job은 `active`로 되돌리고 내용 검수부터 수행한다. 과거의 기술 검증 결과를 내용 검수 완료로 변환하지 않는다.
-
-## 실행과 승인
-
-1. 실제 산출물과 작업 기록을 확인한다.
-2. 활성·사용자 대기·차단 단계가 있으면 그 상태부터 확인한다. 후속 단계는 차단을 해결한 뒤 실행하며, 가이드 초안 요청은 위 초안 경로로 처리할 수 있다.
-3. 다음 스킬 하나만 실행하고 산출물을 검증한다.
-4. 검증 후에만 단계 상태와 경로를 갱신한다.
-5. `autonomous_local_pipeline`이면 검증 직후 다음 `pending` 단계로 계속한다. `needs_user`, `blocked`, `complete` 또는 아래 외부 경계에 도달할 때만 멈춘다. 대기·차단 상태에서 가이드 초안을 준비할 수 있으면 이를 반환한 뒤 해당 상태를 유지한다.
-
-`thumbnail_contract.approval_mode: review_gated`의 썸네일 단계는 다음 순서를 강제한다.
-
-`문구 후보 → 문구 승인 → 이미지 생성 승인 → 완성형 생성 → 최종 시각 승인`
-
-`thumbnail_contract.approval_mode: delegated_by_user`는 활성 정책의 `creator-video-creative-delegation-v1` 판정이 작업 기록에 남은 경우에만 사용한다. 이때 해당 창작 선택을 `delegated_by_user`로 기록한다. `autonomous_local_pipeline`이어도 `approval_mode: review_gated`이면 썸네일 단계에서 `needs_user`로 멈춘다.
-
-창작 위임의 의미는 활성 정책의 `creator-video-creative-delegation-v1`이 소유하고, 생성 모드와 패키지 기록 형식은 `$youtube-title-thumbnail`의 `references/package-format.md`가 소유한다.
-
-## 제목·썸네일 수정
-
-수정 전 정확한 이전 산출물을 기존 archive 절차로 보존한다. `scripts/revise_thumbnail_package.py <VIDEO_JOB.json> --scope title|copy|image --revision <새 번호>`의 dry-run을 확인하고 `--apply`로 해당 단계와 업로드 패키지만 무효화한다. 제목만 수정하면 문구·이미지 승인은 유지하고 제목 승인과 역할 검토를 다시 수행한다. 문구 수정은 문구·생성·시각 승인을, 이미지 수정은 생성·시각 승인을 다시 확인한다. 영상·자막·리서치가 독립적으로 유효하면 완료 상태를 유지한다.
-
-사용자 결정은 기존 정책에 따라 판정하고 패키지에 기록한다. `needs_user`에는 기다리는 정확한 영상 단계와 결정 대상을 `note`·`next_action`으로 남긴다. 재개 시 현재 승인과 실제 산출물을 확인해 첫 미완료 단계부터 이어간다. 새 승인을 추정하거나 Core의 대화 해석 규칙을 이 스킬에서 다시 정의하지 않는다.
-
-수정 후 문구·이미지 검수, 승인 포함 검증, 수동 패키지의 제목·해시 갱신을 완료한다. 새 제작은 `--require-editorial`을 포함한다. 최종 처리는 `$prepare-youtube-upload`의 `finalize_upload_package.py <package.json> --require-publish-timing`으로 검증한 뒤 `--apply`를 추가해 가이드 생성·archive 적용 후 재검증까지 실행하고 job을 완료한다. 추천 시각이 지났다면 공개 시간 분석을 갱신한 뒤 진행한다.
-
-## 최종 output 파일
-
-수동 가이드를 만든 뒤 `$prepare-youtube-upload`의 archive dry-run을 확인하고 적용한다. 파일을 삭제하지 않는다.
-
-완료 시 `extension/jobs/<job-id>/outputs/`에는 정확히 다음만 남긴다.
-
-- MP4 영상
-- 최종 썸네일
-- SRT 자막
-- `YOUTUBE-MANUAL-UPLOAD.md`
-
-기술 JSON, 설명 원본, 전사·검수 기록, 생성 원본과 이전 썸네일은 `extension/jobs/<job-id>/work/` 또는 `extension/jobs/<job-id>/work/archive/`에 둔다.
-
-## 완료
-
-다음을 모두 충족할 때만 job을 `complete`, `next_action`을 `none`으로 기록한다.
-
-- 다섯 단계 `complete`
-- 현재 영상·SRT에 대한 `content_review.status: reviewed`, 미해결 중대 오류 0, 공개할 경미한 한계가 최종 설명란·가이드에 반영됨
-- worktree와 작업 기록 검증 통과
-- 제목·썸네일 승인 포함 검증 통과
-- `VIDEO_JOB.json`의 `thumbnail_contract`와 제목·썸네일 패키지의 생성·승인 계약 일치
-- 수동 패키지 errors·warnings 0, `external_actions: none`
-- 새 제작·패키지 재완료는 `--require-publish-timing` 검증 통과, 가이드에 현재 유효한 추천 공개 시간과 분석 근거·한계가 포함됨
-- 수동 패키지에 기록된 네 입력 해시가 현재 영상·썸네일·SRT·제목·썸네일 패키지와 일치
-- archive 적용 후 output 파일 네 개와 archive 재검증 통과
-
-최종 보고에는 job ID, root·branch, 최종 제목, 네 output 파일, archive와 검증 결과를 반환한다. 실제 YouTube 업로드·게시·공개 범위 변경이나 결과 확인은 하지 않는다.
-
-## Claude 실행 경로
-
-Codex는 위 절차를 그대로 쓴다. Claude(Cowork)는 같은 단계·승인·검증을 지키고 실행 수단만 다음처럼 바꾼다.
-
-- 연결 폴더: 사용자 PC의 main `Creator` 하나를 연결한다. 영상 데이터도 그 안의 명시된 job 폴더를 사용한다.
-- 실행 환경: 연결 폴더 셸(`device_bash`)은 매 호출이 새 셸이다. 모든 호출 앞에 `source "$HOME/mnt/Creator/.agents/skills/coordinate-video-production/scripts/claude_runtime.sh"`를 붙인다. 이 helper는 Windows worktree 경로를 마운트 경로로 바꾸는 git shim과 `CREATOR_HOST_PATH_MAP`을 설정해, 작업 기록의 `execution_context.worktree.root`가 Codex와 같은 Windows 경로로 남게 한다.
-- 이 셸에서는 Windows worktree가 `prunable`로 보인다. `git worktree prune`·`repair`·`remove`를 실행하지 않는다.
-- 명령 변환: PowerShell 블록은 bash로, `python`은 `python3`로 바꾼다. `workdir=$activeRoot`는 매 호출의 `cd "<active_root>"`이며, 활성화 결과의 `active_root`(마운트 경로)에서 실행하고 보고에는 `active_host_root`를 함께 쓴다.
-- 하위 스킬: `$skill-name`은 활성 root의 `.agents/skills/<skill-name>/SKILL.md`를 읽어 수행한다. 각 스킬의 「Claude 실행 경로」가 있으면 그 절을 따른다.
-- 브라우저: `cua_repl` 대신 `$connect-chrome-profile`의 Claude 실행 경로(Claude in Chrome, `verification_method: claude_in_chrome_device`)를 사용한다. NotebookLM 하위 단계의 탭 조작도 같은 Chrome 탭에서 Claude in Chrome 도구로 수행한다.
-- 장시간 작업: 셸 호출은 약 180초에 종료되고 백그라운드 프로세스도 함께 종료된다. 오래 걸리는 처리는 하위 스킬의 Claude 경로가 정한 클라우드 작업공간에서 실행한다.
+부분 요청 완료를 전체 VIDEO_JOB 완료로 기록하지 않는다. 반대로 전체 제작을 요청받고 필요한 작업이 남았으면 부분 결과만으로 전체 완료라 하지 않는다. 사용자 업로드·게시·실적 확인은 제작 스킬의 자동 후속 작업이 아니다.

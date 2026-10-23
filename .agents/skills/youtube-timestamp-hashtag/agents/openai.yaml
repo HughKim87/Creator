@@ -1,0 +1,4 @@
+interface:
+  display_name: "유튜브 게시 영상 설명 관리"
+  short_description: "기존 설명을 보존하며 요청한 타임스탬프·해시태그만 보완"
+  default_prompt: "$youtube-timestamp-hashtag로 지정한 영상의 설명을 확인하고 요청한 타임스탬프·해시태그만 보완해줘."

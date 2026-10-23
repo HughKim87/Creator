@@ -2,12 +2,12 @@
 from __future__ import annotations
 import argparse, hashlib, json
 from pathlib import Path
-SKILLS = ('connect-chrome-profile','coordinate-video-production','notebooklm-research-topic','notebooklm-generate-video','video-to-srt','youtube-title-thumbnail','prepare-youtube-upload')
+SKILLS = ('connect-chrome-profile','coordinate-video-production','game-trend-brief','korean-game-research','notebooklm-research-topic','notebooklm-generate-video','edit-gameplay-video','video-to-srt','youtube-title-thumbnail','prepare-youtube-upload','youtube-comment','youtube-channel-coach','youtube-timestamp-hashtag','create-shorts')
 MANIFEST = '.agents/skills/coordinate-video-production/references/skill-bundle.json'
 def digest(p):
     raw=p.read_bytes()
     # Git normalizes text line endings; a Windows checkout must match its commit.
-    if p.suffix.lower() in ('.md','.py','.mjs','.json','.yaml','.yml','.txt'):
+    if p.suffix.lower() in ('.md','.py','.mjs','.json','.yaml','.yml','.txt','.html'):
         raw=raw.decode('utf-8-sig').replace('\r\n','\n').encode('utf-8')
     return hashlib.sha256(raw).hexdigest()
 def inspect(root, manifest=None):

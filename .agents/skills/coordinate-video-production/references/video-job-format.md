@@ -4,7 +4,7 @@
 
 Creative delegation is decided only by the active project policy clause `creator-video-creative-delegation-v1`. This format records that decision; it does not define trigger phrases. When the clause applies, record `execution_mode: autonomous_local_pipeline`, `thumbnail_contract.approval_mode: delegated_by_user`, and `thumbnail_contract.instruction_source: explicit_user`, with the clause ID retained as the semantic authority. Otherwise record `review_gated` and do not infer delegation from the execution mode.
 
-새 작업은 `video-job-v3`를 사용한다. 작업 기록은 영상 하나의 단계, 실행 worktree, 썸네일 생성·승인 계약과 검증된 산출물만 기록한다.
+NotebookLM 전체 제작의 새 작업은 `video-job-v3`를 사용한다. 작업 기록은 영상 하나의 단계, 실행 worktree, 썸네일 생성·승인 계약과 검증된 산출물만 기록한다. 총괄의 요청 분기와 이 고정 5단계 형식을 구분한다. 게임 편집·쇼츠·완성 영상 부분 작업을 이 형식에 넣거나 research/video 단계를 가짜 완료로 만들지 않는다. 해당 전문 스킬의 기존 상태와 패키지를 사용한다.
 
 ```json
 {
@@ -123,7 +123,7 @@ Creative delegation is decided only by the active project policy clause `creator
 
 ## 영상 내용 검수 기록
 
-새 작업에는 `content_review`를 포함한다. 검수 행동과 중대성 판단은 [coordinator의 영상 내용 검수](../SKILL.md#영상-내용-검수)가 소유하며 이 절은 기록 형식을 소유한다. 자막 검수와 별개인 기록이며 단계 수는 다섯 개를 유지한다.
+NotebookLM 전체 제작에는 `content_review`를 포함한다. 검수 행동과 중대성 판단은 [NotebookLM 연결의 영상 내용 검수](notebooklm-workflow.md#영상-내용-검수)가 소유하며 이 절은 기록 형식을 소유한다. 자막 검수와 별개인 기록이며 단계 수는 다섯 개를 유지한다.
 
 - `status`: `pending` 또는 `reviewed`. 새 작업은 위 예시의 `pending`으로 시작한다.
 - `reviewed`일 때 `checked_at`(시간대 포함 시각), `summary`(검토한 핵심 사실·비교·권고와 근거 범위), `video`·`captions`(repository-relative 실제 MP4·SRT 경로), `artifact_hashes.video`·`artifact_hashes.captions`(현재 SHA-256)을 기록한다.

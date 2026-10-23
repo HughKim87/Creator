@@ -17,6 +17,18 @@ SCHEMA_VERSIONS = {
     "youtube-manual-upload-v3",
 }
 
+# Other user-facing results must never be mistaken for package scratch.
+RESULT_SUFFIXES = {'.mp4', '.mkv', '.mov', '.webm', '.avi', '.zip', '.srt', '.vtt', '.png', '.jpg', '.jpeg', '.webp', '.mp3', '.wav'}
+
+
+def archive_names(value: Any) -> set[str]:
+    if not isinstance(value, list) or any(
+        not isinstance(name, str) or not name.strip() or name in {'.', '..'}
+        or '/' in name or '\\' in name or Path(name).name != name for name in value
+    ) or len(set(value)) != len(value):
+        raise ValueError('preparation.archive_files must contain unique plain filenames')
+    return set(value)
+
 
 def _load_package(package_path: Path) -> dict[str, Any]:
     try:
@@ -97,7 +109,7 @@ def _plain_names(value: Any, field: str) -> set[str]:
     return names
 
 
-def build_plan(package: Path, guide: Path | None = None) -> dict[str, Any]:
+def build_plan(package: Path, guide: Path | None = None, *, preflight: bool = False) -> dict[str, Any]:
     package_path = package.resolve()
     if not package_path.is_file():
         raise ValueError(f"package not found: {package_path}")
@@ -146,7 +158,7 @@ def build_plan(package: Path, guide: Path | None = None) -> dict[str, Any]:
             project_root,
             guide if guide is not None else preparation.get("guide"),
             "preparation.guide",
-            require_file=True,
+            require_file=not preflight,
         )
         for key in ("video", "thumbnail", "captions"):
             path = _resolve(
@@ -217,7 +229,7 @@ def build_plan(package: Path, guide: Path | None = None) -> dict[str, Any]:
             else package_path.with_name("YOUTUBE-MANUAL-UPLOAD.md")
         )
         if (
-            not guide_path.is_file()
+            (not preflight and not guide_path.is_file())
             or guide_path.parent.resolve() != output_dir
         ):
             raise ValueError(f"guide not found in output directory: {guide_path}")
@@ -230,14 +242,21 @@ def build_plan(package: Path, guide: Path | None = None) -> dict[str, Any]:
     else:
         raise ValueError("archive directory must be outside output directory")
 
+    approved_archive = archive_names(preparation.get('archive_files', []))
+    if approved_archive & final_names:
+        raise ValueError('final files cannot be listed in preparation.archive_files')
     unexpected_directories = sorted(
         str(path.resolve())
         for path in output_dir.iterdir()
         if path.is_dir() or path.is_symlink()
     )
     archive_items: list[dict[str, str]] = []
+    unowned_outputs: list[str] = []
     for path in sorted(output_dir.iterdir()):
         if not path.is_file() or path.is_symlink() or path.name in final_names:
+            continue
+        if path.suffix.lower() in RESULT_SUFFIXES and path.name not in approved_archive:
+            unowned_outputs.append(str(path.resolve()))
             continue
         destination = (archive_dir / path.name).resolve()
         if destination.exists():
@@ -256,28 +275,47 @@ def build_plan(package: Path, guide: Path | None = None) -> dict[str, Any]:
         if path.is_file() and not path.is_symlink()
     }
     missing_final = sorted(final_names - present_names)
+    if preflight:
+        missing_final = [name for name in missing_final if name != guide_path.name]
     if missing_final:
         raise ValueError(f"missing final output files: {missing_final}")
 
     return {
-        "status": "ready",
+        "status": "blocked" if unowned_outputs or unexpected_directories else "ready",
         "schema_version": schema,
         "output_dir": str(output_dir),
         "archive_dir": str(archive_dir),
         "keep": sorted(str(output_dir / name) for name in final_names),
         "archive": archive_items,
         "unexpected_directories": unexpected_directories,
+        "unowned_outputs": unowned_outputs,
+        "approved_archive_files": sorted(approved_archive),
+        "preflight_only": preflight,
         "external_actions": "none",
     }
 
 
 def apply_plan(plan: dict[str, Any]) -> dict[str, Any]:
-    if plan["unexpected_directories"]:
+    if plan.get('preflight_only'):
+        raise ValueError('preflight is read-only; rebuild a complete plan before applying')
+    if plan["unexpected_directories"] or plan.get('unowned_outputs'):
         raise ValueError(
-            "refusing to finalize while unexpected directories or symlinks exist"
+            "refusing to finalize while other results, directories or symlinks exist"
         )
     output_dir = Path(plan["output_dir"]).resolve()
     archive_dir = Path(plan["archive_dir"]).resolve()
+    keep = {Path(p).name for p in plan['keep']}
+    approved = archive_names(plan.get('approved_archive_files', []))
+    # Recheck before the first move; a parallel task may have added a result.
+    if any(p.is_dir() or p.is_symlink() or
+           (p.name not in keep and p.name not in approved and p.suffix.lower() in RESULT_SUFFIXES)
+           for p in output_dir.iterdir()):
+        raise ValueError('output ownership changed after planning; rebuild the plan')
+    for item in plan['archive']:
+        literal = Path(item['source'])
+        source = literal.resolve()
+        if literal.is_symlink() or literal.name in keep or source.parent != output_dir or not source.is_file() or _sha256(source) != item['sha256']:
+            raise ValueError('archive source changed after planning')
     archive_dir.mkdir(parents=True, exist_ok=True)
     moved: list[dict[str, str]] = []
     for item in plan["archive"]:
@@ -308,19 +346,22 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="move planned non-final files to the separate archive directory",
     )
+    parser.add_argument('--preflight', action='store_true', help='Read-only ownership check before guide creation')
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     try:
-        plan = build_plan(args.package, args.guide)
+        if args.preflight and args.apply:
+            raise ValueError('--preflight cannot be combined with --apply')
+        plan = build_plan(args.package, args.guide, preflight=args.preflight)
         if args.apply:
             plan = apply_plan(plan)
         else:
             plan["mode"] = "dry_run"
         print(json.dumps(plan, ensure_ascii=False, indent=2))
-        return 0
+        return 0 if plan['status'] == 'ready' else 1
     except (OSError, ValueError) as exc:
         print(
             json.dumps(

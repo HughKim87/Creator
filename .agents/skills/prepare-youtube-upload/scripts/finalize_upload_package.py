@@ -28,15 +28,16 @@ def finalize(package: Path, *, apply: bool = False, require_publish_timing: bool
     checks = {"package": run(SCRIPTS / "prepare_upload_package.py", package, "--check", *timing_args)}
     title = Path(checks["package"]["artifacts"]["title_thumbnail_package"])
     checks["title"] = run(SCRIPTS.parent.parent / "youtube-title-thumbnail/scripts/validate_package.py", title, "--require-approved", "--require-editorial")
+    checks['retention_preflight'] = run(SCRIPTS / 'retain_upload_package.py', package, '--preflight')
     if not apply:
         return {"status": "ready", "checks": checks, "external_actions": "none"}
     checks["guide"] = run(SCRIPTS / "prepare_upload_package.py", package, *timing_args)
     checks["retention_plan"] = run(SCRIPTS / "retain_upload_package.py", package)
-    if checks["retention_plan"]["unexpected_directories"]:
-        raise ValueError("unexpected output directories; archive not applied")
+    if checks["retention_plan"]["unexpected_directories"] or checks["retention_plan"].get('unowned_outputs'):
+        raise ValueError("other outputs or directories in upload package; archive not applied")
     checks["retention_apply"] = run(SCRIPTS / "retain_upload_package.py", package, "--apply")
     checks["retention_after"] = run(SCRIPTS / "retain_upload_package.py", package)
-    if checks["retention_after"]["archive"] or checks["retention_after"]["unexpected_directories"]:
+    if checks["retention_after"]["archive"] or checks["retention_after"]["unexpected_directories"] or checks["retention_after"].get('unowned_outputs'):
         raise ValueError("final output retention recheck failed")
     checks["package_after"] = run(SCRIPTS / "prepare_upload_package.py", package, "--check", *timing_args)
     return {"status": "complete", "checks": checks, "external_actions": "none"}

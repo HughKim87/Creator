@@ -10,6 +10,8 @@
 
 공용 도구는 main의 `extension/.runtime/`에서 재사용한다. 새 영상의 데이터는 아래 job 경로에 생성한다. runtime catalog 조회만으로 도구가 설치되지는 않는다.
 
+영상 작업용 채널 코치·게시 설명·쇼츠의 정본은 `.agents/skills/youtube-channel-coach/`·`.agents/skills/youtube-timestamp-hashtag/`·`.agents/skills/create-shorts/`다. 총괄과 전문 스킬의 프로젝트 상대 링크와 제작 묶음 검사를 사용하며 플러그인·개인 설치 업데이트를 프로젝트 스킬 갱신으로 취급하지 않는다. 설치 사본과 legacy `extension/skills/create-shorts/`는 실행 fallback이 아니다. 쇼츠 테스트도 `.agents/skills/create-shorts/`를 검증한다.
+
 `extension/jobs/<job-id>/`는 Git 제외 작업 루트다. job ID는 ASCII 소문자·숫자·하이픈으로 만든다. `job.json`, `state.md`, `inputs/`, `work/`, `outputs/`, `logs/`를 작업별로 소유한다. 다른 영상의 경로를 상대 참조하지 않는다. 작업 상태와 프로필은 전역 현재 작업 변수로 선택하지 않는다.
 
 ```powershell
@@ -32,6 +34,8 @@ run은 job 잠금을 잡고 root에서 자식 명령을 실행한다. `CREATOR_J
 ## 최종 결과물과 Git
 
 최종 결과물은 job의 `outputs/`에 둔다. NotebookLM 수동 업로드는 MP4·썸네일·SRT·수동 가이드 네 파일, Premiere는 최종 XML과 그것이 실제 참조하는 자산을 보존한다. 중간본을 확장자나 수정 시각만으로 자동 삭제하지 않는다. 판단 근거·승인·재현에 꼭 필요한 metadata는 사용자용 결과물과 구분하되 정리 전 복구 가능해야 한다.
+
+동일 job의 롱폼 업로드 자료와 쇼츠 같은 복수 최종 결과는 첫 출력 전에 `outputs/upload/`·`outputs/shorts/`로 분리한다. job의 outputs root는 공통 경계로 유지하고 네 파일 검증·archive는 수동 패키지의 전용 `preparation.output_dir`에만 적용한다. 형제 결과를 정리하지 않으며, 기존 혼합 배치는 별도 확인 없이 이동하지 않는다. 단일 결과는 기존 배치를 유지한다.
 
 `git status`가 깨끗한 상태와 디스크에서 ignored 자료를 제거한 상태는 별개다. `extension/jobs/`와 `.runtime/`는 Git 제외이고, 보호 원본·결과물은 커밋하지 않는다. 이전에 추적된 영상별 파일은 ignore 추가로 추적 해제되지 않는다. 해당 파일의 처분은 승인된 정리 단계에서만 한다.
 
