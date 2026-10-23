@@ -42,15 +42,34 @@ def _environment(core_root: Path) -> dict[str, str]:
     ).rstrip(os.pathsep)
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
     environment["PYTHONUTF8"] = "1"
+    environment["GIT_OPTIONAL_LOCKS"] = "0"
     return environment
 
 
+def _command(core_root: Path, module: str, *arguments: str) -> list[str]:
+    # JSON literals become Python literals, never shell arguments or interpolated code.
+    paths = json.dumps([str(core_root), str(core_root / "src")], ensure_ascii=True)
+    bootstrap = (
+        f"import runpy,sys;sys.path[:0]={paths};"
+        f"runpy.run_module({module!r},run_name='__main__',alter_sys=True)"
+    )
+    return [sys.executable, "-B", "-I", "-c", bootstrap, *arguments]
+
+
+def _consumer_root(value: Path, core_root: Path) -> Path:
+    consumer = value.resolve()
+    if not consumer.is_dir() or consumer == core_root or core_root in consumer.parents:
+        raise CoreClientError("Consumer cwd must exist outside Core", kind="invalid_consumer_root")
+    return consumer
+
+
 def _run_json(
-    command: list[str], *, core_root: Path, input_value: Mapping[str, Any] | None = None
+    command: list[str], *, core_root: Path, consumer_root: Path | None = None, input_value: Mapping[str, Any] | None = None
 ) -> dict[str, Any]:
+    cwd = _consumer_root(core_root.parent if consumer_root is None else consumer_root, core_root)
     completed = subprocess.run(
         command,
-        cwd=core_root,
+        cwd=cwd,
         env=_environment(core_root),
         input=None if input_value is None else json.dumps(input_value, ensure_ascii=False),
         text=True,
@@ -79,17 +98,22 @@ def _run_json(
     return payload
 
 
-def public_core_manifest(core_root: Path | str | None = None) -> dict[str, Any]:
+def public_core_manifest(
+    core_root: Path | str | None = None, *, consumer_root: Path | str | None = None
+) -> dict[str, Any]:
     """내부 Python import 없이 공개 verify와 shared_data info만 결합한다."""
 
     root = _core_root(core_root)
+    consumer = _consumer_root(root.parent if consumer_root is None else Path(consumer_root), root)
     verified = _run_json(
-        [sys.executable, "-B", "-m", "core_check", "--core-root", str(root), "verify"],
+        _command(root, "core_check", "--core-root", str(root), "--consumer-root", str(consumer), "verify"),
         core_root=root,
+        consumer_root=consumer,
     )
     info = _run_json(
-        [sys.executable, "-B", "-m", "experimental.shared_data", "info"],
+        _command(root, "experimental.shared_data", "info"),
         core_root=root,
+        consumer_root=consumer,
     )
     contract = verified.get("contract_version")
     capability_version = info.get("capability_version")
@@ -119,28 +143,28 @@ class SharedDataClient:
         if not self.consumer_root.is_dir():
             raise CoreClientError(f"consumer root가 없다: {self.consumer_root}")
         self.core_root = _core_root(core_root)
+        self.consumer_root = _consumer_root(self.consumer_root, self.core_root)
         self.storage_root = storage_root
         self.protected_paths = tuple(protected_paths)
 
     def info(self) -> dict[str, Any]:
         return _run_json(
-            [sys.executable, "-B", "-m", "experimental.shared_data", "info"],
+            _command(self.core_root, "experimental.shared_data", "info"),
             core_root=self.core_root,
+            consumer_root=self.consumer_root,
         )
 
     def invoke(
         self, operation: str, arguments: Mapping[str, Any], *, write: bool = False
     ) -> Any:
-        command = [
-            sys.executable,
-            "-B",
-            "-m",
+        command = _command(
+            self.core_root,
             "experimental.shared_data",
             "--consumer-root",
             str(self.consumer_root),
             "--storage-root",
             self.storage_root,
-        ]
+        )
         for protected in self.protected_paths:
             command.extend(["--protected-path", protected])
         if write:
@@ -149,6 +173,7 @@ class SharedDataClient:
         payload = _run_json(
             command,
             core_root=self.core_root,
+            consumer_root=self.consumer_root,
             input_value={"operation": operation, "arguments": dict(arguments)},
         )
         return payload["result"]

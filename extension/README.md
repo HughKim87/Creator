@@ -11,13 +11,13 @@
 | 위치 | 책임 |
 |---|---|
 | `rules/` | YouTube·영상·제작 행동에만 적용되는 조건부 작업 규칙 |
-| `docs/` | YouTube·영상·workflow 계약과 사용자 가이드 |
+| `docs/` | YouTube·영상·workflow 계약과 사용자 가이드; `docs/reports/`는 요청된 유지보수 보고 |
 | `src/` | 도메인·workflow 구현 |
 | `config/` | Git 제외 local capability의 버전·무결성·재설치 metadata |
 | `schemas/` | extension payload 구조 |
 | `tests/` | extension 회귀와 수직 acceptance test |
 | `examples/` | 보호 데이터가 아닌 실행 예시 |
-| `reports/` | 사용자가 명시적으로 요청한 시점 보고서 |
+| `reports/` | 과거 보존 보고서. 새 유지보수 보고의 위치는 `docs/reports/` |
 | `work/` | 기존 작업 자료와 유지보수 설계. 기존 파일은 이전 승인 전 보존 |
 | `jobs/` | Git 제외 영상별 입력·작업·출력·상태·로그 |
 | `data/` | 실행 시 생성되는 disposable record·event |
