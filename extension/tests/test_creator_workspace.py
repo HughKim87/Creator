@@ -83,13 +83,47 @@ class WorkspaceTests(unittest.TestCase):
         self.assertEqual(runs[0]['provenance'], old)
         self.assertNotEqual(runs[0]['provenance'], runs[1]['provenance'])
 
-    def test_dirty_code_and_non_main_branch_do_not_run(self):
+    def test_uncommitted_edits_run_without_committing_or_changing_user_files(self):
         init_job('video-a', self.root)
-        (self.root / 'uncommitted.py').write_text('pass')
-        with self.assertRaisesRegex(ValueError, 'commit'):
-            run_job('video-a', [sys.executable, '-c', 'pass'], self.root)
-        self.git('add', 'uncommitted.py')
+        tracked = self.root / 'tracked.py'
+        tracked.write_text('original')
+        self.git('add', 'tracked.py')
         self.commit('fixture code')
+        # Accept the new base once; subsequent local edits need no extra flag.
+        run_job('video-a', [sys.executable, '-c', 'pass'], self.root, accept_code_change=True)
+        tracked.write_text('local edit')
+        (self.root / 'uncommitted.py').write_text('staged edit')
+        self.git('add', 'uncommitted.py')
+        (self.root / 'new.py').write_text('untracked edit')
+        before = self.git('status', '--porcelain')
+        head = self.git('rev-parse', 'HEAD')
+        command = [sys.executable, '-c',
+                   'import os;from pathlib import Path;'
+                   'Path(os.environ["CREATOR_WORK_DIR"],"ran.txt").write_text("ran")']
+        self.assertEqual(run_job('video-a', command, self.root), 0)
+        self.assertEqual((job_paths('video-a', self.root)['work'] / 'ran.txt').read_text(), 'ran')
+        self.assertEqual(self.git('status', '--porcelain'), before)
+        self.assertEqual(self.git('rev-parse', 'HEAD'), head)
+        self.assertEqual(tracked.read_text(), 'local edit')
+        runs = inspect_job('video-a', self.root)['record']['runs']
+        self.assertFalse(runs[0]['working_tree']['dirty'])
+        self.assertTrue(runs[1]['working_tree']['dirty'])
+        self.assertEqual(runs[0]['provenance'], runs[1]['provenance'])
+        self.assertNotEqual(runs[0]['working_tree']['status_sha256'],
+                            runs[1]['working_tree']['status_sha256'])
+
+    def test_dirty_runtime_catalog_still_requires_explicit_acceptance(self):
+        init_job('video-a', self.root)
+        catalog = self.root / 'extension/config/workspace-runtime.json'
+        catalog.write_text(catalog.read_text(encoding='utf-8') + '\n', encoding='utf-8')
+        with self.assertRaisesRegex(ValueError, 'code/runtime catalog changed'):
+            run_job('video-a', [sys.executable, '-c', 'pass'], self.root)
+        self.assertEqual(run_job('video-a', [sys.executable, '-c', 'pass'], self.root,
+                                 accept_code_change=True), 0)
+        self.assertTrue(inspect_job('video-a', self.root)['record']['runs'][0]['working_tree']['dirty'])
+
+    def test_non_main_branch_does_not_run(self):
+        init_job('video-a', self.root)
         self.git('checkout', '-b', 'other')
         with self.assertRaisesRegex(ValueError, 'main'):
             run_job('video-a', [sys.executable, '-c', 'pass'], self.root)

@@ -23,7 +23,7 @@ python -B scripts/creator_job.py run --job 2026-10-21-example --gpu -- python -B
 
 run은 job 잠금을 잡고 root에서 자식 명령을 실행한다. `CREATOR_JOB_ID`, `CREATOR_JOB_ROOT`, `CREATOR_WORK_DIR`, `CREATOR_OUTPUT_DIR`, `CREATOR_LOG_DIR`, `TMP`/`TEMP`/`TMPDIR`을 전달한다. 하위 스크립트는 출력 옵션에 이 경로를 사용한다. 임의의 외부 프로그램 쓰기까지 OS sandbox로 격리하는 기능은 아니다. 실패·중단 시 작업 데이터는 남기고 잠금만 해제한다. GPU 작업은 `--gpu` 또는 공용 GPU lease를 사용한다.
 
-공용 코드를 수정할 때 다른 세션의 실행을 중지하고 한 유지보수 세션만 Git을 변경한다. 처리 중인 job은 시작 시 코드 커밋과 runtime catalog digest를 기록하며, 다른 코드로 재개하려면 명시적으로 `--accept-code-change`를 사용한다. 단순 inspect는 파일을 만들거나 상태를 변경하지 않는다.
+공용 코드를 수정할 때 다른 세션의 실행을 중지하고 한 유지보수 세션만 Git을 변경한다. 미커밋 변경만으로 job 실행을 차단하지 않는다. 처리 중인 job은 시작 시 기준 코드 커밋과 runtime catalog digest를 기록하며, 두 값이 이전 기록과 달라지면 검토 후 명시적으로 `--accept-code-change`를 사용한다. 각 실행의 `working_tree`에는 미커밋 변경 여부와 Git status 문자열의 SHA-256을 별도로 기록한다. 이 해시는 파일 내용의 snapshot이나 재현성 보장이 아니며, dirty 실행을 기준 커밋 그대로의 실행으로 해석하지 않는다. 파일 내용·diff·명령 원문은 이 기록에 복제하지 않는다. 단순 inspect는 파일을 만들거나 상태를 변경하지 않는다.
 
 ## 공용 runtime
 
@@ -41,6 +41,6 @@ run은 job 잠금을 잡고 root에서 자식 명령을 실행한다. `CREATOR_J
 
 `git reset --hard`와 `git clean -fdx`는 데이터 복구 수단이 아니다. Git 제외 데이터는 Git 커밋만으로 복구할 수 없다.
 
-로컬 음성 UI는 `scripts/Start-QwenTTS.cmd <job-id>`로 연다. launcher는 기존 환경을 선택하며 모델을 자동 다운로드하지 않는다. 새 job의 음성 상태는 기존 개인 목소리를 자동 복사하지 않으므로 해당 작업에서 등록한다.
+로컬 음성 UI는 `scripts/Start-QwenTTS.cmd <job-id>`로 연다. 명시적 job 실행도 미커밋 변경을 허용하며 기준 커밋·runtime catalog 변경의 수용 검사는 유지한다. launcher는 기존 환경을 선택하며 모델을 자동 다운로드하지 않는다. 새 job의 음성 상태는 기존 개인 목소리를 자동 복사하지 않으므로 해당 작업에서 등록한다.
 
 GPU UI launcher는 앱이 종료될 때까지 GPU lease를 유지한다. 다른 GPU 작업을 시작하려면 해당 UI를 종료한다. CPU 작업과 서로 다른 job의 데이터 처리는 병행할 수 있다.

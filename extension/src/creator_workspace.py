@@ -205,10 +205,6 @@ def run_job(job: str, command: list[str], root: Path = ROOT, *, gpu=False, accep
     root = Path(root).resolve()
     if git(root, 'branch', '--show-current') != 'main':
         raise ValueError('job execution requires main')
-    # Do not claim an arbitrary dirty checkout is the pinned commit.
-    dirty = git(root, 'status', '--porcelain', '--ignore-submodules=all', '--untracked-files=normal')
-    if dirty:
-        raise ValueError('commit common code changes before running a job')
     with ExitStack() as stack:
         stack.enter_context(Lease('job-' + hashlib.sha256(identifier(job).encode()).hexdigest(), root))
         if gpu:
@@ -218,6 +214,11 @@ def run_job(job: str, command: list[str], root: Path = ROOT, *, gpu=False, accep
         info = provenance(root)
         if record['provenance'] != info and not accept_code_change:
             raise ValueError('code/runtime catalog changed; review then use --accept-code-change')
+        # Local edits do not prevent production. Record their presence separately
+        # from the base commit; a status digest is not a source-content snapshot.
+        status = git(root, 'status', '--porcelain', '--ignore-submodules=all', '--untracked-files=normal')
+        working_tree = {'dirty': bool(status),
+                        'status_sha256': hashlib.sha256(status.encode('utf-8')).hexdigest()}
         paths = job_paths(job, root)
         temp = safe_path(root, 'extension/jobs/' + job + '/work/tmp')
         temp.mkdir(exist_ok=True)
@@ -232,7 +233,8 @@ def run_job(job: str, command: list[str], root: Path = ROOT, *, gpu=False, accep
         if gpu:
             env['CREATOR_GPU_LEASE_HELD'] = '1'
         # Store no command text; it may contain private user material.
-        run = {'started_at': datetime.now(timezone.utc).isoformat(), 'provenance': info, 'status': 'running'}
+        run = {'started_at': datetime.now(timezone.utc).isoformat(), 'provenance': info,
+               'working_tree': working_tree, 'status': 'running'}
         record['runs'].append(run)
         record['provenance'] = info
         record['status'] = 'running'

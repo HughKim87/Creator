@@ -9,6 +9,8 @@
 
 ## 현재 단계
 
+2026-10-26 실행기 국소 수정 완료(same-workspace). 사용자 지시로 `run_job`의 미커밋 일괄 차단을 제거하고 각 run에 기준 commit/catalog와 별도의 working_tree dirty/status digest를 기록한다. main·job/GPU 잠금·commit/catalog 변경 수용 검사는 유지한다. 변경 범위는 creator_workspace.py, 해당 회귀, WORKSPACE.md 운영 설명이며 기존 TTS 구현 변경·Core·게시 작업은 제외했다. 검증은 격리 fixture에서 실행·재개·잠금·경로·변경 보존 16개 통과, git diff --check 통과. working_tree 기록은 내용 snapshot이 아니며 실제 영상 생성·업로드는 이 수정 검증에서 not_run. 후속 사용자 지시로 이번 변경분만 로컬 커밋하도록 승인됐으며 다른 TTS 수정과 push는 제외한다.
+
 활성 공통 구현 단계는 없다. `coordinate-video-production`은 영상 종류·요청 범위를 먼저 선택하고 기존 전문 스킬에 입력·결과·검증을 연결한다. NotebookLM 고정 5단계의 기록·검수·재개 절차는 해당 스킬의 `references/notebooklm-workflow.md`에 있으며, 게임 편집·자막·쇼츠·패키징·분석·댓글의 부분 요청은 각 전문 상태·패키지를 사용한다. 고정 VIDEO_JOB 엔진·스키마를 범용 작업 엔진으로 바꾸지 않았다.
 
 복수 최종 결과는 새 작업의 `outputs/upload/`·`outputs/shorts/`로 분리하며 수동 패키지 정리는 전용 output_dir에만 적용한다. 다른 미디어·ZIP은 정리 전 preflight에서 차단하고 확인된 동일 패키지 중간 파일만 archive_files로 지정한다. 제목은 text_only/package/performance, 신작 조사는 facts_only/calendar 모드를 구분한다. 연결된 공개 자료·채널 진단·타임스탬프 브라우저 절차는 현재 지원 API를 사용한다.
