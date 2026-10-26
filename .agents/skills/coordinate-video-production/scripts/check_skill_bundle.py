@@ -2,7 +2,7 @@
 from __future__ import annotations
 import argparse, hashlib, json
 from pathlib import Path
-SKILLS = ('connect-chrome-profile','coordinate-video-production','game-trend-brief','korean-game-research','notebooklm-research-topic','notebooklm-generate-video','edit-gameplay-video','video-to-srt','youtube-title-thumbnail','prepare-youtube-upload','youtube-comment','youtube-channel-coach','youtube-timestamp-hashtag','create-shorts')
+SKILLS = ('connect-chrome-profile','coordinate-video-production','game-trend-brief','korean-game-research','notebooklm-research-topic','notebooklm-generate-video','edit-gameplay-video','video-to-srt','youtube-title-thumbnail','prepare-youtube-upload','youtube-comment','youtube-channel-coach','youtube-timestamp-hashtag','create-shorts','write-video-script')
 MANIFEST = '.agents/skills/coordinate-video-production/references/skill-bundle.json'
 def digest(p):
     raw=p.read_bytes()

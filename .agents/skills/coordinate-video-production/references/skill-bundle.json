@@ -11,13 +11,13 @@
     ".agents/skills/coordinate-video-production/references/video-job-format.md": "4d49c7eaf7456bcb56dc62c44c47f96c5d2ad954e72bbaecfea14f5a39e2fbbc",
     ".agents/skills/coordinate-video-production/references/worktree-routing.json": "1e9ad2dbe2ac7a9e4b10754ffd5dff15d195c83a6213a4a5b38c27d40750349f",
     ".agents/skills/coordinate-video-production/scripts/activate_worktree.py": "d54d09bb227d3e5d1140eea01ed8503aff3ddb675cd76f50454c55cf265f8bbe",
-    ".agents/skills/coordinate-video-production/scripts/check_skill_bundle.py": "150e80d112e9b4e96398786da4f80e5307230bf2d654d584ddceb7f5a21ea6e3",
+    ".agents/skills/coordinate-video-production/scripts/check_skill_bundle.py": "feb34fa40fb586ab66894e26a13e822a2d163ebc5af3d08eca3db58806dc1550",
     ".agents/skills/coordinate-video-production/scripts/check_worktree.py": "ba771a6bb720c8f6f48d450e8cf5cd68421cfe94530819552d7fca1a32415d47",
     ".agents/skills/coordinate-video-production/scripts/claude_runtime.sh": "843ec255af6be4251e61a0fd26b29dd090cf605a76e64691b5e5c22ac7ca215c",
     ".agents/skills/coordinate-video-production/scripts/resolve_browser_profile.py": "d16dabd00e9272752a1374dd01de575da1f6a24ce7e0101e761c320a3b125c90",
     ".agents/skills/coordinate-video-production/scripts/revise_thumbnail_package.py": "650ee9259b6ba0fbef295d8135c397e13aa64b4f356016fe78b63a145ded916d",
     ".agents/skills/coordinate-video-production/scripts/validate_video_job.py": "929395c8f1b8da506a64095dee857b95a93fd9d77545ab78c4ecdb0bbc409594",
-    ".agents/skills/coordinate-video-production/SKILL.md": "bf2386178c14dea95b0d8a1d881819d6d9a8cc6ba8bf3cc3c591eeecbc4996eb",
+    ".agents/skills/coordinate-video-production/SKILL.md": "3b7b506f7763be9265b04b5ed3fbf3104715b8795dfc85cba8bd32ab7ac1bb28",
     ".agents/skills/game-trend-brief/scripts/compare_views.py": "9e3f9107aa195bdf80fef557cf25c88c2f132a9816d136957cb8b6429c2f72f1",
     ".agents/skills/game-trend-brief/SKILL.md": "2c4caee96de0abf98c3b675dfc77a1bdf263bd059e808df11e17e470c622dcc1",
     ".agents/skills/korean-game-research/SKILL.md": "a90372b21974e7fb11f65d531e4af08b2397d26902ff206bc019a1a78cc186a9",
@@ -68,6 +68,9 @@
     ".agents/skills/create-shorts/references/editing.md": "2127542e707d1046fa95137bfa9e0026885371b4881b3bae4ac94718484f5af0",
     ".agents/skills/create-shorts/references/manifest.md": "f92b5f65b90c166dd5e74b5ea6ac5a7a6bad4c4d9bf4132dc2846457fe0352dc",
     ".agents/skills/create-shorts/scripts/shorts_review.py": "70d45d40a21157cffe41278562f1e0be88c7e973e1a60a2e43889d8ff38492b1",
-    ".agents/skills/create-shorts/SKILL.md": "42ef98d601e2452e7c4ffeea9e35e7b526391777c8dad1e9054473a281201311"
+    ".agents/skills/create-shorts/SKILL.md": "42ef98d601e2452e7c4ffeea9e35e7b526391777c8dad1e9054473a281201311",
+    ".agents/skills/write-video-script/SKILL.md": "1950dfd4325e172d1d9403eab7f9f4400d3a49610289b2d7f9f48e06e669f959",
+    ".agents/skills/write-video-script/agents/openai.yaml": "afc31c820ee766f668cbf174bc810ca66f87f4889385d10aa1a38c3807b07503",
+    ".agents/skills/write-video-script/references/script-review.md": "c45d2b721095d000feb04b9169a705a9e40b2b61657ae2ceab10e355f82627c9"
   }
 }

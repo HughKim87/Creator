@@ -1,0 +1,6 @@
+interface:
+  display_name: "영상 대본 작성"
+  short_description: "목적과 실제 근거를 유지하며 영상 대본을 작성·수정·검토합니다."
+  default_prompt: "$write-video-script로 이번 영상의 목적과 근거에 맞춰 대본을 작성하거나 수정해줘."
+policy:
+  allow_implicit_invocation: true
