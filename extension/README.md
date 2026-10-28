@@ -30,6 +30,8 @@
 
 ## 활성 영상 owner
 
+반복 제작의 목적·실제 입력별 실행 연결은 [목적별 제작 경로](docs/domain/youtube/VIDEO_PURPOSE_WORKFLOWS.md)를 참조한다. 공통 규칙과 편집 프로필을 복제하지 않는다. 합성 renderer의 장면 재개에는 [입력·설정 결속 cache](src/video_scene_cache.py)를 사용할 수 있으며, 실제 합성·의미 검수와는 별도 기능이다.
+
 | 작업 | 단일 owner | 경계 |
 |---|---|---|
 | 촬영 전 근거 패키지 | [YouTube evidence pack 계약](docs/domain/youtube/YOUTUBE_EVIDENCE_PACK_CONTRACT.md) | 대본·편집·파생물 생성 제외 |

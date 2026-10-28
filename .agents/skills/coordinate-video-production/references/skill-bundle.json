@@ -17,7 +17,7 @@
     ".agents/skills/coordinate-video-production/scripts/resolve_browser_profile.py": "d16dabd00e9272752a1374dd01de575da1f6a24ce7e0101e761c320a3b125c90",
     ".agents/skills/coordinate-video-production/scripts/revise_thumbnail_package.py": "650ee9259b6ba0fbef295d8135c397e13aa64b4f356016fe78b63a145ded916d",
     ".agents/skills/coordinate-video-production/scripts/validate_video_job.py": "929395c8f1b8da506a64095dee857b95a93fd9d77545ab78c4ecdb0bbc409594",
-    ".agents/skills/coordinate-video-production/SKILL.md": "3b7b506f7763be9265b04b5ed3fbf3104715b8795dfc85cba8bd32ab7ac1bb28",
+    ".agents/skills/coordinate-video-production/SKILL.md": "1b27ef6f7116748d91202431a8134baac4318bf9aa35a85edf29bbcbb3b1bbd1",
     ".agents/skills/game-trend-brief/scripts/compare_views.py": "9e3f9107aa195bdf80fef557cf25c88c2f132a9816d136957cb8b6429c2f72f1",
     ".agents/skills/game-trend-brief/SKILL.md": "2c4caee96de0abf98c3b675dfc77a1bdf263bd059e808df11e17e470c622dcc1",
     ".agents/skills/korean-game-research/SKILL.md": "a90372b21974e7fb11f65d531e4af08b2397d26902ff206bc019a1a78cc186a9",
@@ -28,8 +28,8 @@
     ".agents/skills/notebooklm-generate-video/references/video-brief-template.md": "c4f4482f786d1d5f323de12c14eb036d90a2f8eb5c1e7007a15064407117c789",
     ".agents/skills/notebooklm-generate-video/SKILL.md": "b4d5d3ea21a36f9c542c8092229118cd9e54031bf46222e1ef88b3f8d559fd75",
     ".agents/skills/edit-gameplay-video/agents/openai.yaml": "579e928ce9b248f0a1a9ede02a82e760968ff5cf265096eaef1ff05ebb84696f",
-    ".agents/skills/edit-gameplay-video/references/post-production.md": "5c1053844e663939c19c2a4b501a80d85a012f1347ed6f324147d9b8a024d754",
-    ".agents/skills/edit-gameplay-video/references/review.md": "1528babc52b4a7798f236b38f5f218725d3a2ba565b41e89381140dbbc0adf32",
+    ".agents/skills/edit-gameplay-video/references/post-production.md": "24b650129d4febadfd06a84b444db6ba9d2e871119df2a4fc9ec7e4db57a1d00",
+    ".agents/skills/edit-gameplay-video/references/review.md": "a067754b562d6b0c726d3be5e49df5f177ce7f1c7bb801b7e84fab05d1d96c7d",
     ".agents/skills/edit-gameplay-video/references/tools.md": "a7c7b0149debf8d9734c9bb0939303c418e752ff9028461a15822d463eb03b04",
     ".agents/skills/edit-gameplay-video/scripts/postprocess.py": "940a1a762e2ea6bdaaebb9809341ded7dccc2845a0e24c2d6c115de6c41986cc",
     ".agents/skills/edit-gameplay-video/scripts/render_candidate.py": "3d887a77c1f065cbc472541b110bed89cb9060e4372f4e56504585bf594c0130",
@@ -69,8 +69,8 @@
     ".agents/skills/create-shorts/references/manifest.md": "f92b5f65b90c166dd5e74b5ea6ac5a7a6bad4c4d9bf4132dc2846457fe0352dc",
     ".agents/skills/create-shorts/scripts/shorts_review.py": "70d45d40a21157cffe41278562f1e0be88c7e973e1a60a2e43889d8ff38492b1",
     ".agents/skills/create-shorts/SKILL.md": "42ef98d601e2452e7c4ffeea9e35e7b526391777c8dad1e9054473a281201311",
-    ".agents/skills/write-video-script/SKILL.md": "1950dfd4325e172d1d9403eab7f9f4400d3a49610289b2d7f9f48e06e669f959",
     ".agents/skills/write-video-script/agents/openai.yaml": "afc31c820ee766f668cbf174bc810ca66f87f4889385d10aa1a38c3807b07503",
-    ".agents/skills/write-video-script/references/script-review.md": "c45d2b721095d000feb04b9169a705a9e40b2b61657ae2ceab10e355f82627c9"
+    ".agents/skills/write-video-script/references/script-review.md": "c45d2b721095d000feb04b9169a705a9e40b2b61657ae2ceab10e355f82627c9",
+    ".agents/skills/write-video-script/SKILL.md": "1950dfd4325e172d1d9403eab7f9f4400d3a49610289b2d7f9f48e06e669f959"
   }
 }
