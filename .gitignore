@@ -21,3 +21,6 @@ extension/data/
 
 # Job-scoped media, approvals, logs and scratch stay local.
 /extension/jobs/
+
+# Launcher diagnostics are runtime logs, not maintained source.
+/extension/work/voice-tts-launcher/*.log
