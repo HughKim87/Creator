@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>김실버 갑옷아저씨 · PNG 미리보기</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#171d28;color:#eef2f7;font:16px system-ui,sans-serif}main{max-width:960px;margin:auto;padding:32px 24px}h1{font-size:26px;margin-bottom:8px}p{color:#b8c4d7;line-height:1.7}.stage{height:450px;border:1px solid #46536a;border-radius:20px;display:grid;place-items:center;background-color:#35435b;background-image:linear-gradient(45deg,#ffffff09 25%,transparent 25%),linear-gradient(-45deg,#ffffff09 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ffffff09 75%),linear-gradient(-45deg,transparent 75%,#ffffff09 75%);background-size:32px 32px;background-position:0 0,0 16px,16px -16px,-16px 0}#sprite{width:380px;max-width:90%;height:380px;object-fit:contain}.speaking{animation:bob .25s ease-in-out infinite alternate}@keyframes bob{to{transform:translateY(-5px)}}.controls{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}button{padding:12px 18px;border:1px solid #63728a;border-radius:10px;background:#26344a;color:white;cursor:pointer;font:inherit}button[aria-pressed=true]{background:#b8d8ff;color:#152338}.files{display:grid;gap:12px}a{color:#b8d8ff}li{margin:10px 0}small{color:#b8c4d7}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:12px 8px;border-bottom:1px solid #39465b}code{font-size:13px}
+</style>
+<main><h1>김실버 갑옷아저씨</h1><p>투명 배경 PNG 세트 · 대기 / 말하기 / 깜빡임</p>
+<div class="stage"><img id="sprite" src="01-idle.png" alt="김실버 갑옷 캐릭터"></div>
+<div class="controls"><button data-mode="idle" aria-pressed="true">대기</button><button data-mode="talk" aria-pressed="false">말하기</button><button data-mode="blink" aria-pressed="false">깜빡임</button><button data-mode="auto" aria-pressed="false">자동 시연</button><button id="background">밝은 배경</button></div>
+<p id="status" aria-live="polite">대기 상태입니다.</p><small>이 페이지는 버튼·시간에 따른 시연입니다. 마이크에는 반응하지 않습니다. 들썩임은 웹 미리보기 효과이며 veadotube에서 별도로 설정하세요.</small>
+<h2>veadotube mini 이미지 슬롯</h2><table><thead><tr><th>슬롯</th><th>파일</th></tr></thead><tbody>
+<tr><td>입 닫힘 · 대기</td><td><a href="01-idle.png" download>01-idle.png</a></td></tr>
+<tr><td>입 열림 · 말하기</td><td><a href="02-talking.png" download>02-talking.png</a></td></tr>
+<tr><td>입 닫힘 + 깜빡임</td><td><a href="03-blink.png" download>03-blink.png</a></td></tr>
+<tr><td>입 열림 + 깜빡임</td><td><a href="04-talking-blink.png" download>04-talking-blink.png</a></td></tr>
+</tbody></table><p>말하는 중 깜빡임은 같은 눈 감은 그림을 재사용합니다. 네 파일 모두 1254 × 1254 PNG입니다.</p>
+<ol><li>veadotube mini에서 위 표에 맞춰 이미지를 등록합니다.</li><li>본인 마이크를 선택하고 평소 말소리에는 반응하고 주변 소음에는 멈추도록 감도를 조절합니다.</li><li>원하면 말하기 상태에 가벼운 들썩임 효과를 추가합니다.</li><li>OBS에서 캐릭터를 캡처하고 게임 UI를 가리지 않는 곳에 배치합니다.</li></ol>
+<p>내장 이미지 생성 도구로 원본 시안을 참고해 제작했습니다. 실제 veadotube·OBS 불러오기와 마이크 반응은 아직 검증하지 않았습니다.</p></main>
+<script>
+const sprite=document.querySelector('#sprite'),status=document.querySelector('#status');let mode='idle',tick=0;
+const files={idle:'01-idle.png',talk:'02-talking.png',blink:'03-blink.png'};Object.values(files).forEach(src=>{const im=new Image();im.src=src});
+function show(state){sprite.src=files[state];sprite.classList.toggle('speaking',state==='talk')}
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;tick=0;document.querySelectorAll('[data-mode]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));show(mode==='auto'?'idle':mode);status.textContent={idle:'대기 상태입니다.',talk:'웃는 눈으로 말하는 상태입니다.',blink:'눈을 감은 상태입니다.',auto:'대기·말하기·깜빡임을 자동으로 반복합니다.'}[mode]});
+setInterval(()=>{if(mode!=='auto')return;tick=(tick+1)%80;show(tick===15||tick===16||tick===49||tick===50?'blink':tick>=22&&tick<62?'talk':'idle')},100);
+let light=false;document.querySelector('#background').onclick=e=>{light=!light;document.querySelector('.stage').style.backgroundColor=light?'#e7e9ee':'#35435b';e.target.textContent=light?'어두운 배경':'밝은 배경'};
+</script></html>
