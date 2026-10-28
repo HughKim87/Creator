@@ -5,6 +5,7 @@
     "whisper-cpp": {"path": "tools/whisper-cpp/retained", "legacy": ["whisper.cpp"]},
     "qwen-tts": {"path": "environments/qwen-tts/0.1.1", "legacy": ["qwen-tts"]},
     "gpt-sovits": {"path": "environments/gpt-sovits/1b47ca07", "legacy": ["gpt-sovits"]},
+    "voxcpm2": {"path": "environments/voxcpm2/2.0.3"},
     "qwen-asr": {"path": "environments/qwen-asr/retained", "legacy": ["qwen-asr"]},
     "python-deps": {"path": "environments/faster-whisper/windows", "legacy": ["python-deps"]},
     "whisper-models": {"path": "models/whisper", "legacy": ["models/whisper"]},

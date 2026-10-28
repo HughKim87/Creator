@@ -75,7 +75,27 @@ class SovitsVoice:
         return record, f'GPT-SoVITS 참고 녹음 {start:.2f}~{end:.2f}초 저장'
 
 
+def configure_language_detector(repo):
+    """Replace upstream's auto-download detector with an installed local model."""
+    import importlib
+    import fast_langdetect
+    # This import sets upstream's global detector; override it afterwards and
+    # before the TTS module can perform language detection during initialization.
+    importlib.import_module('text.LangSegmenter')
+    full = Path(repo) / 'GPT_SoVITS/pretrained_models/fast_langdetect/lid.176.bin'
+    bundled = Path(fast_langdetect.__file__).parent / 'resources/lid.176.ftz'
+    model = full if full.is_file() else bundled
+    if not model.is_file():
+        raise ValueError('설치된 언어 감지 모델이 없습니다. fast-langdetect의 로컬 모델을 확인하세요.')
+    detector = fast_langdetect.LangDetector(
+        fast_langdetect.LangDetectConfig(custom_model_path=str(model)))
+    fast_langdetect.infer._default_detector = detector
+    return detector
+
+
 def load_pipeline():
+    # The engine saves its configuration while loading, before voice registration.
+    STATE.mkdir(parents=True, exist_ok=True)
     import os
     import sys
     import shutil
@@ -94,6 +114,7 @@ def load_pipeline():
     from tools import portable_runtime
     portable_runtime.FFMPEG_EXE = Path(shutil.which('ffmpeg'))
     portable_runtime.FFPROBE_EXE = Path(shutil.which('ffprobe'))
+    configure_language_detector(repo)
     from TTS_infer_pack.TTS import TTS, TTS_Config
     weights = repo / 'GPT_SoVITS/pretrained_models'
     config = TTS_Config({'custom': {

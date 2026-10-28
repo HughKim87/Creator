@@ -11,7 +11,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 engine, ready = sys.argv[1:3]
 from creator_workspace import runtime_path, current_job_paths
-runtime = runtime_path('qwen-tts' if engine == 'Qwen' else 'gpt-sovits', ROOT)
+COMPONENTS = {'Qwen': 'qwen-tts', 'GPT-SoVITS': 'gpt-sovits', 'VoxCPM2': 'voxcpm2'}
+runtime = runtime_path(COMPONENTS[engine], ROOT)
 job_paths = current_job_paths(ROOT)
 state = job_paths['work'] / 'tts' if job_paths else runtime
 os.environ.update(HF_HUB_OFFLINE='1', TRANSFORMERS_OFFLINE='1', HF_HUB_DISABLE_IMPLICIT_TOKEN='1',
@@ -38,10 +39,14 @@ try:
     if engine == 'Qwen':
         import qwen_tts_local as backend
         model = backend.load_model()
-    else:
+    elif engine == 'GPT-SoVITS':
         import sovits_local as backend
         model = backend.load_pipeline()
         voices = backend.SovitsVoice()
+    else:
+        import voxcpm_local as backend
+        model = backend.load_pipeline()
+        voices = backend.VoxCPMVoice()
     publish(ready, {'ok': True, 'pid': os.getpid()})
 except Exception as exc:
     traceback.print_exc()
@@ -64,7 +69,7 @@ for line in sys.stdin:
                     sr, wave = backend.clone(model, job.get('reference'), job.get('transcript'), job['script'])
                     sf.write(job['audio'], wave, sr)
                     result = dict(backend.LAST_METRICS, audio=job['audio'])
-            else:
+            elif engine == 'GPT-SoVITS':
                 record, notice = voices.register(job.get('reference'), job.get('transcript'))
                 path = str(voices.directory / record['audio'])
                 preparation = time.perf_counter() - started
@@ -83,6 +88,17 @@ for line in sys.stdin:
                     wave = np.concatenate([p[1] for p in pieces])
                     if not wave.size or not np.isfinite(wave).all():
                         raise ValueError('유효한 음성이 생성되지 않았습니다.')
+                    sf.write(job['audio'], wave, sr)
+                    result = {'audio': job['audio'], 'notice': notice, 'preparation_seconds': preparation,
+                              'generation_seconds': time.perf_counter()-generated}
+            else:
+                record, notice = voices.register(job.get('reference'), job.get('transcript'))
+                preparation = time.perf_counter() - started
+                if job['action'] == 'register':
+                    result = {'notice': notice, 'preparation_seconds': preparation}
+                else:
+                    generated = time.perf_counter()
+                    sr, wave = backend.synthesize(model, voices, record, job['script'])
                     sf.write(job['audio'], wave, sr)
                     result = {'audio': job['audio'], 'notice': notice, 'preparation_seconds': preparation,
                               'generation_seconds': time.perf_counter()-generated}

@@ -13,6 +13,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'extension/src'))
 from creator_workspace import Lease, git, init_job, job_paths, run_job, runtime_path, stop_owned
+from tts_build import is_current
 
 
 def open_running_tts():
@@ -22,6 +23,9 @@ def open_running_tts():
         if any(isinstance(value := component.get('props', {}).get('value'), str)
                and value.startswith('# 내 목소리로 대본 읽기')
                for component in config.get('components', [])):
+            if not is_current(config):
+                raise RuntimeError('TTS 서버가 이전 코드로 실행 중입니다. 브라우저를 닫아도 서버는 종료되지 않습니다. '
+                                   'TTS를 실행한 콘솔에서 Ctrl+C로 서버를 종료한 뒤 다시 실행하세요.')
             webbrowser.open('http://127.0.0.1:7865')
             return True
     except (OSError, ValueError):

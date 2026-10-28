@@ -41,6 +41,16 @@ run은 job 잠금을 잡고 root에서 자식 명령을 실행한다. `CREATOR_J
 
 `git reset --hard`와 `git clean -fdx`는 데이터 복구 수단이 아니다. Git 제외 데이터는 Git 커밋만으로 복구할 수 없다.
 
-로컬 음성 UI는 `scripts/Start-QwenTTS.cmd <job-id>`로 연다. 명시적 job 실행도 미커밋 변경을 허용하며 기준 커밋·runtime catalog 변경의 수용 검사는 유지한다. launcher는 기존 환경을 선택하며 모델을 자동 다운로드하지 않는다. 새 job의 음성 상태는 기존 개인 목소리를 자동 복사하지 않으므로 해당 작업에서 등록한다.
+로컬 음성 UI는 `scripts/Start-QwenTTS.cmd <job-id>`로 연다. 인수 없이 더블클릭하면 `voice-tts-desktop` 작업을 사용하는 대화형 UI를 열고, 이미 열려 있으면 기존 화면을 재사용한다. 대화형 UI는 main과 작업·GPU 잠금을 확인하며 커밋 전에도 사용할 수 있다. 명시적 job 실행도 미커밋 변경을 허용하며 기준 커밋·runtime catalog 변경의 수용 검사는 유지한다. launcher는 기존 환경을 선택하며 모델을 자동 다운로드하지 않는다. 새 job의 음성 상태는 기존 개인 목소리를 자동 복사하지 않으므로 해당 작업에서 등록한다.
+
+엔진 선택은 Qwen·GPT-SoVITS V5 Turbo·VoxCPM2를 제공한다. VoxCPM2는 `voxcpm==2.0.3`의 기존 Python과 로컬 모델을 다음 명령으로 연결한다. 이 명령은 설치·다운로드 없이 모델 파일·architecture·패키지 버전을 확인하고, catalog가 지정한 Creator runtime의 `installation.json`에 경로만 저장한다. 외부 환경과 모델은 읽기 입력으로 재사용하므로 해당 경로가 사라지면 다시 연결해야 한다.
+
+GPT-SoVITS의 언어 감지는 이미 있는 `lid.176.bin`을 우선 사용하고, 없으면 설치 패키지에 포함된 `lid.176.ftz`를 사용한다. upstream의 자동 다운로드 설정을 로컬 모델 경로로 대체하므로 빈 cache 폴더 때문에 실패하거나 실행 중 대형 모델을 다운로드하지 않는다.
+
+```powershell
+python -B scripts/configure_voxcpm2.py --python <existing-python.exe> --model <local-VoxCPM2-model-folder>
+```
+
+VoxCPM2는 로컬 모델만 읽고 추가 denoiser·정규화 모델을 다운로드하지 않는다. 참고 녹음은 작업의 `work/tts/voxcpm2/voices/`에 16kHz mono로 보존하며 Qwen·GPT-SoVITS의 등록 음성과 분리한다. UI의 녹음 범위는 3~30초이고 발화문은 선택이다. 긴 녹음은 일치하는 SRT에서 3~10초의 완전한 문장을 선택한다. 발화문이 있으면 공식 API의 reference와 prompt에 같은 구간을 전달한다. 출력은 모델이 반환하는 sample rate를 사용한다. 재사용 모델의 context 설정이 작아도 원본 config는 바꾸지 않으며, 참고 음성·발화문·대본과 생성 여유분을 계산해 두 언어 모델의 실행 중 KV cache를 필요할 때 확장한다. 8192칸을 넘는 입력은 생성 전에 설명과 함께 거부하며 음성이나 대본을 몰래 자르지 않는다. VoxCPM2의 첫 모델 로딩은 최대 10분, 개별 음성 생성은 기존과 같이 최대 3분으로 제한한다. 엔진 전환·중단 시 기존 worker를 종료해 GPU 모델의 중복 상주를 막는다. 공식 API는 [OpenBMB VoxCPM](https://github.com/OpenBMB/VoxCPM)이 소유한다.
 
 GPU UI launcher는 앱이 종료될 때까지 GPU lease를 유지한다. 다른 GPU 작업을 시작하려면 해당 UI를 종료한다. CPU 작업과 서로 다른 job의 데이터 처리는 병행할 수 있다.

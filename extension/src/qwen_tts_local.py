@@ -9,6 +9,7 @@ import webbrowser
 import threading
 import time
 from pathlib import Path
+from tts_build import is_current, source_version
 
 ROOT = Path(__file__).resolve().parents[2]
 from creator_workspace import runtime_path, current_job_paths
@@ -37,6 +38,8 @@ if "--open-browser" in sys.argv:
         if any(c.get("props", {}).get("value", "").startswith("# 내 목소리로 대본 읽기")
                for c in config.get("components", [])
                if isinstance(c.get("props", {}).get("value", ""), str)):
+            if not is_current(config):
+                raise RuntimeError('TTS 서버가 이전 코드로 실행 중입니다. TTS 실행 콘솔에서 Ctrl+C로 종료한 뒤 다시 실행하세요.')
             webbrowser.open("http://127.0.0.1:7865")
             sys.exit(0)
     except (OSError, ValueError):
@@ -94,8 +97,6 @@ def clone(model, reference, transcript, script, progress=None, cache=None):
     script = (script or "").strip()
     if not script:
         raise gr.Error("새로 읽을 대본을 입력하세요.")
-    if len(script) > 500:
-        raise gr.Error("첫 테스트는 대본을 500자 이하로 나누어 생성하세요.")
     CANCEL.clear()
     try:
         if progress:
@@ -130,22 +131,31 @@ def clone(model, reference, transcript, script, progress=None, cache=None):
 
 
 def main():
-    from tts_engines import EngineManager
+    from tts_engines import EngineManager, ENGINES
+    from voxcpm_local import voice_directory
     STATE.mkdir(parents=True, exist_ok=True)
     (STATE / "ui.pid").write_text(str(os.getpid()), encoding="ascii")
     manager = EngineManager()
     qwen_help = "Qwen: 목소리 등록에는 **최소 20초 녹음**이 필요합니다. **20~60초는 전체를 사용**하고, 긴 녹음은 SRT 문장 경계에 맞춰 **최대 60초까지 사용**합니다."
     sovits_help = "GPT-SoVITS V5 Turbo: **3~10초 녹음과 해당 발화문**, 또는 **긴 녹음과 일치하는 SRT**를 넣으세요. 긴 녹음에서는 완전한 문장 구간을 선택합니다. 현재는 참고 음성 복제 방식이며 전용 학습 모델은 아닙니다."
+    voxcpm_help = "VoxCPM2: **3~30초의 깨끗한 녹음**을 넣으세요. 발화문은 선택이며, 정확한 발화문을 함께 넣으면 음성과 발화문을 모두 참고합니다. 긴 녹음에는 **같은 녹음의 SRT**를 넣으면 3~10초의 완전한 문장 구간을 선택합니다."
+    engine_help = {'Qwen': qwen_help, 'GPT-SoVITS': sovits_help, 'VoxCPM2': voxcpm_help}
     def saved_status(engine):
-        exists = VOICE_CACHE.active_key() if engine == 'Qwen' else ((JOB['work'] / 'tts/gpt-sovits' if JOB else runtime_path('gpt-sovits', ROOT)) / 'voices/active.json').is_file()
+        if engine == 'Qwen':
+            exists = VOICE_CACHE.active_key()
+        elif engine == 'VoxCPM2':
+            exists = (voice_directory() / 'active.json').is_file()
+        else:
+            exists = ((JOB['work'] / 'tts/gpt-sovits' if JOB else runtime_path('gpt-sovits', ROOT)) / 'voices/active.json').is_file()
         return f"**{engine} 저장된 목소리 사용 가능 — 새 대본만 입력하세요.**" if exists else f"{engine} 목소리를 한 번 등록하면 이후에는 대본만 입력하면 됩니다. 엔진별로 따로 저장됩니다."
     initial_engine = os.environ.get('TTS_DEFAULT_ENGINE', 'Qwen')
-    if initial_engine not in ['Qwen', 'GPT-SoVITS']:
+    if initial_engine not in ENGINES:
         initial_engine = 'Qwen'
-    with gr.Blocks(title="내 목소리 · Qwen / GPT-SoVITS", analytics_enabled=False) as app:
+    with gr.Blocks(title="내 목소리 · Qwen / GPT-SoVITS / VoxCPM2", analytics_enabled=False) as app:
         gr.Markdown("# 내 목소리로 대본 읽기\n한국어 녹음과 대본을 이 PC에서 처리합니다.")
-        engine = gr.Radio(['Qwen', 'GPT-SoVITS'], value=initial_engine, label='음성 엔진 선택')
-        help_text = gr.Markdown(qwen_help if initial_engine == 'Qwen' else sovits_help)
+        gr.Markdown(source_version(), elem_id='tts-source-version', visible=False)
+        engine = gr.Radio(list(ENGINES), value=initial_engine, label='음성 엔진 선택')
+        help_text = gr.Markdown(engine_help[initial_engine])
         saved = gr.Markdown(saved_status(initial_engine))
         previous_reference = os.environ.get("QWEN_PREVIOUS_REFERENCE")
         if previous_reference:
@@ -170,7 +180,12 @@ def main():
                 raise gr.Error(str(exc)) from None
         srt_file.upload(load_srt, inputs=[srt_file], outputs=[transcript,srt_notice], api_name="load_srt", queue=False)
         script = gr.Textbox(label="3. 새로 읽을 대본", lines=5,
-                           placeholder="처음에는 1~3문장으로 시작하세요. 최대 500자.")
+                           placeholder="긴 대본도 입력하세요. 문장 단위로 나누어 생성한 뒤 하나의 음성으로 연결합니다.")
+        script_count = gr.Markdown('현재 **0자** · 공백·줄바꿈 포함')
+        script.change(
+            fn=None, inputs=[script], outputs=[script_count], queue=False,
+            js="(text) => `현재 **${Array.from((text || '').replace(/\\r\\n?/g, '\\n')).length.toLocaleString('ko-KR')}자** · 공백·줄바꿈 포함`",
+        )
         save = gr.Button("목소리 등록 / 변경")
         button = gr.Button("내 목소리로 생성", variant="primary")
         stop = gr.Button("생성 중단")
@@ -185,7 +200,7 @@ def main():
         def generate(e, a, b, c, progress=gr.Progress()):
             try:
                 metrics = manager.run(e, 'generate', a, b, c, progress)
-                return metrics['audio'], f"{e} · 준비 {metrics['preparation_seconds']:.3f}초 · 음성 생성 {metrics['generation_seconds']:.1f}초", saved_status(e)
+                return metrics['audio'], f"{e} · {metrics['chunks']}개 구간 완료 · 준비 {metrics['preparation_seconds']:.3f}초 · 음성 생성 {metrics['generation_seconds']:.1f}초", saved_status(e)
             except ValueError as exc:
                 raise gr.Error(str(exc)) from None
         def save_voice(e, a, b, progress=gr.Progress()):
@@ -196,7 +211,7 @@ def main():
                 raise gr.Error(str(exc)) from None
         def switch_engine(e):
             manager.stop()
-            return qwen_help if e == 'Qwen' else sovits_help, saved_status(e), None, ''
+            return engine_help[e], saved_status(e), None, ''
         engine.change(switch_engine, inputs=[engine], outputs=[help_text,saved,result,timing], concurrency_limit=1, concurrency_id='tts_gpu')
         save.click(save_voice, inputs=[engine, reference, transcript], outputs=[saved], concurrency_limit=1, concurrency_id="tts_gpu", api_name='register_voice')
         button.click(generate, inputs=[engine, reference, transcript, script], outputs=[result,timing,saved], concurrency_limit=1, concurrency_id="tts_gpu", api_name='generate_voice')
