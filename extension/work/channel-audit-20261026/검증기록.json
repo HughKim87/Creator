@@ -1,0 +1,15 @@
+{
+  "arithmetic": "pass",
+  "evidence_count": 16,
+  "sample_rows": 50,
+  "pdf_pages": {
+    "김실버-채널심층진단.pdf": 13,
+    "김실버-4주실험워크북.pdf": 6
+  },
+  "pdf_text_extraction": "pass",
+  "pdf_visual_review": "19 pages rendered; report final contact sheet and workbook contact sheet inspected; report page8 full resolution inspected",
+  "html_structure_links": "pass",
+  "html_browser_visual_and_interaction": "not_run: local HTTP timed out; file protocol blocked by browser policy",
+  "external_changes": "none; read-only Studio navigation and filter changes only",
+  "archive_members": 18
+}

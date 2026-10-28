@@ -1,0 +1,925 @@
+{
+  "schema": "kim-silver-channel-audit-v1",
+  "observed_on_kst": "2026-10-26",
+  "channel": {
+    "id": "UCp9Pn5dAUByhBDkH1K59HiQ",
+    "name": "신입 아재 유튜버, 김실버😎",
+    "current_subscribers": 599
+  },
+  "provenance": "현재 대화에서 UI로 직접 확인한 값과 사용자 설명. 브라우저 비공개 API·쿠키·자격증명 접근 없음. 외부 게시·메타데이터 수정 없음.",
+  "reporting_caveat": "기간합계는 동일 열 구성 상세 보고서를 기준으로 계산. 개요/유효조회수 단독 표에는 최근28일45,578·12,186, 최근90일57,028·384.5시간이 따로 표시됨. 차이를 보존하며 원인은 확정하지 않음.",
+  "periods": {
+    "growth_90d": {
+      "start": "2026-04-28",
+      "end": "2026-07-26",
+      "days": 90,
+      "views": 1035635,
+      "engaged_views": 559334,
+      "watch_hours": 16643.5,
+      "gained": 593,
+      "lost": 144,
+      "net": 449,
+      "impressions": 3183936,
+      "ctr_pct": 7.0,
+      "gained_per_day": 6.588888888888889,
+      "lost_per_day": 1.6,
+      "engaged_per_day": 6214.822222222222,
+      "acquisitions_per_1000_engaged": 1.0601894395835048
+    },
+    "recent_90d": {
+      "start": "2026-07-27",
+      "end": "2026-10-24",
+      "days": 90,
+      "views": 56990,
+      "engaged_views": 17690,
+      "watch_hours": 384.4,
+      "gained": 18,
+      "lost": 21,
+      "net": -3,
+      "impressions": 190955,
+      "ctr_pct": 4.9,
+      "gained_per_day": 0.2,
+      "lost_per_day": 0.23333333333333334,
+      "engaged_per_day": 196.55555555555554,
+      "acquisitions_per_1000_engaged": 1.0175240248728095
+    },
+    "recent_28d": {
+      "start": "2026-09-27",
+      "end": "2026-10-24",
+      "days": 28,
+      "views": 45540,
+      "engaged_views": 12181,
+      "watch_hours": 216.8,
+      "gained": 10,
+      "lost": 12,
+      "net": -2,
+      "impressions": 135985,
+      "ctr_pct": 3.9,
+      "gained_per_day": 0.35714285714285715,
+      "lost_per_day": 0.42857142857142855,
+      "engaged_per_day": 435.0357142857143,
+      "acquisitions_per_1000_engaged": 0.820950660865282
+    },
+    "preceding_62d": {
+      "start": "2026-07-27",
+      "end": "2026-09-26",
+      "days": 62,
+      "derived": true,
+      "views": 11450,
+      "engaged_views": 5509,
+      "watch_hours": 167.6,
+      "gained": 8,
+      "lost": 9,
+      "net": -1,
+      "gained_per_day": 0.12903225806451613,
+      "lost_per_day": 0.14516129032258066,
+      "engaged_per_day": 88.85483870967742,
+      "acquisitions_per_1000_engaged": 1.4521691777092032
+    }
+  },
+  "calculations": {
+    "gain_change": -575,
+    "loss_change": -123,
+    "net_change": -452,
+    "gains_decline_pct": 96.964586846543,
+    "losses_decline_pct": 85.41666666666666,
+    "engaged_decline_pct": 96.83731008663875,
+    "impressions_decline_pct": 94.00254904621198,
+    "loss_improvement": 123,
+    "gap_days": 94,
+    "recent_28_vs_62_engaged_daily_ratio": 4.896027280035266,
+    "recent_28_vs_62_gains_daily_ratio": 2.767857142857143,
+    "current28_excluding_closed_net": -1,
+    "current90_excluding_closed_net": -1,
+    "request_impression_engaged_views_estimate": 20.189999999999998,
+    "war_impression_engaged_views_estimate": 5.053
+  },
+  "subscription_sources_90d": [
+    [
+      "YouTube 보기 페이지",
+      7,
+      0
+    ],
+    [
+      "Shorts 피드",
+      5,
+      0
+    ],
+    [
+      "YouTube 검색",
+      1,
+      0
+    ],
+    [
+      "기타",
+      1,
+      1
+    ],
+    [
+      "구독 피드",
+      0,
+      1
+    ],
+    [
+      "계정 삭제",
+      1,
+      3
+    ],
+    [
+      "내 YouTube 채널",
+      3,
+      8
+    ],
+    [
+      "구독 채널 목록",
+      0,
+      7
+    ]
+  ],
+  "subscription_sources_28d": [
+    [
+      "YouTube 보기 페이지",
+      4,
+      0
+    ],
+    [
+      "Shorts 피드",
+      3,
+      0
+    ],
+    [
+      "YouTube 검색",
+      1,
+      0
+    ],
+    [
+      "기타",
+      0,
+      0
+    ],
+    [
+      "계정 삭제",
+      1,
+      2
+    ],
+    [
+      "내 YouTube 채널",
+      1,
+      4
+    ],
+    [
+      "구독 채널 목록",
+      0,
+      5
+    ]
+  ],
+  "subscription_source_reconciliation": {
+    "recent_90d_unexplained_loss_difference": 1,
+    "recent_28d_unexplained_loss_difference": 1,
+    "note": "각 표의 표시 행 감소수 합계는 총계보다 1 작음. 이를 특정 소스로 배정하지 않음."
+  },
+  "uploads": [
+    [
+      "2026-07-04",
+      "서비스 종료하기 전, 신규 유저 받아라 !!! ㅋㅋㅋ",
+      "10:34"
+    ],
+    [
+      "2026-10-06",
+      "제우스 한 달, 초반엔 재밌었는데 왜 멤버십을 연장하지 않았을까?",
+      "11:49"
+    ],
+    [
+      "2026-10-09",
+      "영화 백룸 속에 직접 들어가 봤다",
+      "21:38"
+    ],
+    [
+      "2026-10-11",
+      "도깨비의세계 첫날 후기｜메인퀘만 밀었더니 산군대호에서 3번 막혔습니다",
+      "15:19"
+    ],
+    [
+      "2026-10-14",
+      "과금을 안 시키는 게 오히려 돈이 된다고? #도깨비의세계",
+      "14:50"
+    ],
+    [
+      "2026-10-14",
+      "도깨비의 세계 | 열심히 강화했는데 딜이 밀린다면? 이 덱부터 보세요",
+      "3:02"
+    ],
+    [
+      "2026-10-15",
+      "여러분이 궁금한 게임, 제가 대신 해드립니다｜댓글로 신청해주세요",
+      "4:42"
+    ],
+    [
+      "2026-10-21",
+      "사람 살리려다 제가 먼저 죽었습니다ㅋㅋ｜워독스 초보 메딕 적응기",
+      "20:30"
+    ]
+  ],
+  "content_sample_28d": [
+    {
+      "title": "과금을 안 시키는 게 오히려 돈이 된다고? #도깨비의세계",
+      "duration": "14:50",
+      "engaged_views": 3050.0,
+      "views": 12774.0,
+      "watch_hours": 89.5,
+      "subscriber_net": 0.0,
+      "impressions": 43747.0,
+      "ctr_pct": 6.3
+    },
+    {
+      "title": "못 들어오는 괴물에게 갑자기 강해진 사람",
+      "duration": "0:32",
+      "engaged_views": 777.0,
+      "views": 1879.0,
+      "watch_hours": 4.5,
+      "subscriber_net": 0.0,
+      "impressions": 51.0,
+      "ctr_pct": 2.0
+    },
+    {
+      "title": "픽셀인데 카메라가 돌아간다 | 도깨비의 세계 #Shorts",
+      "duration": "0:50",
+      "engaged_views": 560.0,
+      "views": 1284.0,
+      "watch_hours": 3.0,
+      "subscriber_net": 0.0,
+      "impressions": 608.0,
+      "ctr_pct": 0.8
+    },
+    {
+      "title": "괴물이 아니라 내 그림자였네",
+      "duration": "0:08",
+      "engaged_views": 501.0,
+      "views": 1584.0,
+      "watch_hours": 1.8,
+      "subscriber_net": 1.0,
+      "impressions": 37.0,
+      "ctr_pct": 0.0
+    },
+    {
+      "title": "레이드 장판, 여기에 숨으면 된다 | 도깨비의 세계 #Shorts",
+      "duration": "0:24",
+      "engaged_views": 422.0,
+      "views": 1566.0,
+      "watch_hours": 3.8,
+      "subscriber_net": 0.0,
+      "impressions": 3221.0,
+      "ctr_pct": 2.9
+    },
+    {
+      "title": "삼국지 영걸전 공략 포인트 정리",
+      "duration": "0:57",
+      "engaged_views": 402.0,
+      "views": 1412.0,
+      "watch_hours": 5.7,
+      "subscriber_net": 0.0,
+      "impressions": 5152.0,
+      "ctr_pct": 6.3
+    },
+    {
+      "title": "피할 곳이 줄어든다… 구석으로 유인! | 도깨비의 세계 #Shorts",
+      "duration": "0:32",
+      "engaged_views": 351.0,
+      "views": 1284.0,
+      "watch_hours": 2.6,
+      "subscriber_net": 0.0,
+      "impressions": 1128.0,
+      "ctr_pct": 1.4
+    },
+    {
+      "title": "왕좌의 게임 킹스로드, 출시 10일만에 이용자 72% 사라진 이유",
+      "duration": "7:32",
+      "engaged_views": 350.0,
+      "views": 680.0,
+      "watch_hours": 12.4,
+      "subscriber_net": 0.0,
+      "impressions": 1769.0,
+      "ctr_pct": 17.5
+    },
+    {
+      "title": "도깨비의세계 첫날 후기｜메인퀘만 밀었더니 산군대호에서 3번 막혔습니다",
+      "duration": "15:19",
+      "engaged_views": 338.0,
+      "views": 998.0,
+      "watch_hours": 10.6,
+      "subscriber_net": 0.0,
+      "impressions": 16413.0,
+      "ctr_pct": 1.7
+    },
+    {
+      "title": "영화 백룸 속에 직접 들어가 봤다",
+      "duration": "21:38",
+      "engaged_views": 311.0,
+      "views": 773.0,
+      "watch_hours": 8.7,
+      "subscriber_net": 2.0,
+      "impressions": 15062.0,
+      "ctr_pct": 1.8
+    },
+    {
+      "title": "밤이 되었습니다, 마피아는 시민을 지목해주세요",
+      "duration": "0:16",
+      "engaged_views": 305.0,
+      "views": 1287.0,
+      "watch_hours": 1.7,
+      "subscriber_net": 0.0,
+      "impressions": 99.0,
+      "ctr_pct": 0.0
+    },
+    {
+      "title": "물약값이 10만원이라니… | 도깨비의 세계 #Shorts",
+      "duration": "0:13",
+      "engaged_views": 300.0,
+      "views": 1317.0,
+      "watch_hours": 1.3,
+      "subscriber_net": 0.0,
+      "impressions": 1128.0,
+      "ctr_pct": 1.8
+    },
+    {
+      "title": "처음엔 성우가 전부 있는 줄 알았는데 | 도깨비의 세계 #Shorts",
+      "duration": "0:39",
+      "engaged_views": 300.0,
+      "views": 1196.0,
+      "watch_hours": 1.5,
+      "subscriber_net": 0.0,
+      "impressions": 350.0,
+      "ctr_pct": 1.4
+    },
+    {
+      "title": "걸어다니며 퀘스트 받은 사람 억울하겠다 | 도깨비의 세계 #Shorts",
+      "duration": "0:19",
+      "engaged_views": 299.0,
+      "views": 1312.0,
+      "watch_hours": 1.5,
+      "subscriber_net": 0.0,
+      "impressions": 1422.0,
+      "ctr_pct": 1.8
+    },
+    {
+      "title": "찐텐 비명 뒤에 바로 적응 선언",
+      "duration": "0:29",
+      "engaged_views": 286.0,
+      "views": 1208.0,
+      "watch_hours": 1.5,
+      "subscriber_net": 0.0,
+      "impressions": 31.0,
+      "ctr_pct": 0.0
+    },
+    {
+      "title": "1층에서는 아무것도 안 나온다며... ㅜㅜ",
+      "duration": "0:22",
+      "engaged_views": 284.0,
+      "views": 1228.0,
+      "watch_hours": 1.7,
+      "subscriber_net": 0.0,
+      "impressions": 34.0,
+      "ctr_pct": 2.9
+    },
+    {
+      "title": "날 놀래키는 소리가 아니라 문 열린 소리..",
+      "duration": "0:24",
+      "engaged_views": 278.0,
+      "views": 1275.0,
+      "watch_hours": 1.4,
+      "subscriber_net": 0.0,
+      "impressions": 70.0,
+      "ctr_pct": 1.4
+    },
+    {
+      "title": "일로 와, 아니 저기로 가",
+      "duration": "0:20",
+      "engaged_views": 275.0,
+      "views": 1288.0,
+      "watch_hours": 1.3,
+      "subscriber_net": 2.0,
+      "impressions": 50.0,
+      "ctr_pct": 0.0
+    },
+    {
+      "title": "때려주고 싶으면 성우가 성공한 거다 | 도깨비의 세계 #Shorts",
+      "duration": "0:23",
+      "engaged_views": 272.0,
+      "views": 1241.0,
+      "watch_hours": 1.8,
+      "subscriber_net": 0.0,
+      "impressions": 288.0,
+      "ctr_pct": 4.2
+    },
+    {
+      "title": "활을 들었는데 자꾸 맞으러 간다 | 도깨비의 세계 #Shorts",
+      "duration": "0:51",
+      "engaged_views": 264.0,
+      "views": 1077.0,
+      "watch_hours": 1.7,
+      "subscriber_net": 0.0,
+      "impressions": 1167.0,
+      "ctr_pct": 3.1
+    },
+    {
+      "title": "남캐인 줄 알고 보상을 받았다 | 도깨비의 세계 #Shorts",
+      "duration": "0:38",
+      "engaged_views": 251.0,
+      "views": 1054.0,
+      "watch_hours": 2.5,
+      "subscriber_net": 0.0,
+      "impressions": 762.0,
+      "ctr_pct": 2.8
+    },
+    {
+      "title": "도깨비의 세계 | 열심히 강화했는데 딜이 밀린다면? 이 덱부터 보세요",
+      "duration": "3:02",
+      "engaged_views": 218.0,
+      "views": 942.0,
+      "watch_hours": 4.0,
+      "subscriber_net": 1.0,
+      "impressions": 6956.0,
+      "ctr_pct": 2.7
+    },
+    {
+      "title": "일반 유저까지 퍼진 자동사냥… 리니지 클래식 지금 심각한 이유",
+      "duration": "4:43",
+      "engaged_views": 207.0,
+      "views": 615.0,
+      "watch_hours": 5.3,
+      "subscriber_net": 0.0,
+      "impressions": 1797.0,
+      "ctr_pct": 9.9
+    },
+    {
+      "title": "막다른 길에서 착하게 살겠다는 약속",
+      "duration": "0:45",
+      "engaged_views": 147.0,
+      "views": 752.0,
+      "watch_hours": 1.0,
+      "subscriber_net": 0.0,
+      "impressions": 29.0,
+      "ctr_pct": 0.0
+    },
+    {
+      "title": "NC를 끝까지 믿었던 제가 결국 틀렸습니다",
+      "duration": "28:24",
+      "engaged_views": 118.0,
+      "views": 240.0,
+      "watch_hours": 14.4,
+      "subscriber_net": 0.0,
+      "impressions": 1199.0,
+      "ctr_pct": 7.6
+    },
+    {
+      "title": "신작 게임 플레이 #라그나로크온라인PLUS #그라비티",
+      "duration": "2:14:13",
+      "engaged_views": 98.0,
+      "views": 327.0,
+      "watch_hours": 2.3,
+      "subscriber_net": null,
+      "impressions": 2880.0,
+      "ctr_pct": 3.0
+    },
+    {
+      "title": "불 켜주세요 사장님",
+      "duration": "0:27",
+      "engaged_views": 92.0,
+      "views": 521.0,
+      "watch_hours": 0.5,
+      "subscriber_net": 0.0,
+      "impressions": 39.0,
+      "ctr_pct": 0.0
+    },
+    {
+      "title": "안 아픈 줄 알고 메뉴를 열었는데 | 도깨비의 세계 #Shorts",
+      "duration": "0:26",
+      "engaged_views": 90.0,
+      "views": 468.0,
+      "watch_hours": 0.4,
+      "subscriber_net": 0.0,
+      "impressions": 137.0,
+      "ctr_pct": 0.0
+    },
+    {
+      "title": "그 고생이 아직 레벨 0이었다",
+      "duration": "0:13",
+      "engaged_views": 88.0,
+      "views": 489.0,
+      "watch_hours": 0.4,
+      "subscriber_net": 0.0,
+      "impressions": 38.0,
+      "ctr_pct": 0.0
+    },
+    {
+      "title": "무기를 바꿔도 스킬을 쓸 수 있네 | 도깨비의 세계 #Shorts",
+      "duration": "1:01",
+      "engaged_views": 88.0,
+      "views": 573.0,
+      "watch_hours": 0.5,
+      "subscriber_net": 0.0,
+      "impressions": 4587.0,
+      "ctr_pct": 1.2
+    },
+    {
+      "title": "삼국지 영걸전 공략 좀비부대",
+      "duration": "3:49",
+      "engaged_views": 71.0,
+      "views": 104.0,
+      "watch_hours": 2.2,
+      "subscriber_net": 0.0,
+      "impressions": 197.0,
+      "ctr_pct": 17.8
+    },
+    {
+      "title": "불타는 궁수 테이밍 도전… 그런데 의외였다 ?",
+      "duration": "6:00",
+      "engaged_views": 71.0,
+      "views": 167.0,
+      "watch_hours": 1.8,
+      "subscriber_net": 1.0,
+      "impressions": 509.0,
+      "ctr_pct": 11.0
+    },
+    {
+      "title": "업데이트 악용하는 막피유저 등장 #리니지클래식",
+      "duration": "0:11",
+      "engaged_views": 56.0,
+      "views": 251.0,
+      "watch_hours": 0.3,
+      "subscriber_net": 0.0,
+      "impressions": 1097.0,
+      "ctr_pct": 4.1
+    },
+    {
+      "title": "3트째… 세 줄 남기고 끝났다 | 도깨비의 세계 #Shorts",
+      "duration": "0:51",
+      "engaged_views": 51.0,
+      "views": 250.0,
+      "watch_hours": 0.4,
+      "subscriber_net": 0.0,
+      "impressions": 671.0,
+      "ctr_pct": 1.8
+    },
+    {
+      "title": "제우스 한 달, 초반엔 재밌었는데 왜 멤버십을 연장하지 않았을까?",
+      "duration": "11:49",
+      "engaged_views": 49.0,
+      "views": 97.0,
+      "watch_hours": 1.8,
+      "subscriber_net": 0.0,
+      "impressions": 2692.0,
+      "ctr_pct": 1.5
+    },
+    {
+      "title": "워독스 처음 합니다 #미션 #훈수 환영",
+      "duration": "7:29:26",
+      "engaged_views": 41.0,
+      "views": 142.0,
+      "watch_hours": 7.6,
+      "subscriber_net": 0.0,
+      "impressions": 6446.0,
+      "ctr_pct": 0.5
+    },
+    {
+      "title": "#도깨비의세계 #오픈런 #신작게임",
+      "duration": "4:34:12",
+      "engaged_views": 41.0,
+      "views": 89.0,
+      "watch_hours": 0.9,
+      "subscriber_net": 0.0,
+      "impressions": 3167.0,
+      "ctr_pct": 1.1
+    },
+    {
+      "title": "신맵 화룡의둥지 나오자마자 통제 ???? #리니지클래식",
+      "duration": "0:14",
+      "engaged_views": 38.0,
+      "views": 203.0,
+      "watch_hours": 0.2,
+      "subscriber_net": 0.0,
+      "impressions": 982.0,
+      "ctr_pct": 3.3
+    },
+    {
+      "title": "자동 잡기가 힘들면 일단 헤이샵부터 제재좀 해주세요 #리니지클래식",
+      "duration": "0:15",
+      "engaged_views": 34.0,
+      "views": 125.0,
+      "watch_hours": 0.2,
+      "subscriber_net": 0.0,
+      "impressions": 455.0,
+      "ctr_pct": 6.8
+    },
+    {
+      "title": "여러분이 궁금한 게임, 제가 대신 해드립니다｜댓글로 신청해주세요",
+      "duration": "4:42",
+      "engaged_views": 32.0,
+      "views": 76.0,
+      "watch_hours": 0.6,
+      "subscriber_net": 0.0,
+      "impressions": 673.0,
+      "ctr_pct": 3.0
+    },
+    {
+      "title": "징기스칸 2 원조비사 오프닝 元朝秘史",
+      "duration": "4:52",
+      "engaged_views": 31.0,
+      "views": 84.0,
+      "watch_hours": 0.4,
+      "subscriber_net": 0.0,
+      "impressions": 223.0,
+      "ctr_pct": 12.6
+    },
+    {
+      "title": "두꺼비를 골랐다가 당나귀로 돌아왔다 | 도깨비의 세계 #Shorts",
+      "duration": "0:37",
+      "engaged_views": 29.0,
+      "views": 203.0,
+      "watch_hours": 0.2,
+      "subscriber_net": 0.0,
+      "impressions": 565.0,
+      "ctr_pct": 1.2
+    },
+    {
+      "title": "에바왕국에서 일렉카둠만 잡았더니…",
+      "duration": "22:23",
+      "engaged_views": 27.0,
+      "views": 71.0,
+      "watch_hours": 1.8,
+      "subscriber_net": 0.0,
+      "impressions": 263.0,
+      "ctr_pct": 9.5
+    },
+    {
+      "title": "[노래] 안녕... 리니지.... 즐거웠어........",
+      "duration": "4:44",
+      "engaged_views": 26.0,
+      "views": 115.0,
+      "watch_hours": 2.4,
+      "subscriber_net": 0.0,
+      "impressions": 204.0,
+      "ctr_pct": 4.9
+    },
+    {
+      "title": "업데이트 1시간만에 악용하는 막피 스턴기사 #리니지클래식",
+      "duration": "0:08",
+      "engaged_views": 24.0,
+      "views": 121.0,
+      "watch_hours": 0.1,
+      "subscriber_net": 0.0,
+      "impressions": 448.0,
+      "ctr_pct": 4.2
+    },
+    {
+      "title": "20년 추억으로 버텼다… 라그나로크M 클래식 솔직 리뷰",
+      "duration": "10:21",
+      "engaged_views": 18.0,
+      "views": 81.0,
+      "watch_hours": 0.6,
+      "subscriber_net": 0.0,
+      "impressions": 391.0,
+      "ctr_pct": 4.1
+    },
+    {
+      "title": "신명 인증 절차 강화 촉구! #리니지클래식",
+      "duration": "0:15",
+      "engaged_views": 18.0,
+      "views": 54.0,
+      "watch_hours": 0.1,
+      "subscriber_net": 0.0,
+      "impressions": 265.0,
+      "ctr_pct": 6.4
+    },
+    {
+      "title": "작업장 학살 공약 실행했더니 벌어진 일 ㄷㄷ",
+      "duration": "55:27",
+      "engaged_views": 12.0,
+      "views": 18.0,
+      "watch_hours": 2.2,
+      "subscriber_net": 0.0,
+      "impressions": 184.0,
+      "ctr_pct": 2.2
+    },
+    {
+      "title": "물약 버그 제보 영상 #리니지클래식",
+      "duration": "0:15",
+      "engaged_views": 11.0,
+      "views": 50.0,
+      "watch_hours": 0.1,
+      "subscriber_net": 0.0,
+      "impressions": 199.0,
+      "ctr_pct": 4.0
+    },
+    {
+      "title": "자동사냥 작업장이 없어져야 수동사냥 유저들이 돌아옵니다 #리니지클래식",
+      "duration": "0:15",
+      "engaged_views": 11.0,
+      "views": 45.0,
+      "watch_hours": 0.1,
+      "subscriber_net": 0.0,
+      "impressions": 293.0,
+      "ctr_pct": 3.1
+    }
+  ],
+  "official_sources": [
+    {
+      "id": "O1",
+      "title": "YouTube 조회수 집계 변경",
+      "url": "https://blog.youtube/inside-youtube/engaged-views-youtube-explained/",
+      "published": "2026-08-19",
+      "effective": "2026-08-24",
+      "verified_on_kst": "2026-10-26"
+    },
+    {
+      "id": "O2",
+      "title": "유효 조회·평균 시청 시간 정의",
+      "url": "https://support.google.com/youtube/answer/9313698?hl=en",
+      "verified_on_kst": "2026-10-26"
+    },
+    {
+      "id": "O3",
+      "title": "구독 소스의 의미",
+      "url": "https://support.google.com/youtube/answer/9717879?hl=en",
+      "verified_on_kst": "2026-10-26"
+    },
+    {
+      "id": "O4",
+      "title": "신규·일반·고정 시청자 정의",
+      "url": "https://support.google.com/youtube/answer/10246996?hl=en",
+      "verified_on_kst": "2026-10-26"
+    },
+    {
+      "id": "O5",
+      "title": "CTR 해석 시 주의점",
+      "url": "https://support.google.com/youtube/answer/7628154?hl=en",
+      "verified_on_kst": "2026-10-26"
+    },
+    {
+      "id": "O6",
+      "title": "유지율과 유사 길이 비교",
+      "url": "https://support.google.com/youtube/answer/9314415",
+      "verified_on_kst": "2026-10-26"
+    },
+    {
+      "id": "O7",
+      "title": "제목·썸네일 A/B 테스트",
+      "url": "https://support.google.com/youtube/answer/16391400?hl=en",
+      "verified_on_kst": "2026-10-26"
+    },
+    {
+      "id": "O8",
+      "title": "형식별 시청자 겹침 정의",
+      "url": "https://support.google.com/youtube/answer/12942217?co=YOUTUBE._YTVideoType%3Dvideo&hl=en",
+      "verified_on_kst": "2026-10-26"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E01",
+      "claim": "성장기와 최근 90일의 구독 증감",
+      "kind": "직접 관측",
+      "source": "studio-90d-comparison.txt",
+      "period": "성장기 2026-04-28~07-26 / 최근 2026-07-27~10-24",
+      "limitation": "비교 표의 콘텐츠는 상위 50개; 합계는 화면 표시 채널 합계. 형식 혼합."
+    },
+    {
+      "id": "E02",
+      "claim": "최근 28일 동일 열 구성 상세 지표",
+      "kind": "직접 관측",
+      "source": "studio-detail-28d.txt",
+      "period": "2026-09-27~10-24",
+      "limitation": "다른 보고서의 조회수 합계와 38회, 유효 조회수와 5회 차이가 관측됨. 원인 미확정."
+    },
+    {
+      "id": "E03",
+      "claim": "최근 28일 유효 조회수순 콘텐츠 50개",
+      "kind": "직접 관측",
+      "source": "studio-content-28d.txt",
+      "period": "2026-09-27~10-24",
+      "limitation": "관측 당시 전체 조회 45,578 / 유효 12,186; 이후 상세 표와 소폭 다름. 전체 영상 전수 아님."
+    },
+    {
+      "id": "E04",
+      "claim": "일반 영상 게시 사이 94일 공백",
+      "kind": "직접 관측+날짜 계산",
+      "source": "studio-upload-dates.txt",
+      "period": "2026-07-04~10-06",
+      "limitation": "현재 보이는 공개 일반 영상 기준. Shorts·라이브 전체 무활동을 뜻하지 않음. 삭제·과거 공개 상태 이력 미확인."
+    },
+    {
+      "id": "E05",
+      "claim": "Shorts 27개가 10월 10~14일 집중 게시",
+      "kind": "직접 관측",
+      "source": "studio-shorts-dates.txt",
+      "period": "2026-10-10~14",
+      "limitation": "집중 게시가 추천 불이익이나 이탈을 유발했다는 인과 증거 없음."
+    },
+    {
+      "id": "E06",
+      "claim": "신청 영상은 현재 전체 79회, 순 시청자 18명, 노출 676, CTR 3.1%",
+      "kind": "직접 관측",
+      "source": "https://studio.youtube.com/video/Ms1PaHog3BM/analytics/tab-reach_viewers/period-default",
+      "period": "2026-10-15~확인 시점",
+      "limitation": "순 시청자는 추정치. 일부 상세 카드 10/24까지: 노출 673, CTR 3.0%, 노출발 유효 20. 기간 혼합 금지."
+    },
+    {
+      "id": "E07",
+      "claim": "신청 영상의 같은 기간 유효 조회 32, 전체 76, 평균 1:08, 평균 조회율 24.4%",
+      "kind": "직접 관측",
+      "source": "studio-detail-90d.txt",
+      "period": "2026-07-27~10-24 (영상 게시 10/15)",
+      "limitation": "상단 게시 이후 전체 79회와 집계 끝점이 다름. 이탈 곡선·전체 발화 분석 미완료."
+    },
+    {
+      "id": "E08",
+      "claim": "스텔라 블레이드 매우 어려움 엔딩 요청 1건과 크리에이터 답글 확인",
+      "kind": "직접 관측",
+      "source": "https://studio.youtube.com/video/Ms1PaHog3BM/comments/inbox",
+      "period": "2026-10-26 확인",
+      "limitation": "미응답 필터 해제 후 확인. 사용자 계정명은 보존하지 않음. 총 댓글 수는 고유 요청자 수가 아님."
+    },
+    {
+      "id": "E09",
+      "claim": "워독스 본편: 전체 22회, 유효 9회, 순 시청자 6명, 노출 167, CTR 3.6%",
+      "kind": "직접 관측",
+      "source": "studio-wardogs-reach.txt",
+      "period": "2026-10-21~확인 시점",
+      "limitation": "유효 9회는 studio-wardogs-engagement.txt. 유지율 그래프 데이터 부족. 품질 비교 결론 유보."
+    },
+    {
+      "id": "E10",
+      "claim": "7시간29분 워독스 라이브 및 여러 현재 비공개 다시보기",
+      "kind": "직접 관측",
+      "source": "studio-live-dates.txt",
+      "period": "2026-10-18 등",
+      "limitation": "방송 당시의 공개 상태와 비공개 전환 시점은 미확인. 비공개가 하락 원인이라고 단정하지 않음."
+    },
+    {
+      "id": "E11",
+      "claim": "최근 90일 구독 소스: 증가18, 감소21, 계정삭제 행 순감 -2",
+      "kind": "직접 관측",
+      "source": "studio-subscription-sources-90d.txt",
+      "period": "2026-07-27~10-24",
+      "limitation": "취소 위치는 취소 동기가 아님. 계정삭제 행에도 증가1·감소3이 함께 표시됨."
+    },
+    {
+      "id": "E12",
+      "claim": "최근28일 신규90.2%, 일반9.8%, 고정<0.1%; 형식 겹침1%",
+      "kind": "앞선 동일 대화에서 직접 관측",
+      "source": "https://studio.youtube.com/channel/UCp9Pn5dAUByhBDkH1K59HiQ/analytics/tab-build_audience/period-default",
+      "period": "2026-09-27~10-24",
+      "limitation": "겹침1%는 재방문 시청자 중 동영상·Shorts 양쪽 시청 비중. Shorts→본편 이동률 아님. 절대 인원 미확인."
+    },
+    {
+      "id": "E13",
+      "claim": "도깨비 경제 영상의 현재 누적 평균1:39, 30초유지47%, 종료화면클릭0%",
+      "kind": "앞선 동일 대화에서 직접 관측",
+      "source": "https://studio.youtube.com/video/IDA9FbXDSmQ/analytics/tab-interest_viewers/period-default",
+      "period": "2026-10-14~확인 시점",
+      "limitation": "47%는 Studio에서 일반적 실적으로 표시. 종료화면 노출 횟수 미확인. 전체 영상 음성·장면별 원인 미검증."
+    },
+    {
+      "id": "E14",
+      "claim": "리니지 플레이 종료, 함께 궁금한 게임을 하는 방향, 주15~20시간, 광고 없음",
+      "kind": "사용자 설명",
+      "source": "2026-10-26 현재 대화의 사용자 답변",
+      "period": "현재 운영 제약",
+      "limitation": "정확한 리니지 종료 날짜는 미지정. 삭제 없음은 사용자의 기억에 따른 설명. 공개상태 변경 이력은 별도 미확인."
+    },
+    {
+      "id": "E15",
+      "claim": "모집 영상 0:07의 인포그래픽 화면 및 설명의 최대3시간 조건",
+      "kind": "직접 관측",
+      "source": "request-intro-00m07s.png",
+      "period": "정지 화면 0:07 / 설명 확인 2026-10-26",
+      "limitation": "한 프레임과 설명 검토. 영상 전체가 같은 형식이라는 검증이나 음성 평가 아님."
+    },
+    {
+      "id": "E16",
+      "claim": "신규 구독 감소가 순증 하락을 대부분 설명",
+      "kind": "계산",
+      "source": "E01",
+      "period": "두 90일 비교",
+      "limitation": "회계적 분해이며 신규 유입 감소의 원인 분해가 아님."
+    }
+  ],
+  "author_constraints": {
+    "return_to_lineage": false,
+    "weekly_hours": [
+      15,
+      20
+    ],
+    "recording_cap_hours": 3,
+    "paid_ads_reported": false,
+    "desired_direction": "사람들과 궁금한 게임을 함께 진행·플레이하고 결과를 영상으로 공유",
+    "user_game_request_confirmed": 1
+  },
+  "limitations": [
+    "독립된 복수 분석가 검증은 실시하지 않음",
+    "일별 전체 CSV와 게시후 동일7일 코호트 미확보",
+    "개별 시청자의 이탈 이유·시청자별 이동 경로 미확인",
+    "전체 영상 음성 및 프레임별 편집 감사 미실시",
+    "경쟁 채널의 비공개 지표 미확보"
+  ]
+}
